@@ -15,6 +15,8 @@
   --bg:#f8fafc;
 }
 
+*{box-sizing:border-box}
+
 body{
   font-family:'Plus Jakarta Sans',sans-serif;
   background:var(--bg);
@@ -22,42 +24,45 @@ body{
   color:#1e293b;
 }
 
+/* HEADER */
 header{
   background:#fff;
-  padding:20px;
+  padding:16px;
   text-align:center;
   border-bottom:1px solid #e2e8f0;
 }
 
-.logo-img{height:50px}
+.logo-img{height:42px}
 .logo{
-  font-size:28px;
+  font-size:24px;
   font-weight:800;
   text-decoration:none;
   color:var(--dark);
 }
 .logo span{color:var(--primary)}
 
+/* CATEGORIES */
 .categories-nav{
   background:#fff;
-  padding:15px;
+  padding:10px;
   text-align:center;
   position:sticky;
   top:0;
   z-index:10;
-  box-shadow:0 4px 12px rgba(0,0,0,.05);
+  box-shadow:0 4px 10px rgba(0,0,0,.05);
 }
 
 .cat-btn{
   background:#f1f5f9;
   border:none;
-  padding:10px 22px;
-  margin:5px;
-  border-radius:50px;
+  padding:8px 14px;
+  margin:4px;
+  border-radius:999px;
   cursor:pointer;
   font-weight:600;
+  font-size:13px;
   color:var(--gray);
-  transition:.3s;
+  transition:.25s;
 }
 
 .cat-btn.active,
@@ -66,34 +71,37 @@ header{
   color:#fff;
 }
 
+/* CONTAINER */
 .container{
   max-width:1200px;
-  margin:40px auto;
-  padding:0 20px;
+  margin:20px auto;
+  padding:0 12px;
 }
 
+/* GRID DESKTOP */
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-  gap:25px;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:20px;
 }
 
+/* CARD DESKTOP */
 .product-card{
   background:#fff;
-  border-radius:20px;
+  border-radius:16px;
   border:1px solid #e2e8f0;
   overflow:hidden;
-  transition:.35s;
+  transition:.3s;
 }
 
 .product-card:hover{
-  transform:translateY(-8px);
-  box-shadow:0 20px 25px rgba(0,0,0,.12);
+  transform:translateY(-6px);
+  box-shadow:0 16px 22px rgba(0,0,0,.12);
   border-color:var(--primary);
 }
 
 .card-image{
-  height:150px;
+  height:140px;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -101,16 +109,14 @@ header{
 }
 
 .card-image img{
-  max-width:90px;
-  max-height:90px;
-  transition:.3s;
+  max-width:80px;
+  max-height:80px;
 }
 
-.product-card:hover img{
-  transform:scale(1.12);
+/* CARD BODY DESKTOP */
+.card-body{
+  padding:18px;
 }
-
-.card-body{padding:22px}
 
 .category-badge{
   font-size:10px;
@@ -118,70 +124,112 @@ header{
   text-transform:uppercase;
   color:var(--primary);
   background:#eff6ff;
-  padding:4px 10px;
+  padding:4px 8px;
   border-radius:6px;
   display:inline-block;
-  margin-bottom:10px;
+  margin-bottom:8px;
 }
 
 .product-title{
-  font-size:16px;
+  font-size:15px;
   font-weight:700;
-  margin:0 0 10px;
+  margin:0 0 6px;
   color:var(--dark);
-  height:44px;
-  overflow:hidden;
 }
 
 .limits{
   font-size:12px;
   color:var(--gray);
-  margin-bottom:10px;
+  margin-bottom:8px;
 }
 
 .product-price{
-  font-size:24px;
+  font-size:20px;
   font-weight:800;
-  margin-bottom:15px;
+  margin-bottom:12px;
 }
 
 .product-price::before{
   content:"$";
-  font-size:16px;
-  margin-right:4px;
+  font-size:14px;
+  margin-right:3px;
   color:var(--gray);
 }
 
 .btn-buy{
   display:block;
   text-align:center;
-  padding:14px;
+  padding:12px;
   background:var(--dark);
   color:#fff;
-  border-radius:12px;
+  border-radius:10px;
   text-decoration:none;
   font-weight:700;
-  transition:.3s;
 }
 
-.btn-buy:hover{background:var(--primary)}
+/* ===================== */
+/* 📱 MOBILE MODE PRO */
+/* ===================== */
+@media(max-width:640px){
 
+  .grid{
+    grid-template-columns:1fr;
+    gap:12px;
+  }
+
+  .product-card{
+    display:flex;
+    align-items:center;
+    border-radius:14px;
+  }
+
+  .card-image{
+    height:90px;
+    width:90px;
+    flex-shrink:0;
+  }
+
+  .card-image img{
+    max-width:48px;
+    max-height:48px;
+  }
+
+  .card-body{
+    padding:12px;
+    flex:1;
+  }
+
+  .product-title{
+    font-size:14px;
+    line-height:1.3;
+  }
+
+  .product-price{
+    font-size:18px;
+    margin-bottom:8px;
+  }
+
+  .btn-buy{
+    padding:10px;
+    font-size:14px;
+    border-radius:8px;
+  }
+}
+
+/* LOADING */
 .loading{
   text-align:center;
-  padding:80px;
+  padding:60px;
   font-weight:600;
   color:var(--gray);
 }
 
+/* FOOTER */
 footer{
   background:#fff;
-  padding:60px 20px;
+  padding:40px 16px;
   text-align:center;
   border-top:1px solid #e2e8f0;
-}
-
-@media(max-width:600px){
-  .grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -211,14 +259,12 @@ footer{
 
 <footer>
   <strong>ViralFlowr</strong><br><br>
-  <a href="https://wa.me/243850373991">WhatsApp</a> •
-  <a href="https://t.me/Viralflow">Telegram</a>
-  <p style="font-size:12px;color:var(--gray);margin-top:20px;">© 2026 ViralFlowr</p>
+  WhatsApp • Telegram  
+  <p style="font-size:12px;color:var(--gray);margin-top:16px;">© 2026 ViralFlowr</p>
 </footer>
 
 <script>
-const SCRIPT_URL =
-"https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
+const SCRIPT_URL="https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
 
 const CATEGORY_ICONS={
   IMEI:"https://cdn-icons-png.flaticon.com/512/2544/2544574.png",
@@ -249,11 +295,6 @@ function displayProducts(products){
   const grid=document.getElementById('product-grid');
   grid.innerHTML="";
 
-  if(!products||!products.length){
-    grid.innerHTML='<div class="loading">Aucun service disponible</div>';
-    return;
-  }
-
   const filtered=products.filter(p=>{
     if(CURRENT_FILTER==="all") return true;
     if(Array.isArray(CURRENT_FILTER)) return CURRENT_FILTER.includes(p.cat);
@@ -261,7 +302,7 @@ function displayProducts(products){
   });
 
   if(!filtered.length){
-    grid.innerHTML='<div class="loading">Aucun service dans cette catégorie</div>';
+    grid.innerHTML='<div class="loading">Aucun service</div>';
     return;
   }
 
@@ -272,16 +313,14 @@ function displayProducts(products){
     grid.innerHTML+=`
     <div class="product-card">
       <div class="card-image">
-        <img src="${img}" loading="lazy" onerror="this.src='${fallback}'">
+        <img src="${img}" onerror="this.src='${fallback}'">
       </div>
       <div class="card-body">
         <span class="category-badge">${p.cat}</span>
         <h3 class="product-title">${p.nom}</h3>
         ${p.min?`<div class="limits">Min ${p.min} • Max ${p.max}</div>`:""}
         <div class="product-price">${parseFloat(p.prix).toFixed(2)}</div>
-        <a class="btn-buy" href="paiement.html?id=${p.id}&cat=${p.cat}">
-          Commander
-        </a>
+        <a class="btn-buy" href="paiement.html?id=${p.id}&cat=${p.cat}">Commander</a>
       </div>
     </div>`;
   });
