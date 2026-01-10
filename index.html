@@ -8,42 +8,38 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
 
 <style>
-:root {
+:root{
   --primary:#0062ff;
   --dark:#121417;
   --gray:#64748b;
   --bg:#f8fafc;
 }
 
-* { box-sizing:border-box; }
-
-body {
+body{
   font-family:'Plus Jakarta Sans',sans-serif;
   background:var(--bg);
   margin:0;
   color:#1e293b;
 }
 
-/* HEADER */
-header {
-  background:white;
+header{
+  background:#fff;
   padding:20px;
   text-align:center;
   border-bottom:1px solid #e2e8f0;
 }
 
-.logo-img { height:50px; }
-.logo {
+.logo-img{height:50px}
+.logo{
   font-size:28px;
   font-weight:800;
-  color:var(--dark);
   text-decoration:none;
+  color:var(--dark);
 }
-.logo span { color:var(--primary); }
+.logo span{color:var(--primary)}
 
-/* CATEGORIES */
-.categories-nav {
-  background:white;
+.categories-nav{
+  background:#fff;
   padding:15px;
   text-align:center;
   position:sticky;
@@ -52,7 +48,7 @@ header {
   box-shadow:0 4px 12px rgba(0,0,0,.05);
 }
 
-.cat-btn {
+.cat-btn{
   background:#f1f5f9;
   border:none;
   padding:10px 22px;
@@ -65,40 +61,38 @@ header {
 }
 
 .cat-btn.active,
-.cat-btn:hover {
+.cat-btn:hover{
   background:var(--dark);
-  color:white;
+  color:#fff;
 }
 
-/* GRID */
-.container {
+.container{
   max-width:1200px;
   margin:40px auto;
   padding:0 20px;
 }
 
-.grid {
+.grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
   gap:25px;
 }
 
-/* CARD */
-.product-card {
-  background:white;
+.product-card{
+  background:#fff;
   border-radius:20px;
   border:1px solid #e2e8f0;
   overflow:hidden;
   transition:.35s;
 }
 
-.product-card:hover {
+.product-card:hover{
   transform:translateY(-8px);
   box-shadow:0 20px 25px rgba(0,0,0,.12);
   border-color:var(--primary);
 }
 
-.card-image {
+.card-image{
   height:150px;
   display:flex;
   align-items:center;
@@ -106,21 +100,19 @@ header {
   background:linear-gradient(135deg,#f1f5f9,#e2e8f0);
 }
 
-.card-image img {
+.card-image img{
   max-width:90px;
   max-height:90px;
   transition:.3s;
 }
 
-.product-card:hover img {
+.product-card:hover img{
   transform:scale(1.12);
 }
 
-.card-body {
-  padding:22px;
-}
+.card-body{padding:22px}
 
-.category-badge {
+.category-badge{
   font-size:10px;
   font-weight:800;
   text-transform:uppercase;
@@ -132,7 +124,7 @@ header {
   margin-bottom:10px;
 }
 
-.product-title {
+.product-title{
   font-size:16px;
   font-weight:700;
   margin:0 0 10px;
@@ -141,59 +133,55 @@ header {
   overflow:hidden;
 }
 
-.limits {
+.limits{
   font-size:12px;
   color:var(--gray);
   margin-bottom:10px;
 }
 
-.product-price {
+.product-price{
   font-size:24px;
   font-weight:800;
   margin-bottom:15px;
 }
 
-.product-price::before {
+.product-price::before{
   content:"$";
   font-size:16px;
   margin-right:4px;
   color:var(--gray);
 }
 
-.btn-buy {
+.btn-buy{
   display:block;
   text-align:center;
   padding:14px;
   background:var(--dark);
-  color:white;
+  color:#fff;
   border-radius:12px;
   text-decoration:none;
   font-weight:700;
   transition:.3s;
 }
 
-.btn-buy:hover {
-  background:var(--primary);
-}
+.btn-buy:hover{background:var(--primary)}
 
-/* LOADING */
-.loading {
+.loading{
   text-align:center;
   padding:80px;
   font-weight:600;
   color:var(--gray);
 }
 
-/* FOOTER */
-footer {
-  background:white;
+footer{
+  background:#fff;
   padding:60px 20px;
   text-align:center;
   border-top:1px solid #e2e8f0;
 }
 
 @media(max-width:600px){
-  .grid { grid-template-columns:1fr; }
+  .grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -210,7 +198,7 @@ footer {
 <div class="categories-nav">
   <button class="cat-btn active" onclick="loadProducts('all',this)">⚡ Tous</button>
   <button class="cat-btn" onclick="loadProducts('IMEI',this)">📱 IMEI</button>
-  <button class="cat-btn" onclick="loadProducts('Boost','Boost2'this)">🚀 Boost</button>
+  <button class="cat-btn" onclick="loadProducts(['Boost','Boost2'],this)">🚀 Boost</button>
   <button class="cat-btn" onclick="loadProducts('Carte',this)">💳 Cartes</button>
   <button class="cat-btn" onclick="loadProducts('Abonnement',this)">📺 Abonnements</button>
 </div>
@@ -224,31 +212,35 @@ footer {
 <footer>
   <strong>ViralFlowr</strong><br><br>
   <a href="https://wa.me/243850373991">WhatsApp</a> •
-  <a href="https://t.me/Viralflow">Telegram</a> •
-  <a href="#">Support</a>
+  <a href="https://t.me/Viralflow">Telegram</a>
   <p style="font-size:12px;color:var(--gray);margin-top:20px;">© 2026 ViralFlowr</p>
 </footer>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
+const SCRIPT_URL =
+"https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
 
-const CATEGORY_ICONS = {
+const CATEGORY_ICONS={
   IMEI:"https://cdn-icons-png.flaticon.com/512/2544/2544574.png",
   Boost:"https://cdn-icons-png.flaticon.com/512/1441/1441180.png",
+  Boost2:"https://cdn-icons-png.flaticon.com/512/1441/1441180.png",
   Carte:"https://cdn-icons-png.flaticon.com/512/633/633611.png",
   Abonnement:"https://cdn-icons-png.flaticon.com/512/3165/3165247.png",
   default:"https://cdn-icons-png.flaticon.com/512/11520/11520110.png"
 };
 
-function loadProducts(cat,btn){
+let CURRENT_FILTER="all";
+
+function loadProducts(filter,btn){
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  CURRENT_FILTER=filter;
 
-  document.getElementById('product-grid').innerHTML =
+  document.getElementById('product-grid').innerHTML=
     '<div class="loading">Chargement...</div>';
 
   const s=document.createElement('script');
-  s.src=SCRIPT_URL+"?action=get_products"+(cat!=="all"?"&cat="+encodeURIComponent(cat):"")+"&callback=displayProducts";
+  s.src=SCRIPT_URL+"?action=get_products&callback=displayProducts";
   document.body.appendChild(s);
   document.body.removeChild(s);
 }
@@ -257,19 +249,30 @@ function displayProducts(products){
   const grid=document.getElementById('product-grid');
   grid.innerHTML="";
 
-  if(!products || !products.length){
+  if(!products||!products.length){
     grid.innerHTML='<div class="loading">Aucun service disponible</div>';
     return;
   }
 
-  products.forEach(p=>{
+  const filtered=products.filter(p=>{
+    if(CURRENT_FILTER==="all") return true;
+    if(Array.isArray(CURRENT_FILTER)) return CURRENT_FILTER.includes(p.cat);
+    return p.cat===CURRENT_FILTER;
+  });
+
+  if(!filtered.length){
+    grid.innerHTML='<div class="loading">Aucun service dans cette catégorie</div>';
+    return;
+  }
+
+  filtered.forEach(p=>{
     const fallback=CATEGORY_ICONS[p.cat]||CATEGORY_ICONS.default;
-    const img=p.img && p.img!=="" ? p.img : fallback;
+    const img=p.img&&p.img!==""?p.img:fallback;
 
     grid.innerHTML+=`
     <div class="product-card">
       <div class="card-image">
-        <img src="${img}" onerror="this.src='${fallback}'" loading="lazy">
+        <img src="${img}" loading="lazy" onerror="this.src='${fallback}'">
       </div>
       <div class="card-body">
         <span class="category-badge">${p.cat}</span>
