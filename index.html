@@ -1,150 +1,290 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ViralFlowr | Boutique Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>
-        :root { --primary: #0062ff; --success: #00c853; --dark: #121417; --gray: #64748b; --bg: #f8fafc; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; color: #1e293b; }
-        
-        /* HEADER STYLE */
-        header { background: white; padding: 20px 0; border-bottom: 1px solid #e2e8f0; text-align: center; }
-        .logo-img { height: 50px; margin-bottom: 5px; vertical-align: middle; }
-        .logo { font-size: 28px; font-weight: 800; color: var(--dark); text-decoration: none; letter-spacing: -1px; display: block; }
-        .logo span { color: var(--primary); }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ViralFlowr | Boutique Pro</title>
 
-        /* NAV CATEGORIES */
-        .categories-nav { background: white; padding: 15px 0; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-        .cat-btn { background: #f1f5f9; border: none; padding: 10px 22px; margin: 5px; border-radius: 50px; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.3s; color: var(--gray); }
-        .cat-btn:hover { background: #e2e8f0; color: var(--dark); }
-        .cat-btn.active { background: var(--dark); color: white; }
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
 
-        /* GRID & CARDS */
-        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; min-height: 500px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
-        
-        .product-card { background: white; border-radius: 20px; border: 1px solid #e2e8f0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; overflow: hidden; position: relative; }
-        .product-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border-color: var(--primary); }
-        
-        .card-icon { text-align: center; padding-top: 24px; }
-        .card-icon img { width: 60px; height: 60px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05)); transition: transform 0.3s ease; }
-        .product-card:hover .card-icon img { transform: scale(1.1); }
+<style>
+:root {
+  --primary:#0062ff;
+  --dark:#121417;
+  --gray:#64748b;
+  --bg:#f8fafc;
+}
 
-        .card-body { padding: 24px; flex-grow: 1; }
-        .category-badge { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--primary); background: #eff6ff; padding: 4px 10px; border-radius: 6px; display: inline-block; margin-bottom: 12px; }
-        
-        .product-title { font-size: 17px; font-weight: 700; margin: 0 0 15px 0; line-height: 1.4; color: var(--dark); height: 48px; overflow: hidden; }
-        .product-price { font-size: 24px; font-weight: 800; color: var(--dark); margin-bottom: 20px; display: flex; align-items: center; }
-        .product-price::before { content: '$'; font-size: 16px; margin-right: 4px; color: var(--gray); }
+* { box-sizing:border-box; }
 
-        .btn-buy { background: var(--dark); color: white; text-align: center; text-decoration: none; padding: 14px; border-radius: 12px; font-weight: 700; font-size: 15px; transition: 0.3s; }
-        .btn-buy:hover { background: var(--primary); }
+body {
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:var(--bg);
+  margin:0;
+  color:#1e293b;
+}
 
-        /* LOADING & FOOTER */
-        .loading { text-align: center; padding: 100px; font-weight: 600; color: var(--gray); }
-        footer { background: white; padding: 60px 20px; text-align: center; border-top: 1px solid #e2e8f0; margin-top: 80px; }
-        .footer-logo { font-size: 20px; font-weight: 800; margin-bottom: 20px; display: block; color: var(--dark); text-decoration: none; }
-        .social-links { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
-        .social-links a { color: var(--gray); text-decoration: none; font-weight: 600; font-size: 14px; transition: 0.3s; }
-        .social-links a:hover { color: var(--primary); }
+/* HEADER */
+header {
+  background:white;
+  padding:20px;
+  text-align:center;
+  border-bottom:1px solid #e2e8f0;
+}
 
-        @media (max-width: 600px) {
-            .grid { grid-template-columns: 1fr; }
-            .cat-btn { padding: 8px 15px; font-size: 12px; }
-        }
-    </style>
+.logo-img { height:50px; }
+.logo {
+  font-size:28px;
+  font-weight:800;
+  color:var(--dark);
+  text-decoration:none;
+}
+.logo span { color:var(--primary); }
+
+/* CATEGORIES */
+.categories-nav {
+  background:white;
+  padding:15px;
+  text-align:center;
+  position:sticky;
+  top:0;
+  z-index:10;
+  box-shadow:0 4px 12px rgba(0,0,0,.05);
+}
+
+.cat-btn {
+  background:#f1f5f9;
+  border:none;
+  padding:10px 22px;
+  margin:5px;
+  border-radius:50px;
+  cursor:pointer;
+  font-weight:600;
+  color:var(--gray);
+  transition:.3s;
+}
+
+.cat-btn.active,
+.cat-btn:hover {
+  background:var(--dark);
+  color:white;
+}
+
+/* GRID */
+.container {
+  max-width:1200px;
+  margin:40px auto;
+  padding:0 20px;
+}
+
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:25px;
+}
+
+/* CARD */
+.product-card {
+  background:white;
+  border-radius:20px;
+  border:1px solid #e2e8f0;
+  overflow:hidden;
+  transition:.35s;
+}
+
+.product-card:hover {
+  transform:translateY(-8px);
+  box-shadow:0 20px 25px rgba(0,0,0,.12);
+  border-color:var(--primary);
+}
+
+.card-image {
+  height:150px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(135deg,#f1f5f9,#e2e8f0);
+}
+
+.card-image img {
+  max-width:90px;
+  max-height:90px;
+  transition:.3s;
+}
+
+.product-card:hover img {
+  transform:scale(1.12);
+}
+
+.card-body {
+  padding:22px;
+}
+
+.category-badge {
+  font-size:10px;
+  font-weight:800;
+  text-transform:uppercase;
+  color:var(--primary);
+  background:#eff6ff;
+  padding:4px 10px;
+  border-radius:6px;
+  display:inline-block;
+  margin-bottom:10px;
+}
+
+.product-title {
+  font-size:16px;
+  font-weight:700;
+  margin:0 0 10px;
+  color:var(--dark);
+  height:44px;
+  overflow:hidden;
+}
+
+.limits {
+  font-size:12px;
+  color:var(--gray);
+  margin-bottom:10px;
+}
+
+.product-price {
+  font-size:24px;
+  font-weight:800;
+  margin-bottom:15px;
+}
+
+.product-price::before {
+  content:"$";
+  font-size:16px;
+  margin-right:4px;
+  color:var(--gray);
+}
+
+.btn-buy {
+  display:block;
+  text-align:center;
+  padding:14px;
+  background:var(--dark);
+  color:white;
+  border-radius:12px;
+  text-decoration:none;
+  font-weight:700;
+  transition:.3s;
+}
+
+.btn-buy:hover {
+  background:var(--primary);
+}
+
+/* LOADING */
+.loading {
+  text-align:center;
+  padding:80px;
+  font-weight:600;
+  color:var(--gray);
+}
+
+/* FOOTER */
+footer {
+  background:white;
+  padding:60px 20px;
+  text-align:center;
+  border-top:1px solid #e2e8f0;
+}
+
+@media(max-width:600px){
+  .grid { grid-template-columns:1fr; }
+}
+</style>
 </head>
+
 <body>
 
 <header>
-    <a href="#" class="logo">
-        <img src="https://cdn-icons-png.flaticon.com/512/11520/11520110.png" class="logo-img" alt="Logo"><br>
-        Viral<span>Flowr</span>
-    </a>
+  <a href="#" class="logo">
+    <img src="https://cdn-icons-png.flaticon.com/512/11520/11520110.png" class="logo-img"><br>
+    Viral<span>Flowr</span>
+  </a>
 </header>
 
 <div class="categories-nav">
-    <button class="cat-btn active" onclick="loadProducts('all', this)">⚡ Tous</button>
-    <button class="cat-btn" onclick="loadProducts('IMEI', this)">📱 IMEI</button>
-    <button class="cat-btn" onclick="loadProducts('Boost', this)">🚀 Boost</button>
-    <button class="cat-btn" onclick="loadProducts('Carte', this)">💳 Cartes</button>
-    <button class="cat-btn" onclick="loadProducts('Abonnement', this)">📺 Abonnements</button>
+  <button class="cat-btn active" onclick="loadProducts('all',this)">⚡ Tous</button>
+  <button class="cat-btn" onclick="loadProducts('IMEI',this)">📱 IMEI</button>
+  <button class="cat-btn" onclick="loadProducts('Boost','Boost2'this)">🚀 Boost</button>
+  <button class="cat-btn" onclick="loadProducts('Carte',this)">💳 Cartes</button>
+  <button class="cat-btn" onclick="loadProducts('Abonnement',this)">📺 Abonnements</button>
 </div>
 
 <div class="container">
-    <div id="product-grid" class="grid">
-        <div class="loading">Initialisation des services...</div>
-    </div>
+  <div id="product-grid" class="grid">
+    <div class="loading">Chargement des services...</div>
+  </div>
 </div>
 
 <footer>
-    <a href="#" class="footer-logo">ViralFlowr</a>
-    <div class="social-links">
-        <a href="https://wa.me/+243850373991">WhatsApp Support</a>
-        <a href="https://t.me/Viralflow">Telegram</a>
-        <a href="https://youtube.com/geekflow">YouTube Channel</a>
-    </div>
-    <p style="color: var(--gray); font-size: 12px; margin-top: 30px;">&copy; 2026 ViralFlowr. Paiements Sécurisés.</p>
+  <strong>ViralFlowr</strong><br><br>
+  <a href="https://wa.me/243850373991">WhatsApp</a> •
+  <a href="https://t.me/Viralflow">Telegram</a> •
+  <a href="#">Support</a>
+  <p style="font-size:12px;color:var(--gray);margin-top:20px;">© 2026 ViralFlowr</p>
 </footer>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
 
-    // Configuration des icônes par catégorie
-    const CATEGORY_ICONS = {
-        'IMEI': 'https://cdn-icons-png.flaticon.com/512/2544/2544574.png',
-        'Abonnement': 'https://cdn-icons-png.flaticon.com/512/3165/3165247.png',
-        'Boost': 'https://cdn-icons-png.flaticon.com/512/1441/1441180.png',
-        'Boost2': 'https://cdn-icons-png.flaticon.com/512/1441/1441180.png',
-        'Carte': 'https://cdn-icons-png.flaticon.com/512/633/633611.png',
-        'default': 'https://cdn-icons-png.flaticon.com/512/11520/11520110.png'
-    };
+const CATEGORY_ICONS = {
+  IMEI:"https://cdn-icons-png.flaticon.com/512/2544/2544574.png",
+  Boost:"https://cdn-icons-png.flaticon.com/512/1441/1441180.png",
+  Carte:"https://cdn-icons-png.flaticon.com/512/633/633611.png",
+  Abonnement:"https://cdn-icons-png.flaticon.com/512/3165/3165247.png",
+  default:"https://cdn-icons-png.flaticon.com/512/11520/11520110.png"
+};
 
-    function loadProducts(category, btn) {
-        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+function loadProducts(cat,btn){
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
 
-        const grid = document.getElementById('product-grid');
-        grid.innerHTML = '<div class="loading">Mise à jour de la vitrine...</div>';
+  document.getElementById('product-grid').innerHTML =
+    '<div class="loading">Chargement...</div>';
 
-        const catParam = category === 'all' ? '' : '&cat=' + encodeURIComponent(category);
-        const script = document.createElement('script');
-        script.src = SCRIPT_URL + "?action=get_products" + catParam + "&callback=displayProducts";
-        document.body.appendChild(script);
-        document.body.removeChild(script);
-    }
+  const s=document.createElement('script');
+  s.src=SCRIPT_URL+"?action=get_products"+(cat!=="all"?"&cat="+encodeURIComponent(cat):"")+"&callback=displayProducts";
+  document.body.appendChild(s);
+  document.body.removeChild(s);
+}
 
-    function displayProducts(products) {
-        const grid = document.getElementById('product-grid');
-        grid.innerHTML = '';
+function displayProducts(products){
+  const grid=document.getElementById('product-grid');
+  grid.innerHTML="";
 
-        if (!products || products.length === 0) {
-            grid.innerHTML = '<div class="loading">Aucun service disponible pour le moment.</div>';
-            return;
-        }
+  if(!products || !products.length){
+    grid.innerHTML='<div class="loading">Aucun service disponible</div>';
+    return;
+  }
 
-        products.forEach(p => {
-            const iconUrl = CATEGORY_ICONS[p.cat] || CATEGORY_ICONS['default'];
-            
-            grid.innerHTML += `
-                <div class="product-card">
-                    <div class="card-icon">
-                        <img src="${iconUrl}" alt="Service Icon">
-                    </div>
-                    <div class="card-body">
-                        <span class="category-badge">${p.cat || 'Service'}</span>
-                        <h3 class="product-title">${p.nom}</h3>
-                        <div class="product-price">${parseFloat(p.prix).toFixed(2)}</div>
-                        <a href="paiement.html?nom=${encodeURIComponent(p.nom)}&prix=${p.prix}&cat=${p.cat}&id=${p.id}" class="btn-buy">Commander</a>
-                    </div>
-                </div>
-            `;
-        });
-    }
+  products.forEach(p=>{
+    const fallback=CATEGORY_ICONS[p.cat]||CATEGORY_ICONS.default;
+    const img=p.img && p.img!=="" ? p.img : fallback;
 
-    window.onload = () => loadProducts('all', document.querySelector('.cat-btn'));
+    grid.innerHTML+=`
+    <div class="product-card">
+      <div class="card-image">
+        <img src="${img}" onerror="this.src='${fallback}'" loading="lazy">
+      </div>
+      <div class="card-body">
+        <span class="category-badge">${p.cat}</span>
+        <h3 class="product-title">${p.nom}</h3>
+        ${p.min?`<div class="limits">Min ${p.min} • Max ${p.max}</div>`:""}
+        <div class="product-price">${parseFloat(p.prix).toFixed(2)}</div>
+        <a class="btn-buy" href="paiement.html?id=${p.id}&cat=${p.cat}">
+          Commander
+        </a>
+      </div>
+    </div>`;
+  });
+}
+
+window.onload=()=>loadProducts('all',document.querySelector('.cat-btn'));
 </script>
 
 </body>
