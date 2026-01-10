@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViralFlowr | Boutique Automatisée</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #0d6efd; --success: #28a745; --dark: #1a1d23; --bg: #f4f7fa; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; color: #333; padding-bottom: 50px; }
+        header { background: white; padding: 20px 0; box-shadow: 0 2px 15px rgba(0,0,0,0.05); text-align: center; }
+        .logo { font-size: 26px; font-weight: 800; color: var(--primary); text-decoration: none; text-transform: uppercase; }
+        
+        .categories-nav { background: white; border-top: 1px solid #eee; padding: 15px 0; text-align: center; position: sticky; top: 0; z-index: 100; }
+        .cat-btn { background: none; border: 1px solid #ddd; padding: 8px 20px; margin: 5px; border-radius: 20px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .cat-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; min-height: 400px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+        
+        .product-card { background: white; border-radius: 12px; border: 1px solid #eee; transition: 0.3s; display: flex; flex-direction: column; overflow: hidden; padding: 20px; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .product-title { font-size: 16px; font-weight: 700; margin-bottom: 10px; height: 45px; overflow: hidden; }
+        .product-price { font-size: 22px; font-weight: 800; color: var(--success); margin-bottom: 15px; }
+        .btn-buy { display: block; background: var(--primary); color: white; text-align: center; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: 600; }
+
+        footer { background: var(--dark); color: white; padding: 40px 20px; text-align: center; margin-top: 50px; }
+        .social-links a { color: white; margin: 0 15px; text-decoration: none; font-weight: bold; }
+        .loading { text-align: center; font-size: 18px; color: #666; padding: 50px; }
+    </style>
+</head>
+<body>
+
+<header><a href="#" class="logo">ViralFlowr</a></header>
+
+<div class="categories-nav">
+    <button class="cat-btn active" onclick="loadProducts('all', this)">Tous</button>
+    <button class="cat-btn" onclick="loadProducts('IMEI', this)">IMEI & Déblocage</button>
+    <button class="cat-btn" onclick="loadProducts('SMM1', this)">Boost SMM</button>
+</div>
+
+<div class="container">
+    <div id="product-grid" class="grid">
+        <div class="loading">Chargement des services en cours...</div>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2026 ViralFlowr - Tous droits réservés</p>
+    <div class="social-links">
+        <a href="https://wa.me/+243850373991">WhatsApp</a>
+        <a href="https://t.me/Viralflow">Telegram</a>
+        <a href="https://youtube.com/geekflow">Youtube</a>
+    
+    </div>
+</footer>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
+
+    function loadProducts(category, btn) {
+        // Style boutons
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const grid = document.getElementById('product-grid');
+        grid.innerHTML = '<div class="loading">Recherche des services...</div>';
+
+        // Appel JSONP au Google Sheet
+        const catParam = category === 'all' ? '' : '&cat=' + category;
+        const script = document.createElement('script');
+        script.src = SCRIPT_URL + "?action=get_products" + catParam + "&callback=displayProducts";
+        document.body.appendChild(script);
+        document.body.removeChild(script);
+    }
+
+    function displayProducts(products) {
+        const grid = document.getElementById('product-grid');
+        grid.innerHTML = '';
+
+        if (products.length === 0) {
+            grid.innerHTML = '<div class="loading">Aucun produit disponible dans cette catégorie.</div>';
+            return;
+        }
+
+        products.forEach(p => {
+            grid.innerHTML += `
+                <div class="product-card">
+                    <div class="product-title">${p.nom}</div>
+                    <div class="product-price">${p.prix} $</div>
+                    <a href="paiement.html?nom=${encodeURIComponent(p.nom)}&prix=${p.prix}&cat=${p.cat_tech}&id=${p.id}" class="btn-buy">Commander</a>
+                </div>
+            `;
+        });
+    }
+
+    // Charger tous les produits au démarrage
+    window.onload = () => loadProducts('all', document.querySelector('.cat-btn'));
+</script>
+
+</body>
+</html>
