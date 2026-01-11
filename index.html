@@ -103,9 +103,7 @@ header{
 }
 
 /* Hero */
-.hero{
-  padding:24px 0 18px;
-}
+.hero{ padding:24px 0 18px; }
 .hero-card{
   background: linear-gradient(135deg, rgba(37,99,235,.10), rgba(96,165,250,.10));
   border:1px solid var(--line);
@@ -135,11 +133,7 @@ header{
   line-height:1.15;
   letter-spacing:-.03em;
 }
-.hero p{
-  margin:0 0 14px;
-  color:var(--muted);
-  font-weight:600;
-}
+.hero p{ margin:0 0 14px; color:var(--muted); font-weight:600; }
 .hero-bullets{
   display:flex;
   flex-wrap:wrap;
@@ -157,11 +151,7 @@ header{
   font-weight:800;
   color:#0b1220;
 }
-.hero-cta{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
+.hero-cta{ display:flex; gap:10px; flex-wrap:wrap; }
 .btn{
   border:none;
   cursor:pointer;
@@ -185,6 +175,8 @@ header{
   color:var(--text);
   border:1px solid var(--line);
 }
+
+/* Search + stats */
 .hero-right{
   background: rgba(255,255,255,.70);
   border:1px solid var(--line);
@@ -201,17 +193,11 @@ header{
   padding:12px;
 }
 .search input{
-  border:none;
-  outline:none;
-  width:100%;
-  font-size:14px;
-  font-weight:700;
-  color:var(--text);
+  border:none; outline:none; width:100%;
+  font-size:14px; font-weight:700; color:var(--text);
 }
 .search .kbd{
-  font-size:12px;
-  font-weight:800;
-  color:var(--muted);
+  font-size:12px; font-weight:800; color:var(--muted);
   border:1px solid var(--line);
   border-bottom-width:2px;
   border-radius:10px;
@@ -344,7 +330,7 @@ header{
   margin:0;
 }
 
-/* ✅ Description under title (2 lines max) */
+/* Desc preview */
 .product-desc{
   margin:6px 0 0;
   color:var(--muted);
@@ -359,9 +345,7 @@ header{
 }
 
 /* CTA */
-.card-actions{
-  padding:0 14px 14px;
-}
+.card-actions{ padding:0 14px 14px; }
 .btn-buy{
   width:100%;
   display:flex;
@@ -412,10 +396,17 @@ footer strong{color:var(--text)}
   justify-content:center;
   flex-wrap:wrap;
 }
-.footer-links a{color:var(--text);text-decoration:none;font-weight:800;border:1px solid var(--line);padding:9px 12px;border-radius:999px;background:#fff}
+.footer-links a{
+  color:var(--text);
+  text-decoration:none;
+  font-weight:800;
+  border:1px solid var(--line);
+  padding:9px 12px;
+  border-radius:999px;
+  background:#fff
+}
 .footer-links a:hover{transform:translateY(-1px);box-shadow:var(--shadow2)}
 
-/* Mobile */
 @media(max-width:900px){
   .hero-grid{grid-template-columns:1fr}
   .hero h1{font-size:24px}
@@ -500,7 +491,6 @@ footer strong{color:var(--text)}
 
   <section id="catalogue">
     <div id="product-grid" class="grid" aria-live="polite">
-      <!-- skeleton -->
       <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
       <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
     </div>
@@ -532,7 +522,7 @@ let PRODUCTS = [];
 let CURRENT_FILTER = "all";
 let QUERY = "";
 
-/* ✅ Helper: prevent HTML injection */
+/* prevent HTML injection */
 function escapeHTML(str=""){
   return String(str)
     .replaceAll("&","&amp;")
@@ -599,6 +589,7 @@ function render(){
   grid.innerHTML = filtered.map(p => {
     const fallback = CATEGORY_ICONS[p.cat] || CATEGORY_ICONS.default;
     const img = (p.img && String(p.img).trim() !== "") ? p.img : fallback;
+
     const price = Number.parseFloat(p.prix);
     const priceText = Number.isFinite(price) ? price.toFixed(2) : (p.prix || "0.00");
 
@@ -606,14 +597,18 @@ function render(){
       ? `<p class="limits">Min ${escapeHTML(p.min)} • Max ${escapeHTML(p.max)}</p>`
       : `<p class="limits">Disponible immédiatement</p>`;
 
-    // ✅ Auto description: long_desc > description
+    // Preview text (if your API returns it; otherwise empty)
     const desc = (p.long_desc && String(p.long_desc).trim() !== "")
       ? String(p.long_desc).trim()
       : (p.description && String(p.description).trim() !== "")
         ? String(p.description).trim()
         : "";
-
     const descHTML = desc ? `<div class="product-desc">${escapeHTML(desc)}</div>` : "";
+
+    // ✅ IMPORTANT: Commander uses pay_link from Sheet (colonne F = LienCommande)
+    const payLink = (p.pay_link && String(p.pay_link).trim() !== "")
+      ? String(p.pay_link).trim()
+      : "https://ndyno1.github.io/check_binance.py/";
 
     return `
       <article class="product-card">
@@ -621,6 +616,7 @@ function render(){
           <span class="badge">${escapeHTML(p.cat || "Service")}</span>
           <div class="price-pill"><span>$</span>${escapeHTML(priceText)}</div>
         </div>
+
         <div class="card-mid">
           <div class="card-image">
             <img src="${img}" alt="" onerror="this.src='${fallback}'">
@@ -631,10 +627,9 @@ function render(){
             ${limits}
           </div>
         </div>
+
         <div class="card-actions">
-          <a class="btn-buy" href="paiement.html?id=${encodeURIComponent(p.id)}&cat=${encodeURIComponent(p.cat || '')}">
-            Commander →
-          </a>
+          <a class="btn-buy" href="${payLink}">Commander →</a>
         </div>
       </article>
     `;
