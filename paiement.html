@@ -138,13 +138,17 @@
   document.getElementById('live-order-id').innerText = orderId;
 
   // Params URL
-  const params = new URLSearchParams(window.location.search);
-  const nom        = params.get('nom')  || "Service";
-  const prixInitial= parseFloat(params.get('prix')) || 0;
-  const cat        = params.get('cat')  || "";
-  const idS        = params.get('id')   || "";
-  const desc       = params.get('desc') || "";
-  const longDesc   = params.get('long') || params.get('long_desc') || "";
+  const params      = new URLSearchParams(window.location.search);
+  const nom         = params.get('nom')  || "Service";
+  const prixInitial = parseFloat(params.get('prix')) || 0;
+  const cat         = params.get('cat')  || "";
+  const idS         = params.get('id')   || "";
+  const desc        = params.get('desc') || "";
+  const longDesc    = params.get('long') || params.get('long_desc') || "";
+
+  // Min/Max passés depuis Produits (H/I)
+  const minParam = parseFloat(params.get('min'));
+  const maxParam = parseFloat(params.get('max'));
 
   document.getElementById('service-name').innerText = nom;
 
@@ -169,35 +173,87 @@
   // ----- UNIQUEMENT SMM panel → quantité -----
   const catUpper = String(cat || "").toUpperCase();
 
-  // ✅ Inclut SMM, SMM2, SMM3, (et typos SSM2/SSM3), BOOST, PEAK/PEAKERR
+  // ✅ Inclut SMM, SMM1/2/3, (et typos SSM2/SSM3), BOOST, PEAK/PEAKERR
   const isSMM  = /\b(SMM|SMM1|SMM2|SMM3|SSM2|SSM3|BOOST|PEAK|PEAKERR)\b/i.test(catUpper);
   const isIMEI = /\bIMEI\b/i.test(catUpper);
 
-  const qtyBox  = document.getElementById('qty-box');
-  const priceEl = document.getElementById('display-price');
+  const qtyBox   = document.getElementById('qty-box');
+  const qtyInp   = document.getElementById('qty');
+  const priceEl  = document.getElementById('display-price');
+  const inputLbl = document.getElementById('input-label');
 
   if (isSMM) {
+    // Affiche la quantité
     qtyBox.classList.remove('hidden');
+
+    // Applique min/max si fournis
+    const hasMin = Number.isFinite(minParam);
+    const hasMax = Number.isFinite(maxParam);
+
+    if (hasMin) qtyInp.min = String(minParam);
+    if (hasMax) qtyInp.max = String(maxParam);
+
+    // Indication plage autorisée
+    if (!document.getElementById('qty-hint') && (hasMin || hasMax)) {
+      const hint = document.createElement('div');
+      hint.id = 'qty-hint';
+      hint.style.fontSize = '12px';
+      hint.style.color = '#666';
+      hint.style.marginTop = '6px';
+      hint.textContent = `Plage autorisée: ${hasMin ? minParam : 0} – ${hasMax ? maxParam : '∞'}`;
+      qtyBox.appendChild(hint);
+    }
+
     function setPriceFromQty(){
-      const q = parseFloat(document.getElementById('qty').value || "0");
-      priceEl.innerText = ((prixInitial/1000)*q).toFixed(2) + " $";
+      let q = parseFloat(qtyInp.value || "0");
+
+      // Clamp local si bornes définies
+      if (hasMin && q < minParam) q = minParam;
+      if (hasMax && q > maxParam) q = maxParam;
+
+      // Reflète le clamp dans l’input
+      if (String(qtyInp.value) !== String(q)) qtyInp.value = q;
+
+      // Prix dynamique (rate/1000 * qty)
+      priceEl.innerText = ((prixInitial/1000) * q).toFixed(2) + " $";
     }
     window.updatePrice = setPriceFromQty;
+
+    // Écouteurs & init
+    qtyInp.addEventListener('input', setPriceFromQty);
     setPriceFromQty();
+
   } else {
+    // Pas SMM → pas de quantité
     qtyBox.classList.add('hidden');
     priceEl.innerText = prixInitial.toFixed(2) + " $";
     window.updatePrice = function(){};
   }
 
   if (isIMEI) {
-    document.getElementById('input-label').innerText = "Numéro IMEI (15 chiffres)";
+    inputLbl.innerText = "Numéro IMEI (15 chiffres)";
   }
 
   // Copier l'ID
   function copyID(){ navigator.clipboard.writeText(orderId); alert("ID Copié : " + orderId); }
   function resetAndReload(){ sessionStorage.removeItem('active_order_id'); window.location.reload(); }
   window.copyID = copyID;
+
+  // Vérification finale (bloque l’envoi si hors min/max pour SMM)
+  document.getElementById('orderForm').addEventListener('submit', function(ev){
+    if (!isSMM) return; // contrôle uniquement pour SMM
+
+    const q = parseFloat(qtyInp.value || "0");
+    const hasMin = Number.isFinite(minParam);
+    const hasMax = Number.isFinite(maxParam);
+
+    if ((hasMin && q < minParam) || (hasMax && q > maxParam)) {
+      ev.preventDefault();
+      alert(`Quantité invalide. Min=${hasMin ? minParam : 0}${hasMax ? ` / Max=${maxParam}` : ""}. Modifie la quantité avant de confirmer.`);
+      qtyInp.focus();
+      return false;
+    }
+  });
 
   // Envoi commande
   document.getElementById('orderForm').onsubmit = async (e)=>{
@@ -216,7 +272,7 @@
     }
 
     // n’envoyer quantite QUE si SMM
-    const qtyVal = isSMM ? (document.getElementById('qty').value || "") : "";
+    const qtyVal = isSMM ? (qtyInp.value || "") : "";
 
     const payload = {
       orderId  : orderId,
