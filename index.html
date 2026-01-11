@@ -344,6 +344,20 @@ header{
   margin:0;
 }
 
+/* ✅ NEW: Description under title (2 lines max) */
+.product-desc{
+  margin:6px 0 0;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.35;
+  font-weight:700;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+  opacity:.95;
+}
+
 /* CTA */
 .card-actions{
   padding:0 14px 14px;
@@ -518,6 +532,16 @@ let PRODUCTS = [];
 let CURRENT_FILTER = "all";
 let QUERY = "";
 
+/* ✅ Helper: prevent HTML injection */
+function escapeHTML(str=""){
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
 /* JSONP one-time */
 function fetchProductsOnce(){
   const s = document.createElement('script');
@@ -574,24 +598,36 @@ function render(){
 
   grid.innerHTML = filtered.map(p => {
     const fallback = CATEGORY_ICONS[p.cat] || CATEGORY_ICONS.default;
-    const img = (p.img && p.img.trim() !== "") ? p.img : fallback;
+    const img = (p.img && String(p.img).trim() !== "") ? p.img : fallback;
     const price = Number.parseFloat(p.prix);
     const priceText = Number.isFinite(price) ? price.toFixed(2) : (p.prix || "0.00");
 
-    const limits = (p.min && p.max) ? `<p class="limits">Min ${p.min} • Max ${p.max}</p>` : `<p class="limits">Disponible immédiatement</p>`;
+    const limits = (p.min && p.max)
+      ? `<p class="limits">Min ${escapeHTML(p.min)} • Max ${escapeHTML(p.max)}</p>`
+      : `<p class="limits">Disponible immédiatement</p>`;
+
+    // ✅ Auto description: long_desc > description
+    const desc = (p.long_desc && String(p.long_desc).trim() !== "")
+      ? String(p.long_desc).trim()
+      : (p.description && String(p.description).trim() !== "")
+        ? String(p.description).trim()
+        : "";
+
+    const descHTML = desc ? `<div class="product-desc">${escapeHTML(desc)}</div>` : "";
 
     return `
       <article class="product-card">
         <div class="card-top">
-          <span class="badge">${p.cat || "Service"}</span>
-          <div class="price-pill"><span>$</span>${priceText}</div>
+          <span class="badge">${escapeHTML(p.cat || "Service")}</span>
+          <div class="price-pill"><span>$</span>${escapeHTML(priceText)}</div>
         </div>
         <div class="card-mid">
           <div class="card-image">
             <img src="${img}" alt="" onerror="this.src='${fallback}'">
           </div>
           <div class="card-body">
-            <h3 class="product-title">${p.nom || "Produit"}</h3>
+            <h3 class="product-title">${escapeHTML(p.nom || "Produit")}</h3>
+            ${descHTML}
             ${limits}
           </div>
         </div>
