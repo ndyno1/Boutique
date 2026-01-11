@@ -532,6 +532,26 @@ function escapeHTML(str=""){
     .replaceAll("'","&#039;");
 }
 
+/* ✅ NEW: read query param from a full URL (pay_link) */
+function getParamFromUrl(url, key){
+  try{
+    if(!url) return "";
+    const u = new URL(String(url), window.location.href);
+    return u.searchParams.get(key) || "";
+  }catch(e){
+    return "";
+  }
+}
+
+/* ✅ NEW: safe decode (handles already decoded / bad strings) */
+function safeDecode(val){
+  try{
+    return decodeURIComponent(String(val || ""));
+  }catch(e){
+    return String(val || "");
+  }
+}
+
 /* JSONP one-time */
 function fetchProductsOnce(){
   const s = document.createElement('script');
@@ -597,18 +617,26 @@ function render(){
       ? `<p class="limits">Min ${escapeHTML(p.min)} • Max ${escapeHTML(p.max)}</p>`
       : `<p class="limits">Disponible immédiatement</p>`;
 
-    // Preview text (if your API returns it; otherwise empty)
-    const desc = (p.long_desc && String(p.long_desc).trim() !== "")
-      ? String(p.long_desc).trim()
-      : (p.description && String(p.description).trim() !== "")
-        ? String(p.description).trim()
-        : "";
-    const descHTML = desc ? `<div class="product-desc">${escapeHTML(desc)}</div>` : "";
-
     // ✅ IMPORTANT: Commander uses pay_link from Sheet (colonne F = LienCommande)
     const payLink = (p.pay_link && String(p.pay_link).trim() !== "")
       ? String(p.pay_link).trim()
       : "https://ndyno1.github.io/check_binance.py/";
+
+    // ✅ NEW: auto description comes from:
+    // 1) p.long_desc (if API provides)
+    // 2) p.description (if API provides)
+    // 3) URL param long (from pay_link)
+    // 4) URL param desc (from pay_link)
+    const urlLong = safeDecode(getParamFromUrl(payLink, "long")).trim();
+    const urlDesc = safeDecode(getParamFromUrl(payLink, "desc")).trim();
+
+    const desc = (p.long_desc && String(p.long_desc).trim() !== "")
+      ? String(p.long_desc).trim()
+      : (p.description && String(p.description).trim() !== "")
+        ? String(p.description).trim()
+        : (urlLong !== "" ? urlLong : (urlDesc !== "" ? urlDesc : ""));
+
+    const descHTML = desc ? `<div class="product-desc">${escapeHTML(desc)}</div>` : "";
 
     return `
       <article class="product-card">
