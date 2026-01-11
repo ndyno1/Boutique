@@ -10,20 +10,25 @@
         body { font-family: 'Poppins', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 15px; margin: 0; }
         .card { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); position: relative; }
         h2 { text-align: center; color: #333; margin-top: 0; font-size: 20px; }
-        
+
         .id-badge { background: #e7f1ff; border: 2px dashed var(--blue); padding: 12px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
         .id-label { display: block; font-size: 11px; color: var(--blue); font-weight: bold; text-transform: uppercase; }
         .id-value { font-size: 24px; font-weight: bold; color: #0d47a1; display: block; margin: 5px 0; }
         .copy-btn { background: var(--blue); color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 10px; cursor: pointer; font-weight: bold; }
 
         .price { font-size: 28px; color: var(--primary); font-weight: bold; text-align: center; margin: 15px 0; }
-        .desc-box { background: #f8f9fa; border-left: 4px solid #ddd; border-radius: 8px; margin-bottom: 15px; }
+
+        /* ✅ blocs description/instructions (pro) */
+        .desc-box { background: #f8f9fa; border-left: 4px solid #ddd; border-radius: 8px; margin-bottom: 12px; overflow:hidden; }
+        .desc-box.blue { border-left-color: var(--blue); }
+        .desc-box.green { border-left-color: var(--primary); }
+
         summary { padding: 10px; cursor: pointer; font-weight: bold; font-size: 13px; outline: none; }
-        .desc-content { padding: 0 10px 10px; font-size: 12px; color: #666; white-space: pre-wrap; }
-        
+        .desc-content { padding: 0 10px 10px; font-size: 12px; color: #666; white-space: pre-wrap; line-height:1.55; }
+
         label { display: block; margin-top: 15px; font-weight: 600; font-size: 14px; color: #555; }
         input { width: 100%; padding: 12px; margin-top: 8px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 15px; }
-        
+
         .pay-info { background: #fff3cd; border: 1px solid #ffecb5; padding: 15px; border-radius: 10px; font-size: 12px; margin-top: 20px; line-height: 1.6; color: #664d03; }
         .btn { background: var(--primary); color: white; border: none; padding: 16px; width: 100%; border-radius: 10px; font-weight: bold; font-size: 16px; margin-top: 20px; cursor: pointer; transition: 0.3s; }
         .btn:disabled { background: #ccc; cursor: not-allowed; }
@@ -51,8 +56,15 @@
             <button type="button" class="copy-btn" onclick="copyID()">COPIER L'ID</button>
         </div>
 
-        <details class="desc-box" id="desc-ui">
-            <summary>📄 Instructions & Description</summary>
+        <!-- ✅ NOUVEAU : Description produit (long_desc) -->
+        <details class="desc-box blue hidden" id="long-ui" open>
+            <summary>📝 Description du produit</summary>
+            <div class="desc-content" id="service-long"></div>
+        </details>
+
+        <!-- ✅ NOUVEAU : Instructions (desc) -->
+        <details class="desc-box green hidden" id="desc-ui">
+            <summary>📄 Instructions</summary>
             <div class="desc-content" id="service-desc"></div>
         </details>
 
@@ -106,7 +118,17 @@
 
 <script>
     // URL DE TON GOOGLE SCRIPT
-    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec"; 
+    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
+
+    // ✅ helper anti injection HTML (chat + blocs)
+    function escapeHTML(str=""){
+        return String(str)
+            .replaceAll("&","&amp;")
+            .replaceAll("<","&lt;")
+            .replaceAll(">","&gt;")
+            .replaceAll('"',"&quot;")
+            .replaceAll("'","&#039;");
+    }
 
     // 1. GESTION ID PERSISTANT
     let orderId = sessionStorage.getItem('active_order_id');
@@ -122,13 +144,41 @@
     const prixInitial = parseFloat(params.get('prix')) || 0;
     const cat = params.get('cat') || "";
     const idS = params.get('id') || "";
+
+    // ✅ ancien champ (instructions)
     const desc = params.get('desc') || "";
 
+    // ✅ nouveau champ (description longue) -> ?long=
+    const longDesc = params.get('long') || params.get('long_desc') || "";
+
     document.getElementById('service-name').innerText = nom;
-    document.getElementById('service-desc').innerText = desc;
     document.getElementById('display-price').innerText = prixInitial.toFixed(2) + " $";
 
-    if(!desc) document.getElementById('desc-ui').classList.add('hidden');
+    // ✅ LOGIQUE AUTO (sans casser le système):
+    // - si longDesc existe => bloc "Description du produit"
+    // - si desc existe => bloc "Instructions"
+    // - si longDesc vide mais desc existe => on met desc en Description (et on cache Instructions)
+    const longBox = document.getElementById('long-ui');
+    const instBox = document.getElementById('desc-ui');
+
+    const longEl = document.getElementById('service-long');
+    const instEl = document.getElementById('service-desc');
+
+    if (longDesc && String(longDesc).trim() !== "") {
+        longEl.textContent = String(longDesc);
+        longBox.classList.remove('hidden');
+
+        if (desc && String(desc).trim() !== "") {
+            instEl.textContent = String(desc);
+            instBox.classList.remove('hidden');
+        }
+    } else if (desc && String(desc).trim() !== "") {
+        // fallback: desc devient la "Description du produit"
+        longEl.textContent = String(desc);
+        longBox.classList.remove('hidden');
+        // instructions cachées
+    }
+
     if(cat.includes('Boost')) document.getElementById('qty-box').classList.remove('hidden');
     if(cat.includes('IMEI')) document.getElementById('input-label').innerText = "Numéro IMEI (15 chiffres)";
 
@@ -189,8 +239,9 @@
 
     function addChat(text, isUser) {
         const hist = document.getElementById('chat-history');
+        const safe = escapeHTML(text);
         const side = isUser ? 'align-self: flex-end; background: #d1e7ff;' : 'align-self: flex-start; background: #eee;';
-        hist.innerHTML += `<div style="${side} padding:8px 12px; border-radius:12px; margin-bottom:8px; max-width:80%; word-wrap:break-word;">${text}</div>`;
+        hist.innerHTML += `<div style="${side} padding:8px 12px; border-radius:12px; margin-bottom:8px; max-width:80%; word-wrap:break-word;">${safe}</div>`;
         hist.scrollTop = hist.scrollHeight;
     }
 
