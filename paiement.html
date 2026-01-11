@@ -166,10 +166,12 @@
     longBox.classList.remove('hidden');
   }
 
-  // UNIQUEMENT SMM panel → quantité
+  // ----- UNIQUEMENT SMM panel → quantité -----
   const catUpper = String(cat || "").toUpperCase();
-  const isSMM  = /(SMM|BOOST)\b/i.test(catUpper);
-  const isIMEI = /IMEI/i.test(catUpper);
+
+  // ✅ Inclut SMM, SMM2, SMM3, (et typos SSM2/SSM3), BOOST, PEAK/PEAKERR
+  const isSMM  = /\b(SMM|SMM1|SMM2|SMM3|SSM2|SSM3|BOOST|PEAK|PEAKERR)\b/i.test(catUpper);
+  const isIMEI = /\bIMEI\b/i.test(catUpper);
 
   const qtyBox  = document.getElementById('qty-box');
   const priceEl = document.getElementById('display-price');
