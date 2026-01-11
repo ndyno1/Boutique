@@ -72,6 +72,10 @@
             <label id="input-label">Information requise</label>
             <input type="text" id="main-input" required placeholder="Lien ou Email">
 
+            <!-- ✅ AJOUT : EMAIL OBLIGATOIRE (pour envoyer le code/résultat) -->
+            <label>Email du client (obligatoire)</label>
+            <input type="email" id="email" required placeholder="ex: client@gmail.com">
+
             <div id="qty-box" class="hidden">
                 <label>Quantité</label>
                 <input type="number" id="qty" value="1000" min="10" oninput="updatePrice()">
@@ -154,10 +158,7 @@
     document.getElementById('service-name').innerText = nom;
     document.getElementById('display-price').innerText = prixInitial.toFixed(2) + " $";
 
-    // ✅ LOGIQUE AUTO (sans casser le système):
-    // - si longDesc existe => bloc "Description du produit"
-    // - si desc existe => bloc "Instructions"
-    // - si longDesc vide mais desc existe => on met desc en Description (et on cache Instructions)
+    // ✅ LOGIQUE AUTO:
     const longBox = document.getElementById('long-ui');
     const instBox = document.getElementById('desc-ui');
 
@@ -173,10 +174,8 @@
             instBox.classList.remove('hidden');
         }
     } else if (desc && String(desc).trim() !== "") {
-        // fallback: desc devient la "Description du produit"
         longEl.textContent = String(desc);
         longBox.classList.remove('hidden');
-        // instructions cachées
     }
 
     if(cat.includes('Boost')) document.getElementById('qty-box').classList.remove('hidden');
@@ -218,6 +217,10 @@
         const payload = {
             orderId: orderId, produit: nom, idService: idS, categorie: cat,
             input1: document.getElementById('main-input').value,
+
+            // ✅ AJOUT : email envoyé au Google Script
+            email: document.getElementById('email').value,
+
             quantite: document.getElementById('qty').value,
             total: document.getElementById('display-price').innerText,
             fileData: fileData, fileType: file.type
@@ -261,7 +264,6 @@
         inp.value = '';
     }
 
-    // Récupération automatique des réponses du Sheet
     function checkServerReply() {
         const checkUrl = GOOGLE_URL + "?action=check&orderId=" + encodeURIComponent(orderId);
         const script = document.createElement('script');
@@ -277,11 +279,10 @@
         }
     }
 
-    // Lancement au démarrage
     window.addEventListener('DOMContentLoaded', () => {
         const h = JSON.parse(localStorage.getItem('h_' + orderId) || '[]');
         h.forEach(m => addChat(m.t, m.y));
-        setInterval(checkServerReply, 5000); // Vérifie toutes les 5 secondes
+        setInterval(checkServerReply, 5000);
     });
 </script>
 
