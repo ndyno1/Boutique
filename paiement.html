@@ -10,271 +10,285 @@
     body { font-family:'Poppins',sans-serif; background:var(--bg); display:flex; flex-direction:column; align-items:center; padding:15px; margin:0; }
     .card { background:#fff; padding:25px; border-radius:20px; width:100%; max-width:450px; box-shadow:0 10px 30px rgba(0,0,0,.08); position:relative; }
     h2 { text-align:center; color:#333; margin-top:0; font-size:20px; }
+
     .id-badge { background:#e7f1ff; border:2px dashed var(--blue); padding:12px; border-radius:12px; text-align:center; margin-bottom:20px; }
-    .id-label { display:block; font-size:11px; color:var(--blue); font-weight:bold; text-transform:uppercase; }
-    .id-value { font-size:24px; font-weight:bold; color:#0d47a1; display:block; margin:5px 0; }
-    .copy-btn { background:var(--blue); color:#fff; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer; font-weight:bold; }
-    .price { font-size:28px; color:var(--primary); font-weight:bold; text-align:center; margin:15px 0; }
+    .id-label { display:block; font-size:11px; color:var(--blue); font-weight:700; text-transform:uppercase; }
+    .id-value { font-size:24px; font-weight:700; color:#0d47a1; display:block; margin:5px 0; }
+    .copy-btn { background:var(--blue); color:#fff; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer; font-weight:700; }
+
+    .price { font-size:28px; color:var(--primary); font-weight:700; text-align:center; margin:15px 0; }
+
     .desc-box { background:#f8f9fa; border-left:4px solid #ddd; border-radius:8px; margin-bottom:12px; overflow:hidden; }
     .desc-box.blue { border-left-color:var(--blue); }
-    .desc-box.green { border-left-color:var(--primary); }
-    summary { padding:10px; cursor:pointer; font-weight:bold; font-size:13px; outline:none; }
+    .desc-box.green{ border-left-color:var(--primary); }
+    summary { padding:10px; cursor:pointer; font-weight:700; font-size:13px; outline:none; }
     .desc-content { padding:0 10px 10px; font-size:12px; color:#666; white-space:pre-wrap; line-height:1.55; }
+
     label { display:block; margin-top:15px; font-weight:600; font-size:14px; color:#555; }
     input { width:100%; padding:12px; margin-top:8px; border:1px solid #ddd; border-radius:10px; box-sizing:border-box; font-size:15px; }
+
     .pay-info { background:#fff3cd; border:1px solid #ffecb5; padding:15px; border-radius:10px; font-size:12px; margin-top:20px; line-height:1.6; color:#664d03; }
-    .btn { background:var(--primary); color:#fff; border:none; padding:16px; width:100%; border-radius:10px; font-weight:bold; font-size:16px; margin-top:20px; cursor:pointer; transition:.3s; }
+    .btn { background:var(--primary); color:#fff; border:none; padding:16px; width:100%; border-radius:10px; font-weight:700; font-size:16px; margin-top:20px; cursor:pointer; transition:.3s; }
     .btn:disabled { background:#ccc; cursor:not-allowed; }
     .hidden { display:none; }
     .success { text-align:center; color:var(--primary); padding:20px; }
+
     /* Chat */
     #chat-circle { position:fixed; bottom:20px; right:20px; background:var(--blue); color:#fff; width:55px; height:55px; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,.3); z-index:1000; }
     #chat-box { display:none; position:fixed; bottom:85px; right:20px; width:300px; background:#fff; border-radius:15px; box-shadow:0 10px 25px rgba(0,0,0,.2); z-index:1000; overflow:hidden; }
-    .chat-header { background:var(--blue); color:#fff; padding:12px; font-weight:bold; font-size:14px; display:flex; justify-content:space-between; align-items:center; }
+    .chat-header { background:var(--blue); color:#fff; padding:12px; font-weight:700; font-size:14px; display:flex; justify-content:space-between; align-items:center; }
     #chat-history { height:220px; overflow-y:auto; padding:10px; background:#f8f9fa; font-size:13px; display:flex; flex-direction:column; }
     .chat-input-area { border-top:1px solid #eee; padding:10px; display:flex; background:#fff; }
     .chat-input-area input { margin:0; padding:8px; border:none; outline:none; flex:1; font-size:13px; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div id="form-container">
-      <h2 id="service-name">Chargement...</h2>
 
-      <div class="id-badge">
-        <span class="id-label">Note à mettre sur Binance Pay</span>
-        <span id="live-order-id" class="id-value">#CMD-XXXX</span>
-        <button type="button" class="copy-btn" onclick="copyID()">COPIER L'ID</button>
+<div class="card">
+  <div id="form-container">
+    <h2 id="service-name">Chargement...</h2>
+
+    <div class="id-badge">
+      <span class="id-label">Note à mettre sur Binance Pay</span>
+      <span id="live-order-id" class="id-value">#CMD-XXXX</span>
+      <button type="button" class="copy-btn" onclick="copyID()">COPIER L'ID</button>
+    </div>
+
+    <!-- Description produit (long_desc) -->
+    <details class="desc-box blue hidden" id="long-ui" open>
+      <summary>📝 Description du produit</summary>
+      <div class="desc-content" id="service-long"></div>
+    </details>
+
+    <!-- Instructions (desc) -->
+    <details class="desc-box green hidden" id="desc-ui">
+      <summary>📄 Instructions</summary>
+      <div class="desc-content" id="service-desc"></div>
+    </details>
+
+    <form id="orderForm">
+      <label id="input-label">Information requise</label>
+      <input type="text" id="main-input" required placeholder="Lien ou Email">
+
+      <label>Email du client (obligatoire)</label>
+      <input type="email" id="email" required placeholder="ex: client@gmail.com">
+
+      <!-- Quantité → UNIQUEMENT SMM panel -->
+      <div id="qty-box" class="hidden">
+        <label>Quantité</label>
+        <input type="number" id="qty" value="1000" min="10" oninput="updatePrice()">
       </div>
 
-      <!-- Description produit -->
-      <details class="desc-box blue hidden" id="long-ui" open>
-        <summary>📝 Description du produit</summary>
-        <div class="desc-content" id="service-long"></div>
-      </details>
+      <div class="price" id="display-price">0.00 $</div>
 
-      <!-- Instructions -->
-      <details class="desc-box green hidden" id="desc-ui">
-        <summary>📄 Instructions</summary>
-        <div class="desc-content" id="service-desc"></div>
-      </details>
+      <div class="pay-info">
+        <strong>💳 MOYENS DE PAIEMENT :</strong><br>
+        🔸 Binance Pay ID : <strong>744370418</strong><br>
+        🔴 Airtel (RDC) : 0971028041 (MARCELINE)<br>
+        🔵 Wave (CI) : +2250546247885<br>
+        <strong>⚠️ NOTE :</strong> Écrivez l'ID ci-dessus dans la case "Note" de Binance.
+      </div>
 
-      <form id="orderForm">
-        <label id="input-label">Information requise</label>
-        <input type="text" id="main-input" required placeholder="Lien ou Email">
+      <label>📸 Preuve de paiement (Image)</label>
+      <input type="file" id="file" accept="image/*" required>
 
-        <label>Email du client (obligatoire)</label>
-        <input type="email" id="email" required placeholder="ex: client@gmail.com">
-
-        <!-- Quantité (SMM uniquement) -->
-        <div id="qty-box" class="hidden">
-          <label>Quantité</label>
-          <input type="number" id="qty" value="1000" min="10" oninput="updatePrice()">
-        </div>
-
-        <div class="price" id="display-price">0.00 $</div>
-
-        <div class="pay-info">
-          <strong>💳 MOYENS DE PAIEMENT :</strong><br>
-          🔸 Binance Pay ID : <strong>744370418</strong><br>
-          🔴 Airtel (RDC) : 0971028041 (MARCELINE)<br>
-          🔵 Wave (CI) : +2250546247885<br>
-          <strong>⚠️ NOTE :</strong> Écrivez l'ID ci-dessus dans la case "Note" de Binance.
-        </div>
-
-        <label>📸 Preuve de paiement (Image)</label>
-        <input type="file" id="file" accept="image/*" required>
-
-        <button type="submit" class="btn" id="submitBtn">CONFIRMER MA COMMANDE</button>
-      </form>
-    </div>
-
-    <div id="success-msg" class="hidden success">
-      <div style="font-size:50px;">✅</div>
-      <h3>Commande Reçue !</h3>
-      <p>Activation automatique en cours...</p>
-      <p>ID : <strong id="final-id"></strong></p>
-      <button class="btn" onclick="resetAndReload()" style="background:var(--blue)">Nouvelle commande</button>
-    </div>
+      <button type="submit" class="btn" id="submitBtn">CONFIRMER MA COMMANDE</button>
+    </form>
   </div>
 
-  <div id="chat-circle" onclick="toggleChat()">💬</div>
-  <div id="chat-box">
-    <div class="chat-header">
-      <span>Support ViralFlowr</span>
-      <span onclick="toggleChat()" style="cursor:pointer; font-size:20px; line-height:1;">&times;</span>
-    </div>
-    <div id="chat-history"></div>
-    <div class="chat-input-area">
-      <input type="text" id="chat-input" placeholder="Posez votre question...">
-      <button onclick="sendMsg()" style="border:none; background:none; color:var(--blue); font-weight:bold; cursor:pointer;">OK</button>
-    </div>
+  <div id="success-msg" class="hidden success">
+    <div style="font-size:50px;">✅</div>
+    <h3>Commande Reçue !</h3>
+    <p>Activation automatique en cours...</p>
+    <p>ID : <strong id="final-id"></strong></p>
+    <button class="btn" onclick="resetAndReload()" style="background:var(--blue)">Nouvelle commande</button>
   </div>
+</div>
 
-  <script>
-    // URL Google Apps Script
-    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
+<div id="chat-circle" onclick="toggleChat()">💬</div>
+<div id="chat-box">
+  <div class="chat-header">
+    <span>Support ViralFlowr</span>
+    <span onclick="toggleChat()" style="cursor:pointer; font-size:20px; line-height:1;">&times;</span>
+  </div>
+  <div id="chat-history"></div>
+  <div class="chat-input-area">
+    <input type="text" id="chat-input" placeholder="Posez votre question...">
+    <button onclick="sendMsg()" style="border:none; background:none; color:var(--blue); font-weight:700; cursor:pointer;">OK</button>
+  </div>
+</div>
 
-    // Anti-injection
-    function escapeHTML(str=""){
-      return String(str)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
+<script>
+  // Google Apps Script URL
+  const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
+
+  // Anti-injection
+  function escapeHTML(str=""){
+    return String(str)
+      .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+  }
+
+  // ID persistant
+  let orderId = sessionStorage.getItem('active_order_id');
+  if (!orderId) {
+    orderId = "#CMD-" + Math.floor(1000 + Math.random()*9000);
+    sessionStorage.setItem('active_order_id', orderId);
+  }
+  document.getElementById('live-order-id').innerText = orderId;
+
+  // Params URL
+  const params = new URLSearchParams(window.location.search);
+  const nom        = params.get('nom')  || "Service";
+  const prixInitial= parseFloat(params.get('prix')) || 0;
+  const cat        = params.get('cat')  || "";
+  const idS        = params.get('id')   || "";
+  const desc       = params.get('desc') || "";
+  const longDesc   = params.get('long') || params.get('long_desc') || "";
+
+  document.getElementById('service-name').innerText = nom;
+
+  // Long desc / desc
+  const longBox = document.getElementById('long-ui');
+  const instBox = document.getElementById('desc-ui');
+  const longEl  = document.getElementById('service-long');
+  const instEl  = document.getElementById('service-desc');
+
+  if (longDesc && String(longDesc).trim() !== "") {
+    longEl.textContent = String(longDesc);
+    longBox.classList.remove('hidden');
+    if (desc && String(desc).trim() !== "") {
+      instEl.textContent = String(desc);
+      instBox.classList.remove('hidden');
+    }
+  } else if (desc && String(desc).trim() !== "") {
+    longEl.textContent = String(desc);
+    longBox.classList.remove('hidden');
+  }
+
+  // UNIQUEMENT SMM panel → quantité
+  const catUpper = String(cat || "").toUpperCase();
+  const isSMM  = /(SMM|BOOST)\b/i.test(catUpper);
+  const isIMEI = /IMEI/i.test(catUpper);
+
+  const qtyBox  = document.getElementById('qty-box');
+  const priceEl = document.getElementById('display-price');
+
+  if (isSMM) {
+    qtyBox.classList.remove('hidden');
+    function setPriceFromQty(){
+      const q = parseFloat(document.getElementById('qty').value || "0");
+      priceEl.innerText = ((prixInitial/1000)*q).toFixed(2) + " $";
+    }
+    window.updatePrice = setPriceFromQty;
+    setPriceFromQty();
+  } else {
+    qtyBox.classList.add('hidden');
+    priceEl.innerText = prixInitial.toFixed(2) + " $";
+    window.updatePrice = function(){};
+  }
+
+  if (isIMEI) {
+    document.getElementById('input-label').innerText = "Numéro IMEI (15 chiffres)";
+  }
+
+  // Copier l'ID
+  function copyID(){ navigator.clipboard.writeText(orderId); alert("ID Copié : " + orderId); }
+  function resetAndReload(){ sessionStorage.removeItem('active_order_id'); window.location.reload(); }
+  window.copyID = copyID;
+
+  // Envoi commande
+  document.getElementById('orderForm').onsubmit = async (e)=>{
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true; btn.innerText = "Envoi...";
+
+    const file = document.getElementById('file').files[0];
+    let fileData = "";
+    if (file) {
+      const reader = new FileReader();
+      fileData = await new Promise(res => {
+        reader.onload = ev => res(ev.target.result);
+        reader.readAsDataURL(file);
+      });
     }
 
-    // ID persistant
-    let orderId = sessionStorage.getItem('active_order_id');
-    if (!orderId) {
-      orderId = "#CMD-" + Math.floor(1000 + Math.random() * 9000);
-      sessionStorage.setItem('active_order_id', orderId);
-    }
-    document.getElementById('live-order-id').innerText = orderId;
+    // n’envoyer quantite QUE si SMM
+    const qtyVal = isSMM ? (document.getElementById('qty').value || "") : "";
 
-    // Params URL
-    const params = new URLSearchParams(window.location.search);
-    const nom  = params.get('nom')  || "Service";
-    const prixInitial = parseFloat(params.get('prix')) || 0;
-    const cat  = params.get('cat')  || "";
-    const idS  = params.get('id')   || "";
-    const desc = params.get('desc') || "";
-    const longDesc = params.get('long') || params.get('long_desc') || "";
-
-    document.getElementById('service-name').innerText = nom;
-
-    // Blocs description/instructions
-    const longBox = document.getElementById('long-ui');
-    const instBox = document.getElementById('desc-ui');
-    const longEl  = document.getElementById('service-long');
-    const instEl  = document.getElementById('service-desc');
-
-    if (longDesc && String(longDesc).trim() !== "") {
-      longEl.textContent = String(longDesc);
-      longBox.classList.remove('hidden');
-      if (desc && String(desc).trim() !== "") {
-        instEl.textContent = String(desc);
-        instBox.classList.remove('hidden');
-      }
-    } else if (desc && String(desc).trim() !== "") {
-      longEl.textContent = String(desc);
-      longBox.classList.remove('hidden');
-    }
-
-    // Quantité uniquement pour SMM (tout sauf IMEI)
-    const catUpper = String(cat || "").toUpperCase();
-    const qtyBox = document.getElementById('qty-box');
-    const priceEl = document.getElementById('display-price');
-
-    if (!catUpper.includes("IMEI")) {
-      qtyBox.classList.remove('hidden');
-      // prix dépend de la quantité (prixInitial = prix pour 1000)
-      function setPriceFromQty() {
-        const q = parseFloat(document.getElementById('qty').value || "0");
-        priceEl.innerText = ((prixInitial / 1000) * q).toFixed(2) + " $";
-      }
-      window.updatePrice = setPriceFromQty;
-      setPriceFromQty(); // init
-    } else {
-      document.getElementById('input-label').innerText = "Numéro IMEI (15 chiffres)";
-      priceEl.innerText = prixInitial.toFixed(2) + " $"; // prix fixe pour IMEI
-      // empêche l'appel externe
-      window.updatePrice = function(){};
-    }
-
-    function copyID() {
-      navigator.clipboard.writeText(orderId);
-      alert("ID Copié : " + orderId);
-    }
-
-    function resetAndReload() {
-      sessionStorage.removeItem('active_order_id');
-      window.location.reload();
-    }
-
-    // Envoi commande
-    document.getElementById('orderForm').onsubmit = async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('submitBtn');
-      btn.disabled = true; btn.innerText = "Envoi...";
-
-      const file = document.getElementById('file').files[0];
-      let fileData = "";
-      if (file) {
-        const reader = new FileReader();
-        fileData = await new Promise(res => {
-          reader.onload = ev => res(ev.target.result);
-          reader.readAsDataURL(file);
-        });
-      }
-
-      // n’envoyer la quantité que si SMM
-      const isIMEI = String(cat || "").toUpperCase().includes("IMEI");
-      const qtyVal = isIMEI ? "" : (document.getElementById('qty').value || "");
-
-      const payload = {
-        orderId : orderId,
-        produit : nom,
-        idService : idS,
-        categorie : cat,
-        input1 : document.getElementById('main-input').value,
-        email  : document.getElementById('email').value,
-        quantite : qtyVal,
-        total  : priceEl.innerText,
-        fileData : fileData,
-        fileType : file ? file.type : ""
-      };
-
-      fetch(GOOGLE_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(payload) })
-        .then(() => {
-          document.getElementById('form-container').classList.add('hidden');
-          document.getElementById('final-id').innerText = orderId;
-          document.getElementById('success-msg').classList.remove('hidden');
-        })
-        .catch(() => alert("Erreur de connexion"))
-        .finally(() => { btn.disabled = false; btn.innerText = "CONFIRMER MA COMMANDE"; });
+    const payload = {
+      orderId  : orderId,
+      produit  : nom,
+      idService: idS,
+      categorie: cat,
+      input1   : document.getElementById('main-input').value,
+      email    : document.getElementById('email').value,
+      quantite : qtyVal,
+      total    : priceEl.innerText,
+      fileData : fileData,
+      fileType : file ? file.type : ""
     };
 
-    // Chat
-    function toggleChat(){ const cb = document.getElementById('chat-box'); cb.style.display = (cb.style.display==='block')?'none':'block'; }
-    function addChat(text,isUser){
-      const hist = document.getElementById('chat-history');
-      const safe = escapeHTML(text);
-      const side = isUser ? 'align-self:flex-end; background:#d1e7ff;' : 'align-self:flex-start; background:#eee;';
-      hist.innerHTML += `<div style="${side} padding:8px 12px; border-radius:12px; margin-bottom:8px; max-width:80%; word-wrap:break-word;">${safe}</div>`;
-      hist.scrollTop = hist.scrollHeight;
-    }
-    function saveLocal(text,isUser){
-      let h = JSON.parse(localStorage.getItem('h_'+orderId) || '[]');
-      h.push({t:text,y:isUser}); localStorage.setItem('h_'+orderId, JSON.stringify(h));
-    }
-    async function sendMsg(){
-      const inp = document.getElementById('chat-input');
-      const txt = inp.value.trim(); if(!txt) return;
-      addChat(txt,true); saveLocal(txt,true);
-      fetch(GOOGLE_URL, { method:'POST', mode:'no-cors', body: JSON.stringify({ chat: txt, orderId }) });
-      inp.value='';
-    }
-    function checkServerReply(){
-      const checkUrl = GOOGLE_URL + "?action=check&orderId=" + encodeURIComponent(orderId);
-      const script = document.createElement('script');
-      script.src = checkUrl + "&callback=handleReply";
-      document.body.appendChild(script);
-      document.body.removeChild(script);
-    }
-    function handleReply(data){
-      if (data && data.reply) { addChat(data.reply,false); saveLocal(data.reply,false); }
-    }
-    window.addEventListener('DOMContentLoaded', () => {
-      const h = JSON.parse(localStorage.getItem('h_'+orderId) || '[]');
-      h.forEach(m => addChat(m.t,m.y));
-      setInterval(checkServerReply, 5000);
-    });
+    fetch(GOOGLE_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(payload) })
+      .then(()=>{
+        document.getElementById('form-container').classList.add('hidden');
+        document.getElementById('final-id').innerText = orderId;
+        document.getElementById('success-msg').classList.remove('hidden');
+      })
+      .catch(()=>alert("Erreur de connexion"))
+      .finally(()=>{ btn.disabled=false; btn.innerText="CONFIRMER MA COMMANDE"; });
+  };
 
-    // Expose chat fns
-    window.toggleChat = toggleChat;
-    window.sendMsg = sendMsg;
-  </script>
+  // Chat
+  function toggleChat(){
+    const cb = document.getElementById('chat-box');
+    cb.style.display = (cb.style.display==='block') ? 'none' : 'block';
+  }
+  function addChat(text,isUser){
+    const hist = document.getElementById('chat-history');
+    const safe = escapeHTML(text);
+    const side = isUser ? 'align-self:flex-end; background:#d1e7ff;' : 'align-self:flex-start; background:#eee;';
+    hist.innerHTML += `<div style="${side} padding:8px 12px; border-radius:12px; margin-bottom:8px; max-width:80%; word-wrap:break-word;">${safe}</div>`;
+    hist.scrollTop = hist.scrollHeight;
+  }
+  function saveLocal(text,isUser){
+    let h = JSON.parse(localStorage.getItem('h_'+orderId) || '[]');
+    h.push({t:text,y:isUser});
+    localStorage.setItem('h_'+orderId, JSON.stringify(h));
+  }
+  async function sendMsg(){
+    const inp = document.getElementById('chat-input');
+    const txt = inp.value.trim();
+    if(!txt) return;
+    addChat(txt,true);
+    saveLocal(txt,true);
+    fetch(GOOGLE_URL, { method:'POST', mode:'no-cors', body: JSON.stringify({ chat: txt, orderId: orderId }) });
+    inp.value = '';
+  }
+  function checkServerReply(){
+    const checkUrl = GOOGLE_URL + "?action=check&orderId=" + encodeURIComponent(orderId);
+    const script = document.createElement('script');
+    script.src = checkUrl + "&callback=handleReply";
+    document.body.appendChild(script);
+    document.body.removeChild(script);
+  }
+  function handleReply(data){
+    if (data && data.reply) {
+      addChat(data.reply,false);
+      saveLocal(data.reply,false);
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', ()=>{
+    const h = JSON.parse(localStorage.getItem('h_'+orderId) || '[]');
+    h.forEach(m => addChat(m.t, m.y));
+    setInterval(checkServerReply, 5000);
+  });
+
+  // Expose chat fns
+  window.toggleChat = toggleChat;
+  window.sendMsg = sendMsg;
+</script>
+
 </body>
 </html>
