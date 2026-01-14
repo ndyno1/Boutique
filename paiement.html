@@ -6,15 +6,25 @@
   <title>ViralFlowr - Paiement Sécurisé</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    :root { --primary:#28a745; --blue:#0d6efd; --bg:#f4f6f8; }
+    :root { --primary:#28a745; --blue:#0d6efd; --bg:#f4f6f8; --danger:#dc3545; }
     body { font-family:'Poppins',sans-serif; background:var(--bg); display:flex; flex-direction:column; align-items:center; padding:15px; margin:0; }
     .card { background:#fff; padding:25px; border-radius:20px; width:100%; max-width:450px; box-shadow:0 10px 30px rgba(0,0,0,.08); position:relative; }
     h2 { text-align:center; color:#333; margin-top:0; font-size:20px; }
 
-    .id-badge { background:#e7f1ff; border:2px dashed var(--blue); padding:12px; border-radius:12px; text-align:center; margin-bottom:20px; }
+    .id-badge { background:#e7f1ff; border:2px dashed var(--blue); padding:12px; border-radius:12px; text-align:center; margin-bottom:18px; }
     .id-label { display:block; font-size:11px; color:var(--blue); font-weight:700; text-transform:uppercase; }
     .id-value { font-size:24px; font-weight:700; color:#0d47a1; display:block; margin:5px 0; }
     .copy-btn { background:var(--blue); color:#fff; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer; font-weight:700; }
+
+    .pill {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px; border-radius:999px; font-size:12px; font-weight:700;
+      border:1px solid #e9ecef; background:#f8fafc; color:#0b1220;
+      margin:0 auto 14px; width:fit-content;
+    }
+    .pill b{color:var(--blue)}
+    .hint { font-size:12px; color:#666; margin-top:6px; line-height:1.35; }
+    .warn { font-size:12px; color:#7a1f1f; background:#ffe5e5; border:1px solid #ffc9c9; padding:10px; border-radius:10px; margin-top:12px; }
 
     .price { font-size:28px; color:var(--primary); font-weight:700; text-align:center; margin:15px 0; }
 
@@ -25,12 +35,17 @@
     .desc-content { padding:0 10px 10px; font-size:12px; color:#666; white-space:pre-wrap; line-height:1.55; }
 
     label { display:block; margin-top:15px; font-weight:600; font-size:14px; color:#555; }
-    input { width:100%; padding:12px; margin-top:8px; border:1px solid #ddd; border-radius:10px; box-sizing:border-box; font-size:15px; }
+    input, textarea {
+      width:100%; padding:12px; margin-top:8px;
+      border:1px solid #ddd; border-radius:10px; box-sizing:border-box;
+      font-size:15px; font-family:inherit;
+    }
+    textarea{ min-height:110px; resize:vertical; }
 
     .pay-info { background:#fff3cd; border:1px solid #ffecb5; padding:15px; border-radius:10px; font-size:12px; margin-top:20px; line-height:1.6; color:#664d03; }
     .btn { background:var(--primary); color:#fff; border:none; padding:16px; width:100%; border-radius:10px; font-weight:700; font-size:16px; margin-top:20px; cursor:pointer; transition:.3s; }
     .btn:disabled { background:#ccc; cursor:not-allowed; }
-    .hidden { display:none; }
+    .hidden { display:none !important; }
     .success { text-align:center; color:var(--primary); padding:20px; }
 
     /* Chat */
@@ -54,6 +69,8 @@
       <button type="button" class="copy-btn" onclick="copyID()">COPIER L'ID</button>
     </div>
 
+    <div class="pill" id="cat-pill">Catégorie : <b id="cat-name">—</b></div>
+
     <!-- Description produit (long_desc) -->
     <details class="desc-box blue hidden" id="long-ui" open>
       <summary>📝 Description du produit</summary>
@@ -67,16 +84,58 @@
     </details>
 
     <form id="orderForm">
-      <label id="input-label">Information requise</label>
-      <input type="text" id="main-input" required placeholder="Lien ou Email">
 
-      <label>Email du client (obligatoire)</label>
-      <input type="email" id="email" required placeholder="ex: client@gmail.com">
+      <!-- =========================
+           1) SMM2 / SMM3 / BOOST
+           -> Lien à booster + QTY seulement
+           ========================= -->
+      <div id="section-smm" class="hidden">
+        <label for="boost-link">Lien à booster (obligatoire)</label>
+        <input type="text" id="boost-link" placeholder="Collez votre lien (ex: https://instagram.com/...)" />
 
-      <!-- Quantité → UNIQUEMENT SMM panel -->
-      <div id="qty-box" class="hidden">
-        <label>Quantité</label>
-        <input type="number" id="qty" value="1000" min="10" oninput="updatePrice()">
+        <div id="qty-box" style="margin-top:0;">
+          <label for="qty">Quantité</label>
+          <input type="number" id="qty" value="1000" min="10" inputmode="numeric" />
+          <div class="hint" id="qty-hint"></div>
+        </div>
+
+        <div class="warn" id="qty-warn" style="display:none;"></div>
+      </div>
+
+      <!-- =========================
+           2) ABONNEMENT
+           -> Identifiants (mail+mdp) + Contact livraison (mail ou whatsapp) obligatoire
+           ========================= -->
+      <div id="section-abonnement" class="hidden">
+        <label for="creds">Identifiants du compte (obligatoire)</label>
+        <textarea id="creds" placeholder="Exemple :
+Email : user@gmail.com
+Mot de passe : ********
+(ajoutez profil/plan si nécessaire)"></textarea>
+        <div class="hint">⚠️ Vérifiez l’exactitude. En cas d’OTP ou d’erreur, nous vous contacterons via le contact ci-dessous.</div>
+
+        <label for="delivery-contact">Contact pour livraison / OTP (WhatsApp ou Email) (obligatoire)</label>
+        <input type="text" id="delivery-contact" placeholder="Ex: +243xxxxxxxxx ou client@gmail.com" />
+      </div>
+
+      <!-- =========================
+           3) CARTE & CARTE2
+           -> Contact livraison obligatoire
+           ========================= -->
+      <div id="section-carte" class="hidden">
+        <label for="card-delivery">Contact pour livraison (WhatsApp ou Email) (obligatoire)</label>
+        <input type="text" id="card-delivery" placeholder="Ex: +243xxxxxxxxx ou client@gmail.com" />
+        <div class="hint">Nous envoyons les détails directement sur ce contact.</div>
+      </div>
+
+      <!-- =========================
+           4) AUTRES (fallback)
+           ========================= -->
+      <div id="section-default" class="hidden">
+        <label id="input-label" for="main-input">Information requise</label>
+        <input type="text" id="main-input" placeholder="Lien / Email / Info" />
+        <label for="email">Email du client (obligatoire)</label>
+        <input type="email" id="email" placeholder="ex: client@gmail.com" />
       </div>
 
       <div class="price" id="display-price">0.00 $</div>
@@ -114,7 +173,7 @@
   <div id="chat-history"></div>
   <div class="chat-input-area">
     <input type="text" id="chat-input" placeholder="Posez votre question...">
-    <button onclick="sendMsg()" style="border:none; background:none; color:var(--blue); font-weight:700; cursor:pointer;">OK</button>
+    <button onclick="sendMsg()" type="button" style="border:none; background:none; color:var(--blue); font-weight:700; cursor:pointer;">OK</button>
   </div>
 </div>
 
@@ -122,7 +181,6 @@
   // Google Apps Script URL
   const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
 
-  // Anti-injection
   function escapeHTML(str=""){
     return String(str)
       .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
@@ -146,13 +204,17 @@
   const desc        = params.get('desc') || "";
   const longDesc    = params.get('long') || params.get('long_desc') || "";
 
-  // Min/Max passés depuis Produits (H/I)
-  const minParam = parseFloat(params.get('min'));
-  const maxParam = parseFloat(params.get('max'));
+  // Min/Max (depuis Produits H/I) passés en URL
+  const minParamRaw = params.get('min');
+  const maxParamRaw = params.get('max');
+  const minParam = (minParamRaw !== null && minParamRaw !== "" && !Number.isNaN(Number(minParamRaw))) ? Number(minParamRaw) : null;
+  const maxParam = (maxParamRaw !== null && maxParamRaw !== "" && !Number.isNaN(Number(maxParamRaw))) ? Number(maxParamRaw) : null;
 
   document.getElementById('service-name').innerText = nom;
+  document.getElementById('display-price').innerText = prixInitial.toFixed(2) + " $";
+  document.getElementById('cat-name').innerText = String(cat || "—");
 
-  // Long desc / desc
+  // Long desc / desc UI
   const longBox = document.getElementById('long-ui');
   const instBox = document.getElementById('desc-ui');
   const longEl  = document.getElementById('service-long');
@@ -170,94 +232,201 @@
     longBox.classList.remove('hidden');
   }
 
-  // ----- UNIQUEMENT SMM panel → quantité -----
-  const catUpper = String(cat || "").toUpperCase();
+  // ====== Catégories ======
+  const catUpper = String(cat || "").toUpperCase().trim();
 
-  // ✅ Inclut SMM, SMM1/2/3, (et typos SSM2/SSM3), BOOST, PEAK/PEAKERR
-  const isSMM  = /\b(SMM|SMM1|SMM2|SMM3|SSM2|SSM3|BOOST|PEAK|PEAKERR)\b/i.test(catUpper);
+  // SMM2/SMM3/BOOST (et variantes)
+  const isBoostCat = /\b(BOOST|SMM2|SMM3|SSM2|SSM3|PEAK|PEAKERR)\b/i.test(catUpper);
+  const isAbonnement = /\bABONNEMENT\b/i.test(catUpper);
+  const isCarte = (catUpper === "CARTE");
+  const isCarte2 = (catUpper === "CARTE2");
   const isIMEI = /\bIMEI\b/i.test(catUpper);
 
-  const qtyBox   = document.getElementById('qty-box');
-  const qtyInp   = document.getElementById('qty');
-  const priceEl  = document.getElementById('display-price');
-  const inputLbl = document.getElementById('input-label');
+  const sectionSMM = document.getElementById('section-smm');
+  const sectionAbo = document.getElementById('section-abonnement');
+  const sectionCarte = document.getElementById('section-carte');
+  const sectionDefault = document.getElementById('section-default');
 
-  if (isSMM) {
-    // Affiche la quantité
-    qtyBox.classList.remove('hidden');
+  const priceEl = document.getElementById('display-price');
 
-    // Applique min/max si fournis
-    const hasMin = Number.isFinite(minParam);
-    const hasMax = Number.isFinite(maxParam);
+  // Inputs
+  const boostLink = document.getElementById('boost-link');
+  const qtyInp = document.getElementById('qty');
+  const qtyHint = document.getElementById('qty-hint');
+  const qtyWarn = document.getElementById('qty-warn');
 
-    if (hasMin) qtyInp.min = String(minParam);
-    if (hasMax) qtyInp.max = String(maxParam);
+  const creds = document.getElementById('creds');
+  const deliveryContact = document.getElementById('delivery-contact');
 
-    // Indication plage autorisée
-    if (!document.getElementById('qty-hint') && (hasMin || hasMax)) {
-      const hint = document.createElement('div');
-      hint.id = 'qty-hint';
-      hint.style.fontSize = '12px';
-      hint.style.color = '#666';
-      hint.style.marginTop = '6px';
-      hint.textContent = `Plage autorisée: ${hasMin ? minParam : 0} – ${hasMax ? maxParam : '∞'}`;
-      qtyBox.appendChild(hint);
+  const cardDelivery = document.getElementById('card-delivery');
+
+  const mainInput = document.getElementById('main-input');
+  const emailInput = document.getElementById('email');
+  const inputLabel = document.getElementById('input-label');
+
+  function showOnly(section){
+    [sectionSMM, sectionAbo, sectionCarte, sectionDefault].forEach(s => s.classList.add('hidden'));
+    section.classList.remove('hidden');
+  }
+
+  function clearRequired(){
+    // remove required from all custom fields
+    [boostLink, qtyInp, creds, deliveryContact, cardDelivery, mainInput, emailInput].forEach(el=>{
+      if(!el) return;
+      el.required = false;
+    });
+  }
+
+  function setPriceFromQty(q){
+    // prixInitial = prix pour 1000 (logique existante)
+    priceEl.innerText = ((prixInitial / 1000) * q).toFixed(2) + " $";
+  }
+
+  function clampQty(q){
+    let v = Number(q);
+    if (!Number.isFinite(v)) v = 0;
+
+    if (minParam !== null && v < minParam) v = minParam;
+    if (maxParam !== null && v > maxParam) v = maxParam;
+
+    return v;
+  }
+
+  function updateQtyUIAndPrice(){
+    // enforce + show warning if user tried to exceed
+    const raw = Number(qtyInp.value || 0);
+    const clamped = clampQty(raw);
+
+    if (minParam !== null || maxParam !== null) {
+      const minTxt = (minParam !== null ? minParam : 0);
+      const maxTxt = (maxParam !== null ? maxParam : "∞");
+      qtyHint.textContent = `Plage autorisée: ${minTxt} – ${maxTxt}`;
+
+      if ((minParam !== null && raw < minParam) || (maxParam !== null && raw > maxParam)) {
+        qtyWarn.style.display = "block";
+        qtyWarn.textContent = `Quantité invalide. Min=${minTxt}${maxParam !== null ? ` / Max=${maxParam}` : ""}. Modifie la quantité.`;
+      } else {
+        qtyWarn.style.display = "none";
+        qtyWarn.textContent = "";
+      }
+    } else {
+      qtyHint.textContent = "";
+      qtyWarn.style.display = "none";
+      qtyWarn.textContent = "";
     }
 
-    function setPriceFromQty(){
-      let q = parseFloat(qtyInp.value || "0");
+    // reflect clamp into input to avoid sending invalid qty
+    if (String(qtyInp.value) !== String(clamped)) qtyInp.value = clamped;
 
-      // Clamp local si bornes définies
-      if (hasMin && q < minParam) q = minParam;
-      if (hasMax && q > maxParam) q = maxParam;
+    setPriceFromQty(clamped);
+  }
 
-      // Reflète le clamp dans l’input
-      if (String(qtyInp.value) !== String(q)) qtyInp.value = q;
+  // ====== Setup page by category ======
+  clearRequired();
 
-      // Prix dynamique (rate/1000 * qty)
-      priceEl.innerText = ((prixInitial/1000) * q).toFixed(2) + " $";
-    }
-    window.updatePrice = setPriceFromQty;
+  if (isBoostCat) {
+    // ✅ SMM2/SMM3/Boost: Lien à booster + QTY seulement
+    showOnly(sectionSMM);
+    boostLink.required = true;
+    qtyInp.required = true;
 
-    // Écouteurs & init
-    qtyInp.addEventListener('input', setPriceFromQty);
-    setPriceFromQty();
+    // apply min/max attributes to block typing beyond supplier rules
+    if (minParam !== null) qtyInp.min = String(minParam);
+    if (maxParam !== null) qtyInp.max = String(maxParam);
+
+    // init
+    updateQtyUIAndPrice();
+    qtyInp.addEventListener('input', updateQtyUIAndPrice);
+
+  } else if (isAbonnement) {
+    // ✅ ABONNEMENT: Identifiants + contact livraison obligatoire
+    showOnly(sectionAbo);
+    creds.required = true;
+    deliveryContact.required = true;
+    // prix fixe pour abonnement
+    priceEl.innerText = prixInitial.toFixed(2) + " $";
+
+  } else if (isCarte || isCarte2) {
+    // ✅ Carte & Carte2: contact livraison obligatoire
+    showOnly(sectionCarte);
+    cardDelivery.required = true;
+    priceEl.innerText = prixInitial.toFixed(2) + " $";
+
+  } else if (isIMEI) {
+    // fallback IMEI (si vous l’utilisez encore)
+    showOnly(sectionDefault);
+    inputLabel.innerText = "Numéro IMEI (15 chiffres)";
+    mainInput.required = true;
+    emailInput.required = true;
+    priceEl.innerText = prixInitial.toFixed(2) + " $";
 
   } else {
-    // Pas SMM → pas de quantité
-    qtyBox.classList.add('hidden');
+    // Autres
+    showOnly(sectionDefault);
+    mainInput.required = true;
+    emailInput.required = true;
     priceEl.innerText = prixInitial.toFixed(2) + " $";
-    window.updatePrice = function(){};
   }
 
-  if (isIMEI) {
-    inputLbl.innerText = "Numéro IMEI (15 chiffres)";
-  }
-
-  // Copier l'ID
   function copyID(){ navigator.clipboard.writeText(orderId); alert("ID Copié : " + orderId); }
   function resetAndReload(){ sessionStorage.removeItem('active_order_id'); window.location.reload(); }
   window.copyID = copyID;
 
-  // Vérification finale (bloque l’envoi si hors min/max pour SMM)
-  document.getElementById('orderForm').addEventListener('submit', function(ev){
-    if (!isSMM) return; // contrôle uniquement pour SMM
-
-    const q = parseFloat(qtyInp.value || "0");
-    const hasMin = Number.isFinite(minParam);
-    const hasMax = Number.isFinite(maxParam);
-
-    if ((hasMin && q < minParam) || (hasMax && q > maxParam)) {
-      ev.preventDefault();
-      alert(`Quantité invalide. Min=${hasMin ? minParam : 0}${hasMax ? ` / Max=${maxParam}` : ""}. Modifie la quantité avant de confirmer.`);
-      qtyInp.focus();
-      return false;
+  function validateBeforeSend(){
+    // SMM2/SMM3/Boost: must respect min/max hard
+    if (isBoostCat) {
+      const q = Number(qtyInp.value || 0);
+      if (!Number.isFinite(q) || q <= 0) {
+        alert("Quantité invalide. Entrez une quantité correcte.");
+        qtyInp.focus();
+        return false;
+      }
+      if (minParam !== null && q < minParam) {
+        alert(`Quantité trop petite. Min=${minParam}.`);
+        qtyInp.focus();
+        return false;
+      }
+      if (maxParam !== null && q > maxParam) {
+        alert(`Quantité trop grande. Max=${maxParam}.`);
+        qtyInp.focus();
+        return false;
+      }
+      if (!String(boostLink.value || "").trim()) {
+        alert("Collez le lien à booster.");
+        boostLink.focus();
+        return false;
+      }
     }
-  });
+
+    if (isAbonnement) {
+      if (!String(creds.value || "").trim()) {
+        alert("Veuillez entrer les identifiants (email + mot de passe).");
+        creds.focus();
+        return false;
+      }
+      if (!String(deliveryContact.value || "").trim()) {
+        alert("Veuillez entrer un contact WhatsApp ou Email pour la livraison / OTP.");
+        deliveryContact.focus();
+        return false;
+      }
+    }
+
+    if (isCarte || isCarte2) {
+      if (!String(cardDelivery.value || "").trim()) {
+        alert("Veuillez entrer un contact WhatsApp ou Email pour la livraison.");
+        cardDelivery.focus();
+        return false;
+      }
+    }
+
+    return true;
+  }
 
   // Envoi commande
   document.getElementById('orderForm').onsubmit = async (e)=>{
     e.preventDefault();
+    if (!validateBeforeSend()) return;
+
     const btn = document.getElementById('submitBtn');
     btn.disabled = true; btn.innerText = "Envoi...";
 
@@ -271,20 +440,56 @@
       });
     }
 
-    // n’envoyer quantite QUE si SMM
-    const qtyVal = isSMM ? (qtyInp.value || "") : "";
+    // Build fields per category (sans casser ton backend)
+    // - input1 : lien/imei/infos
+    // - email  : email client (fallback), mais pour abonnement/carte => contact livraison
+    // - quantite : seulement pour SMM/Boost
+    // + champs extra : identifiants, deliveryContact, typeForm
+    let input1Val = "";
+    let emailVal = "";
+    let qtyVal = "";
+    let identifiantsVal = "";
+
+    if (isBoostCat) {
+      input1Val = String(boostLink.value || "").trim(); // lien à booster
+      qtyVal = String(qtyInp.value || "").trim();
+      emailVal = ""; // pas demandé
+    } else if (isAbonnement) {
+      identifiantsVal = String(creds.value || "").trim();
+      emailVal = String(deliveryContact.value || "").trim();
+      input1Val = ""; // pas demandé
+      qtyVal = "";
+    } else if (isCarte || isCarte2) {
+      emailVal = String(cardDelivery.value || "").trim();
+      input1Val = ""; // pas demandé
+      qtyVal = "";
+    } else {
+      input1Val = String(mainInput.value || "").trim();
+      emailVal = String(emailInput.value || "").trim();
+      qtyVal = "";
+    }
 
     const payload = {
-      orderId  : orderId,
-      produit  : nom,
-      idService: idS,
-      categorie: cat,
-      input1   : document.getElementById('main-input').value,
-      email    : document.getElementById('email').value,
-      quantite : qtyVal,
-      total    : priceEl.innerText,
-      fileData : fileData,
-      fileType : file ? file.type : ""
+      orderId   : orderId,
+      produit   : nom,
+      idService : idS,
+      categorie : cat,
+
+      // Champs historiques (compatibilité)
+      input1    : input1Val,
+      email     : emailVal,
+      quantite  : qtyVal,
+      total     : priceEl.innerText,
+
+      // Extras (tu peux les enregistrer côté Apps Script)
+      identifiants : identifiantsVal,
+      deliveryContact : emailVal,
+      typeForm : (isBoostCat ? "BOOST" : isAbonnement ? "ABONNEMENT" : (isCarte ? "CARTE" : isCarte2 ? "CARTE2" : "DEFAULT")),
+      min : (minParam !== null ? String(minParam) : ""),
+      max : (maxParam !== null ? String(maxParam) : ""),
+
+      fileData  : fileData,
+      fileType  : file ? file.type : ""
     };
 
     fetch(GOOGLE_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(payload) })
@@ -343,7 +548,6 @@
     setInterval(checkServerReply, 5000);
   });
 
-  // Expose chat fns
   window.toggleChat = toggleChat;
   window.sendMsg = sendMsg;
 </script>
