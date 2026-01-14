@@ -481,10 +481,10 @@ footer strong{color:var(--text)}
 
       <div class="categories-nav" aria-label="Catégories">
         <button class="cat-btn active" data-filter="all">⚡ Tous</button>
-        <button class="cat-btn" data-filter="IMEI">📱 IMEI</button>
+        <button class="cat-btn" data-filter="IMEI">📱 SERVICE IMEI</button>
         <button class="cat-btn" data-filter="Boost,SMM2,SMM3">🚀 Boost</button>
-        <button class="cat-btn" data-filter="Carte">💳 Cartes</button>
-        <button class="cat-btn" data-filter="Abonnement">📺 Abonnements</button>
+        <button class="cat-btn" data-filter="Carte2">💳 Cartes </button>
+        <button class="cat-btn" data-filter="Abonnement,Carte" >📺 Abonnements</button>
       </div>
     </div>
   </section>
@@ -514,8 +514,15 @@ const CATEGORY_ICONS={
   Boost:"https://cdn-icons-png.flaticon.com/512/1441/1441180.png",
   Boost2:"https://cdn-icons-png.flaticon.com/512/1441/1441180.png",
   Carte:"https://cdn-icons-png.flaticon.com/512/633/633611.png",
+  Carte2:"https://cdn-icons-png.flaticon.com/512/633/633611.png",
   Abonnement:"https://cdn-icons-png.flaticon.com/512/3165/3165247.png",
   default:"https://cdn-icons-png.flaticon.com/512/11520/11520110.png"
+};
+
+/* FILTER MAP: when user selects Abonnement, also show Carte & Carte2 */
+const FILTER_MAP = {
+  "Abonnement": ["Abonnement","Carte"],
+  "Boost": ["Boost","Boost2","SMM2","SMM3"]
 };
 
 let PRODUCTS = [];
@@ -583,9 +590,20 @@ function setActiveButton(btn){
   btn.classList.add('active');
 }
 
+/* matchFilter now supports the FILTER_MAP so Abonnement includes Carte(s) */
 function matchFilter(p){
   if(CURRENT_FILTER === "all") return true;
-  if(Array.isArray(CURRENT_FILTER)) return CURRENT_FILTER.includes(p.cat);
+
+  // if CURRENT_FILTER is an array (from multiple categories) => any match
+  if(Array.isArray(CURRENT_FILTER)){
+    return CURRENT_FILTER.includes(p.cat);
+  }
+
+  // If there's a map entry, include mapped categories
+  if(FILTER_MAP[CURRENT_FILTER]){
+    return FILTER_MAP[CURRENT_FILTER].includes(p.cat);
+  }
+
   return p.cat === CURRENT_FILTER;
 }
 
@@ -617,16 +635,12 @@ function render(){
       ? `<p class="limits">Min ${escapeHTML(p.min)} • Max ${escapeHTML(p.max)}</p>`
       : `<p class="limits">Disponible immédiatement</p>`;
 
-    // ✅ IMPORTANT: Commander uses pay_link from Sheet (colonne F = LienCommande)
+    // Commander uses pay_link from Sheet (colonne F = LienCommande)
     const payLink = (p.pay_link && String(p.pay_link).trim() !== "")
       ? String(p.pay_link).trim()
       : "https://ndyno1.github.io/check_binance.py/";
 
-    // ✅ NEW: auto description comes from:
-    // 1) p.long_desc (if API provides)
-    // 2) p.description (if API provides)
-    // 3) URL param long (from pay_link)
-    // 4) URL param desc (from pay_link)
+    // auto description comes from p.long_desc / p.description / url params
     const urlLong = safeDecode(getParamFromUrl(payLink, "long")).trim();
     const urlDesc = safeDecode(getParamFromUrl(payLink, "desc")).trim();
 
@@ -638,11 +652,27 @@ function render(){
 
     const descHTML = desc ? `<div class="product-desc">${escapeHTML(desc)}</div>` : "";
 
+    // Professional tagline for Carte/Carte2
+    let proTag = "";
+    if(p.cat === "Carte" || p.cat === "Carte2"){
+      proTag = `<div style="margin-top:8px;font-size:12px;color:#0b1220;font-weight:800;">
+                  Offre Cartes Pro — Activation sécurisée, gestion d'abonnements & support prioritaire.
+                </div>`;
+    }
+
+    // If category is Abonnement, adjust CTA text
+    const isSubscription = (p.cat === "Abonnement" || p.cat === "Carte" ");
+
+    const ctaLabel = isSubscription ? "S'abonner / Commander →" : "Commander →";
+
+    // If min/max provided, pass them to link (non-breaking) or show tooltip — keep link intact
+    const minMaxAttr = (p.min || p.max) ? ` title="Min: ${p.min || '—'} • Max: ${p.max || '—'}"` : "";
+
     return `
       <article class="product-card">
         <div class="card-top">
           <span class="badge">${escapeHTML(p.cat || "Service")}</span>
-          <div class="price-pill"><span>$</span>${escapeHTML(priceText)}</div>
+          <div class="price-pill"${minMaxAttr}><span>$</span>${escapeHTML(priceText)}</div>
         </div>
 
         <div class="card-mid">
@@ -651,13 +681,14 @@ function render(){
           </div>
           <div class="card-body">
             <h3 class="product-title">${escapeHTML(p.nom || "Produit")}</h3>
+            ${proTag}
             ${descHTML}
             ${limits}
           </div>
         </div>
 
         <div class="card-actions">
-          <a class="btn-buy" href="${payLink}">Commander →</a>
+          <a class="btn-buy" href="${payLink}" target="_blank" rel="noopener">${escapeHTML(ctaLabel)}</a>
         </div>
       </article>
     `;
@@ -669,7 +700,13 @@ document.addEventListener("click", (e)=>{
   const btn = e.target.closest(".cat-btn");
   if(!btn) return;
   setActiveButton(btn);
-  CURRENT_FILTER = parseFilterValue(btn.dataset.filter || "all");
+  const parsed = parseFilterValue(btn.dataset.filter || "all");
+  // if parsed is a single string and exists in FILTER_MAP -> return mapped array
+  if(typeof parsed === "string" && FILTER_MAP[parsed]){
+    CURRENT_FILTER = parsed;
+  } else {
+    CURRENT_FILTER = parsed;
+  }
   render();
 });
 
