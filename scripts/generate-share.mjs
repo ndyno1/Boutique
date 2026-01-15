@@ -1,48 +1,52 @@
+// scripts/generate-pages.mjs
 import fs from "fs";
 import path from "path";
 
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
-const SITE = "https://viralflowr.com";
 
-// image fallback si p.img vide
-const FALLBACK_IMG = "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
+// ---------- helpers ----------
+const safe = (v) => (v === null || v === undefined) ? "" : String(v);
+const escHtml = (s) => safe(s)
+  .replaceAll("&", "&amp;")
+  .replaceAll("<", "&lt;")
+  .replaceAll(">", "&gt;")
+  .replaceAll('"', "&quot;")
+  .replaceAll("'", "&#039;");
 
-function escHtml(s = "") {
-  return String(s)
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-function safe(s = "") { return String(s ?? "").trim(); }
-
-function ensureDir(dir) { fs.mkdirSync(dir, { recursive: true }); }
-function writeFile(fp, content) {
-  ensureDir(path.dirname(fp));
-  fs.writeFileSync(fp, content, "utf8");
+function ensureDir(dir) {
+  fs.mkdirSync(dir, { recursive: true });
 }
 
-// JSONP get_products => cb([...])
-async function fetchProducts() {
-  const cb = "cb";
-  const url = `${SCRIPT_URL}?action=get_products&callback=${cb}&t=${Date.now()}`;
-  const res = await fetch(url);
-  const text = await res.text();
+function rmDir(dir) {
+  if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true });
+}
 
-  const start = text.indexOf(`${cb}(`);
-  const end = text.lastIndexOf(")");
-  if (start === -1 || end === -1) throw new Error("BAD_JSONP");
+function toDirectOGImage(url) {
+  const u = safe(url).trim();
+  if (!u) return "";
 
-  const json = text.slice(start + cb.length + 1, end);
-  const data = JSON.parse(json);
-  return Array.isArray(data) ? data : [];
+  // 이미 lh3 googleusercontent direct
+  if (u.includes("lh3.googleusercontent.com/d/")) {
+    // force size
+    return u.includes("=") ? u : `${u}=w1200`;
+  }
+
+  // drive file view -> convert
+  const m1 = u.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
+  if (m1 && m1[1]) return `https://lh3.googleusercontent.com/d/${m1[1]}=w1200`;
+
+  // drive open?id=
+  const m2 = u.match(/drive\.google\.com\/open\?id=([^&]+)/i);
+  if (m2 && m2[1]) return `https://lh3.googleusercontent.com/d/${m2[1]}=w1200`;
+
+  // if normal image url (jpg/png/webp) keep
+  if (/\.(png|jpg|jpeg|webp|gif)(\?.*)?$/i.test(u)) return u;
+
+  return u; // fallback
 }
 
 function buildPayUrl(p) {
-  // Si tu veux garder pay_link en priorité
-  const payLink = safe(p.pay_link || p.payLink);
-  if (payLink) return payLink;
-
-  // sinon paiement.html avec tes paramètres (comme ton index)
+  // Garde ta logique paiement (params)
   const qp = new URLSearchParams();
   qp.set("nom", safe(p.nom));
   qp.set("prix", safe(p.prix));
@@ -52,50 +56,72 @@ function buildPayUrl(p) {
   qp.set("max", safe(p.max));
   qp.set("desc", safe(p.desc || p.description));
   qp.set("long", safe(p.long_desc || p.long || p.longDescription));
-  return `${SITE}/paiement.html?` + qp.toString();
+  return `/paiement.html?${qp.toString()}`;
 }
 
-function buildProductPage(p) {
-  const id = safe(p.id);
-  const title = safe(p.nom) || `Produit ${id}`;
-  const cat = safe(p.cat) || "Produit";
-  const price = safe(p.prix) || "0";
-  const img = safe(p.img) || FALLBACK_IMG;
+async function fetchProducts() {
+  // JSONP -> on extrait le JSON entre (...)
+  const cb = "cb";
+  const url = `${SCRIPT_URL}?action=get_products&callback=${cb}&t=${Date.now()}`;
+  const res = await fetch(url);
+  const txt = await res.text();
 
-  const ogUrl = `${SITE}/p/${encodeURIComponent(id)}/`;
-  const shareUrl = `${SITE}/share/${encodeURIComponent(id)}/`;
+  const start = txt.indexOf("(");
+  const end = txt.lastIndexOf(")");
+  if (start === -1 || end === -1 || end <= start) {
+    throw new Error("Réponse JSONP invalide. Vérifie action=get_products.");
+  }
+  const jsonStr = txt.slice(start + 1, end).trim();
+  const data = JSON.parse(jsonStr);
+  if (!Array.isArray(data)) throw new Error("Le endpoint ne renvoie pas une liste.");
+  return data;
+}
+
+// ---------- templates ----------
+function templateProductPage(p) {
+  const id = safe(p.id).trim();
+  const nom = safe(p.nom).trim() || `Produit ${id}`;
+  const cat = safe(p.cat).trim() || "Service";
+  const prix = safe(p.prix).trim() || "0";
+  const desc = safe(p.desc || p.description).trim();
+  const longDesc = safe(p.long_desc || p.long || p.longDescription).trim();
+
+  const imgRaw = safe(p.img).trim();
+  const ogImg = toDirectOGImage(imgRaw) || "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
   const payUrl = buildPayUrl(p);
+
+  const ogDesc = `${prix} $ • ${cat}${desc ? " • " + desc.replace(/\s+/g, " ").slice(0, 120) : ""}`.slice(0, 200);
 
   return `<!DOCTYPE html>
 <html lang="fr" class="font-inter">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escHtml(title)} | ViralFlowr</title>
-  <meta name="description" content="${escHtml(cat)} • ${escHtml(price)} $ • Paiement sécurisé">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- OG (WhatsApp/Facebook/Insta/Snap) -->
+  <title>${escHtml(nom)} | ViralFlowr</title>
+  <meta name="description" content="${escHtml(ogDesc)}">
+
+  <!-- OG preview -->
   <meta property="og:type" content="product">
   <meta property="og:site_name" content="ViralFlowr">
-  <meta property="og:title" content="${escHtml(title)}">
-  <meta property="og:description" content="${escHtml(cat)} • ${escHtml(price)} $">
-  <meta property="og:image" content="${escHtml(img)}">
-  <meta property="og:url" content="${escHtml(ogUrl)}">
+  <meta property="og:title" content="${escHtml(nom)}">
+  <meta property="og:description" content="${escHtml(ogDesc)}">
+  <meta property="og:image" content="${escHtml(ogImg)}">
+  <meta property="og:url" content="https://viralflowr.com/p/${encodeURIComponent(id)}/">
 
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="${escHtml(img)}">
+  <meta name="twitter:image" content="${escHtml(ogImg)}">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <style>
-    body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
+    body { font-family:'Inter',sans-serif; scroll-behavior:smooth; }
     .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
-    .hover-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    .hover-card:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); border-color: #F07E13; }
-    .btn-support { background: #25D366; color: white; padding: 8px 16px; border-radius: 12px; font-weight: 800; font-size: 12px; display: inline-flex; align-items: center; gap: 8px; transition: 0.3s; }
-    .btn-support:hover { transform: scale(1.05); box-shadow: 0 10px 15px -3px rgba(37, 211, 102, 0.3); }
-    .line-clamp-2{ display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .hover-card { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
+    .hover-card:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05); border-color:#F07E13; }
+    .btn-support { background:#25D366; color:white; padding:8px 16px; border-radius:12px; font-weight:800; font-size:12px; display:flex; align-items:center; gap:8px; transition:.3s; }
+    .btn-support:hover { transform:scale(1.05); box-shadow:0 10px 15px -3px rgba(37,211,102,.3); }
   </style>
 </head>
 
@@ -106,57 +132,53 @@ function buildProductPage(p) {
 
   <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-100 shadow-sm backdrop-blur-md bg-white/95">
     <div class="max-w-[1280px] mx-auto px-4 h-16 flex items-center justify-between gap-4">
-      <a href="${SITE}/index.html" class="flex items-center gap-2 shrink-0">
-        <div class="text-2xl font-black tracking-tighter text-gray-900">
-          Viral<span class="text-[#F07E13]">Flowr</span>
-        </div>
+      <a href="/index.html" class="flex items-center gap-2 shrink-0">
+        <div class="text-2xl font-black tracking-tighter text-gray-900">Viral<span class="text-[#F07E13]">Flowr</span></div>
       </a>
-
-      <div class="flex items-center gap-3">
-        <a href="https://wa.me/+243850373991" target="_blank" class="btn-support">Aide</a>
-      </div>
+      <a href="https://wa.me/+243850373991" target="_blank" class="btn-support">Aide</a>
     </div>
   </header>
 
-  <main class="max-w-[1280px] mx-auto px-4 py-10">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-      <div class="bg-white rounded-[32px] p-6 border border-gray-100 shadow-sm">
-        <div class="aspect-square bg-[#F8FAFC] rounded-[26px] overflow-hidden flex items-center justify-center p-6">
-          <img src="${escHtml(img)}"
-               class="w-full h-full object-contain"
-               alt="${escHtml(title)}"
-               onerror="this.src='${escHtml(FALLBACK_IMG)}'">
+  <main class="max-w-[1280px] mx-auto px-4 py-8">
+    <div class="grid md:grid-cols-2 gap-8">
+      <div class="hover-card bg-white rounded-[30px] p-4 border border-gray-50 shadow-sm">
+        <div class="aspect-square bg-[#F8FAFC] rounded-[22px] flex items-center justify-center p-6 overflow-hidden">
+          <img src="${escHtml(imgRaw || ogImg)}" class="w-full h-full object-contain" alt="${escHtml(nom)}"
+               onerror="this.src='https://cdn-icons-png.flaticon.com/512/11520/11520110.png'">
         </div>
       </div>
 
-      <div class="bg-white rounded-[32px] p-6 md:p-8 border border-gray-100 shadow-sm">
+      <div class="hover-card bg-white rounded-[30px] p-6 md:p-8 border border-gray-50 shadow-sm">
         <span class="text-[10px] font-black text-[#F07E13] uppercase tracking-widest">${escHtml(cat)}</span>
+        <h1 class="text-3xl md:text-4xl font-black tracking-tighter mt-2 mb-4">${escHtml(nom)}</h1>
 
-        <h1 class="text-3xl md:text-4xl font-black tracking-tighter mt-2 mb-4">${escHtml(title)}</h1>
+        <div class="text-4xl font-black tracking-tighter text-gray-900 mb-4">${escHtml(prix)} $</div>
 
-        <div class="text-4xl font-black tracking-tighter text-gray-900 mb-6">${escHtml(price)} $</div>
+        ${(longDesc || desc) ? `
+        <div class="space-y-3">
+          ${longDesc ? `
+          <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4">
+            <h3 class="text-blue-800 text-xs font-black uppercase mb-2">📝 Description du produit</h3>
+            <p class="text-xs text-blue-900 leading-relaxed whitespace-pre-line font-medium">${escHtml(longDesc)}</p>
+          </div>` : ""}
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          ${desc ? `
+          <div class="bg-green-50 border border-green-100 rounded-2xl p-4">
+            <h3 class="text-green-800 text-xs font-black uppercase mb-2">📄 Instructions</h3>
+            <p class="text-xs text-green-900 leading-relaxed whitespace-pre-line font-medium">${escHtml(desc)}</p>
+          </div>` : ""}
+        </div>` : ""}
+
+        <div class="mt-6 grid grid-cols-2 gap-3">
           <a href="${escHtml(payUrl)}"
-             class="w-full brand-gradient text-white py-4 rounded-2xl font-black text-sm uppercase text-center shadow-xl hover:scale-[1.02] transition-transform">
+             class="brand-gradient text-white py-4 rounded-2xl font-black text-sm uppercase text-center shadow-xl hover:scale-[1.02] transition-transform">
             Commander
           </a>
-
-          <a href="${escHtml(shareUrl)}"
-             class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-sm uppercase text-center hover:bg-gray-800 transition-colors">
+          <a href="/share/${encodeURIComponent(id)}/"
+             class="bg-gray-900 text-white py-4 rounded-2xl font-black text-sm uppercase text-center hover:bg-gray-800 transition-colors">
             Partager
           </a>
         </div>
-
-        <div class="mt-6 bg-gray-50 border border-gray-100 rounded-2xl p-4">
-          <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Lien partage</div>
-          <div class="text-xs font-bold text-gray-900 break-all">${escHtml(shareUrl)}</div>
-          <div class="text-[10px] text-gray-400 font-bold mt-2">
-            Astuce cache WhatsApp : ajoute <span class="text-gray-900">?v=1</span> si le preview ne change pas.
-          </div>
-        </div>
-
       </div>
     </div>
   </main>
@@ -164,67 +186,78 @@ function buildProductPage(p) {
 </html>`;
 }
 
-function buildSharePage(p) {
-  const id = safe(p.id);
-  const title = safe(p.nom) || `Produit ${id}`;
-  const cat = safe(p.cat) || "Produit";
-  const price = safe(p.prix) || "0";
-  const img = safe(p.img) || FALLBACK_IMG;
+function templateSharePage(p) {
+  const id = safe(p.id).trim();
+  const nom = safe(p.nom).trim() || `Produit ${id}`;
+  const cat = safe(p.cat).trim() || "Service";
+  const prix = safe(p.prix).trim() || "0";
 
-  // URL où WA lit OG
-  const shareUrl = `${SITE}/share/${encodeURIComponent(id)}/`;
+  const imgRaw = safe(p.img).trim();
+  const ogImg = toDirectOGImage(imgRaw) || "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
 
-  // redirection humains (après preview) => page produit
-  const redirectUrl = `${SITE}/p/${encodeURIComponent(id)}/`;
+  const payUrl = buildPayUrl(p);
+  const ogDesc = `${prix} $ • ${cat}`.slice(0, 200);
 
+  // page ultra light: OG + redirect
   return `<!doctype html>
 <html lang="fr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <title>${escHtml(title)} | ViralFlowr</title>
-  <meta name="description" content="${escHtml(cat)} • ${escHtml(price)} $">
+  <title>${escHtml(nom)} | ViralFlowr</title>
+  <meta name="description" content="${escHtml(ogDesc)}">
 
   <meta property="og:type" content="product">
   <meta property="og:site_name" content="ViralFlowr">
-  <meta property="og:title" content="${escHtml(title)}">
-  <meta property="og:description" content="${escHtml(cat)} • ${escHtml(price)} $">
-  <meta property="og:image" content="${escHtml(img)}">
-  <meta property="og:url" content="${escHtml(shareUrl)}">
+  <meta property="og:title" content="${escHtml(nom)}">
+  <meta property="og:description" content="${escHtml(ogDesc)}">
+  <meta property="og:image" content="${escHtml(ogImg)}">
+  <meta property="og:url" content="https://viralflowr.com/share/${encodeURIComponent(id)}/">
 
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="${escHtml(img)}">
+  <meta name="twitter:image" content="${escHtml(ogImg)}">
 
-  <meta http-equiv="refresh" content="0;url=${escHtml(redirectUrl)}">
+  <meta http-equiv="refresh" content="0;url=${escHtml(payUrl)}">
 </head>
 <body>
-  <a href="${escHtml(redirectUrl)}">Ouvrir</a>
+  <a href="${escHtml(payUrl)}">Ouvrir la commande</a>
 </body>
 </html>`;
 }
 
+// ---------- main ----------
 async function main() {
   const products = await fetchProducts();
-  if (!products.length) {
-    console.log("Aucun produit trouvé.");
-    return;
-  }
 
-  // IMPORTANT: il ne doit PAS exister un fichier "p" ou "share" à la racine
-  // sinon GitHub empêche de créer les dossiers.
+  // clean generated dirs
+  rmDir("p");
+  rmDir("share");
+  ensureDir("p");
+  ensureDir("share");
+
+  let count = 0;
+
   for (const p of products) {
-    const id = safe(p.id);
+    const id = safe(p.id).trim();
     if (!id) continue;
 
-    writeFile(`p/${id}/index.html`, buildProductPage(p));
-    writeFile(`share/${id}/index.html`, buildSharePage(p));
+    // product pages
+    const pDir = path.join("p", id);
+    ensureDir(pDir);
+    fs.writeFileSync(path.join(pDir, "index.html"), templateProductPage(p), "utf-8");
+
+    // share pages (preview)
+    const sDir = path.join("share", id);
+    ensureDir(sDir);
+    fs.writeFileSync(path.join(sDir, "index.html"), templateSharePage(p), "utf-8");
+
+    count++;
   }
 
-  console.log(`✅ Généré: ${products.length} pages produits + share`);
+  console.log(`✅ Pages générées: ${count} produits (p/* + share/*).`);
 }
 
-main().catch(err => {
-  console.error("❌", err);
+main().catch((e) => {
+  console.error("❌ Erreur:", e);
   process.exit(1);
 });
