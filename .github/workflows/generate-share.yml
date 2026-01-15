@@ -1,9 +1,9 @@
-name: Generate Product & Share Pages
+name: Generate product pages
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 */6 * * *"  # toutes les 6h (tu peux changer)
+    - cron: "*/3 * * * *"   # toutes les 30 minutes (tu peux changer)
 
 permissions:
   contents: write
@@ -20,16 +20,13 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Install
-        run: npm install --no-audit --no-fund
-
       - name: Generate pages
-        run: npm run generate
+        run: node scripts/generate-pages.mjs
 
       - name: Commit changes
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "viralflowr-bot"
+          git config user.email "viralflowr-bot@users.noreply.github.com"
           git add p share
           git commit -m "Auto-generate product pages" || echo "No changes"
           git push
