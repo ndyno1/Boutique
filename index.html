@@ -24,6 +24,14 @@
 
         .btn-support { background: #25D366; color: white; padding: 8px 16px; border-radius: 12px; font-weight: 800; font-size: 12px; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
         .btn-support:hover { transform: scale(1.05); box-shadow: 0 10px 15px -3px rgba(37, 211, 102, 0.3); }
+
+        /* petit helper line-clamp si ton navigateur supporte */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body class="bg-[#F8FAFC]">
@@ -113,12 +121,13 @@
         let ALL_PRODUCTS = [];
         let CURRENT_FILTER = "all";
 
-        // ✅ même logique que tu voulais
+        // ✅ mapping robuste (insensible à la casse)
         const FILTER_MAP = {
-            "Abonnement": ["Abonnement", "Carte"],
-            "Carte2": ["Carte2"],
-            "Boost": ["Boost", "Boost2", "SMM1"],
-            "Materiel": ["Materiel", "Gadget", "Phone"]
+            "Abonnement": ["ABONNEMENT","CARTE"],          // tes cat possibles
+            "Carte2":     ["CARTE2"],
+            "Boost":      ["BOOST","BOOST2","SMM1","SMM2","SMM3","PEAKERR","PEAK"], // boost/smm
+            "Materiel":   ["MATERIEL","GADGET","PHONE"],
+            "IMEI":       ["IMEI"]
         };
 
         const input = document.getElementById('searchInput');
@@ -127,30 +136,36 @@
         input.addEventListener('blur', () => { if(input.value === "") placeholderBox.style.display = 'block'; });
 
         function safe(v){ return (v === null || v === undefined) ? "" : String(v); }
+        function up(v){ return safe(v).trim().toUpperCase(); }
 
         function buildPayUrl(p) {
-            // ✅ On envoie tout vers paiement.html (min/max + desc + long)
+            // ✅ Si Produits a pay_link => priorité (ex: lien PayMaster, etc)
+            const payLink = safe(p.pay_link || p.payLink).trim();
+            if (payLink) return payLink;
+
+            // ✅ Sinon: paiement.html avec tout le nécessaire
             const qp = new URLSearchParams();
-            qp.set("nom", p.nom);
-            qp.set("prix", p.prix);
-            qp.set("cat", p.cat);
-            qp.set("id", p.id);
+            qp.set("nom", safe(p.nom));
+            qp.set("prix", safe(p.prix));
+            qp.set("cat", safe(p.cat));
+            qp.set("id",  safe(p.id));
 
             // ✅ MIN/MAX (H/I)
             qp.set("min", safe(p.min));
             qp.set("max", safe(p.max));
 
-            // ✅ DESC + LONG (depuis Apps Script)
-            qp.set("desc", safe(p.desc));
-            qp.set("long", safe(p.long_desc || p.long));
+            // ✅ desc/long : (si ton Apps Script renvoie un jour ces champs)
+            qp.set("desc", safe(p.desc || p.description));
+            qp.set("long", safe(p.long_desc || p.long || p.longDescription));
 
             return "paiement.html?" + qp.toString();
         }
 
-        async function init() {
-            const script = document.createElement('script');
-            script.src = `${SCRIPT_URL}?action=get_products&callback=onSuccess`;
-            document.body.appendChild(script);
+        function init() {
+            // JSONP (anti-cache)
+            const s = document.createElement('script');
+            s.src = `${SCRIPT_URL}?action=get_products&callback=onSuccess&t=${Date.now()}`;
+            document.body.appendChild(s);
         }
 
         window.onSuccess = function(data) {
@@ -158,21 +173,44 @@
             render();
         };
 
+        function matchCatByFilter(productCatUpper, filterKey){
+            if (filterKey === "all") return true;
+
+            // si filtre exact (ex "IMEI") : on accepte si productCat contient "IMEI"
+            if (filterKey === "IMEI") return productCatUpper.includes("IMEI");
+
+            const allowed = FILTER_MAP[filterKey];
+            if (!allowed) return (productCatUpper === up(filterKey));
+
+            // on matche soit exact, soit "contient"
+            for (const a of allowed){
+                const A = up(a);
+                if (productCatUpper === A) return true;
+                if (A === "IMEI" && productCatUpper.includes("IMEI")) return true;
+                if ((A === "PEAKERR" || A === "PEAK") && (productCatUpper.includes("PEAK") || productCatUpper.includes("PEAKERR"))) return true;
+                if (A.startsWith("SMM") && productCatUpper.includes("SMM")) return true;
+            }
+            return false;
+        }
+
         function render() {
             const grid = document.getElementById('product-grid');
-            const query = (input.value || "").toLowerCase();
+            const query = (input.value || "").toLowerCase().trim();
 
             const filtered = ALL_PRODUCTS.filter(p => {
-                const cat = safe(p.cat);
-                const name = safe(p.nom).toLowerCase();
+                const catU = up(p.cat);
+                const nameL = safe(p.nom).toLowerCase();
+                const catL  = safe(p.cat).toLowerCase();
 
-                const matchCat =
-                    CURRENT_FILTER === "all" ||
-                    (FILTER_MAP[CURRENT_FILTER]
-                        ? FILTER_MAP[CURRENT_FILTER].includes(cat)
-                        : cat === CURRENT_FILTER);
+                const matchCat = matchCatByFilter(catU, CURRENT_FILTER);
 
-                const matchSearch = name.includes(query);
+                // recherche: nom + catégorie + id
+                const matchSearch =
+                    !query ||
+                    nameL.includes(query) ||
+                    catL.includes(query) ||
+                    safe(p.id).toLowerCase().includes(query);
+
                 return matchCat && matchSearch;
             });
 
@@ -184,6 +222,8 @@
             grid.innerHTML = filtered.map(p => {
                 const img = safe(p.img) || 'https://cdn-icons-png.flaticon.com/512/11520/11520110.png';
                 const payUrl = buildPayUrl(p);
+                const price = parseFloat(p.prix || 0);
+                const priceTxt = isFinite(price) ? price.toFixed(2) : safe(p.prix);
 
                 return `
                     <div onclick="location.href='${payUrl}'"
@@ -197,11 +237,17 @@
                             <span class="text-[9px] font-black text-[#F07E13] uppercase tracking-tighter mb-1 block">${safe(p.cat)}</span>
                             <h3 class="text-[13px] font-bold text-gray-900 leading-tight mb-4 h-8 overflow-hidden line-clamp-2">${safe(p.nom)}</h3>
                             <div class="flex items-center justify-between">
-                                <span class="text-gray-900 font-black text-lg tracking-tighter">${parseFloat(p.prix || 0).toFixed(2)} $</span>
+                                <span class="text-gray-900 font-black text-lg tracking-tighter">${priceTxt} $</span>
                                 <div class="bg-gray-900 text-white p-1.5 rounded-lg group-hover:brand-gradient transition-all">
                                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
                                 </div>
                             </div>
+
+                            <!-- (optionnel) mini info min/max si présents -->
+                            ${ (safe(p.min) || safe(p.max)) ? `
+                              <div class="mt-3 text-[9px] font-black uppercase tracking-widest text-gray-300">
+                                Min ${safe(p.min) || "-"} • Max ${safe(p.max) || "-"}
+                              </div>` : `` }
                         </div>
                     </div>
                 `;
