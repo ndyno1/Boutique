@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr" class="font-inter">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>À Propos | DI corporation</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F3F3F3; color: #201B16; }
+        .text-orange-bsv { color: #F07E13; }
+        .bg-orange-bsv { background-color: #F07E13; }
+        .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
+        .hover-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); transition: all 0.3s ease; }
+    </style>
+</head>
+
+<body class="flex flex-col min-h-screen">
+
+    <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-200 shadow-sm">
+        <div class="max-w-[1240px] mx-auto h-16 px-4 flex items-center justify-between gap-4">
+            
+            <a class="flex items-center gap-2" href="index.html">
+                <div class="text-2xl font-black tracking-tighter">
+                    Viral<span class="text-orange-bsv">Flowr</span>
+                </div>
+            </a>
+
+            <div class="hidden md:flex items-center gap-8 font-bold text-sm text-[#767676]">
+                <a href="index.html" class="hover:text-[#F07E13] transition-colors">Accueil</a>
+                <a href="index.html#catalogue" class="hover:text-[#F07E13] transition-colors">Catalogue</a>
+                <a href="about.html" class="text-[#F07E13]">À Propos</a>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <a href="https://t.me/Viralflow" class="hidden sm:flex items-center gap-2 text-xs font-bold uppercase text-[#767676] hover:text-black">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.35-.01-1.02-.2-1.51-.36-.6-.2-1.08-.31-1.04-.66.02-.18.27-.37.75-.56 2.94-1.28 4.91-2.13 5.89-2.54 2.81-1.18 3.39-1.39 3.77-1.39.08 0 .27.02.39.12.1.08.13.19.14.27.01.06.01.24 0 .33z"/></svg>
+                    Community
+                </a>
+                <a href="index.html" class="px-5 py-2 bg-[#F2F4F5] rounded-lg text-xs font-bold hover:bg-gray-200 transition-colors">
+                    Boutique
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1">
+        
+        <!-- HERO -->
+        <section class="bg-white border-b border-gray-200 pb-16 pt-12">
+            <div class="max-w-[1000px] mx-auto px-4 text-center">
+                <span class="inline-block px-3 py-1 bg-orange-100 text-[#F07E13] rounded-full text-[10px] font-black uppercase tracking-widest mb-4">
+                    DI corporation • Depuis 2023
+                </span>
+                <h1 class="text-4xl md:text-6xl font-black text-[#201B16] mb-6 tracking-tight leading-tight">
+                    Une équipe qui construit<br><span class="text-orange-bsv">des solutions digitales</span> fiables.
+                </h1>
+                <p class="text-gray-500 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+                    ViralFlowr est une initiative de DI corporation : une entreprise orientée technologie qui facilite l’accès
+                    aux services numériques (SMM, abonnements, cartes et produits) avec une expérience simple, rapide et sécurisée.
+                </p>
+            </div>
+        </section>
+
+        <!-- STATS -->
+        <section class="max-w-[1240px] mx-auto px-4 -mt-8 mb-16">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-[#121417] text-white p-8 rounded-2xl shadow-xl flex flex-col items-center justify-center text-center">
+                    <div class="text-5xl font-black text-[#F07E13] mb-2">2023</div>
+                    <div class="text-sm font-bold uppercase tracking-widest opacity-80">Création</div>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 flex flex-col items-center justify-center text-center">
+                    <div class="text-5xl font-black text-gray-900 mb-2">+3 ans</div>
+                    <div class="text-sm font-bold text-gray-400 uppercase tracking-widest">D’activité</div>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 flex flex-col items-center justify-center text-center">
+                    <div class="text-5xl font-black text-gray-900 mb-2">24/7</div>
+                    <div class="text-sm font-bold text-gray-400 uppercase tracking-widest">Support & Assistance</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- QUI SOMMES-NOUS -->
+        <section class="max-w-[1240px] mx-auto px-4 mb-20">
+            <div class="bg-white rounded-[32px] p-8 md:p-12 border border-gray-100 shadow-lg">
+                <div class="flex items-start gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-[#F07E13] shrink-0">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M20 21V7a2 2 0 00-2-2H6a2 2 0 00-2 2v14"></path>
+                            <path d="M9 21V9h6v12"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-black text-[#18181B]">Qui sommes-nous ?</h2>
+                        <p class="text-gray-500 text-sm font-medium mt-2 leading-relaxed">
+                            L’aventure de <strong>DI corporation</strong> a commencé en <strong>2023</strong>, année de sa création par un groupe d’amis.
+                            Aujourd’hui, après plus de <strong>3 ans d’activité</strong>, nous avons construit un écosystème qui permet
+                            d’acheter des services et produits digitaux avec une qualité constante et un support rapide.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+                    <div class="hover-card bg-[#F8FAFC] p-6 rounded-2xl border border-gray-100">
+                        <h3 class="font-black text-sm uppercase tracking-widest text-[#F07E13] mb-2">Notre mission</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            Rendre les services numériques accessibles, fiables et rapides, notamment pour l’Afrique francophone.
+                        </p>
+                    </div>
+                    <div class="hover-card bg-[#F8FAFC] p-6 rounded-2xl border border-gray-100">
+                        <h3 class="font-black text-sm uppercase tracking-widest text-[#F07E13] mb-2">Notre vision</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            Construire une marketplace moderne où l’achat en ligne est simple, transparent et sécurisé.
+                        </p>
+                    </div>
+                    <div class="hover-card bg-[#F8FAFC] p-6 rounded-2xl border border-gray-100">
+                        <h3 class="font-black text-sm uppercase tracking-widest text-[#F07E13] mb-2">Nos valeurs</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            Qualité, rapidité, confidentialité, et satisfaction client avant tout.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- POURQUOI -->
+        <section class="max-w-[1240px] mx-auto px-4 mb-20">
+            <h2 class="text-2xl font-bold text-[#18181B] mb-8">Pourquoi choisir ViralFlowr ?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                
+                <div class="hover-card bg-white p-6 rounded-2xl border border-gray-100 h-full">
+                    <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-4 text-[#F07E13]">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Livraison Flash</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">
+                        Automatisation + traitement rapide des commandes pour minimiser le temps d’attente.
+                    </p>
+                </div>
+
+                <div class="hover-card bg-white p-6 rounded-2xl border border-gray-100 h-full">
+                    <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4 text-blue-600">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Sécurité Max</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">
+                        Paiements sécurisés via crypto et mobile money, avec un suivi clair et une note de commande.
+                    </p>
+                </div>
+
+                <div class="hover-card bg-white p-6 rounded-2xl border border-gray-100 h-full">
+                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4 text-green-600">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Prix Compétitifs</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">
+                        Nous optimisons nos coûts et fournisseurs pour proposer des offres stables et accessibles.
+                    </p>
+                </div>
+
+                <div class="hover-card bg-white p-6 rounded-2xl border border-gray-100 h-full">
+                    <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4 text-purple-600">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Catalogue Complet</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">
+                        Services SMM, cartes, abonnements et plus — une expérience simple, au même endroit.
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="max-w-[1240px] mx-auto px-4 mb-20">
+            <div class="bg-gray-900 rounded-[32px] p-8 md:p-12 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-[#F07E13] rounded-full blur-[100px] opacity-20 transform translate-x-1/2 -translate-y-1/2"></div>
+                
+                <div class="relative z-10 grid md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h2 class="text-3xl font-black text-white mb-4">Prêt à commander ?</h2>
+                        <p class="text-gray-400 mb-8 max-w-md">
+                            Accédez à la boutique ViralFlowr et finalisez vos achats en toute sécurité.
+                        </p>
+                        <a href="index.html" class="inline-block bg-[#F07E13] text-white px-8 py-4 rounded-xl font-bold text-sm uppercase shadow-lg hover:bg-white hover:text-[#F07E13] transition-all">
+                            Accéder à la boutique
+                        </a>
+                    </div>
+                    <div class="flex gap-4 justify-end opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+                        <div class="text-white text-right">
+                            <div class="text-4xl font-black mb-2">USDT</div>
+                            <div class="text-4xl font-black mb-2">BINANCE</div>
+                            <div class="text-4xl font-black">WAVE</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-gray-100 py-16">
+        <div class="max-w-[1240px] mx-auto px-4 text-center">
+            <div class="text-2xl font-black tracking-tighter mb-8 italic text-[#201B16]">
+                Viral<span class="text-orange-bsv">Flowr</span>
+            </div>
+            <div class="flex justify-center flex-wrap gap-8 text-[11px] font-black uppercase text-gray-400 tracking-widest mb-10">
+                <a href="index.html" class="hover:text-black transition-colors">Boutique</a>
+                <a href="https://wa.me/+243850373991" class="hover:text-green-600 transition-colors">Contact Support</a>
+                <a href="#" class="hover:text-black transition-colors">CGV</a>
+            </div>
+            <p class="text-[10px] text-gray-300 max-w-lg mx-auto uppercase leading-loose">
+                © 2026 DI corporation. Tous droits réservés. <br>
+                Kinshasa, RDC.
+            </p>
+        </div>
+    </footer>
+
+</body>
+</html>
