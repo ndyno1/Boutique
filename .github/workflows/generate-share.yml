@@ -8,12 +8,18 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: generate-pages
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # important pour pull/rebase
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -30,10 +36,23 @@ jobs:
       - name: Generate pages
         run: node ./scripts/generate-pages.mjs
 
-      - name: Commit changes
+      - name: Commit & Push changes
         run: |
           git config user.name "viralflowr-bot"
           git config user.email "viralflowr-bot@users.noreply.github.com"
+
           git add p share
-          git commit -m "Auto-generate product pages" || echo "No changes"
-          git push
+
+          # Si rien n'a changé, on stop proprement
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+
+          git commit -m "Auto-generate product pages"
+
+          # récupère les changements distants si un autre job a push
+          git pull --rebase origin main
+
+          # push final
+          git push origin main
