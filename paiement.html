@@ -14,104 +14,180 @@
         .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
         .text-orange-bsv { color: #F07E13; }
         .checkout-container { max-width: 500px; width: 100%; margin: 2rem auto; }
-        input, textarea { outline: none; transition: all 0.2s; }
-        input:focus, textarea:focus { ring: 2px; ring-color: #F07E13; border-color: transparent; }
-        .crypto-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; margin-top: 8px; }
+        input, textarea { outline: none; transition: all 0.2s; border: 1px solid #e5e7eb !important; }
+        input:focus, textarea:focus { border-color: #F07E13 !important; ring: 1px; ring-color: #F07E13; }
+        
+        /* Style des lignes de paiement */
+        .payment-row { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 12px; background: rgba(255,255,255,0.03); 
+            border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); 
+            margin-bottom: 8px;
+        }
+        .copy-badge {
+            font-size: 10px; font-weight: 800; background: rgba(255,255,255,0.1);
+            padding: 4px 8px; border-radius: 6px; cursor: pointer; transition: 0.2s;
+        }
+        .copy-badge:hover { background: #F07E13; color: white; }
+        
+        /* Animations */
+        details[open] summary ~ * { animation: sweep .3s ease-in-out; }
+        @keyframes sweep { 0% {opacity: 0; transform: translateY(-10px)} 100% {opacity: 1; transform: translateY(0)} }
     </style>
 </head>
 
 <body class="p-4 md:p-8 text-[#201B16]">
 
     <div class="checkout-container">
-        <div class="text-center mb-8">
-            <a href="index.html" class="inline-block text-2xl font-black tracking-tighter mb-2">
+        <div class="text-center mb-6">
+            <a href="index.html" class="inline-block text-2xl font-black tracking-tighter mb-1">
                 Viral<span class="text-orange-bsv">Flowr</span>
             </a>
-            <p class="text-gray-400 text-xs font-bold uppercase tracking-widest">Finaliser votre achat</p>
+            <p class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Finaliser votre commande</p>
         </div>
 
-        <div class="bg-white rounded-[32px] shadow-sm border border-gray-100 p-6 md:p-8 relative">
+        <div class="bg-white rounded-[32px] shadow-lg border border-gray-100 p-6 md:p-8">
             
             <div id="form-container">
-                <h2 id="service-name" class="text-xl font-extrabold text-center mb-6">Chargement...</h2>
-
-                <div class="bg-[#F8FAFC] border-2 border-dashed border-[#F07E13]/30 rounded-2xl p-4 text-center mb-6">
-                    <span class="text-[10px] font-black text-orange-600 uppercase tracking-tighter">Note impérative Binance Pay</span>
-                    <span id="live-order-id" class="block text-2xl font-black text-gray-900 my-1">#CMD-XXXX</span>
-                    <button type="button" onclick="copyText(document.getElementById('live-order-id').innerText)" class="text-[10px] font-bold bg-gray-900 text-white px-3 py-1 rounded-full">COPIER L'ID</button>
+                <h2 id="service-name" class="text-xl font-extrabold text-center mb-2 leading-tight">Chargement...</h2>
+                <div class="text-center mb-6">
+                    <span id="cat-badge" class="bg-gray-100 text-gray-500 text-[10px] font-bold px-3 py-1 rounded-full uppercase">—</span>
                 </div>
 
-                <form id="orderForm" class="space-y-4">
+                <div class="space-y-3 mb-8">
+                    <details class="group bg-[#F8FAFC] rounded-xl overflow-hidden hidden" id="desc-box">
+                        <summary class="list-none p-3 font-bold text-xs cursor-pointer flex justify-between items-center text-gray-700 hover:bg-gray-100 transition-colors">
+                            <span>📝 Description du produit</span>
+                            <span class="group-open:rotate-180 transition-transform text-gray-400">▼</span>
+                        </summary>
+                        <div class="p-4 pt-0 text-xs text-gray-600 leading-relaxed whitespace-pre-line" id="desc-text"></div>
+                    </details>
+                </div>
+
+                <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-4 text-center mb-8 relative group hover:border-orange-200 transition-all">
+                    <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">Note de commande (Important)</span>
+                    <span id="live-order-id" class="block text-2xl font-black text-gray-900 tracking-tight cursor-pointer" onclick="copyText(this.innerText)">#CMD-XXXX</span>
+                    <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onclick="copyText(document.getElementById('live-order-id').innerText)" class="text-[9px] bg-white border border-gray-200 px-2 py-1 rounded shadow-sm">Copier</button>
+                    </div>
+                </div>
+
+                <form id="orderForm" class="space-y-5">
+                    
                     <div id="section-smm" class="hidden space-y-4">
-                        <input type="text" id="boost-link" placeholder="Lien à booster" class="w-full bg-gray-50 border-none rounded-xl p-3 text-sm font-medium">
-                        <input type="number" id="qty" value="1000" class="w-full bg-gray-50 border-none rounded-xl p-3 text-sm font-black">
-                    </div>
-                    <div id="section-abonnement" class="hidden space-y-4">
-                        <textarea id="creds" placeholder="Identifiants (Email : Mot de passe)" class="w-full bg-gray-50 border-none rounded-xl p-3 text-sm font-medium h-24"></textarea>
-                        <input type="text" id="delivery-contact-abo" placeholder="WhatsApp ou Email pour livraison" class="w-full bg-gray-50 border-none rounded-xl p-3 text-sm font-medium">
-                    </div>
-                    <div id="section-carte" class="hidden">
-                        <input type="text" id="card-delivery" placeholder="Contact WhatsApp/Email de livraison" class="w-full bg-gray-50 border-none rounded-xl p-3 text-sm font-medium">
-                    </div>
-                    <div id="section-default" class="hidden space-y-4">
-                        <input type="text" id="main-input" placeholder="Information requise" class="w-full bg-gray-50 border-none rounded-xl p-3 text-sm font-medium">
-                        <input type="email" id="email-client" placeholder="Votre Email" class="w-full bg-gray-50 border-none rounded-xl p-3 text-sm font-medium">
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Lien à booster</label>
+                            <input type="text" id="boost-link" placeholder="https://..." class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Quantité</label>
+                            <input type="number" id="qty" value="1000" class="w-full bg-white rounded-xl p-3 text-sm font-black">
+                        </div>
                     </div>
 
-                    <div class="py-4 text-center">
+                    <div id="section-abonnement" class="hidden space-y-4">
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Vos Identifiants</label>
+                            <textarea id="creds" placeholder="Email : ... &#10;Mot de passe : ..." class="w-full bg-white rounded-xl p-3 text-sm font-medium h-24 resize-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact Livraison</label>
+                            <input type="text" id="delivery-contact-abo" placeholder="WhatsApp ou Email" class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+                        </div>
+                    </div>
+
+                    <div id="section-carte" class="hidden">
+                        <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Où recevoir le code ?</label>
+                        <input type="text" id="card-delivery" placeholder="WhatsApp ou Email" class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+                    </div>
+
+                    <div id="section-default" class="hidden space-y-4">
+                        <input type="text" id="main-input" placeholder="Information requise..." class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+                        <input type="email" id="email-client" placeholder="Votre Email" class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+                    </div>
+
+                    <div class="py-2 text-center">
+                        <span class="text-[10px] text-gray-400 uppercase font-bold">Total à payer</span>
                         <div id="display-price" class="text-4xl font-black text-gray-900 tracking-tighter">0.00 $</div>
                     </div>
 
-                    <div class="bg-gray-900 rounded-3xl p-6 text-white space-y-4 shadow-2xl">
-                        <h4 class="text-[10px] font-black text-orange-400 uppercase tracking-[0.2em] border-b border-white/10 pb-3">Options de transfert</h4>
+                    <div class="bg-[#121417] rounded-[24px] p-5 text-white shadow-2xl relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-orange-500 blur-[60px] opacity-20"></div>
                         
-                        <div class="flex justify-between items-center group">
-                            <span class="text-xs opacity-60">Binance Pay ID</span>
-                            <span class="text-sm font-bold cursor-pointer hover:text-orange-400" onclick="copyText('744370418')">744370418 📋</span>
-                        </div>
-
-                        <div class="crypto-box">
-                            <span class="text-[9px] font-black text-blue-400 uppercase block">USDT (Network: TRC-20)</span>
-                            <div class="flex justify-between items-center mt-1">
-                                <span class="text-[10px] truncate mr-2 opacity-80" id="trc20-addr">TYv7N...vX9rW</span>
-                                <button type="button" onclick="copyText('TON_ADRESSE_TRC20_ICI')" class="text-[10px] font-black bg-white/10 px-2 py-1 rounded">COPIER</button>
+                        <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> Moyens acceptés
+                        </h4>
+                        
+                        <div class="payment-row">
+                            <div>
+                                <span class="block text-[10px] font-bold text-orange-400 uppercase">Binance Pay</span>
+                                <span class="text-[13px] font-bold">744370418</span>
                             </div>
+                            <button type="button" class="copy-badge" onclick="copyText('744370418')">COPIER</button>
                         </div>
 
-                        <div class="crypto-box">
-                            <span class="text-[9px] font-black text-yellow-400 uppercase block">USDT (Network: BEP-20)</span>
-                            <div class="flex justify-between items-center mt-1">
-                                <span class="text-[10px] truncate mr-2 opacity-80" id="bep20-addr">0x7a2...F92a</span>
-                                <button type="button" onclick="copyText('TON_ADRESSE_BEP20_ICI')" class="text-[10px] font-black bg-white/10 px-2 py-1 rounded">COPIER</button>
+                        <div class="payment-row">
+                            <div class="overflow-hidden mr-2">
+                                <span class="block text-[10px] font-bold text-blue-400 uppercase">USDT (TRC-20)</span>
+                                <span class="text-[10px] font-mono opacity-80 truncate block">TQj...vX9rW (Exemple)</span>
                             </div>
+                            <button type="button" class="copy-badge" onclick="copyText('TON_ADRESSE_TRC20')">COPIER</button>
                         </div>
 
-                        <div class="pt-2 space-y-2 border-t border-white/10">
-                            <div class="flex justify-between items-center text-xs">
-                                <span class="opacity-60 italic">Airtel (RDC)</span>
-                                <span class="font-bold">0971028041</span>
+                        <div class="payment-row">
+                            <div class="overflow-hidden mr-2">
+                                <span class="block text-[10px] font-bold text-yellow-400 uppercase">USDT (BEP-20)</span>
+                                <span class="text-[10px] font-mono opacity-80 truncate block">0x7...F92a (Exemple)</span>
+                            </div>
+                            <button type="button" class="copy-badge" onclick="copyText('TON_ADRESSE_BEP20')">COPIER</button>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 mt-2">
+                            <div class="bg-white/5 p-3 rounded-xl border border-white/10">
+                                <span class="block text-[9px] font-bold text-blue-300 uppercase mb-1">Wave (CI)</span>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-[11px] font-bold">0546247885</span>
+                                    <button type="button" onclick="copyText('+2250546247885')">📋</button>
+                                </div>
+                            </div>
+                            <div class="bg-white/5 p-3 rounded-xl border border-white/10">
+                                <span class="block text-[9px] font-bold text-red-400 uppercase mb-1">Airtel (RDC)</span>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-[11px] font-bold">0971028041</span>
+                                    <button type="button" onclick="copyText('0971028041')">📋</button>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-[13px] font-bold text-gray-700 mb-2 italic">📸 Screenshot de la preuve</label>
-                        <input type="file" id="file" accept="image/*" required class="w-full text-xs bg-white border border-gray-100 rounded-xl p-2">
+                    <div class="pt-2">
+                        <label class="text-[11px] font-bold text-gray-900 uppercase ml-1 block mb-2">📸 Preuve de paiement</label>
+                        <input type="file" id="file" accept="image/*" required class="w-full text-xs bg-white rounded-xl p-3 border border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
                     </div>
 
-                    <button type="submit" id="submitBtn" class="w-full brand-gradient text-white py-4 rounded-2xl font-black text-sm uppercase shadow-xl">
-                        Valider mon paiement
+                    <button type="submit" id="submitBtn" class="w-full brand-gradient text-white py-4 rounded-2xl font-black text-sm uppercase shadow-xl hover:scale-[1.02] transition-transform">
+                        Confirmer le paiement
                     </button>
                 </form>
             </div>
 
-            <div id="success-msg" class="hidden text-center py-10">
-                <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
+            <div id="success-msg" class="hidden text-center py-12">
+                <div class="w-24 h-24 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
+                    <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
                 </div>
-                <h3 class="text-2xl font-black text-gray-900 mb-2">Merci !</h3>
-                <p class="text-gray-500 text-sm mb-6">Commande <strong id="final-id"></strong> enregistrée.</p>
-                <button onclick="location.href='index.html'" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-sm uppercase">Retour Accueil</button>
+                <h3 class="text-3xl font-black text-gray-900 mb-2">Reçu 5/5 !</h3>
+                <p class="text-gray-500 text-sm mb-8 font-medium">Votre commande <strong id="final-id" class="text-gray-900"></strong> est en cours de traitement.</p>
+                <button onclick="location.href='index.html'" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-xs uppercase hover:bg-gray-800 transition-colors">Retour à la boutique</button>
+            </div>
+
+        </div>
+        
+        <div class="mt-8 text-center space-y-2">
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Paiement sécurisé par ViralFlowr</p>
+            <div class="flex justify-center gap-2 opacity-50">
+                <div class="w-8 h-5 bg-gray-300 rounded"></div>
+                <div class="w-8 h-5 bg-gray-300 rounded"></div>
+                <div class="w-8 h-5 bg-gray-300 rounded"></div>
             </div>
         </div>
     </div>
@@ -119,13 +195,11 @@
     <script>
         const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
         
-        // Logique de copier coller
         function copyText(txt) {
             navigator.clipboard.writeText(txt);
-            alert("Copié dans le presse-papier !");
+            // Petit feedback visuel ou sonore possible ici
         }
 
-        // Recuperation des paramètres
         const params = new URLSearchParams(window.location.search);
         const nom = params.get('nom') || "Service";
         const prixInitial = parseFloat(params.get('prix')) || 0;
@@ -133,10 +207,30 @@
         const idS = params.get('id') || "";
         
         document.getElementById('service-name').innerText = nom;
-        let orderId = "#VF-" + Math.floor(1000 + Math.random()*9000);
+        document.getElementById('cat-badge').innerText = cat;
+        
+        let orderId = "#VF-" + Math.floor(10000 + Math.random()*90000);
         document.getElementById('live-order-id').innerText = orderId;
 
-        // Gestion de l'affichage dynamique par catégorie
+        // --- RECUPERATION DESCRIPTION DEPUIS LE SHEET (FIX) ---
+        // On appelle l'API pour choper la description exacte du produit via son ID
+        fetch(GOOGLE_URL + "?action=get_products")
+            .then(res => res.text())
+            .then(text => {
+                // Nettoyage JSONP
+                const json = text.replace(/^.*?\(|\)$/g, '');
+                const products = JSON.parse(json);
+                const product = products.find(p => p.id == idS);
+                
+                if(product && product.desc) {
+                    document.getElementById('desc-box').classList.remove('hidden');
+                    document.getElementById('desc-text').innerText = product.desc;
+                }
+            })
+            .catch(err => console.log("Desc load error", err));
+
+
+        // --- LOGIQUE D'AFFICHAGE ---
         const catUpper = cat.toUpperCase();
         if (catUpper.includes("BOOST") || catUpper.includes("SMM")) {
             document.getElementById('section-smm').classList.remove('hidden');
@@ -156,15 +250,15 @@
             document.getElementById('display-price').innerText = prixInitial.toFixed(2) + " $";
         }
 
-        // ENVOI FORMULAIRE
+        // --- ENVOI ---
         document.getElementById('orderForm').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
-            btn.disabled = true; btn.innerText = "Chargement...";
+            btn.disabled = true; btn.innerText = "Validation...";
 
             const file = document.getElementById('file').files[0];
             const reader = new FileReader();
-            reader.readAsDataURL(file);
+            
             reader.onload = async () => {
                 const payload = {
                     orderId: orderId,
@@ -176,20 +270,26 @@
                     quantite: document.getElementById('qty')?.value || "1"
                 };
 
-                await fetch(GOOGLE_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(payload) });
-                
-                // LANCER LES CONFETTIS
-                confetti({
-                    particleCount: 150,
-                    spread: 70,
-                    origin: { y: 0.6 },
-                    colors: ['#F07E13', '#FFB26B', '#201B16']
-                });
+                try {
+                    await fetch(GOOGLE_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(payload) });
+                    
+                    confetti({
+                        particleCount: 150,
+                        spread: 70,
+                        origin: { y: 0.6 },
+                        colors: ['#F07E13', '#22C55E', '#121417']
+                    });
 
-                document.getElementById('form-container').classList.add('hidden');
-                document.getElementById('final-id').innerText = orderId;
-                document.getElementById('success-msg').classList.remove('hidden');
+                    document.getElementById('form-container').classList.add('hidden');
+                    document.getElementById('final-id').innerText = orderId;
+                    document.getElementById('success-msg').classList.remove('hidden');
+                } catch(err) {
+                    alert("Erreur de connexion. Réessayez.");
+                    btn.disabled = false;
+                }
             };
+            
+            if(file) reader.readAsDataURL(file);
         };
     </script>
 </body>
