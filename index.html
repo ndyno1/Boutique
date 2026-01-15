@@ -1,226 +1,200 @@
 <!DOCTYPE html>
 <html lang="fr" class="font-inter">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ViralFlowr | Fast & Secure Marketplace</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .bg-custom-orange { background-color: #F07E13; }
-    .text-custom-orange { color: #F07E13; }
-    @keyframes slideText {
-      0% { transform: translateY(0); opacity: 1; }
-      50% { transform: translateY(-20px); opacity: 0; }
-      100% { transform: translateY(0); opacity: 1; }
-    }
-    .search-animate { animation: slideText 4s infinite ease-in-out; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViralFlowr | Buy Gift Cards with Crypto</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        /* Animation du texte dans la recherche */
+        @keyframes placeholderAnimate {
+            0% { opacity: 0; transform: translateY(10px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
+        }
+        .animate-text { animation: placeholderAnimate 4s infinite; }
+        
+        .bg-bsv-orange { background-color: #F07E13; }
+        .text-bsv-orange { color: #F07E13; }
+        .hover-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px -10px rgba(0,0,0,0.1); }
+    </style>
 </head>
+<body class="bg-[#F3F3F3]">
 
-<body class="bg-[#F3F3F3] text-[#201B16]">
-
-  <header class="bg-white/90 backdrop-blur-md sticky top-0 w-full z-50 border-b border-gray-200 shadow-sm">
-    <div class="max-w-[1240px] mx-auto px-4 py-3 flex items-center justify-between gap-4">
-      <a href="index.html" class="shrink-0">
-        <div class="text-xl font-extrabold tracking-tighter">Viral<span class="text-custom-orange">Flowr</span></div>
-      </a>
-
-      <div class="relative flex-1 max-w-[636px] hidden md:block">
-        <input
-          type="text"
-          id="searchInput"
-          onkeyup="render()"
-          class="w-full h-11 px-5 rounded-full bg-[#F2F4F5] border-none focus:ring-2 focus:ring-[#F07E13] outline-none font-medium transition-all"
-          placeholder="What are you looking for?"
-          autocomplete="off"
-        >
-        <button class="absolute right-1.5 top-1.5 bg-custom-orange p-2 rounded-full text-white" type="button">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
-            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-        </button>
-      </div>
-
-      <div class="flex items-center gap-4 text-xs font-bold uppercase text-[#767676]">
-        <a href="https://wa.me/+243850373991" class="hover:text-black">WhatsApp</a>
-        <span class="text-gray-300">/</span>
-        <a href="https://t.me/Viralflow" class="hover:text-black">Telegram</a>
-      </div>
-    </div>
-  </header>
-
-  <main class="max-w-[1240px] mx-auto px-4 pt-6">
-
-    <section class="grid grid-cols-12 gap-4 mb-10">
-      <div class="relative col-span-12 lg:col-span-8 h-[300px] md:h-[400px] rounded-2xl overflow-hidden shadow-lg bg-black">
-        <img src="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png"
-             class="absolute inset-0 w-full h-full object-cover opacity-80" alt="Hero">
-        <div class="relative z-10 p-8 md:p-12 flex flex-col justify-center h-full text-white">
-          <h1 class="text-3xl md:text-4xl font-extrabold max-w-lg leading-tight mb-4">
-            Buy Gift Cards with Crypto from Trusted Marketplace
-          </h1>
-          <div class="flex gap-4">
-            <a href="#catalogue" class="bg-custom-orange px-6 py-3 rounded-lg font-bold hover:scale-105 transition-transform">
-              Explore catalogue
+    <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-100 shadow-sm">
+        <div class="max-w-[1240px] mx-auto px-4 h-16 flex items-center justify-between gap-6">
+            
+            <a href="index.html" class="flex items-center gap-2">
+                <img src="https://content.bsvmarket.com/uploads/Logo_9eeda718b9.svg" class="h-8 w-auto" alt="ViralFlowr">
             </a>
-          </div>
-        </div>
-      </div>
 
-      <div class="col-span-12 lg:col-span-4 grid grid-cols-2 lg:grid-cols-1 gap-3">
-        <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-          <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 font-bold">1M+</div>
-          <div class="text-xs font-bold text-gray-500">Cards sold monthly</div>
-        </div>
-        <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-          <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">10+</div>
-          <div class="text-xs font-bold text-gray-500">Years of experience</div>
-        </div>
-      </div>
-    </section>
+            <div class="relative flex-1 max-w-[600px] hidden md:flex items-center">
+                <input type="text" id="searchInput" oninput="render()" 
+                    class="w-full h-11 pl-5 pr-12 rounded-full bg-[#F2F4F5] text-sm font-medium focus:ring-2 focus:ring-[#F07E13] outline-none transition-all">
+                
+                <div id="placeholder-box" class="absolute left-5 pointer-events-none text-gray-400 text-sm font-medium">
+                    <span id="animated-placeholder" class="inline-block animate-text">What are you looking for? Just type here</span>
+                </div>
 
-    <!-- ✅ NAV CATEGORIES (CORRIGÉ SELON TA DEMANDE) -->
-    <section class="mb-8 overflow-x-auto no-scrollbar flex gap-2 pb-2" id="catNav">
-      <button onclick="filterCat('all', this)" class="cat-btn active px-5 py-2.5 rounded-full bg-white text-xs font-bold shadow-sm border border-transparent hover:border-custom-orange transition-all whitespace-nowrap">
-        ⚡ ALL PRODUCTS
-      </button>
-      <button onclick="filterCat('Abonnement', this)" class="cat-btn px-5 py-2.5 rounded-full bg-white text-xs font-bold shadow-sm border border-transparent hover:border-custom-orange transition-all whitespace-nowrap">
-        📺 ABONNEMENTS
-      </button>
-      <button onclick="filterCat('Carte2', this)" class="cat-btn px-5 py-2.5 rounded-full bg-white text-xs font-bold shadow-sm border border-transparent hover:border-custom-orange transition-all whitespace-nowrap">
-        💳 GIFT CARDS
-      </button>
-      <button onclick="filterCat('IMEI', this)" class="cat-btn px-5 py-2.5 rounded-full bg-white text-xs font-bold shadow-sm border border-transparent hover:border-custom-orange transition-all whitespace-nowrap">
-        📱 IMEI SERVICES
-      </button>
-      <button onclick="filterCat('Boost', this)" class="cat-btn px-5 py-2.5 rounded-full bg-white text-xs font-bold shadow-sm border border-transparent hover:border-custom-orange transition-all whitespace-nowrap">
-        🚀 SMM BOOST
-      </button>
-    </section>
-
-    <h2 class="text-xl font-extrabold mb-6">Popular categories</h2>
-
-    <section id="catalogue">
-      <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-20">
-        <div class="col-span-full text-center py-20 text-gray-400 font-bold">Loading Elite Services...</div>
-      </div>
-    </section>
-
-  </main>
-
-  <footer class="bg-white py-12 border-t border-gray-200">
-    <div class="max-w-[1240px] mx-auto px-4 text-center">
-      <div class="text-xl font-black mb-4">Viral<span class="text-custom-orange">Flowr</span></div>
-      <p class="text-[10px] text-gray-400 max-w-md mx-auto leading-relaxed">
-        © 2026 ViralFlowr Marketplace. All product names are trademarks of their respective companies. Fast and secure delivery guaranteed.
-      </p>
-    </div>
-  </footer>
-
-  <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
-
-    let ALL_PRODUCTS = [];
-    let CURRENT_FILTER = "all";
-
-    /*
-      ✅ RÈGLES EXACTES :
-      - Abonnements => afficher UNIQUEMENT cat = "Abonnement" ET cat = "Carte"
-      - Cartes (Gift Cards) => afficher UNIQUEMENT cat = "Carte2"
-      - Boost => afficher cat = "Boost" + "SMM2" + "SMM3" (et aussi Boost2/SMM1 si tu veux)
-    */
-    const FILTER_MAP = {
-      "Abonnement": ["Abonnement", "Carte"],
-      "Carte2": ["Carte2"],
-      "Boost": ["Boost", "Boost2", "SMM1", "SMM2", "SMM3", "SSM2", "SSM3", "Peakerr", "PEAKERR", "PEAK"]
-    };
-
-    // Charger les produits (JSONP)
-    function loadProducts() {
-      const script = document.createElement('script');
-      script.src = `${SCRIPT_URL}?action=get_products&callback=display`;
-      document.body.appendChild(script);
-    }
-
-    window.display = function(data) {
-      ALL_PRODUCTS = Array.isArray(data) ? data : [];
-      render();
-    };
-
-    function render() {
-      const grid = document.getElementById('product-grid');
-      const searchEl = document.getElementById('searchInput');
-      const query = (searchEl ? searchEl.value : "").toLowerCase();
-
-      const filtered = ALL_PRODUCTS.filter(p => {
-        const cat = String(p.cat || "").trim();
-
-        // Filtre catégorie
-        const matchCat = (CURRENT_FILTER === "all")
-          ? true
-          : (FILTER_MAP[CURRENT_FILTER]
-              ? FILTER_MAP[CURRENT_FILTER].includes(cat)
-              : cat === CURRENT_FILTER);
-
-        // Filtre recherche
-        const name = String(p.nom || "").toLowerCase();
-        const matchSearch = !query || name.includes(query);
-
-        return matchCat && matchSearch;
-      });
-
-      if (filtered.length === 0) {
-        grid.innerHTML = '<div class="col-span-full text-center py-10 font-bold text-gray-400">No services found.</div>';
-        return;
-      }
-
-      grid.innerHTML = filtered.map(p => {
-        const img = (p.img && String(p.img).trim() !== "")
-          ? p.img
-          : "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
-
-        const price = Number.parseFloat(p.prix);
-        const priceText = Number.isFinite(price) ? price.toFixed(2) : "0.00";
-
-        return `
-          <a href="paiement.html?nom=${encodeURIComponent(p.nom || '')}&prix=${encodeURIComponent(p.prix || '')}&cat=${encodeURIComponent(p.cat || '')}&id=${encodeURIComponent(p.id || '')}"
-             class="group bg-white rounded-2xl p-4 shadow-sm hover:shadow-xl transition-all border border-gray-50 flex flex-col relative overflow-hidden">
-            <div class="aspect-square mb-3 overflow-hidden rounded-xl bg-gray-50 flex items-center justify-center p-4">
-              <img src="${img}" class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300" alt="${String(p.nom || '').replace(/"/g,'&quot;')}">
+                <button class="absolute right-1 top-1 bg-bsv-orange p-2.5 rounded-full text-white hover:scale-105 transition-transform">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </button>
             </div>
-            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div class="text-[13px] font-bold leading-tight h-8 overflow-hidden mb-2">${p.nom || ''}</div>
-            <div class="mt-auto flex items-center justify-between">
-              <span class="text-custom-orange font-black text-lg">$${priceText}</span>
-              <div class="bg-custom-orange text-white p-1 rounded-full">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
-                  <path d="M12 4v16m8-8H4"></path>
-                </svg>
-              </div>
+
+            <div class="flex items-center gap-4 text-[12px] font-bold uppercase text-[#767676]">
+                <a href="https://wa.me/+243850373991" class="hover:text-black transition-colors">WhatsApp</a>
+                <span class="text-gray-200">/</span>
+                <a href="https://t.me/Viralflow" class="hover:text-black transition-colors">Telegram</a>
             </div>
-          </a>
-        `;
-      }).join('');
-    }
+        </div>
+    </header>
 
-    function filterCat(cat, btn) {
-      document.querySelectorAll('.cat-btn').forEach(b => {
-        b.classList.remove('bg-custom-orange', 'text-white', 'active');
-        b.classList.add('bg-white', 'text-[#767676]');
-      });
+    <main class="max-w-[1240px] mx-auto px-4 py-8">
+        
+        <section class="grid grid-cols-12 gap-4 mb-12">
+            <article class="relative col-span-12 lg:col-span-8 h-[280px] md:h-[400px] rounded-2xl overflow-hidden shadow-sm group">
+                <img src="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Hero">
+                <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent"></div>
+                <div class="relative z-10 p-8 md:p-12 flex flex-col justify-center h-full text-white">
+                    <h1 class="text-3xl md:text-5xl font-extrabold max-w-md leading-tight mb-6">Buy Gift Cards with Crypto</h1>
+                    <ul class="space-y-2 mb-8 text-sm font-medium opacity-90">
+                        <li class="flex items-center gap-2"><span class="text-bsv-orange text-lg">✓</span> 10+ years of experience</li>
+                        <li class="flex items-center gap-2"><span class="text-bsv-orange text-lg">✓</span> 1M+ cards sold monthly</li>
+                    </ul>
+                    <a href="#catalogue" class="w-max bg-bsv-orange px-8 py-3.5 rounded-lg font-bold text-sm hover:brightness-110 transition-all">Explore catalogue</a>
+                </div>
+            </article>
+            
+            <div class="col-span-12 lg:col-span-4 grid grid-cols-2 lg:grid-cols-1 gap-4">
+                <a href="#" class="relative h-full rounded-2xl overflow-hidden border border-gray-200 group">
+                    <img src="https://content.bsvmarket.com/uploads/roblox_hero_e7501868b6.png" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent"></div>
+                    <span class="absolute bottom-4 left-4 text-white font-bold text-sm flex items-center gap-2">Roblox <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></span>
+                </a>
+                <a href="#" class="relative h-full rounded-2xl overflow-hidden border border-gray-200 group">
+                    <img src="https://content.bsvmarket.com/uploads/pubg_hero_9688ecc20f.png" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent"></div>
+                    <span class="absolute bottom-4 left-4 text-white font-bold text-sm flex items-center gap-2">PUBG Mobile <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></span>
+                </a>
+            </div>
+        </section>
 
-      btn.classList.add('bg-custom-orange', 'text-white', 'active');
-      btn.classList.remove('bg-white', 'text-[#767676]');
+        <div class="flex items-center gap-3 overflow-x-auto no-scrollbar pb-6 border-b border-gray-200 mb-8" id="catNav">
+            <button onclick="filterCat('all', this)" class="cat-btn active bg-white px-6 py-2.5 rounded-full text-[13px] font-bold text-gray-500 border border-transparent shadow-sm whitespace-nowrap active shadow-bsv-orange transition-all">⚡ ALL PRODUCTS</button>
+            <button onclick="filterCat('Abonnement', this)" class="cat-btn bg-white px-6 py-2.5 rounded-full text-[13px] font-bold text-gray-500 border border-transparent shadow-sm whitespace-nowrap hover:text-black transition-all">📺 ABONNEMENTS</button>
+            <button onclick="filterCat('Carte2', this)" class="cat-btn bg-white px-6 py-2.5 rounded-full text-[13px] font-bold text-gray-500 border border-transparent shadow-sm whitespace-nowrap hover:text-black transition-all">💳 GIFT CARDS</button>
+            <button onclick="filterCat('IMEI', this)" class="cat-btn bg-white px-6 py-2.5 rounded-full text-[13px] font-bold text-gray-500 border border-transparent shadow-sm whitespace-nowrap hover:text-black transition-all">📱 IMEI SERVICES</button>
+            <button onclick="filterCat('Boost', this)" class="cat-btn bg-white px-6 py-2.5 rounded-full text-[13px] font-bold text-gray-500 border border-transparent shadow-sm whitespace-nowrap hover:text-black transition-all">🚀 SMM BOOST</button>
+        </div>
 
-      CURRENT_FILTER = cat;
-      render();
-    }
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-2xl font-extrabold tracking-tight">Popular categories</h2>
+            <div class="text-sm font-bold text-bsv-orange cursor-pointer hover:underline">View all</div>
+        </div>
 
-    // Init
-    loadProducts();
-  </script>
+        <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5 mb-24">
+            <div class="h-64 bg-white rounded-2xl animate-pulse"></div>
+            <div class="h-64 bg-white rounded-2xl animate-pulse"></div>
+            <div class="h-64 bg-white rounded-2xl animate-pulse"></div>
+            <div class="h-64 bg-white rounded-2xl animate-pulse"></div>
+            <div class="h-64 bg-white rounded-2xl animate-pulse"></div>
+            <div class="h-64 bg-white rounded-2xl animate-pulse"></div>
+        </div>
+
+    </main>
+
+    <footer class="bg-white border-t border-gray-100 py-16">
+        <div class="max-w-[1240px] mx-auto px-4 flex flex-col items-center">
+            <img src="https://content.bsvmarket.com/uploads/Logo_9eeda718b9.svg" class="h-8 mb-6 grayscale opacity-50">
+            <div class="flex gap-8 mb-8 text-sm font-bold text-gray-400 uppercase tracking-widest">
+                <a href="#" class="hover:text-bsv-orange">About</a>
+                <a href="#" class="hover:text-bsv-orange">FAQ</a>
+                <a href="#" class="hover:text-bsv-orange">Support</a>
+            </div>
+            <p class="text-[11px] text-gray-400 text-center leading-relaxed max-w-2xl">
+                © 2026 Buysellvouchers.com All Rights Reserved. All product names are trademark of their respective companies.
+                Buy gift cards with crypto instantly. Fast, secure, and global access.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
+        
+        let ALL_PRODUCTS = [];
+        let CURRENT_FILTER = "all";
+
+        const FILTER_MAP = {
+            "Abonnement": ["Abonnement", "Carte"],
+            "Carte2": ["Carte2"],
+            "Boost": ["Boost", "Boost2", "SMM1"]
+        };
+
+        // GESTION DU PLACEHOLDER ANIMÉ
+        const input = document.getElementById('searchInput');
+        const placeholderBox = document.getElementById('placeholder-box');
+        input.addEventListener('focus', () => placeholderBox.style.display = 'none');
+        input.addEventListener('blur', () => { if(input.value === "") placeholderBox.style.display = 'block'; });
+
+        // CHARGEMENT DATA
+        async function init() {
+            const script = document.createElement('script');
+            script.src = `${SCRIPT_URL}?action=get_products&callback=onSuccess`;
+            document.body.appendChild(script);
+        }
+
+        window.onSuccess = function(data) {
+            ALL_PRODUCTS = data;
+            render();
+        };
+
+        function render() {
+            const grid = document.getElementById('product-grid');
+            const query = input.value.toLowerCase();
+
+            const filtered = ALL_PRODUCTS.filter(p => {
+                const matchCat = CURRENT_FILTER === "all" || (FILTER_MAP[CURRENT_FILTER] ? FILTER_MAP[CURRENT_FILTER].includes(p.cat) : p.cat === CURRENT_FILTER);
+                const matchSearch = p.nom.toLowerCase().includes(query);
+                return matchCat && matchSearch;
+            });
+
+            grid.innerHTML = filtered.map(p => {
+                const img = p.img || 'https://cdn-icons-png.flaticon.com/512/11520/11520110.png';
+                return `
+                    <div onclick="location.href='paiement.html?nom=${encodeURIComponent(p.nom)}&prix=${p.prix}&cat=${p.cat}&id=${p.id}'" 
+                        class="hover-card group bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col cursor-pointer transition-all duration-300">
+                        <div class="aspect-square bg-[#F8FAFC] rounded-xl mb-4 flex items-center justify-center p-6 overflow-hidden">
+                            <img src="${img}" class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" 
+                                onerror="this.src='https://cdn-icons-png.flaticon.com/512/11520/11520110.png'">
+                        </div>
+                        <h3 class="text-[14px] font-bold text-[#201B16] leading-tight mb-2 h-10 overflow-hidden line-clamp-2">${p.nom}</h3>
+                        <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-50">
+                            <span class="text-[#201B16] font-extrabold text-lg">$${parseFloat(p.prix).toFixed(2)}</span>
+                            <div class="bg-[#F2F4F5] p-2 rounded-lg group-hover:bg-bsv-orange group-hover:text-white transition-colors">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterCat(cat, btn) {
+            document.querySelectorAll('.cat-btn').forEach(b => {
+                b.classList.remove('text-black', 'shadow-md', 'active', 'border-gray-200');
+                b.classList.add('text-gray-500');
+            });
+            btn.classList.add('text-black', 'shadow-md', 'active', 'border-gray-200');
+            CURRENT_FILTER = cat;
+            render();
+        }
+
+        init();
+    </script>
 </body>
 </html>
