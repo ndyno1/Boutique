@@ -10,24 +10,27 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
-    body { font-family: 'Inter', sans-serif; background-color: #F3F3F3; }
+    body { font-family:'Inter',sans-serif; background:#F3F3F3; }
     .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
-    .text-orange-bsv { color: #F07E13; }
-    .checkout-container { max-width: 500px; width: 100%; margin: 2rem auto; }
-    input, textarea { outline: none; transition: all 0.2s; border: 1px solid #e5e7eb !important; }
-    input:focus, textarea:focus { border-color: #F07E13 !important; }
-
-    .payment-row {
+    .text-orange-bsv { color:#F07E13; }
+    .checkout-container { max-width:500px; width:100%; margin:2rem auto; }
+    input, textarea { outline:none; transition:all .2s; border:1px solid #e5e7eb !important; }
+    input:focus, textarea:focus { border-color:#F07E13 !important; }
+    .payment-row{
       display:flex; justify-content:space-between; align-items:center;
-      padding:12px; background:rgba(255,255,255,0.03);
-      border-radius:12px; border:1px solid rgba(255,255,255,0.1);
-      margin-bottom:8px;
+      padding:12px; border-radius:12px;
+      border:1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03);
+      margin-bottom:8px; gap:10px;
     }
     .copy-badge{
-      font-size:10px; font-weight:800; background:rgba(255,255,255,0.1);
-      padding:4px 8px; border-radius:6px; cursor:pointer; transition:0.2s;
+      font-size:10px; font-weight:800;
+      background: rgba(255,255,255,0.1);
+      padding:4px 8px; border-radius:6px;
+      cursor:pointer; transition:0.2s;
+      white-space:nowrap;
     }
-    .copy-badge:hover { background:#F07E13; color:white; }
+    .copy-badge:hover{ background:#F07E13; color:#fff; }
   </style>
 </head>
 
@@ -43,25 +46,36 @@
 
     <div class="bg-white rounded-[32px] shadow-lg border border-gray-100 p-6 md:p-8">
 
+      <!-- FORM -->
       <div id="form-container">
         <h2 id="service-name" class="text-xl font-extrabold text-center mb-2 leading-tight">Chargement...</h2>
         <div class="text-center mb-6">
           <span id="cat-badge" class="bg-gray-100 text-gray-500 text-[10px] font-bold px-3 py-1 rounded-full uppercase">—</span>
         </div>
 
-        <!-- Description + Long desc (depuis l’URL : desc/long) -->
-        <div id="description-section" class="hidden mb-6 bg-blue-50 border border-blue-100 rounded-2xl p-4">
-          <h3 class="text-blue-800 text-xs font-black uppercase mb-2 flex items-center gap-2">
-            <span>ℹ️</span> Description & Instructions
-          </h3>
-          <p id="desc-text" class="text-xs text-blue-900 leading-relaxed whitespace-pre-line font-medium"></p>
+        <!-- ✅ DESC/LONG -->
+        <div id="description-section" class="hidden mb-6 space-y-3">
+          <div id="long-box" class="hidden bg-blue-50 border border-blue-100 rounded-2xl p-4">
+            <h3 class="text-blue-800 text-xs font-black uppercase mb-2 flex items-center gap-2">
+              <span>📝</span> Description du produit
+            </h3>
+            <p id="long-text" class="text-xs text-blue-900 leading-relaxed whitespace-pre-line font-medium"></p>
+          </div>
+          <div id="desc-box" class="hidden bg-green-50 border border-green-100 rounded-2xl p-4">
+            <h3 class="text-green-800 text-xs font-black uppercase mb-2 flex items-center gap-2">
+              <span>📄</span> Instructions
+            </h3>
+            <p id="desc-text" class="text-xs text-green-900 leading-relaxed whitespace-pre-line font-medium"></p>
+          </div>
         </div>
 
-        <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-4 text-center mb-8 relative group hover:border-orange-200 transition-all">
+        <!-- NOTE / ID -->
+        <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-4 text-center mb-8 hover:border-orange-200 transition-all">
           <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">Note de commande (Important)</span>
           <span id="live-order-id" class="block text-2xl font-black text-gray-900 tracking-tight cursor-pointer" onclick="copyText(this.innerText)">...</span>
           <div class="mt-2">
-            <button type="button" onclick="copyText(document.getElementById('live-order-id').innerText)" class="text-[9px] bg-white border border-gray-300 px-3 py-1 rounded-full font-bold shadow-sm">
+            <button type="button" onclick="copyText(document.getElementById('live-order-id').innerText)"
+              class="text-[9px] bg-white border border-gray-300 px-3 py-1 rounded-full font-bold shadow-sm">
               COPIER LA NOTE
             </button>
           </div>
@@ -69,11 +83,11 @@
 
         <form id="orderForm" class="space-y-5">
 
-          <!-- ✅ SMM2 / SMM3 / BOOST : lien + qty (min/max URL) -->
+          <!-- ✅ SMM/BOOST -->
           <div id="section-smm" class="hidden space-y-4">
             <div>
-              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Lien à booster</label>
-              <input type="text" id="boost-link" required placeholder="https://..." class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Lien à booster (Obligatoire)</label>
+              <input type="text" id="boost-link" placeholder="https://..." class="w-full bg-white rounded-xl p-3 text-sm font-medium">
             </div>
 
             <div>
@@ -81,45 +95,63 @@
               <input type="number" id="qty" value="1000" class="w-full bg-white rounded-xl p-3 text-sm font-black">
               <div id="qty-hint" class="text-[11px] text-gray-500 font-bold mt-2 hidden"></div>
             </div>
+
+            <div>
+              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact (WhatsApp ou Email) — (optionnel)</label>
+              <input type="text" id="contact-smm" placeholder="+243... ou email" class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+            </div>
           </div>
 
-          <!-- ✅ ABONNEMENT : identifiants + contact livraison obligatoire -->
+          <!-- ✅ ABONNEMENT -->
           <div id="section-abonnement" class="hidden space-y-4">
             <div>
-              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Vos Identifiants</label>
-              <textarea id="creds" required placeholder="NET-mail-oto@gmail.com&#10;NET-motdepasse-toto&#10;NET-CCC-333"
-                        class="w-full bg-white rounded-xl p-3 text-sm font-medium h-24 resize-none"></textarea>
+              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Vos identifiants (Obligatoire)</label>
+              <textarea id="creds" class="w-full bg-white rounded-xl p-3 text-sm font-medium h-28 resize-none"
+                placeholder="NET-mail-votre@email.com&#10;NET-motdepasse-votre_mdp"></textarea>
+              <p class="text-[11px] text-gray-500 font-bold mt-2">
+                Exemple : NET-mail-oto@gmail.com / NET-motdepasse-toto
+              </p>
             </div>
             <div>
-              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact Livraison (obligatoire)</label>
-              <input type="text" id="delivery-contact-abo" required placeholder="WhatsApp ou Email"
-                     class="w-full bg-white rounded-xl p-3 text-sm font-medium">
-              <p class="text-[11px] text-gray-400 font-bold mt-2">⚠️ Utile si OTP / erreur / livraison</p>
+              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact livraison (Obligatoire)</label>
+              <input type="text" id="delivery-contact-abo" placeholder="WhatsApp ou Email"
+                class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+              <p class="text-[11px] text-gray-500 font-bold mt-2">
+                Pour OTP / erreur de commande / livraison.
+              </p>
             </div>
           </div>
 
-          <!-- ✅ CARTE : contact livraison obligatoire -->
+          <!-- ✅ CARTE / CARTE2 -->
           <div id="section-carte" class="hidden space-y-4">
             <div>
-              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Où recevoir le code ? (obligatoire)</label>
-              <input type="text" id="card-delivery" required placeholder="WhatsApp ou Email"
-                     class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact livraison (Obligatoire)</label>
+              <input type="text" id="card-delivery" placeholder="WhatsApp ou Email"
+                class="w-full bg-white rounded-xl p-3 text-sm font-medium">
             </div>
           </div>
 
-          <!-- Fallback (si une autre catégorie arrive) -->
+          <!-- ✅ DEFAULT (ex: IMEI etc.) -->
           <div id="section-default" class="hidden space-y-4">
-            <input type="text" id="main-input" placeholder="Information requise..."
-                   class="w-full bg-white rounded-xl p-3 text-sm font-medium">
-            <input type="email" id="email-client" placeholder="Votre Email (optionnel)"
-                   class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+            <div>
+              <label id="default-label" class="text-[11px] font-bold text-gray-900 uppercase ml-1">Information requise</label>
+              <input type="text" id="main-input" placeholder="Ex: IMEI 15 chiffres / Lien / etc."
+                class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+            </div>
+            <div>
+              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Email (optionnel)</label>
+              <input type="email" id="email-client" placeholder="client@gmail.com"
+                class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+            </div>
           </div>
 
+          <!-- TOTAL -->
           <div class="py-2 text-center">
             <span class="text-[10px] text-gray-400 uppercase font-bold">Total à payer</span>
             <div id="display-price" class="text-4xl font-black text-gray-900 tracking-tighter">0.00 $</div>
           </div>
 
+          <!-- ✅ MOYENS PAIEMENT (AVEC TRC20/BEP20) -->
           <div class="bg-[#121417] rounded-[24px] p-5 text-white shadow-2xl relative overflow-hidden">
             <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Moyens acceptés</h4>
 
@@ -129,6 +161,22 @@
                 <span class="text-[13px] font-bold">744370418</span>
               </div>
               <button type="button" class="copy-badge" onclick="copyText('744370418')">COPIER</button>
+            </div>
+
+            <div class="payment-row">
+              <div class="overflow-hidden mr-2">
+                <span class="block text-[10px] font-bold text-blue-400 uppercase">USDT (TRC-20)</span>
+                <span id="trc20" class="text-[10px] font-mono opacity-80 truncate block">TON_ADRESSE_TRC20</span>
+              </div>
+              <button type="button" class="copy-badge" onclick="copyText(document.getElementById('trc20').innerText)">COPIER</button>
+            </div>
+
+            <div class="payment-row">
+              <div class="overflow-hidden mr-2">
+                <span class="block text-[10px] font-bold text-yellow-400 uppercase">USDT (BEP-20)</span>
+                <span id="bep20" class="text-[10px] font-mono opacity-80 truncate block">TON_ADRESSE_BEP20</span>
+              </div>
+              <button type="button" class="copy-badge" onclick="copyText(document.getElementById('bep20').innerText)">COPIER</button>
             </div>
 
             <div class="grid grid-cols-2 gap-2 mt-2">
@@ -148,34 +196,40 @@
               </div>
             </div>
 
-            <p class="text-[10px] text-gray-400 font-bold mt-4">
-              ⚠️ Mets la <span class="text-white">NOTE</span> (ID commande) dans Binance Pay.
+            <p class="text-[10px] text-gray-400 font-bold mt-4 leading-relaxed">
+              ⚠️ IMPORTANT : Mets <span class="text-white">la note (ID)</span> dans Binance (case “Note”).
             </p>
           </div>
 
+          <!-- PREUVE -->
           <div class="pt-2">
-            <label class="text-[11px] font-bold text-gray-900 uppercase ml-1 block mb-2">📸 Preuve de paiement</label>
+            <label class="text-[11px] font-bold text-gray-900 uppercase ml-1 block mb-2">📸 Preuve de paiement (Obligatoire)</label>
             <input type="file" id="file" accept="image/*" required
-                   class="w-full text-xs bg-white rounded-xl p-3 border border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+              class="w-full text-xs bg-white rounded-xl p-3 border border-gray-200
+              file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs
+              file:font-bold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
           </div>
 
           <button type="submit" id="submitBtn"
-                  class="w-full brand-gradient text-white py-4 rounded-2xl font-black text-sm uppercase shadow-xl hover:scale-[1.02] transition-transform">
+            class="w-full brand-gradient text-white py-4 rounded-2xl font-black text-sm uppercase shadow-xl hover:scale-[1.02] transition-transform">
             Confirmer le paiement
           </button>
         </form>
       </div>
 
+      <!-- SUCCESS -->
       <div id="success-msg" class="hidden text-center py-12">
         <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
-          <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
+          <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24">
+            <path d="M5 13l4 4L19 7"></path>
+          </svg>
         </div>
         <h3 class="text-3xl font-black text-gray-900 mb-2">Reçu 5/5 !</h3>
         <p class="text-gray-500 text-sm mb-8 font-medium">
           Votre commande <strong id="final-id" class="text-gray-900"></strong> est en cours de traitement.
         </p>
-        <button type="button" onclick="location.href='index.html'"
-                class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-xs uppercase hover:bg-gray-800 transition-colors">
+        <button onclick="location.href='index.html'"
+          class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-xs uppercase hover:bg-gray-800 transition-colors">
           Retour à la boutique
         </button>
       </div>
@@ -188,54 +242,71 @@
   </div>
 
   <script>
-    // ✅ Ton Apps Script (doPost reçoit: orderId, produit, idService, categorie, input1, email, quantite, total, fileData, fileType)
     const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
 
-    function copyText(txt) {
+    function copyText(txt){
       navigator.clipboard.writeText(String(txt || ""));
       alert("Copié !");
     }
 
-    // --- ID UNIQUE à chaque chargement ---
-    const randomNum = Math.floor(1000 + Math.random() * 9000);
-    const orderId = "#VF-" + randomNum;
+    // ✅ ID persistant (comme ton ancien paiement)
+    let orderId = sessionStorage.getItem('active_order_id');
+    if (!orderId) {
+      orderId = "#VF-" + Math.floor(1000 + Math.random()*9000);
+      sessionStorage.setItem('active_order_id', orderId);
+    }
     document.getElementById('live-order-id').innerText = orderId;
 
-    // --- Params URL (compatibles avec ton système) ---
-    const params = new URLSearchParams(window.location.search);
-    const nom  = params.get('nom')  || "Service";
-    const cat  = params.get('cat')  || "";
-    const idS  = params.get('id')   || "";
-    const prixInitial = parseFloat(params.get('prix')) || 0;
+    // Params URL
+    const params   = new URLSearchParams(window.location.search);
+    const nom      = params.get('nom') || "Service";
+    const prixInit = parseFloat(params.get('prix')) || 0;
+    const cat      = params.get('cat') || "";
+    const idS      = params.get('id')  || "";
 
-    // desc/long (facultatif)
-    const desc = params.get('desc') || "";
-    const longDesc = params.get('long') || params.get('long_desc') || "";
+    const desc     = safeDecode(params.get('desc') || "");
+    const longDesc = safeDecode(params.get('long') || params.get('long_desc') || "");
 
-    // min/max (facultatif pour SMM)
     const minParam = parseFloat(params.get('min'));
     const maxParam = parseFloat(params.get('max'));
 
     document.getElementById('service-name').innerText = nom;
     document.getElementById('cat-badge').innerText = cat || "Service";
 
-    // --- Description UI ---
-    const descBox = document.getElementById('description-section');
+    // ✅ Afficher desc/long depuis URL
+    const descSection = document.getElementById('description-section');
+    const longBox = document.getElementById('long-box');
+    const descBox = document.getElementById('desc-box');
+    const longText = document.getElementById('long-text');
     const descText = document.getElementById('desc-text');
-    const fullDesc = (String(longDesc || "").trim() !== "") ? longDesc : desc;
 
-    if (String(fullDesc || "").trim() !== "") {
-      descText.innerText = fullDesc;
+    let hasAnyDesc = false;
+    if (longDesc && longDesc.trim() !== "") {
+      longText.textContent = longDesc;
+      longBox.classList.remove('hidden');
+      hasAnyDesc = true;
+    }
+    if (desc && desc.trim() !== "") {
+      descText.textContent = desc;
       descBox.classList.remove('hidden');
+      hasAnyDesc = true;
+    }
+    if (hasAnyDesc) descSection.classList.remove('hidden');
+
+    function safeDecode(v){
+      try { return decodeURIComponent(String(v || "")); } catch(e){ return String(v || ""); }
     }
 
-    // --- Cat logic ---
+    // CAT logic
     const catUpper = String(cat || "").toUpperCase();
-    const isSMM = /\b(SMM2|SMM3|BOOST|PEAK|PEAKERR)\b/i.test(catUpper);
-    const isABO = /\bABONNEMENT\b/i.test(catUpper);
-    const isCARTE = (catUpper === "CARTE" || catUpper === "CARTE2" || /\bCARTE2\b/i.test(catUpper));
+    const isSMM = /\b(SMM|SMM1|SMM2|SMM3|SSM2|SSM3|BOOST|BOOST2|PEAK|PEAKERR)\b/i.test(catUpper);
+    const isAbo = /\bABONNEMENT\b/i.test(catUpper);
+    const isCarte = /\bCARTE2?\b/i.test(catUpper);
+    const isIMEI = /\bIMEI\b/i.test(catUpper);
 
     const priceEl = document.getElementById('display-price');
+    const qtyInp = document.getElementById('qty');
+    const qtyHint = document.getElementById('qty-hint');
 
     // Sections
     const secSmm = document.getElementById('section-smm');
@@ -243,159 +314,154 @@
     const secCarte = document.getElementById('section-carte');
     const secDef = document.getElementById('section-default');
 
-    // SMM setup
-    const qtyInp = document.getElementById('qty');
-    const qtyHint = document.getElementById('qty-hint');
-
-    function fmtMoney(n){
-      const x = Number(n);
-      return (Number.isFinite(x) ? x.toFixed(2) : "0.00") + " $";
-    }
-
-    function clampQty(q){
-      let x = parseFloat(q || "0");
-      const hasMin = Number.isFinite(minParam);
-      const hasMax = Number.isFinite(maxParam);
-
-      if (hasMin && x < minParam) x = minParam;
-      if (hasMax && x > maxParam) x = maxParam;
-      if (!Number.isFinite(x) || x <= 0) x = hasMin ? minParam : 1;
-      return x;
-    }
-
-    function setPriceSmm(){
-      const q = clampQty(qtyInp.value);
-      if (String(qtyInp.value) !== String(q)) qtyInp.value = q;
-      priceEl.innerText = fmtMoney((prixInitial / 1000) * q);
-    }
-
-    // Show the right section
     if (isSMM) {
       secSmm.classList.remove('hidden');
-      priceEl.innerText = fmtMoney(prixInitial); // au départ
 
-      // applique min/max si présents
+      // min/max
       const hasMin = Number.isFinite(minParam);
       const hasMax = Number.isFinite(maxParam);
-
       if (hasMin) qtyInp.min = String(minParam);
       if (hasMax) qtyInp.max = String(maxParam);
 
       if (hasMin || hasMax) {
         qtyHint.classList.remove('hidden');
-        qtyHint.innerText = `Plage autorisée : ${hasMin ? minParam : 0} – ${hasMax ? maxParam : "∞"}`;
+        qtyHint.textContent = `Plage autorisée: ${hasMin ? minParam : 0} – ${hasMax ? maxParam : '∞'}`;
       }
 
-      qtyInp.addEventListener('input', setPriceSmm);
-      setPriceSmm();
+      function clampQty(q){
+        let x = parseFloat(q || "0");
+        if (hasMin && x < minParam) x = minParam;
+        if (hasMax && x > maxParam) x = maxParam;
+        if (!Number.isFinite(x) || x <= 0) x = hasMin ? minParam : 1;
+        return x;
+      }
 
-    } else if (isABO) {
+      function updatePrice(){
+        const q = clampQty(qtyInp.value);
+        if (String(qtyInp.value) !== String(q)) qtyInp.value = q;
+        priceEl.innerText = ((prixInit / 1000) * q).toFixed(2) + " $";
+      }
+
+      qtyInp.addEventListener('input', updatePrice);
+      updatePrice();
+
+    } else if (isAbo) {
       secAbo.classList.remove('hidden');
-      priceEl.innerText = fmtMoney(prixInitial);
-
-    } else if (isCARTE) {
+      priceEl.innerText = prixInit.toFixed(2) + " $";
+    } else if (isCarte) {
       secCarte.classList.remove('hidden');
-      priceEl.innerText = fmtMoney(prixInitial);
-
+      priceEl.innerText = prixInit.toFixed(2) + " $";
     } else {
       secDef.classList.remove('hidden');
-      priceEl.innerText = fmtMoney(prixInitial);
+      priceEl.innerText = prixInit.toFixed(2) + " $";
+      if (isIMEI) {
+        document.getElementById('default-label').innerText = "Numéro IMEI (15 chiffres)";
+      }
     }
 
-    // --- Submit (adapté à TON Apps Script / recevoir()) ---
-    document.getElementById('orderForm').addEventListener('submit', async (e) => {
+    // Submit
+    document.getElementById('orderForm').onsubmit = async (e) => {
       e.preventDefault();
 
       const btn = document.getElementById('submitBtn');
       btn.disabled = true;
       btn.innerText = "Validation en cours...";
 
-      try {
-        const file = document.getElementById('file').files[0];
-        if (!file) throw new Error("Preuve manquante");
+      // Validations selon catégorie
+      let input1 = "";
+      let emailOrContact = "";
+      let qtyVal = "";
 
-        // lecture image base64
-        const fileData = await new Promise((resolve, reject) => {
-          const r = new FileReader();
-          r.onload = () => resolve(r.result);
-          r.onerror = () => reject(new Error("Lecture image impossible"));
-          r.readAsDataURL(file);
-        });
+      if (isSMM) {
+        const link = document.getElementById('boost-link').value.trim();
+        if (!link) { alert("⚠️ Mets le lien à booster."); btn.disabled=false; btn.innerText="Confirmer le paiement"; return; }
 
-        // Construire input1 / email / qty selon catégorie
-        let input1 = "";
-        let emailField = "";  // ton Apps Script stocke ça en "Email Client" (même si WhatsApp)
-        let qtyVal = "";
+        const hasMin = Number.isFinite(minParam);
+        const hasMax = Number.isFinite(maxParam);
+        const q = parseFloat(qtyInp.value || "0");
 
-        if (isSMM) {
-          const link = document.getElementById('boost-link').value.trim();
-          if (!link) throw new Error("Lien à booster obligatoire");
-          input1 = link;
-          qtyVal = String(clampQty(qtyInp.value)); // respect min/max
-          // email non obligatoire ici => laissé vide
-
-        } else if (isABO) {
-          const creds = document.getElementById('creds').value.trim();
-          const contact = document.getElementById('delivery-contact-abo').value.trim();
-          if (!creds) throw new Error("Identifiants obligatoires");
-          if (!contact) throw new Error("Contact livraison obligatoire");
-          input1 = creds;        // col "Info"
-          emailField = contact;  // col "Email Client" (peut être WhatsApp)
-          qtyVal = "";           // pas utile
-
-        } else if (isCARTE) {
-          const contact = document.getElementById('card-delivery').value.trim();
-          if (!contact) throw new Error("Contact livraison obligatoire");
-          input1 = contact;      // col "Info"
-          emailField = contact;  // col "Email Client" (peut être WhatsApp)
-          qtyVal = "";           // pas utile
-
-        } else {
-          input1 = (document.getElementById('main-input').value || "").trim();
-          emailField = (document.getElementById('email-client').value || "").trim();
-          qtyVal = "";
+        if ((hasMin && q < minParam) || (hasMax && q > maxParam)) {
+          alert(`⚠️ Quantité invalide. Min=${hasMin ? minParam : 0}${hasMax ? ` / Max=${maxParam}` : ""}.`);
+          btn.disabled=false; btn.innerText="Confirmer le paiement"; return;
         }
 
-        // total (texte déjà formaté)
-        const totalTxt = String(priceEl.innerText || fmtMoney(prixInitial));
+        input1 = link;
+        qtyVal = String(qtyInp.value || "");
+        emailOrContact = String(document.getElementById('contact-smm').value || "").trim(); // optionnel
+      }
 
-        const payload = {
-          orderId: orderId,
-          produit: nom,
-          idService: idS,
-          categorie: cat,
-          input1: input1,
-          email: emailField,
-          quantite: qtyVal,
-          total: totalTxt,
-          fileData: fileData,
-          fileType: file.type || ""
-        };
+      else if (isAbo) {
+        const creds = document.getElementById('creds').value.trim();
+        const contact = document.getElementById('delivery-contact-abo').value.trim();
+        if (!creds) { alert("⚠️ Mets tes identifiants (mail + mot de passe)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; return; }
+        if (!contact) { alert("⚠️ Mets un contact livraison (WhatsApp ou Email)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; return; }
 
-        await fetch(GOOGLE_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          body: JSON.stringify(payload)
-        });
+        // ✅ Format propre pour ton sheet
+        input1 = creds + "\nNET-contact-" + contact;
+        emailOrContact = contact;
+        qtyVal = "";
+      }
 
-        // Confetti
-        confetti({
-          particleCount: 140,
-          spread: 75,
-          origin: { y: 0.6 },
-          colors: ['#F07E13', '#22C55E', '#121417']
-        });
+      else if (isCarte) {
+        const contact = document.getElementById('card-delivery').value.trim();
+        if (!contact) { alert("⚠️ Mets un contact livraison (WhatsApp ou Email)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; return; }
+        input1 = "NET-contact-" + contact;
+        emailOrContact = contact;
+        qtyVal = "";
+      }
+
+      else {
+        const main = document.getElementById('main-input').value.trim();
+        const em = document.getElementById('email-client').value.trim();
+        if (!main) { alert("⚠️ Remplis l'information requise."); btn.disabled=false; btn.innerText="Confirmer le paiement"; return; }
+        input1 = main;
+        emailOrContact = em; // optionnel
+        qtyVal = "";
+      }
+
+      const file = document.getElementById('file').files[0];
+      if (!file) {
+        alert("⚠️ Ajoute la preuve de paiement.");
+        btn.disabled=false; btn.innerText="Confirmer le paiement";
+        return;
+      }
+
+      // Read file as base64
+      const fileData = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result);
+        r.onerror = reject;
+        r.readAsDataURL(file);
+      });
+
+      const payload = {
+        orderId: orderId,
+        produit: nom,
+        idService: idS,
+        categorie: cat,
+        input1: input1,
+        email: emailOrContact,
+        quantite: qtyVal,
+        total: priceEl.innerText,
+        fileData: fileData,
+        fileType: file.type || ""
+      };
+
+      try {
+        await fetch(GOOGLE_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(payload) });
+
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
 
         document.getElementById('form-container').classList.add('hidden');
         document.getElementById('final-id').innerText = orderId;
         document.getElementById('success-msg').classList.remove('hidden');
 
       } catch (err) {
-        alert(err && err.message ? err.message : "Erreur. Réessayez.");
+        alert("Erreur de connexion. Réessayez.");
         btn.disabled = false;
         btn.innerText = "Confirmer le paiement";
       }
-    });
+    };
   </script>
 </body>
 </html>
