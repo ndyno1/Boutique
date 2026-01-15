@@ -18,6 +18,7 @@ const escHtml = (s) => safe(s)
 function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
 }
+
 function rmDir(dir) {
   if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true });
 }
@@ -29,6 +30,7 @@ function toDirectOGImage(url) {
   if (u.includes("lh3.googleusercontent.com/d/")) {
     return u.includes("=") ? u : `${u}=w1200`;
   }
+
   const m1 = u.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
   if (m1 && m1[1]) return `https://lh3.googleusercontent.com/d/${m1[1]}=w1200`;
 
@@ -40,14 +42,8 @@ function toDirectOGImage(url) {
   return u;
 }
 
-// ✅ Apps Script renvoie:
-// - desc : colonne C (pour paiement)
-// - k    : colonne K (pour page produit)
-const paymentDescC = (p) => safe(p?.desc).trim(); // C
-const productDescK = (p) => safe(p?.k).trim();    // K
-
+// ✅ Paiement: utilise C via p.desc
 function buildPayUrl(p) {
-  // ✅ On envoie desc=C, et on n'envoie PAS long (vide)
   const qp = new URLSearchParams();
   qp.set("nom", safe(p.nom));
   qp.set("prix", safe(p.prix));
@@ -57,17 +53,16 @@ function buildPayUrl(p) {
   qp.set("max", safe(p.max));
   qp.set("img", safe(p.img || ""));
 
-  qp.set("desc", paymentDescC(p)); // ✅ C seulement
-  // IMPORTANT: pas de long => ta page paiement n'affiche pas long-box
-  // qp.set("long", ""); // inutile
+  // ✅ C = desc (paiement.html)
+  qp.set("desc", safe(p.desc).trim());
 
+  // IMPORTANT: ne pas envoyer long => paiement n'affiche pas long_box
   return `/paiement.html?${qp.toString()}`;
 }
 
 async function fetchProducts() {
   const cb = "cb";
   const url = `${SCRIPT_URL}?action=get_products&callback=${cb}&t=${Date.now()}`;
-
   const res = await fetch(url);
   const txt = await res.text();
 
@@ -79,7 +74,6 @@ async function fetchProducts() {
 
   const jsonStr = txt.slice(start + 1, end).trim();
   const data = JSON.parse(jsonStr);
-
   if (!Array.isArray(data)) throw new Error("Le endpoint ne renvoie pas une liste.");
   return data;
 }
@@ -94,17 +88,18 @@ function templateProductPage(p) {
   const imgRaw = safe(p.img).trim();
   const ogImg = toDirectOGImage(imgRaw) || "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
 
-  const descK = productDescK(p); // ✅ K (page produit)
-  const payUrl = buildPayUrl(p); // ✅ paiement desc=C
+  // ✅ K = long_desc (page produit)
+  const longDesc = safe(p.long_desc).trim();
 
-  const ogDesc = `${prix} $ • ${cat}${descK ? " • " + descK.replace(/\s+/g, " ").slice(0, 120) : ""}`.slice(0, 200);
+  const payUrl = buildPayUrl(p);
+
+  const ogDesc = `${prix} $ • ${cat}${longDesc ? " • " + longDesc.replace(/\s+/g, " ").slice(0, 120) : ""}`.slice(0, 200);
 
   return `<!DOCTYPE html>
 <html lang="fr" class="font-inter">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>${escHtml(nom)} | ViralFlowr</title>
   <meta name="description" content="${escHtml(ogDesc)}">
 
@@ -122,8 +117,8 @@ function templateProductPage(p) {
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
-    body { font-family:'Inter',sans-serif; background:#F3F3F3; color:#201B16; }
-    .text-orange-bsv { color:#F07E13; }
+    body { font-family: 'Inter', sans-serif; background-color: #F3F3F3; color: #201B16; }
+    .text-orange-bsv { color: #F07E13; }
     .btn-gradient { background: linear-gradient(90deg, #F07E13 0%, #FFB26B 100%); }
     .btn-gradient:hover { background: linear-gradient(90deg, #d96d0c 0%, #F07E13 100%); }
     .shadow-card { box-shadow: 0 0 7px 0 rgba(0,0,0,.15); }
@@ -131,6 +126,7 @@ function templateProductPage(p) {
 </head>
 
 <body class="flex flex-col min-h-screen">
+
   <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-200 shadow-sm">
     <div class="max-w-[1240px] mx-auto h-16 px-4 flex items-center justify-between gap-4">
       <a class="flex items-center gap-2" href="/index.html">
@@ -146,47 +142,55 @@ function templateProductPage(p) {
 
   <main class="flex-1 mt-6 lg:mt-10 mb-20">
     <div class="max-w-[1240px] mx-auto px-3 md:px-4 flex flex-col gap-6">
+
       <div class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
 
-        <div class="bg-white border border-gray-100 shadow-card rounded-xl p-6 md:p-8">
-          <h1 class="text-[#18181B] font-bold text-2xl md:text-3xl leading-tight mb-6">${escHtml(nom)}</h1>
+        <div class="flex flex-col gap-6">
+          <div class="bg-white border border-gray-100 shadow-card rounded-xl p-6 md:p-8">
+            <h1 class="text-[#18181B] font-bold text-2xl md:text-3xl leading-tight mb-6">${escHtml(nom)}</h1>
 
-          <div class="flex flex-col sm:flex-row gap-6">
-            <div class="shrink-0">
-              <div class="w-[140px] h-[140px] bg-[#F8FAFC] rounded-2xl border border-gray-100 flex items-center justify-center p-4">
-                <img src="${escHtml(imgRaw || ogImg)}" class="w-full h-full object-contain"
-                     onerror="this.src='https://cdn-icons-png.flaticon.com/512/11520/11520110.png'" alt="Product">
+            <div class="flex flex-col sm:flex-row gap-6">
+              <div class="shrink-0">
+                <div class="w-[140px] h-[140px] bg-[#F8FAFC] rounded-2xl border border-gray-100 flex items-center justify-center p-4">
+                  <img src="${escHtml(imgRaw || ogImg)}" class="w-full h-full object-contain"
+                       onerror="this.src='https://cdn-icons-png.flaticon.com/512/11520/11520110.png'"
+                       alt="${escHtml(nom)}">
+                </div>
               </div>
-            </div>
 
-            <div class="flex-1">
-              <span class="text-[#767676] text-xs font-bold uppercase tracking-wider mb-2 block">Description (K) :</span>
-              <div class="text-sm text-[#515052] leading-relaxed whitespace-pre-line font-medium">
-                ${escHtml(descK || "Aucune description.")}
+              <div class="flex-1">
+                <span class="text-[#767676] text-xs font-bold uppercase tracking-wider mb-2 block">Description :</span>
+                <div class="text-sm text-[#515052] leading-relaxed whitespace-pre-line font-medium">
+                  ${escHtml(longDesc || "Aucune description.")}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="bg-white border border-gray-100 shadow-card rounded-xl p-6 flex flex-col gap-5">
-          <div>
-            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Catégorie</div>
-            <div class="text-sm font-extrabold">${escHtml(cat)}</div>
-          </div>
-          <div>
-            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Prix</div>
-            <div class="text-3xl font-black">${escHtml(prix)} $</div>
-          </div>
+        <div class="flex flex-col gap-4">
+          <div class="bg-white border border-gray-100 shadow-card rounded-xl p-6 flex flex-col gap-6">
+            <div class="grid grid-cols-2 gap-4 items-end">
+              <div>
+                <span class="text-gray-500 text-xs font-medium block mb-1">Prix Total:</span>
+                <span class="text-3xl font-black text-[#201B16] tracking-tighter">${escHtml(prix)} $</span>
+              </div>
+              <div class="flex flex-col text-right text-[11px] text-gray-400 font-medium">
+                <span>Min : <strong class="text-gray-700">${escHtml(safe(p.min) || "1")}</strong></span>
+                <span>Max : <strong class="text-gray-700">${escHtml(safe(p.max) || "∞")}</strong></span>
+              </div>
+            </div>
 
-          <a href="${escHtml(payUrl)}"
-             class="w-full h-12 rounded-full btn-gradient text-white font-black text-[13px] uppercase tracking-wide shadow-lg flex items-center justify-center">
-            Acheter maintenant
-          </a>
+            <a href="${escHtml(payUrl)}"
+               class="w-full h-12 rounded-full btn-gradient text-white font-bold text-[15px] uppercase tracking-wide shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center">
+              Acheter maintenant
+            </a>
 
-          <a href="/share/${encodeURIComponent(id)}/"
-             class="w-full h-12 rounded-full bg-gray-900 text-white font-black text-[12px] uppercase flex items-center justify-center hover:bg-gray-800 transition">
-            Partager
-          </a>
+            <a href="/share/${encodeURIComponent(id)}/"
+               class="flex items-center justify-center gap-2 text-gray-400 text-xs font-bold hover:text-orange-500 transition-colors">
+              Partager ce produit
+            </a>
+          </div>
         </div>
 
       </div>
