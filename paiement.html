@@ -109,7 +109,7 @@
               <textarea id="creds" class="w-full bg-white rounded-xl p-3 text-sm font-medium h-28 resize-none"
                 placeholder="NET-mail-votre@email.com&#10;NET-motdepasse-votre_mdp"></textarea>
               <p class="text-[11px] text-gray-500 font-bold mt-2">
-                Exemple : NET-mail-oto@gmail.com / NET-motdepasse-toto
+                Exemple : mail-oto@gmail.com / motdepasse-toto
               </p>
             </div>
             <div>
@@ -242,6 +242,7 @@
   </div>
 
   <script>
+    // ====== CONFIG ======
     const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
 
     function copyText(txt){
@@ -249,15 +250,28 @@
       alert("Copié !");
     }
 
-    // ✅ ID persistant (comme ton ancien paiement)
+    function safeDecode(v){
+      try { return decodeURIComponent(String(v || "")); } catch(e){ return String(v || ""); }
+    }
+
+    function isEmail(v){
+      const s = String(v||"").trim();
+      return s.includes("@") && s.indexOf("@") > 0 && s.indexOf(".") > s.indexOf("@") + 1;
+    }
+
+    function makeOrderId(){
+      return "VF-" + Date.now() + "-" + Math.floor(1000 + Math.random()*9000);
+    }
+
+    // ✅ ID persistant
     let orderId = sessionStorage.getItem('active_order_id');
     if (!orderId) {
-      orderId = "#VF-" + Math.floor(1000 + Math.random()*9000);
+      orderId = makeOrderId();
       sessionStorage.setItem('active_order_id', orderId);
     }
     document.getElementById('live-order-id').innerText = orderId;
 
-    // Params URL
+    // ====== PARAMS URL (depuis index.html) ======
     const params   = new URLSearchParams(window.location.search);
     const nom      = params.get('nom') || "Service";
     const prixInit = parseFloat(params.get('prix')) || 0;
@@ -273,7 +287,7 @@
     document.getElementById('service-name').innerText = nom;
     document.getElementById('cat-badge').innerText = cat || "Service";
 
-    // ✅ Afficher desc/long depuis URL
+    // ✅ Afficher desc/long
     const descSection = document.getElementById('description-section');
     const longBox = document.getElementById('long-box');
     const descBox = document.getElementById('desc-box');
@@ -293,20 +307,13 @@
     }
     if (hasAnyDesc) descSection.classList.remove('hidden');
 
-    function safeDecode(v){
-      try { return decodeURIComponent(String(v || "")); } catch(e){ return String(v || ""); }
-    }
+    // ====== CAT LOGIC (aligné avec ton Apps Script V18.2) ======
+    const catUpper = String(cat || "").trim().toUpperCase();
 
-    // CAT logic
-    const catUpper = String(cat || "").toUpperCase();
-    const isSMM = /\b(SMM|SMM1|SMM2|SMM3|SSM2|SSM3|BOOST|BOOST2|PEAK|PEAKERR)\b/i.test(catUpper);
-    const isAbo = /\bABONNEMENT\b/i.test(catUpper);
-    const isCarte = /\bCARTE2?\b/i.test(catUpper);
-    const isIMEI = /\bIMEI\b/i.test(catUpper);
-
-    const priceEl = document.getElementById('display-price');
-    const qtyInp = document.getElementById('qty');
-    const qtyHint = document.getElementById('qty-hint');
+    const isSMM  = /(SMM|BOOST|BOOST2|PEAK|PEAKERR)/i.test(catUpper);   // SMM1/SMM2/SMM3 etc.
+    const isAbo  = (catUpper === "ABONNEMENT" || /\bABONNEMENT\b/i.test(catUpper));
+    const isCarte = (catUpper === "CARTE" || catUpper === "CARTE2" || /\bCARTE2?\b/i.test(catUpper));
+    const isIMEI = /IMEI/i.test(catUpper);
 
     // Sections
     const secSmm = document.getElementById('section-smm');
@@ -314,32 +321,40 @@
     const secCarte = document.getElementById('section-carte');
     const secDef = document.getElementById('section-default');
 
+    const priceEl = document.getElementById('display-price');
+    const qtyInp = document.getElementById('qty');
+    const qtyHint = document.getElementById('qty-hint');
+
+    // ====== PRICE / MIN MAX ======
     if (isSMM) {
       secSmm.classList.remove('hidden');
 
-      // min/max
       const hasMin = Number.isFinite(minParam);
       const hasMax = Number.isFinite(maxParam);
-      if (hasMin) qtyInp.min = String(minParam);
-      if (hasMax) qtyInp.max = String(maxParam);
+
+      if (hasMin) qtyInp.min = String(parseInt(minParam, 10));
+      if (hasMax) qtyInp.max = String(parseInt(maxParam, 10));
 
       if (hasMin || hasMax) {
         qtyHint.classList.remove('hidden');
-        qtyHint.textContent = `Plage autorisée: ${hasMin ? minParam : 0} – ${hasMax ? maxParam : '∞'}`;
+        qtyHint.textContent = `Plage autorisée: ${hasMin ? parseInt(minParam,10) : 0} – ${hasMax ? parseInt(maxParam,10) : '∞'}`;
       }
 
       function clampQty(q){
-        let x = parseFloat(q || "0");
-        if (hasMin && x < minParam) x = minParam;
-        if (hasMax && x > maxParam) x = maxParam;
-        if (!Number.isFinite(x) || x <= 0) x = hasMin ? minParam : 1;
+        let x = parseInt(String(q || "0").replace(/[^\d]/g,""), 10);
+        if (!Number.isFinite(x) || x <= 0) x = hasMin ? parseInt(minParam,10) : 1;
+        if (hasMin && x < parseInt(minParam,10)) x = parseInt(minParam,10);
+        if (hasMax && x > parseInt(maxParam,10)) x = parseInt(maxParam,10);
         return x;
       }
 
       function updatePrice(){
         const q = clampQty(qtyInp.value);
         if (String(qtyInp.value) !== String(q)) qtyInp.value = q;
-        priceEl.innerText = ((prixInit / 1000) * q).toFixed(2) + " $";
+
+        // ✅ ton pricing actuel: prixInit = prix pour 1000 (comme tu faisais)
+        const total = ((prixInit / 1000) * q);
+        priceEl.innerText = (Number.isFinite(total) ? total.toFixed(2) : "0.00") + " $";
       }
 
       qtyInp.addEventListener('input', updatePrice);
@@ -359,7 +374,7 @@
       }
     }
 
-    // Submit
+    // ====== SUBMIT (envoi compatible doPost V18.2) ======
     document.getElementById('orderForm').onsubmit = async (e) => {
       e.preventDefault();
 
@@ -367,10 +382,21 @@
       btn.disabled = true;
       btn.innerText = "Validation en cours...";
 
-      // Validations selon catégorie
+      // Validations + mapping champs => Apps Script
       let input1 = "";
-      let emailOrContact = "";
-      let qtyVal = "";
+      let emailForSheet = "";      // col L (Email Client)
+      let qtyVal = 1;              // IMPORTANT: toujours un nombre (évite 0)
+      let totalNumber = 0;
+
+      // total numeric (sans $)
+      const totalTxt = String(priceEl.innerText || "0").replace("$","").trim();
+      totalNumber = parseFloat(totalTxt) || 0;
+
+      if (!idS) {
+        alert("⚠️ ID service manquant (paramètre id).");
+        btn.disabled=false; btn.innerText="Confirmer le paiement";
+        return;
+      }
 
       if (isSMM) {
         const link = document.getElementById('boost-link').value.trim();
@@ -378,16 +404,26 @@
 
         const hasMin = Number.isFinite(minParam);
         const hasMax = Number.isFinite(maxParam);
-        const q = parseFloat(qtyInp.value || "0");
+        const q = parseInt(String(qtyInp.value || "0").replace(/[^\d]/g,""), 10);
 
-        if ((hasMin && q < minParam) || (hasMax && q > maxParam)) {
-          alert(`⚠️ Quantité invalide. Min=${hasMin ? minParam : 0}${hasMax ? ` / Max=${maxParam}` : ""}.`);
+        if (!q || q <= 0) {
+          alert("⚠️ Quantité invalide.");
+          btn.disabled=false; btn.innerText="Confirmer le paiement"; return;
+        }
+
+        if ((hasMin && q < parseInt(minParam,10)) || (hasMax && q > parseInt(maxParam,10))) {
+          alert(`⚠️ Quantité invalide. Min=${hasMin ? parseInt(minParam,10) : 0}${hasMax ? ` / Max=${parseInt(maxParam,10)}` : ""}.`);
           btn.disabled=false; btn.innerText="Confirmer le paiement"; return;
         }
 
         input1 = link;
-        qtyVal = String(qtyInp.value || "");
-        emailOrContact = String(document.getElementById('contact-smm').value || "").trim(); // optionnel
+        qtyVal = q;
+
+        const contact = String(document.getElementById('contact-smm').value || "").trim();
+        // ✅ on met l’email UNIQUEMENT si c’est un email (sinon whatsapp restera dans input1 si tu veux)
+        if (isEmail(contact)) emailForSheet = contact;
+        // option: garder le contact whatsapp dans input1 (utile support)
+        if (contact && !isEmail(contact)) input1 += "\nNET-contact-" + contact;
       }
 
       else if (isAbo) {
@@ -396,18 +432,17 @@
         if (!creds) { alert("⚠️ Mets tes identifiants (mail + mot de passe)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; return; }
         if (!contact) { alert("⚠️ Mets un contact livraison (WhatsApp ou Email)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; return; }
 
-        // ✅ Format propre pour ton sheet
         input1 = creds + "\nNET-contact-" + contact;
-        emailOrContact = contact;
-        qtyVal = "";
+        qtyVal = 1; // ✅ important
+        if (isEmail(contact)) emailForSheet = contact;
       }
 
       else if (isCarte) {
         const contact = document.getElementById('card-delivery').value.trim();
         if (!contact) { alert("⚠️ Mets un contact livraison (WhatsApp ou Email)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; return; }
         input1 = "NET-contact-" + contact;
-        emailOrContact = contact;
-        qtyVal = "";
+        qtyVal = 1; // ✅ important
+        if (isEmail(contact)) emailForSheet = contact;
       }
 
       else {
@@ -415,10 +450,18 @@
         const em = document.getElementById('email-client').value.trim();
         if (!main) { alert("⚠️ Remplis l'information requise."); btn.disabled=false; btn.innerText="Confirmer le paiement"; return; }
         input1 = main;
-        emailOrContact = em; // optionnel
-        qtyVal = "";
+        qtyVal = 1; // ✅ important
+        if (isEmail(em)) emailForSheet = em;
       }
 
+      // ✅ ton Apps Script bloque si input1 vide
+      if (!input1) {
+        alert("⚠️ Information requise manquante.");
+        btn.disabled=false; btn.innerText="Confirmer le paiement";
+        return;
+      }
+
+      // Preuve obligatoire
       const file = document.getElementById('file').files[0];
       if (!file) {
         alert("⚠️ Ajoute la preuve de paiement.");
@@ -426,29 +469,43 @@
         return;
       }
 
-      // Read file as base64
-      const fileData = await new Promise((resolve, reject) => {
-        const r = new FileReader();
-        r.onload = () => resolve(r.result);
-        r.onerror = reject;
-        r.readAsDataURL(file);
-      });
+      // base64
+      let fileData = "";
+      try {
+        fileData = await new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onload = () => resolve(r.result);
+          r.onerror = reject;
+          r.readAsDataURL(file);
+        });
+      } catch (e2) {
+        alert("⚠️ Impossible de lire l'image. Réessaie.");
+        btn.disabled=false; btn.innerText="Confirmer le paiement";
+        return;
+      }
 
+      // Payload EXACT pour recevoir(d) (Réponses Site)
       const payload = {
         orderId: orderId,
         produit: nom,
         idService: idS,
-        categorie: cat,
+        categorie: cat,          // (Abonnement/CARTE/CARTE2/SMM/IMEI...)
         input1: input1,
-        email: emailOrContact,
-        quantite: qtyVal,
-        total: priceEl.innerText,
+        quantite: qtyVal,        // ✅ nombre
+        total: totalNumber,      // ✅ number
+        email: emailForSheet,    // ✅ email seulement si email
         fileData: fileData,
-        fileType: file.type || ""
+        fileType: file.type || "image/jpeg",
+        fileName: file.name || ("preuve_" + orderId + ".jpg")
       };
 
       try {
-        await fetch(GOOGLE_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(payload) });
+        // ⚠️ mode no-cors: on envoie sans lire la réponse (Google Apps Script)
+        await fetch(GOOGLE_URL, {
+          method:'POST',
+          mode:'no-cors',
+          body: JSON.stringify(payload)
+        });
 
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
 
