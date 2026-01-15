@@ -1,11 +1,8 @@
 {
-  "name": "viralflowr-share-generator",
+  "name": "viralflowr-pages",
   "private": true,
   "type": "module",
   "scripts": {
-    "generate:share": "node scripts/generate-share.mjs"
-  },
-  "dependencies": {
-    "canvas": "^2.11.2"
+    "generate": "node scripts/generate-pages.mjs"
   }
 }
