@@ -245,6 +245,46 @@
     // ====== CONFIG ======
     const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
 
+    
+// ====== AUTO-FILL BY ID (depuis Produits) ======
+(function autoFillFromId(){
+  const p = new URLSearchParams(location.search);
+
+  const id = (p.get("id") || "").trim();
+  const hasBasics = (p.get("nom") && p.get("prix") && p.get("cat"));
+
+  if (!id || hasBasics) return;
+
+  const cb = "VF_PROD_" + Date.now();
+
+  window[cb] = function(list){
+    try{
+      const arr = Array.isArray(list) ? list : [];
+      const prod = arr.find(x => String(x.id || "").trim() === id);
+
+      if (!prod) return;
+
+      const qp = new URLSearchParams();
+      qp.set("id", prod.id || id);
+      qp.set("nom", prod.nom || "");
+      qp.set("prix", prod.prix || "");
+      qp.set("cat", prod.cat || "");
+      qp.set("img", prod.img || "");
+      qp.set("min", prod.min ?? "");
+      qp.set("max", prod.max ?? "");
+      qp.set("desc", prod.desc || "");
+      qp.set("long", prod.long_desc || prod.long || "");
+
+      // recharge sans "back" bizarre
+      location.replace("paiement.html?" + qp.toString());
+    } catch(e){}
+  };
+
+  const s = document.createElement("script");
+  s.src = `${GOOGLE_URL}?action=get_products&callback=${cb}&t=${Date.now()}`;
+  document.body.appendChild(s);
+})();
+
     function copyText(txt){
       navigator.clipboard.writeText(String(txt || ""));
       alert("Copié !");
