@@ -3,10 +3,21 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Détails Produit | ViralFlowr</title>
-    
-    <meta name="description" content="Achetez vos codes et abonnements instantanément sur ViralFlowr.">
-    
+    <title>Snap + 1Mois | ViralFlowr</title>
+
+    <meta name="description" content="5 $ • Abonnement">
+
+    <!-- OG preview -->
+    <meta property="og:type" content="product">
+    <meta property="og:site_name" content="ViralFlowr">
+    <meta property="og:title" content="Snap + 1Mois">
+    <meta property="og:description" content="5 $ • Abonnement">
+    <meta property="og:image" content="https://lh3.googleusercontent.com/d/1HdbaDKIkHT81aoipsq8KtVJ85ulAdM2J=w1200">
+    <meta property="og:url" content="https://viralflowr.com/p/1/">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://lh3.googleusercontent.com/d/1HdbaDKIkHT81aoipsq8KtVJ85ulAdM2J=w1200">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
@@ -18,7 +29,7 @@
         .btn-gradient { background: linear-gradient(90deg, #F07E13 0%, #FFB26B 100%); }
         .btn-gradient:hover { background: linear-gradient(90deg, #d96d0c 0%, #F07E13 100%); }
         .shadow-card { box-shadow: 0 0 7px 0 rgba(0,0,0,.15); }
-        
+
         /* Animation chargement */
         .skeleton { background: #eee; background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%); background-size: 200% 100%; animation: 1.5s shine linear infinite; }
         @keyframes shine { to { background-position-x: -200%; } }
@@ -29,13 +40,13 @@
 
     <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-200 shadow-sm">
         <div class="max-w-[1240px] mx-auto h-16 px-4 flex items-center justify-between gap-4">
-            <a class="flex items-center gap-2" href="index.html">
+            <a class="flex items-center gap-2" href="/index.html">
                 <div class="text-2xl font-black tracking-tighter">
                     Viral<span class="text-orange-bsv">Flowr</span>
                 </div>
             </a>
             <div class="flex items-center gap-4">
-                <a href="index.html" class="hidden md:flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-orange-600 transition-colors">
+                <a href="/index.html" class="hidden md:flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-orange-600 transition-colors">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                     Retour
                 </a>
@@ -47,7 +58,7 @@
         <div class="max-w-[1240px] mx-auto px-3 md:px-4 flex flex-col gap-6">
 
             <div class="flex items-center gap-2 text-[13px] text-[#767676] font-medium overflow-x-auto whitespace-nowrap pb-2">
-                <a href="index.html" class="hover:underline">Accueil</a>
+                <a href="/index.html" class="hover:underline">Accueil</a>
                 <span>/</span>
                 <a href="#" class="hover:underline" id="bread-cat">Catalogue</a>
                 <span>/</span>
@@ -57,18 +68,22 @@
             <div class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
 
                 <div class="flex flex-col gap-6">
-                    
+
                     <div class="bg-white border border-gray-100 shadow-card rounded-xl p-6 md:p-8">
                         <h1 id="product-title" class="text-[#18181B] font-bold text-2xl md:text-3xl leading-tight mb-6">
-                            <div class="h-8 w-3/4 skeleton rounded"></div> </h1>
-                        
+                            <div class="h-8 w-3/4 skeleton rounded"></div>
+                        </h1>
+
                         <div class="flex flex-col sm:flex-row gap-6">
                             <div class="shrink-0">
                                 <div class="w-[140px] h-[140px] bg-[#F8FAFC] rounded-2xl border border-gray-100 flex items-center justify-center p-4">
-                                    <img id="product-img" src="" class="w-full h-full object-contain transition-opacity duration-500 opacity-0" onload="this.classList.remove('opacity-0')" alt="Product">
+                                    <img id="product-img" src="" class="w-full h-full object-contain transition-opacity duration-500 opacity-0"
+                                         onload="this.classList.remove('opacity-0')"
+                                         onerror="this.src='https://cdn-icons-png.flaticon.com/512/11520/11520110.png'"
+                                         alt="Product">
                                 </div>
                             </div>
-                            
+
                             <div class="flex-1">
                                 <span class="text-[#767676] text-xs font-bold uppercase tracking-wider mb-2 block">Description :</span>
                                 <div id="product-desc" class="text-sm text-[#515052] leading-relaxed whitespace-pre-line font-medium">
@@ -107,7 +122,7 @@
                 <div class="flex flex-col gap-4">
 
                     <div class="bg-white border border-gray-100 shadow-card rounded-xl p-6 flex flex-col gap-6 relative overflow-hidden">
-                        
+
                         <div class="flex justify-between items-center border-b border-gray-100 pb-4">
                             <span class="text-gray-500 text-sm font-medium">Région :</span>
                             <div class="flex items-center gap-2">
@@ -121,10 +136,10 @@
                                 <span class="text-gray-500 text-xs font-medium block mb-1">Prix Total:</span>
                                 <span id="display-price" class="text-3xl font-black text-[#201B16] tracking-tighter">-- $</span>
                             </div>
-                            
+
                             <div class="flex flex-col text-right text-[11px] text-gray-400 font-medium">
-                                <span>Vendus : <strong class="text-gray-700">1.2k+</strong></span>
-                                <span>Dispo : <strong class="text-green-600">En stock</strong></span>
+                                <span>Min : <strong id="min-q" class="text-gray-700">1</strong></span>
+                                <span>Max : <strong id="max-q" class="text-gray-700">∞</strong></span>
                             </div>
                         </div>
 
@@ -137,7 +152,7 @@
                         <button onclick="goToCheckout()" class="w-full h-12 rounded-full btn-gradient text-white font-bold text-[15px] uppercase tracking-wide shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all">
                             Acheter maintenant
                         </button>
-                        
+
                         <button onclick="shareProduct()" class="flex items-center justify-center gap-2 text-gray-400 text-xs font-bold hover:text-orange-500 transition-colors">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
                             Partager ce produit
@@ -155,7 +170,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Crypto acceptée :</div>
                         <div class="grid grid-cols-2 gap-2">
                             <div class="flex items-center gap-2 p-2 rounded-lg border border-gray-100 bg-gray-50/50 hover:bg-orange-50 hover:border-orange-200 transition-colors cursor-default">
@@ -181,87 +196,71 @@
     </footer>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
-        
-        const params = new URLSearchParams(window.location.search);
-        let currentPrice = parseFloat(params.get('prix')) || 0;
-        const productId = params.get('id');
-        const productNom = params.get('nom');
-        
-        // Initialisation UI
-        if(productNom) {
-            document.getElementById('product-title').textContent = productNom;
-            document.getElementById('bread-name').textContent = productNom;
-            document.getElementById('display-price').textContent = currentPrice.toFixed(2) + " $";
-            document.getElementById('product-img').src = params.get('img') || 'https://cdn-icons-png.flaticon.com/512/11520/11520110.png';
-            document.getElementById('bread-cat').textContent = params.get('cat') || 'Catalogue';
+      const PRODUCT = {"id":"1","nom":"Snap + 1Mois","cat":"Abonnement","prix":5,"img":"https://lh3.googleusercontent.com/d/1HdbaDKIkHT81aoipsq8KtVJ85ulAdM2J=w1200","desc":"","longDesc":"","min":1,"max":0,"payBase":"/paiement.html?nom=Snap+%2B+1Mois&prix=5&cat=Abonnement&id=1&min=&max=&desc=&long=&img=https%3A%2F%2Flh3.googleusercontent.com%2Fd%2F1HdbaDKIkHT81aoipsq8KtVJ85ulAdM2J%3Dw1200"};
+
+      let currentPrice = parseFloat(PRODUCT.prix) || 0;
+      const productId = PRODUCT.id;
+      const productNom = PRODUCT.nom;
+
+      const minQ = parseInt(PRODUCT.min) || 1;
+      const maxQ = parseInt(PRODUCT.max) || 0; // 0 = illimité
+
+      // Initialisation UI (sans URL params)
+      document.getElementById('product-title').textContent = PRODUCT.nom;
+      document.getElementById('bread-name').textContent = PRODUCT.nom;
+      document.getElementById('bread-cat').textContent = PRODUCT.cat || 'Catalogue';
+      document.getElementById('product-img').src = PRODUCT.img || 'https://cdn-icons-png.flaticon.com/512/11520/11520110.png';
+
+      document.getElementById('min-q').textContent = String(minQ);
+      document.getElementById('max-q').textContent = maxQ > 0 ? String(maxQ) : "∞";
+
+      const descText = (PRODUCT.longDesc || PRODUCT.desc || "Livraison instantanée par email après confirmation du paiement. Code officiel garanti.");
+      document.getElementById('product-desc').textContent = descText;
+
+      // qty démarre au min
+      document.getElementById('qty-input').value = String(minQ);
+
+      function updateQty(change) {
+        const qtyInput = document.getElementById('qty-input');
+        let val = parseInt(qtyInput.value, 10) + change;
+        if (isNaN(val)) val = minQ;
+
+        if (val < minQ) val = minQ;
+        if (maxQ > 0 && val > maxQ) val = maxQ;
+
+        qtyInput.value = val;
+
+        const total = (currentPrice * val).toFixed(2);
+        document.getElementById('display-price').textContent = total + " $";
+      }
+
+      function shareProduct() {
+        const url = window.location.href;
+        if (navigator.share) {
+          navigator.share({
+            title: productNom,
+            text: 'Regarde ce produit sur ViralFlowr !',
+            url,
+          });
+        } else {
+          navigator.clipboard.writeText(url);
+          alert("Lien copié dans le presse-papier !");
         }
+      }
 
-        // Chargement des données détaillées (Description)
-        function loadDetails() {
-            const script = document.createElement('script');
-            script.src = `${SCRIPT_URL}?action=get_products&callback=updateProductDetails`;
-            document.body.appendChild(script);
-        }
+      function goToCheckout() {
+        const qty = document.getElementById('qty-input').value;
+        const sep = PRODUCT.payBase.includes("?") ? "&" : "?";
+        window.location.href = PRODUCT.payBase + sep + "qty=" + encodeURIComponent(qty);
+      }
 
-        window.updateProductDetails = (data) => {
-            // Trouver le produit correspondant
-            const p = data.find(item => item.id == productId || item.nom === productNom);
-            if(p) {
-                // Mise à jour description
-                if(p.desc) {
-                    document.getElementById('product-desc').textContent = p.desc;
-                } else {
-                    document.getElementById('product-desc').textContent = "Livraison instantanée par email après confirmation du paiement. Code officiel garanti.";
-                }
-                // Mise à jour image si meilleure qualité
-                if(p.img && p.img.length > 10) {
-                    document.getElementById('product-img').src = p.img;
-                }
-                // Mise à jour prix si différent
-                currentPrice = parseFloat(p.prix);
-                updateQty(0);
-            } else {
-                document.getElementById('product-desc').textContent = "Aucune description supplémentaire.";
-            }
-        };
+      // init price
+      updateQty(0);
 
-        // Logique Quantité
-        function updateQty(change) {
-            const qtyInput = document.getElementById('qty-input');
-            let val = parseInt(qtyInput.value) + change;
-            if(val < 1) val = 1;
-            qtyInput.value = val;
-            
-            // Calcul Prix
-            const total = (currentPrice * val).toFixed(2);
-            document.getElementById('display-price').textContent = total + " $";
-        }
-
-        // Action Partager
-        function shareProduct() {
-            if (navigator.share) {
-                navigator.share({
-                    title: productNom,
-                    text: 'Regarde ce produit sur ViralFlowr !',
-                    url: window.location.href,
-                });
-            } else {
-                navigator.clipboard.writeText(window.location.href);
-                alert("Lien copié dans le presse-papier !");
-            }
-        }
-
-        // Action Acheter
-        function goToCheckout() {
-            const qty = document.getElementById('qty-input').value;
-            // On redirige vers paiement.html avec tous les paramètres
-            const finalUrl = `paiement.html?nom=${encodeURIComponent(productNom || 'Produit')}&prix=${currentPrice}&cat=${params.get('cat') || ''}&id=${productId || ''}&qty=${qty}`;
-            window.location.href = finalUrl;
-        }
-
-        // Lancement
-        loadDetails();
+      // expose globals (HTML onclick)
+      window.updateQty = updateQty;
+      window.shareProduct = shareProduct;
+      window.goToCheckout = goToCheckout;
     </script>
 </body>
 </html>
