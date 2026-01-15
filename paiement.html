@@ -1,556 +1,301 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="font-inter">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ViralFlowr - Paiement Sécurisé</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    :root { --primary:#28a745; --blue:#0d6efd; --bg:#f4f6f8; --danger:#dc3545; }
-    body { font-family:'Poppins',sans-serif; background:var(--bg); display:flex; flex-direction:column; align-items:center; padding:15px; margin:0; }
-    .card { background:#fff; padding:25px; border-radius:20px; width:100%; max-width:450px; box-shadow:0 10px 30px rgba(0,0,0,.08); position:relative; }
-    h2 { text-align:center; color:#333; margin-top:0; font-size:20px; }
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>ViralFlowr | Paiement Sécurisé</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    .id-badge { background:#e7f1ff; border:2px dashed var(--blue); padding:12px; border-radius:12px; text-align:center; margin-bottom:18px; }
-    .id-label { display:block; font-size:11px; color:var(--blue); font-weight:700; text-transform:uppercase; }
-    .id-value { font-size:24px; font-weight:700; color:#0d47a1; display:block; margin:5px 0; }
-    .copy-btn { background:var(--blue); color:#fff; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer; font-weight:700; }
-
-    .pill {
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 10px; border-radius:999px; font-size:12px; font-weight:700;
-      border:1px solid #e9ecef; background:#f8fafc; color:#0b1220;
-      margin:0 auto 14px; width:fit-content;
-    }
-    .pill b{color:var(--blue)}
-    .hint { font-size:12px; color:#666; margin-top:6px; line-height:1.35; }
-    .warn { font-size:12px; color:#7a1f1f; background:#ffe5e5; border:1px solid #ffc9c9; padding:10px; border-radius:10px; margin-top:12px; }
-
-    .price { font-size:28px; color:var(--primary); font-weight:700; text-align:center; margin:15px 0; }
-
-    .desc-box { background:#f8f9fa; border-left:4px solid #ddd; border-radius:8px; margin-bottom:12px; overflow:hidden; }
-    .desc-box.blue { border-left-color:var(--blue); }
-    .desc-box.green{ border-left-color:var(--primary); }
-    summary { padding:10px; cursor:pointer; font-weight:700; font-size:13px; outline:none; }
-    .desc-content { padding:0 10px 10px; font-size:12px; color:#666; white-space:pre-wrap; line-height:1.55; }
-
-    label { display:block; margin-top:15px; font-weight:600; font-size:14px; color:#555; }
-    input, textarea {
-      width:100%; padding:12px; margin-top:8px;
-      border:1px solid #ddd; border-radius:10px; box-sizing:border-box;
-      font-size:15px; font-family:inherit;
-    }
-    textarea{ min-height:110px; resize:vertical; }
-
-    .pay-info { background:#fff3cd; border:1px solid #ffecb5; padding:15px; border-radius:10px; font-size:12px; margin-top:20px; line-height:1.6; color:#664d03; }
-    .btn { background:var(--primary); color:#fff; border:none; padding:16px; width:100%; border-radius:10px; font-weight:700; font-size:16px; margin-top:20px; cursor:pointer; transition:.3s; }
-    .btn:disabled { background:#ccc; cursor:not-allowed; }
-    .hidden { display:none !important; }
-    .success { text-align:center; color:var(--primary); padding:20px; }
-
-    /* Chat */
-    #chat-circle { position:fixed; bottom:20px; right:20px; background:var(--blue); color:#fff; width:55px; height:55px; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,.3); z-index:1000; }
-    #chat-box { display:none; position:fixed; bottom:85px; right:20px; width:300px; background:#fff; border-radius:15px; box-shadow:0 10px 25px rgba(0,0,0,.2); z-index:1000; overflow:hidden; }
-    .chat-header { background:var(--blue); color:#fff; padding:12px; font-weight:700; font-size:14px; display:flex; justify-content:space-between; align-items:center; }
-    #chat-history { height:220px; overflow-y:auto; padding:10px; background:#f8f9fa; font-size:13px; display:flex; flex-direction:column; }
-    .chat-input-area { border-top:1px solid #eee; padding:10px; display:flex; background:#fff; }
-    .chat-input-area input { margin:0; padding:8px; border:none; outline:none; flex:1; font-size:13px; }
-  </style>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F3F3F3; }
+        .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
+        .text-orange-bsv { color: #F07E13; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        .checkout-container { max-width: 500px; width: 100%; margin: 2rem auto; }
+        input, textarea { outline: none; transition: all 0.2s; }
+        input:focus, textarea:focus { ring: 2px; ring-color: #F07E13; border-color: transparent; }
+    </style>
 </head>
-<body>
 
-<div class="card">
-  <div id="form-container">
-    <h2 id="service-name">Chargement...</h2>
+<body class="p-4 md:p-8">
 
-    <div class="id-badge">
-      <span class="id-label">Note à mettre sur Binance Pay</span>
-      <span id="live-order-id" class="id-value">#CMD-XXXX</span>
-      <button type="button" class="copy-btn" onclick="copyID()">COPIER L'ID</button>
-    </div>
-
-    <div class="pill" id="cat-pill">Catégorie : <b id="cat-name">—</b></div>
-
-    <!-- Description produit (long_desc) -->
-    <details class="desc-box blue hidden" id="long-ui" open>
-      <summary>📝 Description du produit</summary>
-      <div class="desc-content" id="service-long"></div>
-    </details>
-
-    <!-- Instructions (desc) -->
-    <details class="desc-box green hidden" id="desc-ui">
-      <summary>📄 Instructions</summary>
-      <div class="desc-content" id="service-desc"></div>
-    </details>
-
-    <form id="orderForm">
-
-      <!-- =========================
-           1) SMM2 / SMM3 / BOOST
-           -> Lien à booster + QTY seulement
-           ========================= -->
-      <div id="section-smm" class="hidden">
-        <label for="boost-link">Lien à booster (obligatoire)</label>
-        <input type="text" id="boost-link" placeholder="Collez votre lien (ex: https://instagram.com/...)" />
-
-        <div id="qty-box" style="margin-top:0;">
-          <label for="qty">Quantité</label>
-          <input type="number" id="qty" value="1000" min="10" inputmode="numeric" />
-          <div class="hint" id="qty-hint"></div>
+    <div class="checkout-container">
+        <div class="text-center mb-8">
+            <a href="index.html" class="inline-block text-2xl font-black tracking-tighter mb-2">
+                Viral<span class="text-orange-bsv">Flowr</span>
+            </a>
+            <p class="text-gray-400 text-xs font-bold uppercase tracking-widest">Finaliser votre achat</p>
         </div>
 
-        <div class="warn" id="qty-warn" style="display:none;"></div>
-      </div>
-
-      <!-- =========================
-           2) ABONNEMENT
-           -> Identifiants (mail+mdp) + Contact livraison (mail ou whatsapp) obligatoire
-           ========================= -->
-      <div id="section-abonnement" class="hidden">
-        <label for="creds">Identifiants du compte (obligatoire)</label>
-        <textarea id="creds" placeholder="Exemple :
-Email : user@gmail.com
-Mot de passe : ********
-(ajoutez profil/plan si nécessaire)"></textarea>
-        <div class="hint">⚠️ Vérifiez l’exactitude. En cas d’OTP ou d’erreur, nous vous contacterons via le contact ci-dessous.</div>
-
-        <label for="delivery-contact">Contact pour livraison / OTP (WhatsApp ou Email) (obligatoire)</label>
-        <input type="text" id="delivery-contact" placeholder="Ex: +243xxxxxxxxx ou client@gmail.com" />
-      </div>
-
-      <!-- =========================
-           3) CARTE & CARTE2
-           -> Contact livraison obligatoire
-           ========================= -->
-      <div id="section-carte" class="hidden">
-        <label for="card-delivery">Contact pour livraison (WhatsApp ou Email) (obligatoire)</label>
-        <input type="text" id="card-delivery" placeholder="Ex: +243xxxxxxxxx ou client@gmail.com" />
-        <div class="hint">Nous envoyons les détails directement sur ce contact.</div>
-      </div>
-
-      <!-- =========================
-           4) AUTRES (fallback)
-           ========================= -->
-      <div id="section-default" class="hidden">
-        <label id="input-label" for="main-input">Information requise</label>
-        <input type="text" id="main-input" placeholder="Lien / Email / Info" />
-        <label for="email">Email du client (obligatoire)</label>
-        <input type="email" id="email" placeholder="ex: client@gmail.com" />
-      </div>
-
-      <div class="price" id="display-price">0.00 $</div>
-
-      <div class="pay-info">
-        <strong>💳 MOYENS DE PAIEMENT :</strong><br>
-        🔸 Binance Pay ID : <strong>744370418</strong><br>
-        🔴 Airtel (RDC) : 0971028041 (MARCELINE)<br>
-        🔵 Wave (CI) : +2250546247885<br>
-        <strong>⚠️ NOTE :</strong> Écrivez l'ID ci-dessus dans la case "Note" de Binance.
-      </div>
-
-      <label>📸 Preuve de paiement (Image)</label>
-      <input type="file" id="file" accept="image/*" required>
-
-      <button type="submit" class="btn" id="submitBtn">CONFIRMER MA COMMANDE</button>
-    </form>
-  </div>
-
-  <div id="success-msg" class="hidden success">
-    <div style="font-size:50px;">✅</div>
-    <h3>Commande Reçue !</h3>
-    <p>Activation automatique en cours...</p>
-    <p>ID : <strong id="final-id"></strong></p>
-    <button class="btn" onclick="resetAndReload()" style="background:var(--blue)">Nouvelle commande</button>
-  </div>
-</div>
-
-<div id="chat-circle" onclick="toggleChat()">💬</div>
-<div id="chat-box">
-  <div class="chat-header">
-    <span>Support ViralFlowr</span>
-    <span onclick="toggleChat()" style="cursor:pointer; font-size:20px; line-height:1;">&times;</span>
-  </div>
-  <div id="chat-history"></div>
-  <div class="chat-input-area">
-    <input type="text" id="chat-input" placeholder="Posez votre question...">
-    <button onclick="sendMsg()" type="button" style="border:none; background:none; color:var(--blue); font-weight:700; cursor:pointer;">OK</button>
-  </div>
-</div>
-
-<script>
-  // Google Apps Script URL
-  const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
-
-  function escapeHTML(str=""){
-    return String(str)
-      .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;").replaceAll("'","&#039;");
-  }
-
-  // ID persistant
-  let orderId = sessionStorage.getItem('active_order_id');
-  if (!orderId) {
-    orderId = "#CMD-" + Math.floor(1000 + Math.random()*9000);
-    sessionStorage.setItem('active_order_id', orderId);
-  }
-  document.getElementById('live-order-id').innerText = orderId;
-
-  // Params URL
-  const params      = new URLSearchParams(window.location.search);
-  const nom         = params.get('nom')  || "Service";
-  const prixInitial = parseFloat(params.get('prix')) || 0;
-  const cat         = params.get('cat')  || "";
-  const idS         = params.get('id')   || "";
-  const desc        = params.get('desc') || "";
-  const longDesc    = params.get('long') || params.get('long_desc') || "";
-
-  // Min/Max (depuis Produits H/I) passés en URL
-  const minParamRaw = params.get('min');
-  const maxParamRaw = params.get('max');
-  const minParam = (minParamRaw !== null && minParamRaw !== "" && !Number.isNaN(Number(minParamRaw))) ? Number(minParamRaw) : null;
-  const maxParam = (maxParamRaw !== null && maxParamRaw !== "" && !Number.isNaN(Number(maxParamRaw))) ? Number(maxParamRaw) : null;
-
-  document.getElementById('service-name').innerText = nom;
-  document.getElementById('display-price').innerText = prixInitial.toFixed(2) + " $";
-  document.getElementById('cat-name').innerText = String(cat || "—");
-
-  // Long desc / desc UI
-  const longBox = document.getElementById('long-ui');
-  const instBox = document.getElementById('desc-ui');
-  const longEl  = document.getElementById('service-long');
-  const instEl  = document.getElementById('service-desc');
-
-  if (longDesc && String(longDesc).trim() !== "") {
-    longEl.textContent = String(longDesc);
-    longBox.classList.remove('hidden');
-    if (desc && String(desc).trim() !== "") {
-      instEl.textContent = String(desc);
-      instBox.classList.remove('hidden');
-    }
-  } else if (desc && String(desc).trim() !== "") {
-    longEl.textContent = String(desc);
-    longBox.classList.remove('hidden');
-  }
-
-  // ====== Catégories ======
-  const catUpper = String(cat || "").toUpperCase().trim();
-
-  // SMM2/SMM3/BOOST (et variantes)
-  const isBoostCat = /\b(BOOST|SMM2|SMM3|SSM2|SSM3|PEAK|PEAKERR)\b/i.test(catUpper);
-  const isAbonnement = /\bABONNEMENT\b/i.test(catUpper);
-  const isCarte = (catUpper === "CARTE");
-  const isCarte2 = (catUpper === "CARTE2");
-  const isIMEI = /\bIMEI\b/i.test(catUpper);
-
-  const sectionSMM = document.getElementById('section-smm');
-  const sectionAbo = document.getElementById('section-abonnement');
-  const sectionCarte = document.getElementById('section-carte');
-  const sectionDefault = document.getElementById('section-default');
-
-  const priceEl = document.getElementById('display-price');
-
-  // Inputs
-  const boostLink = document.getElementById('boost-link');
-  const qtyInp = document.getElementById('qty');
-  const qtyHint = document.getElementById('qty-hint');
-  const qtyWarn = document.getElementById('qty-warn');
-
-  const creds = document.getElementById('creds');
-  const deliveryContact = document.getElementById('delivery-contact');
-
-  const cardDelivery = document.getElementById('card-delivery');
-
-  const mainInput = document.getElementById('main-input');
-  const emailInput = document.getElementById('email');
-  const inputLabel = document.getElementById('input-label');
-
-  function showOnly(section){
-    [sectionSMM, sectionAbo, sectionCarte, sectionDefault].forEach(s => s.classList.add('hidden'));
-    section.classList.remove('hidden');
-  }
-
-  function clearRequired(){
-    // remove required from all custom fields
-    [boostLink, qtyInp, creds, deliveryContact, cardDelivery, mainInput, emailInput].forEach(el=>{
-      if(!el) return;
-      el.required = false;
-    });
-  }
-
-  function setPriceFromQty(q){
-    // prixInitial = prix pour 1000 (logique existante)
-    priceEl.innerText = ((prixInitial / 1000) * q).toFixed(2) + " $";
-  }
-
-  function clampQty(q){
-    let v = Number(q);
-    if (!Number.isFinite(v)) v = 0;
-
-    if (minParam !== null && v < minParam) v = minParam;
-    if (maxParam !== null && v > maxParam) v = maxParam;
-
-    return v;
-  }
-
-  function updateQtyUIAndPrice(){
-    // enforce + show warning if user tried to exceed
-    const raw = Number(qtyInp.value || 0);
-    const clamped = clampQty(raw);
-
-    if (minParam !== null || maxParam !== null) {
-      const minTxt = (minParam !== null ? minParam : 0);
-      const maxTxt = (maxParam !== null ? maxParam : "∞");
-      qtyHint.textContent = `Plage autorisée: ${minTxt} – ${maxTxt}`;
-
-      if ((minParam !== null && raw < minParam) || (maxParam !== null && raw > maxParam)) {
-        qtyWarn.style.display = "block";
-        qtyWarn.textContent = `Quantité invalide. Min=${minTxt}${maxParam !== null ? ` / Max=${maxParam}` : ""}. Modifie la quantité.`;
-      } else {
-        qtyWarn.style.display = "none";
-        qtyWarn.textContent = "";
-      }
-    } else {
-      qtyHint.textContent = "";
-      qtyWarn.style.display = "none";
-      qtyWarn.textContent = "";
-    }
-
-    // reflect clamp into input to avoid sending invalid qty
-    if (String(qtyInp.value) !== String(clamped)) qtyInp.value = clamped;
-
-    setPriceFromQty(clamped);
-  }
-
-  // ====== Setup page by category ======
-  clearRequired();
-
-  if (isBoostCat) {
-    // ✅ SMM2/SMM3/Boost: Lien à booster + QTY seulement
-    showOnly(sectionSMM);
-    boostLink.required = true;
-    qtyInp.required = true;
-
-    // apply min/max attributes to block typing beyond supplier rules
-    if (minParam !== null) qtyInp.min = String(minParam);
-    if (maxParam !== null) qtyInp.max = String(maxParam);
-
-    // init
-    updateQtyUIAndPrice();
-    qtyInp.addEventListener('input', updateQtyUIAndPrice);
-
-  } else if (isAbonnement) {
-    // ✅ ABONNEMENT: Identifiants + contact livraison obligatoire
-    showOnly(sectionAbo);
-    creds.required = true;
-    deliveryContact.required = true;
-    // prix fixe pour abonnement
-    priceEl.innerText = prixInitial.toFixed(2) + " $";
-
-  } else if (isCarte || isCarte2) {
-    // ✅ Carte & Carte2: contact livraison obligatoire
-    showOnly(sectionCarte);
-    cardDelivery.required = true;
-    priceEl.innerText = prixInitial.toFixed(2) + " $";
-
-  } else if (isIMEI) {
-    // fallback IMEI (si vous l’utilisez encore)
-    showOnly(sectionDefault);
-    inputLabel.innerText = "Numéro IMEI (15 chiffres)";
-    mainInput.required = true;
-    emailInput.required = true;
-    priceEl.innerText = prixInitial.toFixed(2) + " $";
-
-  } else {
-    // Autres
-    showOnly(sectionDefault);
-    mainInput.required = true;
-    emailInput.required = true;
-    priceEl.innerText = prixInitial.toFixed(2) + " $";
-  }
-
-  function copyID(){ navigator.clipboard.writeText(orderId); alert("ID Copié : " + orderId); }
-  function resetAndReload(){ sessionStorage.removeItem('active_order_id'); window.location.reload(); }
-  window.copyID = copyID;
-
-  function validateBeforeSend(){
-    // SMM2/SMM3/Boost: must respect min/max hard
-    if (isBoostCat) {
-      const q = Number(qtyInp.value || 0);
-      if (!Number.isFinite(q) || q <= 0) {
-        alert("Quantité invalide. Entrez une quantité correcte.");
-        qtyInp.focus();
-        return false;
-      }
-      if (minParam !== null && q < minParam) {
-        alert(`Quantité trop petite. Min=${minParam}.`);
-        qtyInp.focus();
-        return false;
-      }
-      if (maxParam !== null && q > maxParam) {
-        alert(`Quantité trop grande. Max=${maxParam}.`);
-        qtyInp.focus();
-        return false;
-      }
-      if (!String(boostLink.value || "").trim()) {
-        alert("Collez le lien à booster.");
-        boostLink.focus();
-        return false;
-      }
-    }
-
-    if (isAbonnement) {
-      if (!String(creds.value || "").trim()) {
-        alert("Veuillez entrer les identifiants (email + mot de passe).");
-        creds.focus();
-        return false;
-      }
-      if (!String(deliveryContact.value || "").trim()) {
-        alert("Veuillez entrer un contact WhatsApp ou Email pour la livraison / OTP.");
-        deliveryContact.focus();
-        return false;
-      }
-    }
-
-    if (isCarte || isCarte2) {
-      if (!String(cardDelivery.value || "").trim()) {
-        alert("Veuillez entrer un contact WhatsApp ou Email pour la livraison.");
-        cardDelivery.focus();
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  // Envoi commande
-  document.getElementById('orderForm').onsubmit = async (e)=>{
-    e.preventDefault();
-    if (!validateBeforeSend()) return;
-
-    const btn = document.getElementById('submitBtn');
-    btn.disabled = true; btn.innerText = "Envoi...";
-
-    const file = document.getElementById('file').files[0];
-    let fileData = "";
-    if (file) {
-      const reader = new FileReader();
-      fileData = await new Promise(res => {
-        reader.onload = ev => res(ev.target.result);
-        reader.readAsDataURL(file);
-      });
-    }
-
-    // Build fields per category (sans casser ton backend)
-    // - input1 : lien/imei/infos
-    // - email  : email client (fallback), mais pour abonnement/carte => contact livraison
-    // - quantite : seulement pour SMM/Boost
-    // + champs extra : identifiants, deliveryContact, typeForm
-    let input1Val = "";
-    let emailVal = "";
-    let qtyVal = "";
-    let identifiantsVal = "";
-
-    if (isBoostCat) {
-      input1Val = String(boostLink.value || "").trim(); // lien à booster
-      qtyVal = String(qtyInp.value || "").trim();
-      emailVal = ""; // pas demandé
-    } else if (isAbonnement) {
-      identifiantsVal = String(creds.value || "").trim();
-      emailVal = String(deliveryContact.value || "").trim();
-      input1Val = ""; // pas demandé
-      qtyVal = "";
-    } else if (isCarte || isCarte2) {
-      emailVal = String(cardDelivery.value || "").trim();
-      input1Val = ""; // pas demandé
-      qtyVal = "";
-    } else {
-      input1Val = String(mainInput.value || "").trim();
-      emailVal = String(emailInput.value || "").trim();
-      qtyVal = "";
-    }
-
-    const payload = {
-      orderId   : orderId,
-      produit   : nom,
-      idService : idS,
-      categorie : cat,
-
-      // Champs historiques (compatibilité)
-      input1    : input1Val,
-      email     : emailVal,
-      quantite  : qtyVal,
-      total     : priceEl.innerText,
-
-      // Extras (tu peux les enregistrer côté Apps Script)
-      identifiants : identifiantsVal,
-      deliveryContact : emailVal,
-      typeForm : (isBoostCat ? "BOOST" : isAbonnement ? "ABONNEMENT" : (isCarte ? "CARTE" : isCarte2 ? "CARTE2" : "DEFAULT")),
-      min : (minParam !== null ? String(minParam) : ""),
-      max : (maxParam !== null ? String(maxParam) : ""),
-
-      fileData  : fileData,
-      fileType  : file ? file.type : ""
-    };
-
-    fetch(GOOGLE_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(payload) })
-      .then(()=>{
-        document.getElementById('form-container').classList.add('hidden');
-        document.getElementById('final-id').innerText = orderId;
-        document.getElementById('success-msg').classList.remove('hidden');
-      })
-      .catch(()=>alert("Erreur de connexion"))
-      .finally(()=>{ btn.disabled=false; btn.innerText="CONFIRMER MA COMMANDE"; });
-  };
-
-  // Chat
-  function toggleChat(){
-    const cb = document.getElementById('chat-box');
-    cb.style.display = (cb.style.display==='block') ? 'none' : 'block';
-  }
-  function addChat(text,isUser){
-    const hist = document.getElementById('chat-history');
-    const safe = escapeHTML(text);
-    const side = isUser ? 'align-self:flex-end; background:#d1e7ff;' : 'align-self:flex-start; background:#eee;';
-    hist.innerHTML += `<div style="${side} padding:8px 12px; border-radius:12px; margin-bottom:8px; max-width:80%; word-wrap:break-word;">${safe}</div>`;
-    hist.scrollTop = hist.scrollHeight;
-  }
-  function saveLocal(text,isUser){
-    let h = JSON.parse(localStorage.getItem('h_'+orderId) || '[]');
-    h.push({t:text,y:isUser});
-    localStorage.setItem('h_'+orderId, JSON.stringify(h));
-  }
-  async function sendMsg(){
-    const inp = document.getElementById('chat-input');
-    const txt = inp.value.trim();
-    if(!txt) return;
-    addChat(txt,true);
-    saveLocal(txt,true);
-    fetch(GOOGLE_URL, { method:'POST', mode:'no-cors', body: JSON.stringify({ chat: txt, orderId: orderId }) });
-    inp.value = '';
-  }
-  function checkServerReply(){
-    const checkUrl = GOOGLE_URL + "?action=check&orderId=" + encodeURIComponent(orderId);
-    const script = document.createElement('script');
-    script.src = checkUrl + "&callback=handleReply";
-    document.body.appendChild(script);
-    document.body.removeChild(script);
-  }
-  function handleReply(data){
-    if (data && data.reply) {
-      addChat(data.reply,false);
-      saveLocal(data.reply,false);
-    }
-  }
-
-  window.addEventListener('DOMContentLoaded', ()=>{
-    const h = JSON.parse(localStorage.getItem('h_'+orderId) || '[]');
-    h.forEach(m => addChat(m.t, m.y));
-    setInterval(checkServerReply, 5000);
-  });
-
-  window.toggleChat = toggleChat;
-  window.sendMsg = sendMsg;
-</script>
-
+        <div class="bg-white rounded-[32px] shadow-sm border border-gray-100 p-6 md:p-8">
+            
+            <div id="form-container">
+                <h2 id="service-name" class="text-xl font-extrabold text-center text-gray-900 mb-6">Chargement...</h2>
+
+                <div class="bg-[#F8FAFC] border-2 border-dashed border-[#F07E13]/30 rounded-2xl p-4 text-center mb-6">
+                    <span class="text-[10px] font-black text-orange-600 uppercase tracking-tighter">Note à mettre sur Binance Pay</span>
+                    <span id="live-order-id" class="block text-2xl font-black text-gray-900 my-1">#CMD-XXXX</span>
+                    <button type="button" onclick="copyID()" class="text-[10px] font-bold bg-gray-900 text-white px-3 py-1 rounded-full hover:bg-orange-500 transition-colors">COPIER L'ID</button>
+                </div>
+
+                <div class="flex justify-center mb-6">
+                    <div class="bg-gray-100 px-4 py-1.5 rounded-full text-[11px] font-bold text-gray-600 uppercase">
+                        Catégorie : <span id="cat-name" class="text-blue-600">—</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3 mb-6">
+                    <details class="group bg-gray-50 rounded-xl overflow-hidden hidden" id="long-ui" open>
+                        <summary class="list-none p-3 font-bold text-xs cursor-pointer flex justify-between items-center text-gray-700">
+                            📝 Description du produit
+                            <span class="group-open:rotate-180 transition-transform">▼</span>
+                        </summary>
+                        <div class="p-3 pt-0 text-xs text-gray-500 leading-relaxed italic" id="service-long"></div>
+                    </details>
+
+                    <details class="group bg-green-50 rounded-xl overflow-hidden hidden" id="desc-ui">
+                        <summary class="list-none p-3 font-bold text-xs cursor-pointer flex justify-between items-center text-green-700">
+                            📄 Instructions
+                            <span class="group-open:rotate-180 transition-transform">▼</span>
+                        </summary>
+                        <div class="p-3 pt-0 text-xs text-green-600 leading-relaxed" id="service-desc"></div>
+                    </details>
+                </div>
+
+                <form id="orderForm" class="space-y-4">
+                    
+                    <div id="section-smm" class="hidden space-y-4">
+                        <div>
+                            <label class="block text-[13px] font-bold text-gray-700 mb-2">Lien à booster (obligatoire)</label>
+                            <input type="text" id="boost-link" placeholder="Lien profil ou publication" class="w-full bg-gray-50 border-none rounded-xl p-3 text-sm font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-bold text-gray-700 mb-2">Quantité</label>
+                            <input type="number" id="qty" value="1000" min="10" class="w-full bg-gray-50 border-none rounded-xl p-3 text-sm font-black">
+                            <p id="qty-hint" class="text-[10px] text-gray-400 mt-1"></p>
+                        </div>
+                        <div id="qty-warn" class="bg-red-50 text-red-600 text-[11px] p-3 rounded-xl hidden"></div>
+                    </div>
+
+                    <div id="section-abonnement" class="hidden space-y-4">
+                        <div>
+                            <label class="block text-[13px] font-bold text-gray-700 mb-2">Identifiants du compte (obligatoire)</label>
+                            <textarea id="creds" placeholder="Email : ...&#10;Mot de passe : ..." class="w-full bg-gray-50 border-none rounded-xl p-3 text-sm font-medium"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-bold text-gray-700 mb-2">Contact Livraison / OTP</label>
+                            <input type="text" id="delivery-contact" placeholder="WhatsApp ou Email" class="w-full bg-gray-50 border-none rounded-xl p-3 text-sm font-medium">
+                        </div>
+                    </div>
+
+                    <div id="section-carte" class="hidden">
+                        <label class="block text-[13px] font-bold text-gray-700 mb-2">Contact pour livraison (WhatsApp/Email)</label>
+                        <input type="text" id="card-delivery" placeholder="Où envoyer le code ?" class="w-full bg-gray-50 border-none rounded-xl p-3 text-sm font-medium">
+                    </div>
+
+                    <div id="section-default" class="hidden space-y-4">
+                        <div>
+                            <label id="input-label" class="block text-[13px] font-bold text-gray-700 mb-2">Information requise</label>
+                            <input type="text" id="main-input" placeholder="Détails ici..." class="w-full bg-gray-50 border-none rounded-xl p-3 text-sm font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-bold text-gray-700 mb-2">Email du client</label>
+                            <input type="email" id="email" placeholder="client@example.com" class="w-full bg-gray-50 border-none rounded-xl p-3 text-sm font-medium">
+                        </div>
+                    </div>
+
+                    <div class="py-4 text-center">
+                        <span class="text-gray-400 text-xs font-bold uppercase tracking-widest block">Total à payer</span>
+                        <div id="display-price" class="text-4xl font-black text-gray-900 tracking-tighter">0.00 $</div>
+                    </div>
+
+                    <div class="bg-gray-900 rounded-2xl p-5 text-white space-y-3 shadow-xl">
+                        <h4 class="text-[10px] font-black text-orange-400 uppercase tracking-widest border-b border-white/10 pb-2 mb-2">Méthodes acceptées</h4>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="opacity-70 font-medium">Binance Pay ID</span>
+                            <span class="font-bold">744370418</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="opacity-70 font-medium">Airtel (RDC)</span>
+                            <span class="font-bold text-red-400">0971028041</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="opacity-70 font-medium">Wave (CI)</span>
+                            <span class="font-bold text-blue-400">+225 0546247885</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-4">
+                        <label class="block text-[13px] font-bold text-gray-700 mb-2">📸 Preuve de paiement (Screenshot)</label>
+                        <div class="relative group">
+                            <input type="file" id="file" accept="image/*" required class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[11px] file:font-black file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 cursor-pointer bg-white border border-gray-200 rounded-xl p-2">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="w-full brand-gradient text-white py-4 rounded-2xl font-black text-sm uppercase shadow-xl hover:scale-[1.02] transition-all">
+                        Confirmer ma commande
+                    </button>
+                </form>
+            </div>
+
+            <div id="success-msg" class="hidden text-center py-10 animate-in fade-in zoom-in duration-500">
+                <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <h3 class="text-2xl font-black text-gray-900 mb-2">Commande Reçue !</h3>
+                <p class="text-gray-500 text-sm mb-6">Activation en cours pour l'ID <strong id="final-id" class="text-gray-900"></strong></p>
+                <button onclick="resetAndReload()" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-sm uppercase">Nouvelle commande</button>
+            </div>
+
+        </div>
+
+        <p class="text-center text-[10px] font-bold text-gray-400 mt-8 uppercase tracking-tighter">
+            © 2026 ViralFlowr Marketplace • Elite Digital Solutions
+        </p>
+    </div>
+
+    <div id="chat-circle" onclick="toggleChat()" class="fixed bottom-6 right-6 brand-gradient text-white w-14 h-14 rounded-full flex items-center justify-center shadow-2xl cursor-pointer hover:rotate-12 transition-all z-50">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+    </div>
+
+    <div id="chat-box" class="hidden fixed bottom-24 right-6 w-[320px] bg-white rounded-[24px] shadow-2xl z-50 overflow-hidden border border-gray-100 animate-in slide-in-from-bottom-5">
+        <div class="brand-gradient p-4 text-white flex justify-between items-center">
+            <span class="font-black text-xs uppercase tracking-widest">Support ViralFlowr</span>
+            <button onclick="toggleChat()" class="text-white hover:opacity-50 font-bold">✕</button>
+        </div>
+        <div id="chat-history" class="h-64 overflow-y-auto p-4 bg-gray-50 flex flex-col space-y-3 no-scrollbar text-xs"></div>
+        <div class="p-3 bg-white border-t border-gray-100 flex gap-2">
+            <input type="text" id="chat-input" placeholder="Posez votre question..." class="flex-1 bg-gray-100 border-none rounded-xl p-2 text-xs font-medium">
+            <button onclick="sendMsg()" class="text-[#F07E13] font-black text-xs uppercase px-2">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // --- COPIER LA LOGIQUE DE VOTRE ANCIEN SCRIPT ICI ---
+        const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
+
+        function escapeHTML(str=""){
+            return String(str).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+        }
+
+        let orderId = sessionStorage.getItem('active_order_id');
+        if (!orderId) {
+            orderId = "#CMD-" + Math.floor(1000 + Math.random()*9000);
+            sessionStorage.setItem('active_order_id', orderId);
+        }
+        document.getElementById('live-order-id').innerText = orderId;
+
+        const params = new URLSearchParams(window.location.search);
+        const nom = params.get('nom') || "Service";
+        const prixInitial = parseFloat(params.get('prix')) || 0;
+        const cat = params.get('cat') || "";
+        const idS = params.get('id') || "";
+        const desc = params.get('desc') || "";
+        const longDesc = params.get('long') || params.get('long_desc') || "";
+        const minParam = params.get('min') ? Number(params.get('min')) : null;
+        const maxParam = params.get('max') ? Number(params.get('max')) : null;
+
+        document.getElementById('service-name').innerText = nom;
+        document.getElementById('cat-name').innerText = cat || "—";
+
+        // UI Description
+        if (longDesc) {
+            document.getElementById('service-long').textContent = longDesc;
+            document.getElementById('long-ui').classList.remove('hidden');
+        }
+        if (desc) {
+            document.getElementById('service-desc').textContent = desc;
+            document.getElementById('desc-ui').classList.remove('hidden');
+        }
+
+        // --- LOGIQUE DE CATÉGORIE ---
+        const catUpper = cat.toUpperCase();
+        const isBoost = /\b(BOOST|SMM|PEAK)\b/.test(catUpper);
+        const isAbo = /\bABONNEMENT\b/.test(catUpper);
+        const isCard = /\bCARTE\b/.test(catUpper);
+
+        function showSection(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        if (isBoost) {
+            showSection('section-smm');
+            const qty = document.getElementById('qty');
+            const qtyHint = document.getElementById('qty-hint');
+            if(minParam) qtyHint.innerText = `Min: ${minParam} • Max: ${maxParam || '∞'}`;
+            qty.addEventListener('input', () => {
+                let v = Number(qty.value);
+                document.getElementById('display-price').innerText = ((prixInitial / 1000) * v).toFixed(2) + " $";
+            });
+            qty.dispatchEvent(new Event('input'));
+        } else if (isAbo) {
+            showSection('section-abonnement');
+            document.getElementById('display-price').innerText = prixInitial.toFixed(2) + " $";
+        } else if (isCard) {
+            showSection('section-carte');
+            document.getElementById('display-price').innerText = prixInitial.toFixed(2) + " $";
+        } else {
+            showSection('section-default');
+            document.getElementById('display-price').innerText = prixInitial.toFixed(2) + " $";
+        }
+
+        function copyID(){ navigator.clipboard.writeText(orderId); alert("ID Copié !"); }
+        function resetAndReload(){ sessionStorage.removeItem('active_order_id'); window.location.reload(); }
+
+        // --- CHAT ---
+        function toggleChat(){ document.getElementById('chat-box').classList.toggle('hidden'); }
+        function addChat(text, isUser){
+            const hist = document.getElementById('chat-history');
+            const side = isUser ? 'bg-orange-100 self-end text-right' : 'bg-gray-200 self-start';
+            hist.innerHTML += `<div class="${side} p-3 rounded-2xl max-w-[80%] shadow-sm">${escapeHTML(text)}</div>`;
+            hist.scrollTop = hist.scrollHeight;
+        }
+
+        async function sendMsg(){
+            const inp = document.getElementById('chat-input');
+            if(!inp.value) return;
+            addChat(inp.value, true);
+            fetch(GOOGLE_URL, { method:'POST', mode:'no-cors', body: JSON.stringify({ chat: inp.value, orderId: orderId }) });
+            inp.value = '';
+        }
+
+        document.getElementById('orderForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true; btn.innerText = "Traitement en cours...";
+
+            const file = document.getElementById('file').files[0];
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = async () => {
+                const payload = {
+                    orderId: orderId,
+                    produit: nom,
+                    categorie: cat,
+                    total: document.getElementById('display-price').innerText,
+                    fileData: reader.result,
+                    // Collecte des champs selon la section visible
+                    input1: document.getElementById('boost-link').value || document.getElementById('main-input').value || document.getElementById('creds').value,
+                    email: document.getElementById('delivery-contact').value || document.getElementById('card-delivery').value || document.getElementById('email').value,
+                    quantite: document.getElementById('qty').value || "1"
+                };
+                
+                await fetch(GOOGLE_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(payload) });
+                document.getElementById('form-container').classList.add('hidden');
+                document.getElementById('final-id').innerText = orderId;
+                document.getElementById('success-msg').classList.remove('hidden');
+            };
+        };
+
+        // Check replies
+        setInterval(async () => {
+            const res = await fetch(GOOGLE_URL + "?action=check&orderId=" + encodeURIComponent(orderId));
+            const data = await res.json();
+            if(data.reply) addChat(data.reply, false);
+        }, 8000);
+    </script>
 </body>
 </html>
