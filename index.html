@@ -3,122 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ViralFlowr | Buy Gift Cards with Crypto</title>
+    <title>ViralFlowr | Boutique Officielle - Digital & Matériel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* Animation du texte dans la recherche */
         @keyframes placeholderAnimate {
-            0% { opacity: 0; transform: translateY(10px); }
-            10% { opacity: 1; transform: translateY(0); }
-            90% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-10px); }
+            0% { opacity: 0; transform: translateY(8px); }
+            15% { opacity: 1; transform: translateY(0); }
+            85% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-8px); }
         }
         .animate-text { animation: placeholderAnimate 4s infinite; }
         
-        .bg-bsv-orange { background-color: #F07E13; }
-        .text-bsv-orange { color: #F07E13; }
-        .hover-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px -10px rgba(0,0,0,0.1); }
+        .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
+        .hover-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .hover-card:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); border-color: #F07E13; }
+        
+        /* Protection numéro : bouton discret */
+        .btn-support { background: #25D366; color: white; padding: 8px 16px; border-radius: 12px; font-weight: 800; font-size: 12px; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
+        .btn-support:hover { transform: scale(1.05); box-shadow: 0 10px 15px -3px rgba(37, 211, 102, 0.3); }
     </style>
 </head>
-<body class="bg-[#F3F3F3]">
+<body class="bg-[#F8FAFC]">
 
-    <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-100 shadow-sm">
-        <div class="max-w-[1240px] mx-auto px-4 h-16 flex items-center justify-between gap-6">
+    <div class="bg-gray-900 text-white py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-center">
+        MARKETPLACE PROFESSIONNELLE • LIVRAISON INTERNATIONALE • PAIEMENT SÉCURISÉ
+    </div>
+
+    <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-100 shadow-sm backdrop-blur-md bg-white/95">
+        <div class="max-w-[1280px] mx-auto px-4 h-16 flex items-center justify-between gap-4">
             
-            <a href="index.html" class="flex items-center gap-2">
-                <img src="https://content.bsvmarket.com/uploads/Logo_9eeda718b9.svg" class="h-8 w-auto" alt="ViralFlowr">
+            <a href="index.html" class="flex items-center gap-2 shrink-0">
+                <div class="text-2xl font-black tracking-tighter text-gray-900">
+                    Viral<span class="text-[#F07E13]">Flowr</span>
+                </div>
             </a>
 
             <div class="relative flex-1 max-w-[600px] hidden md:flex items-center">
                 <input type="text" id="searchInput" oninput="render()" 
-                    class="w-full h-11 pl-5 pr-12 rounded-full bg-[#F2F4F5] text-sm font-medium focus:ring-2 focus:ring-[#F07E13] outline-none transition-all">
+                    class="w-full h-11 pl-5 pr-12 rounded-xl bg-[#F1F5F9] text-sm font-semibold focus:ring-2 focus:ring-[#F07E13] focus:bg-white outline-none transition-all border-none">
                 
-                <div id="placeholder-box" class="absolute left-5 pointer-events-none text-gray-400 text-sm font-medium">
-                    <span id="animated-placeholder" class="inline-block animate-text">What are you looking for? Just type here</span>
+                <div id="placeholder-box" class="absolute left-5 pointer-events-none text-gray-400 text-sm font-semibold">
+                    <span id="animated-placeholder" class="inline-block animate-text">Que cherchez-vous ? (SMM, iPhone, IMEI, Netflix...)</span>
                 </div>
 
-                <button class="absolute right-1 top-1 bg-bsv-orange p-2.5 rounded-full text-white hover:scale-105 transition-transform">
+                <button class="absolute right-1.5 top-1.5 brand-gradient p-2 rounded-lg text-white shadow-md">
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </button>
             </div>
 
-            <div class="flex items-center gap-4 text-[12px] font-bold uppercase text-[#767676]">
-                <a href="https://wa.me/+243850373991" class="hover:text-black transition-colors">WhatsApp</a>
-                <span class="text-gray-200">/</span>
-                <a href="https://t.me/Viralflow" class="hover:text-black transition-colors">Telegram</a>
+            <div class="flex items-center gap-3">
+                <a href="https://wa.me/+243850373991" target="_blank" class="btn-support">
+                    <svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                    Aide
+                </a>
             </div>
         </div>
     </header>
 
-    <main class="max-w-[1240px] mx-auto px-4 py-8">
+    <main class="max-w-[1280px] mx-auto px-4 py-8">
         
-        <section class="grid grid-cols-12 gap-4 mb-12">
-            <article class="relative col-span-12 lg:col-span-8 h-[280px] md:h-[400px] rounded-2xl overflow-hidden shadow-sm group">
-                <img src="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Hero">
-                <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent"></div>
-                <div class="relative z-10 p-8 md:p-12 flex flex-col justify-center h-full text-white">
-                    <h1 class="text-3xl md:text-5xl font-extrabold max-w-md leading-tight mb-6">Buy Gift Cards with Crypto</h1>
-                    <ul class="space-y-2 mb-8 text-sm font-medium opacity-90">
-                        <li class="flex items-center gap-2"><span class="text-bsv-orange text-lg">✓</span> 10+ years of experience</li>
-                        <li class="flex items-center gap-2"><span class="text-bsv-orange text-lg">✓</span> 1M+ cards sold monthly</li>
-                    </ul>
-                    <a href="#catalogue" class="w-max bg-bsv-orange px-8 py-3.5 rounded-lg font-bold text-sm hover:brightness-110 transition-all">Explore catalogue</a>
+        <section class="mb-10">
+            <article class="relative w-full h-[250px] md:h-[400px] rounded-[32px] overflow-hidden shadow-2xl group border-4 border-white">
+                <img src="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" alt="ViralFlowr">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"></div>
+                <div class="relative z-10 p-8 md:p-16 flex flex-col justify-end h-full text-white">
+                    <h1 class="text-3xl md:text-6xl font-black max-w-2xl leading-[0.95] mb-4 tracking-tighter uppercase italic">L'Univers Digital <br>& Matériel.</h1>
+                    <p class="text-xs md:text-lg font-medium opacity-90 max-w-md">Services Elite, Déblocage IMEI et Matériel High-Tech garantis.</p>
                 </div>
             </article>
-            
-            <div class="col-span-12 lg:col-span-4 grid grid-cols-2 lg:grid-cols-1 gap-4">
-                <a href="#" class="relative h-full rounded-2xl overflow-hidden border border-gray-200 group">
-                    <img src="https://content.bsvmarket.com/uploads/roblox_hero_e7501868b6.png" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent"></div>
-                    <span class="absolute bottom-4 left-4 text-white font-bold text-sm flex items-center gap-2">Roblox <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></span>
-                </a>
-                <a href="#" class="relative h-full rounded-2xl overflow-hidden border border-gray-200 group">
-                    <img src="https://content.bsvmarket.com/uploads/pubg_hero_9688ecc20f.png" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent"></div>
-                    <span class="absolute bottom-4 left-4 text-white font-bold text-sm flex items-center gap-2">PUBG Mobile <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></span>
-                </a>
-            </div>
         </section>
 
-        <div class="flex items-center gap-3 overflow-x-auto no-scrollbar pb-6 border-b border-gray-200 mb-8" id="catNav">
-            <button onclick="filterCat('all', this)" class="cat-btn active bg-white px-6 py-2.5 rounded-full text-[13px] font-bold text-gray-500 border border-transparent shadow-sm whitespace-nowrap active shadow-bsv-orange transition-all">⚡ ALL PRODUCTS</button>
-            <button onclick="filterCat('Abonnement', this)" class="cat-btn bg-white px-6 py-2.5 rounded-full text-[13px] font-bold text-gray-500 border border-transparent shadow-sm whitespace-nowrap hover:text-black transition-all">📺 ABONNEMENTS</button>
-            <button onclick="filterCat('Carte2', this)" class="cat-btn bg-white px-6 py-2.5 rounded-full text-[13px] font-bold text-gray-500 border border-transparent shadow-sm whitespace-nowrap hover:text-black transition-all">💳 GIFT CARDS</button>
-            <button onclick="filterCat('IMEI', this)" class="cat-btn bg-white px-6 py-2.5 rounded-full text-[13px] font-bold text-gray-500 border border-transparent shadow-sm whitespace-nowrap hover:text-black transition-all">📱 IMEI SERVICES</button>
-            <button onclick="filterCat('Boost', this)" class="cat-btn bg-white px-6 py-2.5 rounded-full text-[13px] font-bold text-gray-500 border border-transparent shadow-sm whitespace-nowrap hover:text-black transition-all">🚀 SMM BOOST</button>
+        <div class="flex items-center gap-3 overflow-x-auto no-scrollbar pb-6 mb-10 border-b border-gray-100" id="catNav">
+            <button onclick="filterCat('all', this)" class="cat-btn active bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">⚡ Tous</button>
+            <button onclick="filterCat('Materiel', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">📦 MATÉRIEL & GADGETS</button>
+            <button onclick="filterCat('Abonnement', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">📺 ABONNEMENTS</button>
+            <button onclick="filterCat('Carte2', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">💳 CARTES CADEAUX</button>
+            <button onclick="filterCat('IMEI', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">📱 IMEI & RÉSEAU</button>
+            <button onclick="filterCat('Boost', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">🚀 BOOST SMM</button>
         </div>
 
-        <div class="flex items-center justify-between mb-8">
-            <h2 class="text-2xl font-extrabold tracking-tight">Popular categories</h2>
-            <div class="text-sm font-bold text-bsv-orange cursor-pointer hover:underline">View all</div>
-        </div>
-
-        <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5 mb-24">
-            <div class="h-64 bg-white rounded-2xl animate-pulse"></div>
-            <div class="h-64 bg-white rounded-2xl animate-pulse"></div>
-            <div class="h-64 bg-white rounded-2xl animate-pulse"></div>
-            <div class="h-64 bg-white rounded-2xl animate-pulse"></div>
-            <div class="h-64 bg-white rounded-2xl animate-pulse"></div>
-            <div class="h-64 bg-white rounded-2xl animate-pulse"></div>
+        <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 mb-24">
+            <div class="h-64 bg-white rounded-3xl animate-pulse shadow-sm"></div>
+            <div class="h-64 bg-white rounded-3xl animate-pulse shadow-sm"></div>
+            <div class="h-64 bg-white rounded-3xl animate-pulse shadow-sm"></div>
         </div>
 
     </main>
 
-    <footer class="bg-white border-t border-gray-100 py-16">
-        <div class="max-w-[1240px] mx-auto px-4 flex flex-col items-center">
-            <img src="https://content.bsvmarket.com/uploads/Logo_9eeda718b9.svg" class="h-8 mb-6 grayscale opacity-50">
-            <div class="flex gap-8 mb-8 text-sm font-bold text-gray-400 uppercase tracking-widest">
-                <a href="#" class="hover:text-bsv-orange">About</a>
-                <a href="#" class="hover:text-bsv-orange">FAQ</a>
-                <a href="#" class="hover:text-bsv-orange">Support</a>
+    <footer class="bg-white border-t border-gray-100 py-12">
+        <div class="max-w-[1280px] mx-auto px-4 flex flex-col items-center">
+            <div class="text-2xl font-black tracking-tighter mb-6">Viral<span class="text-[#F07E13]">Flowr</span></div>
+            <div class="flex flex-wrap justify-center gap-8 mb-8 text-[11px] font-black uppercase text-gray-400 tracking-widest">
+                <a href="#" class="hover:text-gray-900">À Propos</a>
+                <a href="https://wa.me/+243850373991" class="hover:text-green-500">Contact Support</a>
+                <a href="https://t.me/Viralflow" class="hover:text-blue-500">Telegram Community</a>
             </div>
-            <p class="text-[11px] text-gray-400 text-center leading-relaxed max-w-2xl">
-                © 2026 Buysellvouchers.com All Rights Reserved. All product names are trademark of their respective companies.
-                Buy gift cards with crypto instantly. Fast, secure, and global access.
+            <p class="text-[9px] text-gray-300 text-center max-w-lg leading-relaxed uppercase">
+                © 2026 ViralFlowr Enterprise. Livraison garantie. Les marques citées appartiennent à leurs propriétaires.
             </p>
         </div>
     </footer>
@@ -132,16 +117,15 @@
         const FILTER_MAP = {
             "Abonnement": ["Abonnement", "Carte"],
             "Carte2": ["Carte2"],
-            "Boost": ["Boost", "Boost2", "SMM1"]
+            "Boost": ["Boost", "Boost2", "SMM1"],
+            "Materiel": ["Materiel", "Gadget", "Phone"]
         };
 
-        // GESTION DU PLACEHOLDER ANIMÉ
         const input = document.getElementById('searchInput');
         const placeholderBox = document.getElementById('placeholder-box');
         input.addEventListener('focus', () => placeholderBox.style.display = 'none');
         input.addEventListener('blur', () => { if(input.value === "") placeholderBox.style.display = 'block'; });
 
-        // CHARGEMENT DATA
         async function init() {
             const script = document.createElement('script');
             script.src = `${SCRIPT_URL}?action=get_products&callback=onSuccess`;
@@ -163,20 +147,28 @@
                 return matchCat && matchSearch;
             });
 
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-300 font-bold uppercase">Aucun article trouvé</div>';
+                return;
+            }
+
             grid.innerHTML = filtered.map(p => {
                 const img = p.img || 'https://cdn-icons-png.flaticon.com/512/11520/11520110.png';
                 return `
                     <div onclick="location.href='paiement.html?nom=${encodeURIComponent(p.nom)}&prix=${p.prix}&cat=${p.cat}&id=${p.id}'" 
-                        class="hover-card group bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col cursor-pointer transition-all duration-300">
-                        <div class="aspect-square bg-[#F8FAFC] rounded-xl mb-4 flex items-center justify-center p-6 overflow-hidden">
+                        class="hover-card group bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col cursor-pointer shadow-sm">
+                        <div class="aspect-square bg-[#F8FAFC] rounded-[22px] mb-4 flex items-center justify-center p-6 overflow-hidden">
                             <img src="${img}" class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" 
                                 onerror="this.src='https://cdn-icons-png.flaticon.com/512/11520/11520110.png'">
                         </div>
-                        <h3 class="text-[14px] font-bold text-[#201B16] leading-tight mb-2 h-10 overflow-hidden line-clamp-2">${p.nom}</h3>
-                        <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-50">
-                            <span class="text-[#201B16] font-extrabold text-lg">$${parseFloat(p.prix).toFixed(2)}</span>
-                            <div class="bg-[#F2F4F5] p-2 rounded-lg group-hover:bg-bsv-orange group-hover:text-white transition-colors">
-                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
+                        <div class="px-1">
+                            <span class="text-[9px] font-black text-[#F07E13] uppercase tracking-tighter mb-1 block">${p.cat}</span>
+                            <h3 class="text-[13px] font-bold text-gray-900 leading-tight mb-4 h-8 overflow-hidden line-clamp-2">${p.nom}</h3>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-900 font-black text-lg tracking-tighter">${parseFloat(p.prix).toFixed(2)} $</span>
+                                <div class="bg-gray-900 text-white p-1.5 rounded-lg group-hover:brand-gradient transition-all">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -186,10 +178,11 @@
 
         function filterCat(cat, btn) {
             document.querySelectorAll('.cat-btn').forEach(b => {
-                b.classList.remove('text-black', 'shadow-md', 'active', 'border-gray-200');
-                b.classList.add('text-gray-500');
+                b.classList.remove('text-white', 'brand-gradient', 'active');
+                b.classList.add('bg-white', 'text-gray-500');
             });
-            btn.classList.add('text-black', 'shadow-md', 'active', 'border-gray-200');
+            btn.classList.add('text-white', 'brand-gradient', 'active');
+            btn.classList.remove('bg-white', 'text-gray-500');
             CURRENT_FILTER = cat;
             render();
         }
