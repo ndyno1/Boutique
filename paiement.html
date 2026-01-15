@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="fr" class="font-inter">
 <head>
   <meta charset="utf-8"/>
@@ -122,7 +122,7 @@
             </div>
           </div>
 
-          <!-- ✅ CARTE / CARTE2 -->
+          <!-- ✅ CARTE / CARTE2 / JEUX -->
           <div id="section-carte" class="hidden space-y-4">
             <div>
               <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact livraison (Obligatoire)</label>
@@ -151,7 +151,7 @@
             <div id="display-price" class="text-4xl font-black text-gray-900 tracking-tighter">0.00 $</div>
           </div>
 
-          <!-- ✅ MOYENS PAIEMENT (AVEC TRC20/BEP20) -->
+          <!-- ✅ MOYENS PAIEMENT -->
           <div class="bg-[#121417] rounded-[24px] p-5 text-white shadow-2xl relative overflow-hidden">
             <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Moyens acceptés</h4>
 
@@ -166,7 +166,7 @@
             <div class="payment-row">
               <div class="overflow-hidden mr-2">
                 <span class="block text-[10px] font-bold text-blue-400 uppercase">USDT (TRC-20)</span>
-                <span id="trc20" class="text-[10px] font-mono opacity-80 truncate block">TON_ADRESSE_TRC20</span>
+                <span id="trc20" class="text-[10px] font-mono opacity-80 truncate block">TN6c8PCwF1TU2XKPFDsGHw1fgen1MTRGka</span>
               </div>
               <button type="button" class="copy-badge" onclick="copyText(document.getElementById('trc20').innerText)">COPIER</button>
             </div>
@@ -174,7 +174,7 @@
             <div class="payment-row">
               <div class="overflow-hidden mr-2">
                 <span class="block text-[10px] font-bold text-yellow-400 uppercase">USDT (BEP-20)</span>
-                <span id="bep20" class="text-[10px] font-mono opacity-80 truncate block">TON_ADRESSE_BEP20</span>
+                <span id="bep20" class="text-[10px] font-mono opacity-80 truncate block">0x532795969be892b943c160b94c075ca3385e2ea0</span>
               </div>
               <button type="button" class="copy-badge" onclick="copyText(document.getElementById('bep20').innerText)">COPIER</button>
             </div>
@@ -245,45 +245,43 @@
     // ====== CONFIG ======
     const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
 
-    
-// ====== AUTO-FILL BY ID (depuis Produits) ======
-(function autoFillFromId(){
-  const p = new URLSearchParams(location.search);
+    // ====== AUTO-FILL BY ID (depuis Produits) ======
+    (function autoFillFromId(){
+      const p = new URLSearchParams(location.search);
 
-  const id = (p.get("id") || "").trim();
-  const hasBasics = (p.get("nom") && p.get("prix") && p.get("cat"));
+      const id = (p.get("id") || "").trim();
+      const hasBasics = (p.get("nom") && p.get("prix") && p.get("cat"));
 
-  if (!id || hasBasics) return;
+      if (!id || hasBasics) return;
 
-  const cb = "VF_PROD_" + Date.now();
+      const cb = "VF_PROD_" + Date.now();
 
-  window[cb] = function(list){
-    try{
-      const arr = Array.isArray(list) ? list : [];
-      const prod = arr.find(x => String(x.id || "").trim() === id);
+      window[cb] = function(list){
+        try{
+          const arr = Array.isArray(list) ? list : [];
+          const prod = arr.find(x => String(x.id || "").trim() === id);
 
-      if (!prod) return;
+          if (!prod) return;
 
-      const qp = new URLSearchParams();
-      qp.set("id", prod.id || id);
-      qp.set("nom", prod.nom || "");
-      qp.set("prix", prod.prix || "");
-      qp.set("cat", prod.cat || "");
-      qp.set("img", prod.img || "");
-      qp.set("min", prod.min ?? "");
-      qp.set("max", prod.max ?? "");
-      qp.set("desc", prod.desc || "");
-      qp.set("long", prod.long_desc || prod.long || "");
+          const qp = new URLSearchParams();
+          qp.set("id", prod.id || id);
+          qp.set("nom", prod.nom || "");
+          qp.set("prix", prod.prix || "");
+          qp.set("cat", prod.cat || "");
+          qp.set("img", prod.img || "");
+          qp.set("min", prod.min ?? "");
+          qp.set("max", prod.max ?? "");
+          qp.set("desc", prod.desc || "");
+          qp.set("long", prod.long_desc || prod.long || "");
 
-      // recharge sans "back" bizarre
-      location.replace("paiement.html?" + qp.toString());
-    } catch(e){}
-  };
+          location.replace("paiement.html?" + qp.toString());
+        } catch(e){}
+      };
 
-  const s = document.createElement("script");
-  s.src = `${GOOGLE_URL}?action=get_products&callback=${cb}&t=${Date.now()}`;
-  document.body.appendChild(s);
-})();
+      const s = document.createElement("script");
+      s.src = `${GOOGLE_URL}?action=get_products&callback=${cb}&t=${Date.now()}`;
+      document.body.appendChild(s);
+    })();
 
     function copyText(txt){
       navigator.clipboard.writeText(String(txt || ""));
@@ -350,9 +348,12 @@
     // ====== CAT LOGIC (aligné avec ton Apps Script V18.2) ======
     const catUpper = String(cat || "").trim().toUpperCase();
 
-    const isSMM  = /(SMM|BOOST|BOOST2|PEAK|PEAKERR)/i.test(catUpper);   // SMM1/SMM2/SMM3 etc.
+    const isSMM  = /(SMM|BOOST|BOOST2|PEAK|PEAKERR)/i.test(catUpper);
     const isAbo  = (catUpper === "ABONNEMENT" || /\bABONNEMENT\b/i.test(catUpper));
-    const isCarte = (catUpper === "CARTE" || catUpper === "CARTE2" || /\bCARTE2?\b/i.test(catUpper));
+
+    // ✅ ICI: JEUX = même champ que CARTE2
+    const isCarte = (catUpper === "CARTE" || catUpper === "CARTE2" || catUpper === "JEUX" || /\bCARTE2?\b/i.test(catUpper));
+
     const isIMEI = /IMEI/i.test(catUpper);
 
     // Sections
@@ -391,8 +392,6 @@
       function updatePrice(){
         const q = clampQty(qtyInp.value);
         if (String(qtyInp.value) !== String(q)) qtyInp.value = q;
-
-        // ✅ ton pricing actuel: prixInit = prix pour 1000 (comme tu faisais)
         const total = ((prixInit / 1000) * q);
         priceEl.innerText = (Number.isFinite(total) ? total.toFixed(2) : "0.00") + " $";
       }
@@ -422,13 +421,11 @@
       btn.disabled = true;
       btn.innerText = "Validation en cours...";
 
-      // Validations + mapping champs => Apps Script
       let input1 = "";
-      let emailForSheet = "";      // col L (Email Client)
-      let qtyVal = 1;              // IMPORTANT: toujours un nombre (évite 0)
+      let emailForSheet = "";
+      let qtyVal = 1;
       let totalNumber = 0;
 
-      // total numeric (sans $)
       const totalTxt = String(priceEl.innerText || "0").replace("$","").trim();
       totalNumber = parseFloat(totalTxt) || 0;
 
@@ -460,9 +457,7 @@
         qtyVal = q;
 
         const contact = String(document.getElementById('contact-smm').value || "").trim();
-        // ✅ on met l’email UNIQUEMENT si c’est un email (sinon whatsapp restera dans input1 si tu veux)
         if (isEmail(contact)) emailForSheet = contact;
-        // option: garder le contact whatsapp dans input1 (utile support)
         if (contact && !isEmail(contact)) input1 += "\nNET-contact-" + contact;
       }
 
@@ -473,15 +468,16 @@
         if (!contact) { alert("⚠️ Mets un contact livraison (WhatsApp ou Email)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; return; }
 
         input1 = creds + "\nNET-contact-" + contact;
-        qtyVal = 1; // ✅ important
+        qtyVal = 1;
         if (isEmail(contact)) emailForSheet = contact;
       }
 
+      // ✅ JEUX passe ici (isCarte)
       else if (isCarte) {
         const contact = document.getElementById('card-delivery').value.trim();
         if (!contact) { alert("⚠️ Mets un contact livraison (WhatsApp ou Email)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; return; }
         input1 = "NET-contact-" + contact;
-        qtyVal = 1; // ✅ important
+        qtyVal = 1;
         if (isEmail(contact)) emailForSheet = contact;
       }
 
@@ -490,18 +486,16 @@
         const em = document.getElementById('email-client').value.trim();
         if (!main) { alert("⚠️ Remplis l'information requise."); btn.disabled=false; btn.innerText="Confirmer le paiement"; return; }
         input1 = main;
-        qtyVal = 1; // ✅ important
+        qtyVal = 1;
         if (isEmail(em)) emailForSheet = em;
       }
 
-      // ✅ ton Apps Script bloque si input1 vide
       if (!input1) {
         alert("⚠️ Information requise manquante.");
         btn.disabled=false; btn.innerText="Confirmer le paiement";
         return;
       }
 
-      // Preuve obligatoire
       const file = document.getElementById('file').files[0];
       if (!file) {
         alert("⚠️ Ajoute la preuve de paiement.");
@@ -509,7 +503,6 @@
         return;
       }
 
-      // base64
       let fileData = "";
       try {
         fileData = await new Promise((resolve, reject) => {
@@ -524,23 +517,21 @@
         return;
       }
 
-      // Payload EXACT pour recevoir(d) (Réponses Site)
       const payload = {
         orderId: orderId,
         produit: nom,
         idService: idS,
-        categorie: cat,          // (Abonnement/CARTE/CARTE2/SMM/IMEI...)
+        categorie: cat,
         input1: input1,
-        quantite: qtyVal,        // ✅ nombre
-        total: totalNumber,      // ✅ number
-        email: emailForSheet,    // ✅ email seulement si email
+        quantite: qtyVal,
+        total: totalNumber,
+        email: emailForSheet,
         fileData: fileData,
         fileType: file.type || "image/jpeg",
         fileName: file.name || ("preuve_" + orderId + ".jpg")
       };
 
       try {
-        // ⚠️ mode no-cors: on envoie sans lire la réponse (Google Apps Script)
         await fetch(GOOGLE_URL, {
           method:'POST',
           mode:'no-cors',
