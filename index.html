@@ -48,6 +48,13 @@
                 </div>
             </a>
 
+            <!-- ✅ NAV -->
+            <div class="hidden lg:flex items-center gap-6 text-[11px] font-black uppercase tracking-widest text-gray-400">
+                <a href="index.html" class="hover:text-gray-900 transition-colors">Boutique</a>
+                <a href="about.html" class="hover:text-gray-900 transition-colors">À Propos</a>
+                <a href="https://t.me/Viralflow" class="hover:text-blue-500 transition-colors">Telegram</a>
+            </div>
+
             <div class="relative flex-1 max-w-[600px] hidden md:flex items-center">
                 <input type="text" id="searchInput" oninput="render()"
                     class="w-full h-11 pl-5 pr-12 rounded-xl bg-[#F1F5F9] text-sm font-semibold focus:ring-2 focus:ring-[#F07E13] focus:bg-white outline-none transition-all border-none">
@@ -87,6 +94,7 @@
             </article>
         </section>
 
+        <!-- ✅ CATEGORIES (JEUX ajouté) -->
         <div class="flex items-center gap-3 overflow-x-auto no-scrollbar pb-6 mb-10 border-b border-gray-100" id="catNav">
             <button onclick="filterCat('all', this)" class="cat-btn active bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">⚡ Tous</button>
             <button onclick="filterCat('Materiel', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">📦 MATÉRIEL & GADGETS</button>
@@ -94,6 +102,9 @@
             <button onclick="filterCat('Carte2', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">💳 CARTES CADEAUX</button>
             <button onclick="filterCat('IMEI', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">📱 IMEI & RÉSEAU</button>
             <button onclick="filterCat('Boost', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">🚀 BOOST SMM</button>
+
+            <!-- ✅ NOUVEAU -->
+            <button onclick="filterCat('Jeux', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">🎮 JEUX</button>
         </div>
 
         <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 mb-24">
@@ -108,7 +119,8 @@
         <div class="max-w-[1280px] mx-auto px-4 flex flex-col items-center">
             <div class="text-2xl font-black tracking-tighter mb-6">Viral<span class="text-[#F07E13]">Flowr</span></div>
             <div class="flex flex-wrap justify-center gap-8 mb-8 text-[11px] font-black uppercase text-gray-400 tracking-widest">
-                <a href="#" class="hover:text-gray-900">À Propos</a>
+                <!-- ✅ relié -->
+                <a href="about.html" class="hover:text-gray-900">À Propos</a>
                 <a href="https://wa.me/+243850373991" class="hover:text-green-500">Contact Support</a>
                 <a href="https://t.me/Viralflow" class="hover:text-blue-500">Telegram Community</a>
             </div>
@@ -129,7 +141,10 @@
             "Carte2":     ["CARTE2"],
             "Boost":      ["BOOST","BOOST2","SMM1","SMM2","SMM3","PEAKERR","PEAK"],
             "Materiel":   ["MATERIEL","GADGET","PHONE"],
-            "IMEI":       ["IMEI"]
+            "IMEI":       ["IMEI"],
+
+            // ✅ NOUVEAU: JEUX
+            "Jeux":       ["JEUX","JEU","GAME","GAMING","PSN","PLAYSTATION","XBOX","STEAM","NINTENDO"]
         };
 
         const input = document.getElementById('searchInput');
@@ -139,22 +154,6 @@
 
         function safe(v){ return (v === null || v === undefined) ? "" : String(v); }
         function up(v){ return safe(v).trim().toUpperCase(); }
-
-        function buildPayUrl(p) {
-            const payLink = safe(p.pay_link || p.payLink).trim();
-            if (payLink) return payLink;
-
-            const qp = new URLSearchParams();
-            qp.set("nom", safe(p.nom));
-            qp.set("prix", safe(p.prix));
-            qp.set("cat", safe(p.cat));
-            qp.set("id",  safe(p.id));
-            qp.set("min", safe(p.min));
-            qp.set("max", safe(p.max));
-            qp.set("desc", safe(p.desc || p.description));
-            qp.set("long", safe(p.long_desc || p.long || p.longDescription));
-            return "paiement.html?" + qp.toString();
-        }
 
         function init() {
             const s = document.createElement('script');
@@ -169,17 +168,22 @@
 
         function matchCatByFilter(productCatUpper, filterKey){
             if (filterKey === "all") return true;
-            if (filterKey === "IMEI") return productCatUpper.includes("IMEI");
 
             const allowed = FILTER_MAP[filterKey];
             if (!allowed) return (productCatUpper === up(filterKey));
 
             for (const a of allowed){
                 const A = up(a);
+
                 if (productCatUpper === A) return true;
+
+                // règles "contains" utiles
                 if (A === "IMEI" && productCatUpper.includes("IMEI")) return true;
                 if ((A === "PEAKERR" || A === "PEAK") && (productCatUpper.includes("PEAK") || productCatUpper.includes("PEAKERR"))) return true;
                 if (A.startsWith("SMM") && productCatUpper.includes("SMM")) return true;
+
+                // ✅ JEUX: si la catégorie contient un des mots
+                if (filterKey === "Jeux" && productCatUpper.includes(A)) return true;
             }
             return false;
         }
