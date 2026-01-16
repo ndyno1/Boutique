@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Inscription | ViralFlowr</title>
+  <title>Connexion | ViralFlowr</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -23,7 +23,7 @@
       border: 2px solid #E5E7EB;
       outline: none;
       transition: all 0.2s;
-      font-weight: 500;
+      font-weight: 600;
       color: #18181B;
     }
     .input-field:focus {
@@ -42,19 +42,20 @@
           Viral<span class="text-orange-bsv">Flowr</span>
         </div>
       </a>
-      <a href="index.html" class="text-sm font-bold text-gray-500 hover:text-[#F07E13]">Retour Accueil</a>
+      <div class="flex items-center gap-2 text-sm font-medium text-[#767676]">
+        <span class="hidden sm:inline">Pas de compte ?</span>
+        <a href="register.html" class="text-[#F07E13] font-bold hover:underline">S'inscrire</a>
+      </div>
     </div>
   </header>
 
   <main class="flex-1 flex items-center justify-center p-4">
     <div class="bg-white rounded-[20px] shadow-lg p-8 md:p-12 w-full max-w-[500px] relative">
-
       <a href="index.html" class="absolute right-6 top-6 text-gray-400 hover:text-black text-xl transition-transform hover:scale-110">✕</a>
 
       <div class="flex flex-col items-center gap-6">
-        <h1 class="text-3xl font-bold text-[#18181B] tracking-tight">Créer un compte</h1>
+        <h1 class="text-3xl font-bold text-[#18181B] tracking-tight">Se connecter</h1>
 
-        <!-- Bouton Google (UI seulement, pas branché) -->
         <button type="button" class="w-full h-[52px] rounded-[40px] bg-[#1a73e8] hover:bg-[#1669d6] flex items-center justify-center gap-4 transition-colors group">
           <div class="p-2 rounded-full bg-white w-8 h-8 flex items-center justify-center">
             <svg width="18" height="18" viewBox="0 0 48 48">
@@ -65,7 +66,7 @@
               <path fill="none" d="M0 0h48v48H0z"></path>
             </svg>
           </div>
-          <span class="text-white font-bold text-sm tracking-wide">S'inscrire avec Google</span>
+          <span class="text-white font-bold text-sm tracking-wide">Continuer avec Google</span>
         </button>
 
         <div class="flex items-center gap-4 w-full">
@@ -74,43 +75,35 @@
           <div class="h-[1px] bg-gray-200 flex-1"></div>
         </div>
 
-        <form id="registerForm" class="w-full flex flex-col gap-4">
-
-          <!-- zone messages -->
+        <form id="loginForm" class="w-full flex flex-col gap-4">
           <div id="msgBox" class="hidden w-full text-sm font-semibold px-4 py-3 rounded-2xl border"></div>
 
           <div>
-            <input type="text" id="username" placeholder="Nom d'utilisateur" class="input-field" required>
-          </div>
-
-          <div>
-            <input type="email" id="email" placeholder="Adresse Email" class="input-field" required>
+            <input type="email" id="email" placeholder="Email" class="input-field" required>
           </div>
 
           <div class="relative">
             <input type="password" id="password" placeholder="Mot de passe" class="input-field" required>
-            <button type="button" id="toggleBtn" class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-              👁️
+            <button type="button" id="toggleBtn" class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" aria-label="Afficher le mot de passe">
+              <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
             </button>
           </div>
 
-          <label class="flex items-start gap-3 mt-2 cursor-pointer group">
-            <input type="checkbox" id="terms" required class="mt-1 w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500 cursor-pointer">
-            <span class="text-xs text-[#767676] leading-relaxed group-hover:text-black transition-colors">
-              J'accepte les <a href="#" class="underline hover:text-[#F07E13]">Conditions d'utilisation</a> et la <a href="#" class="underline hover:text-[#F07E13]">Politique de confidentialité</a> de ViralFlowr.
-            </span>
-          </label>
+          <a href="#" class="text-sm text-[#F07E13] font-bold hover:underline text-center mt-[-5px]">
+            Mot de passe oublié ?
+          </a>
 
           <button type="submit" id="submitBtn" class="mt-4 w-full h-[52px] rounded-[40px] brand-gradient text-white font-bold text-base shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all disabled:opacity-70 disabled:cursor-not-allowed">
-            Créer mon compte
+            Se connecter
           </button>
-
         </form>
 
         <p class="text-sm text-[#767676] mt-2">
-          Déjà membre ? <a href="login.html" class="text-[#F07E13] font-bold hover:underline ml-1">Se connecter</a>
+          Nouveau ici ? <a href="register.html" class="text-[#F07E13] font-bold hover:underline ml-1">Créer un compte</a>
         </p>
-
       </div>
     </div>
   </main>
@@ -122,8 +115,8 @@
   </footer>
 
   <script>
-    // Mets TON URL Apps Script ici (/exec)
-    const SCRIPT_URL = "AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m";
+    // ✅ URL WebApp /exec (ton ID)
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
 
     const msgBox = document.getElementById("msgBox");
     const btn = document.getElementById("submitBtn");
@@ -135,72 +128,71 @@
         "bg-red-50","text-red-700","border-red-200",
         "bg-gray-50","text-gray-700","border-gray-200"
       );
-
       if (type === "success") msgBox.classList.add("bg-green-50","text-green-700","border-green-200");
       else if (type === "error") msgBox.classList.add("bg-red-50","text-red-700","border-red-200");
       else msgBox.classList.add("bg-gray-50","text-gray-700","border-gray-200");
-
       msgBox.textContent = text;
     }
 
     function setLoading(isLoading) {
       btn.disabled = isLoading;
-      btn.textContent = isLoading ? "Création en cours..." : "Créer mon compte";
+      btn.textContent = isLoading ? "Connexion..." : "Se connecter";
     }
 
-    // Toggle password
+    // Voir/Cacher mot de passe
     document.getElementById("toggleBtn").addEventListener("click", () => {
       const passInput = document.getElementById("password");
-      passInput.type = (passInput.type === "password") ? "text" : "password";
+      const eye = document.getElementById("eyeIcon");
+      const isHidden = passInput.type === "password";
+      passInput.type = isHidden ? "text" : "password";
+
+      if (isHidden) {
+        eye.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+      } else {
+        eye.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+      }
     });
 
-    document.getElementById("registerForm").addEventListener("submit", async (e) => {
+    // Connexion réelle (Apps Script)
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const username = document.getElementById("username").value.trim();
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
 
-      // validations
-      if (username.length < 3) return showMsg("Nom d'utilisateur trop court (min 3).", "error");
       if (!email.includes("@")) return showMsg("Email invalide.", "error");
       if (password.length < 6) return showMsg("Mot de passe trop court (min 6).", "error");
 
       setLoading(true);
-      showMsg("Envoi des données…", "info");
+      showMsg("Connexion…", "info");
 
       try {
-        const res = await fetch(SCRIPT_URL, {
+        const r = await fetch(SCRIPT_URL, {
           method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({
-            action: "register",
-            username,
-            email,
-            password
-          })
+          headers: { "Content-Type": "text/plain;charset=utf-8" }, // évite preflight
+          body: JSON.stringify({ action: "login", email, password })
         });
 
-        const txt = await res.text();
+        const txt = await r.text();
         let data;
         try { data = JSON.parse(txt); } catch { data = { ok:false, error: txt }; }
 
         if (data.ok) {
-          showMsg("Compte créé avec succès ✅ Redirection…", "success");
-          setTimeout(() => window.location.href = "index.html", 900);
+          // ✅ Stock session simple pour index.html
+          const user = data.user || { email };
+          localStorage.setItem("vf_session", JSON.stringify({
+            email: user.email || email,
+            username: user.username || "",
+            ts: Date.now()
+          }));
+
+          showMsg("Connexion réussie ✅ Redirection…", "success");
+          setTimeout(() => window.location.href = "index.html", 700);
         } else {
-          // erreurs connues
-          if (data.error === "EMAIL_ALREADY_USED") {
-            showMsg("Cet email est déjà utilisé.", "error");
-          } else if (data.error === "PASSWORD_TOO_SHORT") {
-            showMsg("Mot de passe trop court (min 6).", "error");
-          } else if (data.error === "EMAIL_INVALID") {
-            showMsg("Email invalide.", "error");
-          } else if (data.error === "USERNAME_TOO_SHORT") {
-            showMsg("Nom d'utilisateur trop court (min 3).", "error");
-          } else {
-            showMsg(data.error || "Erreur lors de l'inscription.", "error");
-          }
+          if (data.error === "USER_NOT_FOUND") showMsg("Compte introuvable.", "error");
+          else if (data.error === "INVALID_PASSWORD") showMsg("Mot de passe incorrect.", "error");
+          else if (data.error === "USER_DISABLED") showMsg("Compte désactivé.", "error");
+          else showMsg(data.error || "Erreur connexion.", "error");
         }
       } catch (err) {
         showMsg("Erreur réseau : " + err, "error");
