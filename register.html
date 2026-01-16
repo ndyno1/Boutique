@@ -66,7 +66,7 @@
         </div>
 
         <form id="registerForm" class="w-full flex flex-col gap-4">
-          <div id="msgBox" class="hidden w-full text-sm font-semibold px-4 py-3 rounded-2xl border"></div>
+          <div id="msgBox" role="alert" aria-live="polite" class="hidden w-full text-sm font-semibold px-4 py-3 rounded-2xl border"></div>
 
           <div>
             <input type="text" id="username" placeholder="Nom d'utilisateur" class="input-field" required>
@@ -78,11 +78,11 @@
 
           <div class="relative">
             <input type="password" id="password" placeholder="Mot de passe" class="input-field" required>
-            <button type="button" id="toggleBtn" class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" aria-label="Afficher le mot de passe">👁️</button>
+            <button type="button" id="toggleBtn" class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" aria-label="Afficher le mot de passe" aria-pressed="false">👁️</button>
           </div>
 
           <label class="flex items-start gap-3 mt-2 cursor-pointer group">
-            <input type="checkbox" required class="mt-1 w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500 cursor-pointer">
+            <input id="terms" type="checkbox" required class="mt-1 w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500 cursor-pointer">
             <span class="text-xs text-[#767676] leading-relaxed group-hover:text-black transition-colors">
               J'accepte les <a href="#" class="underline hover:text-[#F07E13]">Conditions d'utilisation</a> et la <a href="#" class="underline hover:text-[#F07E13]">Politique de confidentialité</a> de ViralFlowr.
             </span>
@@ -111,8 +111,9 @@
 
     const msgBox = document.getElementById("msgBox");
     const btn = document.getElementById("submitBtn");
+    const defaultBtnText = btn.textContent;
 
-    function showMsg(text, type) {
+    function showMsg(text, type = "info") {
       msgBox.classList.remove("hidden");
       msgBox.classList.remove(
         "bg-green-50","text-green-700","border-green-200",
@@ -122,56 +123,155 @@
       if (type === "success") msgBox.classList.add("bg-green-50","text-green-700","border-green-200");
       else if (type === "error") msgBox.classList.add("bg-red-50","text-red-700","border-red-200");
       else msgBox.classList.add("bg-gray-50","text-gray-700","border-gray-200");
+
       msgBox.textContent = text;
+      // amène le message visible si l’écran est petit
+      msgBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
 
     function setLoading(isLoading) {
       btn.disabled = isLoading;
-      btn.textContent = isLoading ? "Création..." : "Créer mon compte";
+      btn.textContent = isLoading ? "Création..." : defaultBtnText;
     }
 
-    document.getElementById("toggleBtn").addEventListener("click", () => {
+    function isValidEmail(email) {
+      // simple + efficace pour UX (sans être trop strict)
+      return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email);
+    }
+
+    function normalizeServerError(codeOrText) {
+      const code = String(codeOrText || "").trim();
+
+      const map = {
+        EMAIL_ALREADY_USED: "Cet email est déjà utilisé. Essaie de te connecter ou utilise un autre email.",
+        USERNAME_TOO_SHORT: "Nom d’utilisateur trop court (minimum 3 caractères).",
+        PASSWORD_TOO_SHORT: "Mot de passe trop court (minimum 6 caractères).",
+        INVALID_EMAIL: "Adresse email invalide. Vérifie l’orthographe (ex: nom@domaine.com).",
+        MISSING_FIELDS: "Veuillez remplir tous les champs requis.",
+        TERMS_REQUIRED: "Vous devez accepter les conditions pour continuer.",
+        RATE_LIMIT: "Trop de tentatives. Réessaie dans quelques minutes.",
+        NOT_AUTHORIZED: "Accès refusé (déploiement serveur). Contacte le support si le problème persiste.",
+        INTERNAL_ERROR: "Erreur interne du serveur. Réessaie plus tard."
+      };
+
+      // si c'est déjà une phrase lisible, on la renvoie
+      if (!map[code] && code.length > 0 && code.length < 180 && /[a-zA-ZÀ-ÿ]/.test(code) && !/^[A-Z0-9_]+$/.test(code)) {
+        return code;
+      }
+
+      return map[code] || "Impossible de créer le compte. Vérifie tes infos et réessaie.";
+    }
+
+    function guessHelpfulNetworkCause(err) {
+      const msg = String(err || "");
+      // cas super fréquent: "TypeError: Failed to fetch"
+      if (/failed to fetch/i.test(msg) || /networkerror/i.test(msg)) {
+        return "Connexion impossible (réseau/CORS). Vérifie : 1) l’URL du SCRIPT_URL, 2) que le Web App Apps Script est bien déployé en accès public, 3) ta connexion internet.";
+      }
+      if (/aborted/i.test(msg)) {
+        return "La requête a expiré (trop lent). Réessaie avec une meilleure connexion.";
+      }
+      return "Erreur réseau. Vérifie ta connexion et réessaie.";
+    }
+
+    document.getElementById("toggleBtn").addEventListener("click", (e) => {
       const pass = document.getElementById("password");
-      pass.type = (pass.type === "password") ? "text" : "password";
+      const btnEye = e.currentTarget;
+
+      const willShow = (pass.type === "password");
+      pass.type = willShow ? "text" : "password";
+
+      btnEye.setAttribute("aria-pressed", willShow ? "true" : "false");
+      btnEye.textContent = willShow ? "🙈" : "👁️";
+      btnEye.setAttribute("aria-label", willShow ? "Masquer le mot de passe" : "Afficher le mot de passe");
     });
 
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
       e.preventDefault();
+      if (btn.disabled) return; // anti double-click
 
       const username = document.getElementById("username").value.trim();
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
+      const terms = document.getElementById("terms").checked;
 
-      if (username.length < 3) return showMsg("Nom d'utilisateur trop court.", "error");
-      if (!email.includes("@")) return showMsg("Email invalide.", "error");
-      if (password.length < 6) return showMsg("Mot de passe trop court (min 6).", "error");
+      if (username.length < 3) return showMsg("Nom d'utilisateur trop court (minimum 3 caractères).", "error");
+      if (!isValidEmail(email)) return showMsg("Adresse email invalide. Exemple: nom@domaine.com", "error");
+      if (password.length < 6) return showMsg("Mot de passe trop court (minimum 6 caractères).", "error");
+      if (!terms) return showMsg("Vous devez accepter les conditions pour continuer.", "error");
 
       setLoading(true);
       showMsg("Création du compte…", "info");
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000); // 15s
 
       try {
         const r = await fetch(SCRIPT_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" }, // évite preflight
-          body: JSON.stringify({ action: "register", username, email, password })
+          redirect: "follow",
+          body: JSON.stringify({ action: "register", username, email, password }),
+          signal: controller.signal
         });
 
         const txt = await r.text();
-        let data;
-        try { data = JSON.parse(txt); } catch { data = { ok:false, error: txt }; }
 
-        if (data.ok) {
-          showMsg("Compte créé ✅ Redirection vers connexion…", "success");
-          setTimeout(() => window.location.href = "login.html", 800);
-        } else {
-          if (data.error === "EMAIL_ALREADY_USED") showMsg("Email déjà utilisé.", "error");
-          else if (data.error === "PASSWORD_TOO_SHORT") showMsg("Mot de passe trop court.", "error");
-          else if (data.error === "USERNAME_TOO_SHORT") showMsg("Nom d'utilisateur trop court.", "error");
-          else showMsg(data.error || "Erreur inscription.", "error");
+        // HTTP non-OK (404, 403, 500 etc.)
+        if (!r.ok) {
+          if (r.status === 404) {
+            showMsg("Serveur introuvable (404). Vérifie l’URL du script Apps Script.", "error");
+            return;
+          }
+          if (r.status === 403) {
+            showMsg("Accès refusé (403). Le Web App doit être déployé en accès public (Anyone).", "error");
+            return;
+          }
+          showMsg("Erreur serveur (" + r.status + "). Réessaie plus tard.", "error");
+          return;
         }
+
+        // Si Apps Script renvoie une page HTML (souvent en cas de déploiement/autorisation)
+        const looksLikeHtml =
+          /^\s*<!doctype html/i.test(txt) ||
+          /^\s*<html/i.test(txt) ||
+          (txt.includes("<head>") && txt.includes("<body>"));
+
+        if (looksLikeHtml) {
+          showMsg(
+            "Le serveur a renvoyé une page HTML au lieu d’une réponse d’inscription. " +
+            "➡️ Vérifie que le Web App Apps Script est bien déployé (Execute as: Me) + (Who has access: Anyone) " +
+            "et que tu utilises bien l’URL /exec.",
+            "error"
+          );
+          return;
+        }
+
+        // Parse JSON propre
+        let data;
+        try {
+          data = JSON.parse(txt);
+        } catch {
+          showMsg(
+            "Réponse serveur invalide (non-JSON). " +
+            "➡️ Le backend doit renvoyer un JSON comme { ok:true } ou { ok:false, error:'...' }.",
+            "error"
+          );
+          return;
+        }
+
+        if (data && data.ok) {
+          showMsg("Compte créé ✅ Redirection vers la connexion…", "success");
+          setTimeout(() => window.location.href = "login.html", 900);
+        } else {
+          const friendly = normalizeServerError(data?.error || data?.message || txt);
+          showMsg(friendly, "error");
+        }
+
       } catch (err) {
-        showMsg("Erreur réseau : " + err, "error");
+        showMsg(guessHelpfulNetworkCause(err), "error");
       } finally {
+        clearTimeout(timeout);
         setLoading(false);
       }
     });
