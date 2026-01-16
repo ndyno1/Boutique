@@ -76,7 +76,7 @@
         </div>
 
         <form id="loginForm" class="w-full flex flex-col gap-4">
-          <div id="msgBox" class="hidden w-full text-sm font-semibold px-4 py-3 rounded-2xl border"></div>
+          <div id="msgBox" role="alert" aria-live="polite" class="hidden w-full text-sm font-semibold px-4 py-3 rounded-2xl border"></div>
 
           <div>
             <input type="email" id="email" placeholder="Email" class="input-field" required>
@@ -84,7 +84,7 @@
 
           <div class="relative">
             <input type="password" id="password" placeholder="Mot de passe" class="input-field" required>
-            <button type="button" id="toggleBtn" class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" aria-label="Afficher le mot de passe">
+            <button type="button" id="toggleBtn" class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" aria-label="Afficher le mot de passe" aria-pressed="false">
               <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                 <circle cx="12" cy="12" r="3"></circle>
@@ -92,7 +92,7 @@
             </button>
           </div>
 
-          <a href="#" class="text-sm text-[#F07E13] font-bold hover:underline text-center mt-[-5px]">
+          <a href="#" id="forgotLink" class="text-sm text-[#F07E13] font-bold hover:underline text-center mt-[-5px]">
             Mot de passe oublié ?
           </a>
 
@@ -120,8 +120,9 @@
 
     const msgBox = document.getElementById("msgBox");
     const btn = document.getElementById("submitBtn");
+    const defaultBtnText = btn.textContent;
 
-    function showMsg(text, type) {
+    function showMsg(text, type = "info") {
       msgBox.classList.remove("hidden");
       msgBox.classList.remove(
         "bg-green-50","text-green-700","border-green-200",
@@ -131,54 +132,150 @@
       if (type === "success") msgBox.classList.add("bg-green-50","text-green-700","border-green-200");
       else if (type === "error") msgBox.classList.add("bg-red-50","text-red-700","border-red-200");
       else msgBox.classList.add("bg-gray-50","text-gray-700","border-gray-200");
+
       msgBox.textContent = text;
+      msgBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
 
     function setLoading(isLoading) {
       btn.disabled = isLoading;
-      btn.textContent = isLoading ? "Connexion..." : "Se connecter";
+      btn.textContent = isLoading ? "Connexion..." : defaultBtnText;
+    }
+
+    function isValidEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email);
+    }
+
+    function normalizeServerError(codeOrText) {
+      const code = String(codeOrText || "").trim();
+
+      const map = {
+        USER_NOT_FOUND: "Aucun compte trouvé avec cet email. Crée un compte ou vérifie l’adresse.",
+        INVALID_PASSWORD: "Mot de passe incorrect. Réessaie.",
+        USER_DISABLED: "Ce compte est désactivé. Contacte le support.",
+        MISSING_FIELDS: "Veuillez remplir tous les champs requis.",
+        INVALID_EMAIL: "Adresse email invalide. Vérifie l’orthographe.",
+        RATE_LIMIT: "Trop de tentatives. Réessaie dans quelques minutes.",
+        NOT_AUTHORIZED: "Accès refusé (déploiement serveur). Contacte le support si besoin.",
+        INTERNAL_ERROR: "Erreur interne du serveur. Réessaie plus tard."
+      };
+
+      // si c'est déjà une phrase lisible, on la renvoie
+      if (!map[code] && code.length > 0 && code.length < 180 && /[a-zA-ZÀ-ÿ]/.test(code) && !/^[A-Z0-9_]+$/.test(code)) {
+        return code;
+      }
+
+      return map[code] || "Connexion impossible. Vérifie tes infos et réessaie.";
+    }
+
+    function guessHelpfulNetworkCause(err) {
+      const msg = String(err || "");
+      if (/failed to fetch/i.test(msg) || /networkerror/i.test(msg)) {
+        return "Connexion impossible (réseau/CORS). Vérifie : 1) l’URL du SCRIPT_URL, 2) le Web App Apps Script est bien déployé en accès public, 3) ta connexion internet.";
+      }
+      if (/aborted/i.test(msg)) {
+        return "La requête a expiré (connexion lente). Réessaie.";
+      }
+      return "Erreur réseau. Vérifie ta connexion et réessaie.";
     }
 
     // Voir/Cacher mot de passe
-    document.getElementById("toggleBtn").addEventListener("click", () => {
+    document.getElementById("toggleBtn").addEventListener("click", (e) => {
       const passInput = document.getElementById("password");
       const eye = document.getElementById("eyeIcon");
-      const isHidden = passInput.type === "password";
-      passInput.type = isHidden ? "text" : "password";
+      const btnEye = e.currentTarget;
 
-      if (isHidden) {
+      const willShow = (passInput.type === "password");
+      passInput.type = willShow ? "text" : "password";
+
+      btnEye.setAttribute("aria-pressed", willShow ? "true" : "false");
+
+      if (willShow) {
         eye.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
       } else {
         eye.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
       }
     });
 
+    // "Mot de passe oublié ?" (UX simple)
+    document.getElementById("forgotLink").addEventListener("click", (e) => {
+      e.preventDefault();
+      showMsg("Si tu as oublié ton mot de passe, contacte le support ViralFlowr pour le réinitialiser.", "info");
+    });
+
     // Connexion réelle (Apps Script)
     document.getElementById("loginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
+      if (btn.disabled) return; // anti double-click
 
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
 
-      if (!email.includes("@")) return showMsg("Email invalide.", "error");
-      if (password.length < 6) return showMsg("Mot de passe trop court (min 6).", "error");
+      if (!isValidEmail(email)) return showMsg("Adresse email invalide. Exemple: nom@domaine.com", "error");
+      if (password.length < 6) return showMsg("Mot de passe trop court (minimum 6 caractères).", "error");
 
       setLoading(true);
       showMsg("Connexion…", "info");
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000); // 15s
 
       try {
         const r = await fetch(SCRIPT_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" }, // évite preflight
-          body: JSON.stringify({ action: "login", email, password })
+          redirect: "follow",
+          body: JSON.stringify({ action: "login", email, password }),
+          signal: controller.signal
         });
 
         const txt = await r.text();
-        let data;
-        try { data = JSON.parse(txt); } catch { data = { ok:false, error: txt }; }
 
-        if (data.ok) {
-          // ✅ Stock session simple pour index.html
+        // HTTP non-OK (404, 403, 500...)
+        if (!r.ok) {
+          if (r.status === 404) {
+            showMsg("Serveur introuvable (404). Vérifie l’URL du script Apps Script.", "error");
+            return;
+          }
+          if (r.status === 403) {
+            showMsg("Accès refusé (403). Le Web App doit être déployé en accès public (Anyone).", "error");
+            return;
+          }
+          showMsg("Erreur serveur (" + r.status + "). Réessaie plus tard.", "error");
+          return;
+        }
+
+        // Si Apps Script renvoie une page HTML (déploiement/autorisation)
+        const looksLikeHtml =
+          /^\s*<!doctype html/i.test(txt) ||
+          /^\s*<html/i.test(txt) ||
+          (txt.includes("<head>") && txt.includes("<body>"));
+
+        if (looksLikeHtml) {
+          showMsg(
+            "Le serveur a renvoyé une page HTML au lieu d’une réponse de connexion. " +
+            "➡️ Vérifie que le Web App Apps Script est bien déployé (Execute as: Me) + (Who has access: Anyone) " +
+            "et que tu utilises bien l’URL /exec.",
+            "error"
+          );
+          return;
+        }
+
+        // Parse JSON
+        let data;
+        try {
+          data = JSON.parse(txt);
+        } catch {
+          showMsg(
+            "Réponse serveur invalide (non-JSON). " +
+            "➡️ Le backend doit renvoyer un JSON comme { ok:true, user:{...} } ou { ok:false, error:'...' }.",
+            "error"
+          );
+          return;
+        }
+
+        if (data && data.ok) {
+          // ✅ Session simple
           const user = data.user || { email };
           localStorage.setItem("vf_session", JSON.stringify({
             email: user.email || email,
@@ -187,16 +284,16 @@
           }));
 
           showMsg("Connexion réussie ✅ Redirection…", "success");
-          setTimeout(() => window.location.href = "index.html", 700);
+          setTimeout(() => window.location.href = "index.html", 800);
         } else {
-          if (data.error === "USER_NOT_FOUND") showMsg("Compte introuvable.", "error");
-          else if (data.error === "INVALID_PASSWORD") showMsg("Mot de passe incorrect.", "error");
-          else if (data.error === "USER_DISABLED") showMsg("Compte désactivé.", "error");
-          else showMsg(data.error || "Erreur connexion.", "error");
+          const friendly = normalizeServerError(data?.error || data?.message || txt);
+          showMsg(friendly, "error");
         }
+
       } catch (err) {
-        showMsg("Erreur réseau : " + err, "error");
+        showMsg(guessHelpfulNetworkCause(err), "error");
       } finally {
+        clearTimeout(timeout);
         setLoading(false);
       }
     });
