@@ -56,11 +56,13 @@
       white-space:nowrap;
     }
     .btn-mini:hover{ transform: translateY(-1px); border-color:#F07E13; color:#F07E13; }
+
     .icon-btn{
       width:40px; height:40px; border-radius:12px;
       border:1px solid #E5E7EB; background:#fff;
       display:flex; align-items:center; justify-content:center;
       transition:.2s; color:#374151;
+      flex: 0 0 auto;
     }
     .icon-btn:hover{ transform:translateY(-1px); border-color:#F07E13; color:#F07E13; }
 
@@ -72,16 +74,27 @@
 
   <div class="checkout-container">
 
-    <!-- ✅ Header compact + Wallet icon -->
+    <!-- ✅ Header compact + icônes -->
     <div class="flex items-center justify-between gap-3 mb-6">
-      <a href="index.html" class="inline-flex items-center gap-2 brand-wrap">
+      <a href="index.html" class="inline-flex items-center gap-2 brand-wrap" aria-label="Aller à la boutique">
         <span class="text-2xl font-black tracking-tighter brand-text">
           Viral<span class="text-orange-bsv">Flowr</span>
         </span>
       </a>
 
       <div class="flex items-center gap-2">
+        <!-- ✅ NOUVEAU : icône Boutique (Home) - visible partout -->
+        <a href="index.html" class="icon-btn" title="Boutique" aria-label="Retour à la boutique">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 11l9-8 9 8"></path>
+            <path d="M9 22V12h6v10"></path>
+          </svg>
+        </a>
+
+        <!-- Bouton texte (desktop) -->
         <a href="index.html" class="btn-mini hidden sm:inline-flex">Boutique</a>
+
+        <!-- Wallet icon -->
         <a href="wallet.html" class="icon-btn" title="Portefeuille" aria-label="Portefeuille">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
@@ -94,7 +107,10 @@
     </div>
 
     <div class="text-center mb-6">
-      <p class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Finaliser votre commande</p>
+      <p class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Paiement sécurisé</p>
+      <p class="text-gray-500 text-[12px] font-bold mt-2">
+        Suivez les étapes ci-dessous pour finaliser votre commande.
+      </p>
     </div>
 
     <div class="bg-white rounded-[32px] shadow-lg border border-gray-100 p-6 md:p-8">
@@ -110,13 +126,13 @@
         <div id="description-section" class="hidden mb-6 space-y-3">
           <div id="long-box" class="hidden bg-blue-50 border border-blue-100 rounded-2xl p-4">
             <h3 class="text-blue-800 text-xs font-black uppercase mb-2 flex items-center gap-2">
-              <span>📝</span> Description du produit
+              <span>📝</span> Détails du produit
             </h3>
             <p id="long-text" class="text-xs text-blue-900 leading-relaxed whitespace-pre-line font-medium"></p>
           </div>
           <div id="desc-box" class="hidden bg-green-50 border border-green-100 rounded-2xl p-4">
             <h3 class="text-green-800 text-xs font-black uppercase mb-2 flex items-center gap-2">
-              <span>📄</span> Instructions
+              <span>✅</span> Informations à fournir
             </h3>
             <p id="desc-text" class="text-xs text-green-900 leading-relaxed whitespace-pre-line font-medium"></p>
           </div>
@@ -124,29 +140,32 @@
 
         <!-- NOTE / ID -->
         <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-4 text-center mb-8 hover:border-orange-200 transition-all">
-          <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">Note de commande (Important)</span>
+          <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">Note de commande (à mettre dans “Note” lors du paiement)</span>
           <span id="live-order-id" class="block text-2xl font-black text-gray-900 tracking-tight cursor-pointer" onclick="copyText(this.innerText)">...</span>
           <div class="mt-2">
             <button type="button" onclick="copyText(document.getElementById('live-order-id').innerText)"
               class="text-[9px] bg-white border border-gray-300 px-3 py-1 rounded-full font-bold shadow-sm">
-              COPIER LA NOTE
+              Copier la note
             </button>
           </div>
+          <p class="text-[10px] text-gray-500 font-bold mt-3">
+            📌 Astuce : si tu ne mets pas la note, la vérification peut prendre plus de temps.
+          </p>
         </div>
 
-        <!-- ✅ Wallet Pay (affiché seulement si connecté + API OK) -->
+        <!-- ✅ Wallet Pay -->
         <div id="walletBox" class="hidden mb-6 rounded-2xl border border-[#FFD7B0] bg-[#FFF7EE] p-4">
           <div class="flex items-start justify-between gap-3">
             <div>
               <div class="text-[10px] font-black uppercase tracking-widest text-[#B65E0B]">Paiement avec Wallet</div>
               <div class="text-[13px] font-bold text-[#3B2A16] mt-1">
-                Solde: <span id="walletBalance" class="font-black">—</span> <span class="text-gray-400">$</span>
+                Solde disponible : <span id="walletBalance" class="font-black">—</span> <span class="text-gray-400">$</span>
               </div>
               <div class="text-[11px] font-bold text-gray-500 mt-1">
-                Email: <span id="walletEmail" class="font-black text-gray-700">—</span>
+                Compte : <span id="walletEmail" class="font-black text-gray-700">—</span>
               </div>
               <div id="walletHint" class="text-[11px] font-bold mt-2 text-gray-500">
-                Si ton solde est suffisant, tu peux payer sans preuve.
+                Si votre solde est suffisant, vous pouvez payer sans preuve.
               </div>
             </div>
             <div class="flex flex-col gap-2 w-[180px]">
@@ -155,7 +174,7 @@
                 Payer avec Wallet
               </button>
               <a href="wallet.html" class="w-full text-center bg-white border border-gray-200 py-3 rounded-2xl font-black text-[11px] uppercase hover:border-[#F07E13] hover:text-[#F07E13] transition">
-                Déposer du crédit
+                Ajouter du crédit
               </a>
             </div>
           </div>
@@ -166,8 +185,11 @@
           <!-- ✅ SMM/BOOST -->
           <div id="section-smm" class="hidden space-y-4">
             <div>
-              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Lien à booster (Obligatoire)</label>
+              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Lien à booster (obligatoire)</label>
               <input type="text" id="boost-link" placeholder="https://..." class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+              <p class="text-[11px] text-gray-500 font-bold mt-2">
+                Exemple : lien Instagram / TikTok / YouTube.
+              </p>
             </div>
 
             <div>
@@ -177,7 +199,7 @@
             </div>
 
             <div>
-              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact (WhatsApp ou Email) — (optionnel)</label>
+              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact (WhatsApp ou Email) (optionnel)</label>
               <input type="text" id="contact-smm" placeholder="+243... ou email" class="w-full bg-white rounded-xl p-3 text-sm font-medium">
             </div>
           </div>
@@ -185,19 +207,19 @@
           <!-- ✅ ABONNEMENT -->
           <div id="section-abonnement" class="hidden space-y-4">
             <div>
-              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Vos identifiants (Obligatoire)</label>
+              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Identifiants du compte (obligatoire)</label>
               <textarea id="creds" class="w-full bg-white rounded-xl p-3 text-sm font-medium h-28 resize-none"
-                placeholder="NET-mail-votre@email.com&#10;NET-motdepasse-votre_mdp"></textarea>
+                placeholder="mail : votre@email.com&#10;mot de passe : votre_mdp"></textarea>
               <p class="text-[11px] text-gray-500 font-bold mt-2">
-                Exemple : mail-oto@gmail.com / motdepasse-toto
+                Exemple : mail : oto@gmail.com / mot de passe : toto123
               </p>
             </div>
             <div>
-              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact livraison (Obligatoire)</label>
+              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact de livraison (obligatoire)</label>
               <input type="text" id="delivery-contact-abo" placeholder="WhatsApp ou Email"
                 class="w-full bg-white rounded-xl p-3 text-sm font-medium">
               <p class="text-[11px] text-gray-500 font-bold mt-2">
-                Pour OTP / erreur de commande / livraison.
+                Utile pour OTP / confirmation / assistance.
               </p>
             </div>
           </div>
@@ -205,17 +227,20 @@
           <!-- ✅ CARTE / CARTE2 / JEUX -->
           <div id="section-carte" class="hidden space-y-4">
             <div>
-              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact livraison (Obligatoire)</label>
+              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact de livraison (obligatoire)</label>
               <input type="text" id="card-delivery" placeholder="WhatsApp ou Email"
                 class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+              <p class="text-[11px] text-gray-500 font-bold mt-2">
+                Nous envoyons le code / compte / accès sur ce contact.
+              </p>
             </div>
           </div>
 
-          <!-- ✅ DEFAULT (ex: IMEI etc.) -->
+          <!-- ✅ DEFAULT -->
           <div id="section-default" class="hidden space-y-4">
             <div>
               <label id="default-label" class="text-[11px] font-bold text-gray-900 uppercase ml-1">Information requise</label>
-              <input type="text" id="main-input" placeholder="Ex: IMEI 15 chiffres / Lien / etc."
+              <input type="text" id="main-input" placeholder="Ex : IMEI 15 chiffres / lien / etc."
                 class="w-full bg-white rounded-xl p-3 text-sm font-medium">
             </div>
             <div>
@@ -229,11 +254,17 @@
           <div class="py-2 text-center">
             <span class="text-[10px] text-gray-400 uppercase font-bold">Total à payer</span>
             <div id="display-price" class="text-4xl font-black text-gray-900 tracking-tighter">0.00 $</div>
+            <p class="text-[11px] text-gray-500 font-bold mt-2">
+              Paiement = traitement immédiat.
+            </p>
           </div>
 
-          <!-- ✅ MOYENS PAIEMENT (classique) -->
+          <!-- ✅ MOYENS PAIEMENT -->
           <div class="bg-[#121417] rounded-[24px] p-5 text-white shadow-2xl relative overflow-hidden">
-            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Moyens acceptés</h4>
+            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Moyens de paiement acceptés</h4>
+            <p class="text-[11px] text-gray-300 font-bold mb-4 leading-relaxed">
+              ✅ Après paiement, mets la <span class="text-white">note de commande</span> (ID) dans la case “Note” si disponible.
+            </p>
 
             <div class="payment-row">
               <div>
@@ -268,7 +299,7 @@
                 </div>
               </div>
               <div class="bg-white/5 p-3 rounded-xl border border-white/10">
-                <span class="block text-[9px] font-bold text-red-400 uppercase mb-1">Airtel (RDC)</span>
+                <span class="block text-[9px] font-bold text-red-400 uppercase mb-1">Airtel Money (RDC)</span>
                 <div class="flex justify-between items-center">
                   <span class="text-[11px] font-bold">0971028041</span>
                   <button type="button" onclick="copyText('0971028041')">📋</button>
@@ -277,19 +308,19 @@
             </div>
 
             <p class="text-[10px] text-gray-400 font-bold mt-4 leading-relaxed">
-              ⚠️ IMPORTANT : Mets <span class="text-white">la note (ID)</span> dans Binance (case “Note”).
+              ⚠️ IMPORTANT : Mets <span class="text-white">la note (ID)</span> dans Binance (case “Note”) si elle est disponible.
             </p>
           </div>
 
-          <!-- PREUVE (classique) -->
+          <!-- PREUVE -->
           <div class="pt-2" id="proofSection">
-            <label class="text-[11px] font-bold text-gray-900 uppercase ml-1 block mb-2">📸 Preuve de paiement (Obligatoire si paiement classique)</label>
+            <label class="text-[11px] font-bold text-gray-900 uppercase ml-1 block mb-2">📸 Preuve de paiement (obligatoire si paiement classique)</label>
             <input type="file" id="file" accept="image/*"
               class="w-full text-xs bg-white rounded-xl p-3 border border-gray-200
               file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs
               file:font-bold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
             <div class="text-[10px] font-bold text-gray-400 mt-2">
-              Si tu paies avec Wallet, tu n’as pas besoin de preuve.
+              Si tu paies avec Wallet, aucune preuve n’est nécessaire.
             </div>
           </div>
 
@@ -307,7 +338,7 @@
             <path d="M5 13l4 4L19 7"></path>
           </svg>
         </div>
-        <h3 class="text-3xl font-black text-gray-900 mb-2">Reçu 5/5 !</h3>
+        <h3 class="text-3xl font-black text-gray-900 mb-2">Paiement reçu ✅</h3>
         <p class="text-gray-500 text-sm mb-8 font-medium">
           Votre commande <strong id="final-id" class="text-gray-900"></strong> est en cours de traitement.
         </p>
@@ -320,7 +351,7 @@
     </div>
 
     <div class="mt-8 text-center">
-      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Paiement sécurisé par ViralFlowr</p>
+      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Paiement sécurisé • ViralFlowr</p>
     </div>
   </div>
 
@@ -392,7 +423,7 @@
     }
     document.getElementById('live-order-id').innerText = orderId;
 
-    // ====== PARAMS URL (depuis index.html) ======
+    // ====== PARAMS URL ======
     const params   = new URLSearchParams(window.location.search);
     const nom      = params.get('nom') || "Service";
     const prixInit = parseFloat(params.get('prix')) || 0;
@@ -428,7 +459,7 @@
     }
     if (hasAnyDesc) descSection.classList.remove('hidden');
 
-    // ====== CAT LOGIC (aligné avec ton Apps Script V18.2) ======
+    // ====== CAT LOGIC ======
     const catUpper = String(cat || "").trim().toUpperCase();
 
     const isSMM  = /(SMM|BOOST|BOOST2|PEAK|PEAKERR)/i.test(catUpper);
@@ -436,7 +467,6 @@
     const isCarte = (catUpper === "CARTE" || catUpper === "CARTE2" || catUpper === "JEUX" || /\bCARTE2?\b/i.test(catUpper));
     const isIMEI = /IMEI/i.test(catUpper);
 
-    // Sections
     const secSmm = document.getElementById('section-smm');
     const secAbo = document.getElementById('section-abonnement');
     const secCarte = document.getElementById('section-carte');
@@ -447,7 +477,7 @@
     const qtyHint = document.getElementById('qty-hint');
 
     // ====== WALLET STATE ======
-    let PAY_MODE = "CLASSIC"; // CLASSIC | WALLET
+    let PAY_MODE = "CLASSIC";
     let WALLET_OK = false;
     let WALLET_BAL = 0;
     let WALLET_EMAIL = "";
@@ -476,14 +506,11 @@
     function setPayMode_(mode){
       PAY_MODE = mode === "WALLET" ? "WALLET" : "CLASSIC";
       const proof = document.getElementById("proofSection");
-      if (PAY_MODE === "WALLET") {
-        proof.classList.add("hidden");
-      } else {
-        proof.classList.remove("hidden");
-      }
+      if (PAY_MODE === "WALLET") proof.classList.add("hidden");
+      else proof.classList.remove("hidden");
     }
 
-    // JSONP pour balance (évite CORS)
+    // JSONP balance
     function jsonp_(params, onOk, onErr){
       const cb = "VF_CB_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
       window[cb] = function(payload){
@@ -514,24 +541,20 @@
       const btn = document.getElementById("walletPayBtn");
 
       if (WALLET_BAL >= need && need > 0) {
-        hint.textContent = "✅ Solde suffisant. Tu peux payer sans preuve.";
+        hint.textContent = "✅ Solde suffisant : paiement possible sans preuve.";
         hint.className = "text-[11px] font-black mt-2 text-green-700";
-        btn.disabled = false;
-        btn.style.opacity = "1";
-        btn.style.cursor = "pointer";
+        btn.disabled = false; btn.style.opacity = "1"; btn.style.cursor = "pointer";
       } else {
-        hint.textContent = "❌ Solde insuffisant. Dépose du crédit puis reviens payer.";
+        hint.textContent = "❌ Solde insuffisant : ajoute du crédit puis reviens payer.";
         hint.className = "text-[11px] font-black mt-2 text-red-700";
-        btn.disabled = true;
-        btn.style.opacity = ".6";
-        btn.style.cursor = "not-allowed";
+        btn.disabled = true; btn.style.opacity = ".6"; btn.style.cursor = "not-allowed";
       }
     }
 
     function refreshWalletBalance_(cb){
       if(!WALLET_EMAIL) { cb && cb(false); return; }
       jsonp_(
-        { action:"wallet_balance", email: WALLET_EMAIL, currency:"USD" }, // ✅ wallet_balance
+        { action:"wallet_balance", email: WALLET_EMAIL, currency:"USD" },
         (res) => {
           if(res && res.ok){
             WALLET_OK = true;
@@ -552,19 +575,14 @@
       if(!s) return;
 
       WALLET_EMAIL = String(s.email||"").trim().toLowerCase();
-
       refreshWalletBalance_();
 
       document.getElementById("walletPayBtn").addEventListener("click", () => {
-        // re-check balance juste avant payer
         refreshWalletBalance_((ok) => {
           const need = getTotalNumber_();
-          if(!ok){
-            alert("⚠️ Impossible de charger le solde wallet.");
-            return;
-          }
+          if(!ok){ alert("⚠️ Impossible de charger le solde wallet."); return; }
           if(WALLET_BAL < need || need <= 0){
-            alert("⚠️ Solde insuffisant. Dépose du crédit puis réessaie.");
+            alert("⚠️ Solde insuffisant. Ajoute du crédit puis réessaie.");
             return;
           }
           setPayMode_("WALLET");
@@ -585,7 +603,7 @@
 
       if (hasMin || hasMax) {
         qtyHint.classList.remove('hidden');
-        qtyHint.textContent = `Plage autorisée: ${hasMin ? parseInt(minParam,10) : 0} – ${hasMax ? parseInt(maxParam,10) : '∞'}`;
+        qtyHint.textContent = `Quantité autorisée : ${hasMin ? parseInt(minParam,10) : 0} – ${hasMax ? parseInt(maxParam,10) : '∞'}`;
       }
 
       function clampQty(q){
@@ -619,17 +637,16 @@
       if (isIMEI) document.getElementById('default-label').innerText = "Numéro IMEI (15 chiffres)";
     }
 
-    // init wallet after initial price computed
     initWallet_();
     updateWalletUI_();
 
-    // ====== SUBMIT (envoi compatible doPost V18.2) ======
+    // ====== SUBMIT ======
     document.getElementById('orderForm').onsubmit = async (e) => {
       e.preventDefault();
 
       const btn = document.getElementById('submitBtn');
       btn.disabled = true;
-      btn.innerText = "Validation en cours...";
+      btn.innerText = "Validation en cours..." ;
 
       let input1 = "";
       let emailForSheet = "";
@@ -638,7 +655,7 @@
       const totalNumber = getTotalNumber_();
 
       if (!idS) {
-        alert("⚠️ ID service manquant (paramètre id).");
+        alert("⚠️ ID du service manquant (paramètre id).");
         btn.disabled=false; btn.innerText="Confirmer le paiement";
         setPayMode_("CLASSIC");
         return;
@@ -646,7 +663,7 @@
 
       if (isSMM) {
         const link = document.getElementById('boost-link').value.trim();
-        if (!link) { alert("⚠️ Mets le lien à booster."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
+        if (!link) { alert("⚠️ Ajoute le lien à booster."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
 
         const hasMin = Number.isFinite(minParam);
         const hasMax = Number.isFinite(maxParam);
@@ -672,8 +689,8 @@
       else if (isAbo) {
         const creds = document.getElementById('creds').value.trim();
         const contact = document.getElementById('delivery-contact-abo').value.trim();
-        if (!creds) { alert("⚠️ Mets tes identifiants (mail + mot de passe)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
-        if (!contact) { alert("⚠️ Mets un contact livraison (WhatsApp ou Email)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
+        if (!creds) { alert("⚠️ Ajoute tes identifiants (mail + mot de passe)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
+        if (!contact) { alert("⚠️ Ajoute un contact de livraison (WhatsApp ou Email)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
 
         input1 = creds + "\nNET-contact-" + contact;
         qtyVal = 1;
@@ -681,7 +698,7 @@
       }
       else if (isCarte) {
         const contact = document.getElementById('card-delivery').value.trim();
-        if (!contact) { alert("⚠️ Mets un contact livraison (WhatsApp ou Email)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
+        if (!contact) { alert("⚠️ Ajoute un contact de livraison (WhatsApp ou Email)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
         input1 = "NET-contact-" + contact;
         qtyVal = 1;
         if (isEmail(contact)) emailForSheet = contact;
@@ -696,18 +713,16 @@
       }
 
       if (!input1) {
-        alert("⚠️ Information requise manquante.");
+        alert("⚠️ Information manquante.");
         btn.disabled=false; btn.innerText="Confirmer le paiement";
         setPayMode_("CLASSIC");
         return;
       }
 
-      // ✅ si WALLET et email pas fourni -> on met l’email session
       if (PAY_MODE === "WALLET" && !emailForSheet && WALLET_EMAIL) {
         emailForSheet = WALLET_EMAIL;
       }
 
-      // ✅ CLASSIC = preuve obligatoire
       let fileData = "";
       let fileType = "";
       let fileName = "";
