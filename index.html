@@ -1,13 +1,36 @@
 <!DOCTYPE html>
 <html lang="fr" class="font-inter">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>ViralFlowr | Boutique Officielle - Digital & Matériel</title>
+
+  <!-- ✅ FIX ANDROID / WHATSAPP PREVIEW (WABA) -->
+  <meta name="theme-color" content="#111827" />
+  <link rel="icon" href="favicon.png" />
+  <link rel="apple-touch-icon" href="favicon.png" />
+
+  <!-- ✅ Open Graph (WhatsApp / Android WebView) -->
+  <meta property="og:title" content="ViralFlowr | Boutique Officielle" />
+  <meta property="og:description" content="Services Elite, Déblocage IMEI et Matériel High-Tech garantis." />
+  <meta property="og:image" content="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png" />
+  <meta property="og:type" content="website" />
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <style>
-    body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; overflow-x:hidden; }
+    html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+    body {
+      font-family: 'Inter', sans-serif;
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+      min-height: 100svh; /* ✅ viewport stable mobile */
+      overscroll-behavior-x: none; /* ✅ évite le “glissement” horizontal */
+      touch-action: pan-y;         /* ✅ bloque pan-x sur toute la page */
+      -webkit-text-size-adjust: 100%; /* ✅ évite resize texte Android */
+      padding-bottom: env(safe-area-inset-bottom);
+    }
     .no-scrollbar::-webkit-scrollbar { display: none; }
 
     @keyframes placeholderAnimate {
@@ -22,7 +45,24 @@
     .hover-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     .hover-card:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); border-color: #F07E13; }
 
-    .btn-support { background: #25D366; color: white; padding: 8px 16px; border-radius: 12px; font-weight: 800; font-size: 12px; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
+    .btn-support {
+      background: #25D366;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center; /* ✅ stable */
+      gap: 8px;
+      line-height: 1; /* ✅ évite les sauts Android */
+      transition: 0.3s;
+      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .btn-support svg { flex: 0 0 auto; } /* ✅ l’icone ne “pousse” pas le texte */
     .btn-support:hover { transform: scale(1.05); box-shadow: 0 10px 15px -3px rgba(37, 211, 102, 0.3); }
 
     .btn-auth {
@@ -37,13 +77,10 @@
       align-items: center;
       gap: 8px;
       white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
     }
     .btn-auth:hover { transform: translateY(-1px); }
-    .btn-auth-outline {
-      background: white;
-      border: 1px solid #E5E7EB;
-      color: #111827;
-    }
+    .btn-auth-outline { background: white; border: 1px solid #E5E7EB; color: #111827; }
     .btn-auth-outline:hover { border-color: #F07E13; color: #F07E13; }
     .btn-auth-primary { color: white; }
 
@@ -77,11 +114,28 @@
       border:1px solid #E5E7EB;
       color:#374151;
       transition:.2s;
+      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
     }
     .icon-btn:hover{
       border-color:#F07E13;
       color:#F07E13;
       transform:translateY(-1px);
+    }
+
+    /* ✅ Cat nav: autorise pan horizontal uniquement ici (évite “la page bouge”) */
+    #catNav{
+      touch-action: pan-x;
+      overscroll-behavior-x: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ✅ Android/Jitter fix pour header sticky + blur */
+    header { transform: translateZ(0); -webkit-transform: translateZ(0); }
+
+    /* ✅ Désactive le blur sur mobile (c’est souvent ça qui “bouge” sur Android WebView) */
+    @media (max-width: 768px){
+      header { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
     }
   </style>
 </head>
@@ -129,9 +183,8 @@
         <!-- Zone compte (remplie par JS) -->
         <div id="accountArea" class="hidden sm:flex items-center gap-2"></div>
 
-        <!-- ✅ WALLET ICON (NOUVEAU) -->
+        <!-- ✅ WALLET ICON -->
         <a href="wallet.html" class="icon-btn" title="Portefeuille" aria-label="Portefeuille">
-          <!-- wallet icon -->
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
             <path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/>
@@ -141,7 +194,7 @@
         </a>
 
         <!-- Instagram icon -->
-        <a href="https://www.instagram.com/di_corporation_1/" target="_blank" rel="noopener"
+        <a href="https://www.instagram.com/di_corporation_1/" target="_blank" rel="noopener noreferrer"
           class="hidden sm:flex icon-btn" aria-label="Instagram">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
@@ -151,15 +204,16 @@
         </a>
 
         <!-- TikTok icon -->
-        <a href="https://www.tiktok.com/@dicorporation" target="_blank" rel="noopener"
+        <a href="https://www.tiktok.com/@dicorporation" target="_blank" rel="noopener noreferrer"
           class="hidden sm:flex icon-btn" aria-label="TikTok">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
             <path d="M16.7 7.4c-1-1-1.6-2.3-1.7-3.7h-3v12c0 1.3-1 2.3-2.3 2.3-1.2 0-2.2-1-2.2-2.2 0-1.3 1-2.3 2.2-2.3.3 0 .6.1.9.2V9.3c-.3-.1-.6-.1-.9-.1C6.6 9.2 4 11.8 4 15c0 3.2 2.6 5.8 5.8 5.8 3.2 0 5.8-2.6 5.8-5.8V11c1.1.8 2.4 1.2 3.8 1.2V9.3c-1.1 0-2.2-.4-3-.9z"/>
           </svg>
         </a>
 
-        <a href="https://wa.me/+243850373991" target="_blank" rel="noopener" class="btn-support">
-          <svg width="18" height="18" fill="white" viewBox="0 0 24 24">
+        <!-- ✅ WhatsApp (sans +) -->
+        <a href="https://wa.me/243850373991" target="_blank" rel="noopener noreferrer" class="btn-support">
+          <svg width="18" height="18" fill="white" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
           </svg>
           Aide
@@ -208,10 +262,10 @@
 
       <div class="flex flex-wrap justify-center gap-8 mb-8 text-[11px] font-black uppercase text-gray-400 tracking-widest">
         <a href="about.html" class="hover:text-gray-900">À Propos</a>
-        <a href="https://wa.me/+243850373991" target="_blank" rel="noopener" class="hover:text-green-500">Contact Support</a>
-        <a href="https://t.me/Viralflow" target="_blank" rel="noopener" class="hover:text-blue-500">Telegram Community</a>
-        <a href="https://www.instagram.com/di_corporation_1/" target="_blank" rel="noopener" class="hover:text-pink-500">Instagram</a>
-        <a href="https://www.tiktok.com/@dicorporation" target="_blank" rel="noopener" class="hover:text-gray-900">TikTok</a>
+        <a href="https://wa.me/243850373991" target="_blank" rel="noopener noreferrer" class="hover:text-green-500">Contact Support</a>
+        <a href="https://t.me/Viralflow" target="_blank" rel="noopener noreferrer" class="hover:text-blue-500">Telegram Community</a>
+        <a href="https://www.instagram.com/di_corporation_1/" target="_blank" rel="noopener noreferrer" class="hover:text-pink-500">Instagram</a>
+        <a href="https://www.tiktok.com/@dicorporation" target="_blank" rel="noopener noreferrer" class="hover:text-gray-900">TikTok</a>
       </div>
 
       <p class="text-[9px] text-gray-300 text-center max-w-lg leading-relaxed uppercase">
@@ -243,7 +297,6 @@
     function safe(v){ return (v === null || v === undefined) ? "" : String(v); }
     function up(v){ return safe(v).trim().toUpperCase(); }
 
-    // Support champs multiples
     function pName(p){ return safe(p.nom || p.name || p.title); }
     function pCat(p){ return safe(p.cat || p.category || p.categorie); }
     function pPrice(p){ return safe(p.prix || p.price || p.amount); }
@@ -251,7 +304,6 @@
     function pMin(p){ return safe(p.min || p.minqnt || p.minQty || p.min_qty); }
     function pMax(p){ return safe(p.max || p.maxqnt || p.maxQty || p.max_qty); }
 
-    // Auth UI
     function getSession_() {
       try {
         const raw = localStorage.getItem("vf_session");
@@ -312,7 +364,6 @@
       });
     }
 
-    // JSONP robust
     function showLoadError_(msg){
       const box = document.getElementById("loadError");
       box.textContent = msg;
@@ -452,7 +503,6 @@
       render();
     }
 
-    // INIT
     renderAccountUI_();
     initProducts();
   </script>
