@@ -1,0 +1,382 @@
+<!-- =========================
+     CLONE DE paiement.html
+     => NOUVELLE PAGE: wallet.html (PORTEFEUILLE / DEPOT)
+     Style identique + preuve + envoi Apps Script
+========================= -->
+<!DOCTYPE html>
+<html lang="fr" class="font-inter">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ViralFlowr | Portefeuille</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    body { font-family:'Inter',sans-serif; background:#F3F3F3; }
+    .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
+    .text-orange-bsv { color:#F07E13; }
+    .checkout-container { max-width:520px; width:100%; margin:2rem auto; }
+    input, textarea, select { outline:none; transition:all .2s; border:1px solid #e5e7eb !important; }
+    input:focus, textarea:focus, select:focus { border-color:#F07E13 !important; }
+    .payment-row{
+      display:flex; justify-content:space-between; align-items:center;
+      padding:12px; border-radius:12px;
+      border:1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03);
+      margin-bottom:8px; gap:10px;
+    }
+    .copy-badge{
+      font-size:10px; font-weight:800;
+      background: rgba(255,255,255,0.1);
+      padding:4px 8px; border-radius:6px;
+      cursor:pointer; transition:0.2s;
+      white-space:nowrap;
+    }
+    .copy-badge:hover{ background:#F07E13; color:#fff; }
+  </style>
+</head>
+
+<body class="p-4 md:p-8 text-[#201B16]">
+
+  <div class="checkout-container">
+    <div class="text-center mb-6">
+      <a href="index.html" class="inline-block text-2xl font-black tracking-tighter mb-1">
+        Viral<span class="text-orange-bsv">Flowr</span>
+      </a>
+      <p class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Portefeuille • Dépôt & Crédit</p>
+    </div>
+
+    <div class="bg-white rounded-[32px] shadow-lg border border-gray-100 p-6 md:p-8">
+
+      <!-- AUTH WARNING -->
+      <div id="auth-warning" class="hidden mb-5 bg-red-50 border border-red-100 rounded-2xl p-4">
+        <div class="flex items-start gap-3">
+          <div class="text-xl">🔒</div>
+          <div>
+            <div class="font-black text-red-700 text-sm">Connexion requise</div>
+            <div class="text-xs text-red-700 font-semibold mt-1">
+              Connecte-toi pour déposer et voir ton solde.
+            </div>
+            <div class="mt-3">
+              <a href="login.html" class="inline-flex items-center justify-center bg-gray-900 text-white px-4 py-2 rounded-xl font-black text-xs uppercase">
+                Se connecter
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BALANCE -->
+      <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4 mb-6">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Solde Wallet</div>
+            <div class="text-3xl font-black tracking-tight text-gray-900">
+              <span id="balance">—</span> <span class="text-[14px] font-black text-gray-500">USD</span>
+            </div>
+          </div>
+          <button type="button" id="refreshBalanceBtn"
+            class="bg-white border border-gray-300 px-3 py-2 rounded-xl font-black text-[10px] uppercase shadow-sm">
+            Rafraîchir
+          </button>
+        </div>
+        <p class="text-[11px] text-gray-500 font-bold mt-2">
+          Astuce : si le solde n'apparaît pas, vérifie que tu es connecté (token).
+        </p>
+      </div>
+
+      <!-- TOPUP ID -->
+      <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-4 text-center mb-8 hover:border-orange-200 transition-all">
+        <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">Référence dépôt (Important)</span>
+        <span id="topup-id" class="block text-2xl font-black text-gray-900 tracking-tight cursor-pointer"
+              onclick="copyText(this.innerText)">...</span>
+        <div class="mt-2">
+          <button type="button" onclick="copyText(document.getElementById('topup-id').innerText)"
+            class="text-[9px] bg-white border border-gray-300 px-3 py-1 rounded-full font-bold shadow-sm">
+            COPIER LA RÉF
+          </button>
+        </div>
+        <p class="text-[10px] text-gray-400 font-bold mt-3">
+          Mets cette référence dans Binance (Note) ou dans ton message.
+        </p>
+      </div>
+
+      <!-- FORM -->
+      <div id="form-container">
+        <h2 class="text-xl font-extrabold text-center mb-2 leading-tight">Déposer des fonds</h2>
+        <div class="text-center mb-6">
+          <span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-3 py-1 rounded-full uppercase">Wallet Topup</span>
+        </div>
+
+        <form id="topupForm" class="space-y-5">
+
+          <div>
+            <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Montant à créditer (USD)</label>
+            <input type="number" id="amount" min="1" step="0.01" placeholder="Ex: 10"
+              class="w-full bg-white rounded-xl p-3 text-sm font-black">
+            <p class="text-[11px] text-gray-500 font-bold mt-2">
+              Exemple : 10 = 10$ (crédit wallet).
+            </p>
+          </div>
+
+          <div>
+            <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Méthode de dépôt</label>
+            <select id="method" class="w-full bg-white rounded-xl p-3 text-sm font-black">
+              <option value="BINANCE_PAY">Binance Pay</option>
+              <option value="USDT_TRC20">USDT (TRC-20)</option>
+              <option value="USDT_BEP20">USDT (BEP-20)</option>
+              <option value="AIRTEL_RDC">Airtel Money (RDC)</option>
+              <option value="WAVE_CI">Wave (CI)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Référence / TXID / ID Transaction</label>
+            <input type="text" id="provider_ref" placeholder="Ex: TXID, numéro reçu, ID Binance Pay..."
+              class="w-full bg-white rounded-xl p-3 text-sm font-semibold">
+            <p class="text-[11px] text-gray-500 font-bold mt-2">
+              Obligatoire pour valider rapidement.
+            </p>
+          </div>
+
+          <div>
+            <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Message (optionnel)</label>
+            <input type="text" id="note" placeholder="Ex: dépôt pour achats..."
+              class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+          </div>
+
+          <!-- PAYMENT INFO (same style as paiement.html) -->
+          <div class="bg-[#121417] rounded-[24px] p-5 text-white shadow-2xl relative overflow-hidden">
+            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Où envoyer le paiement</h4>
+
+            <div class="payment-row">
+              <div>
+                <span class="block text-[10px] font-bold text-orange-400 uppercase">Binance Pay</span>
+                <span class="text-[13px] font-bold">744370418</span>
+              </div>
+              <button type="button" class="copy-badge" onclick="copyText('744370418')">COPIER</button>
+            </div>
+
+            <div class="payment-row">
+              <div class="overflow-hidden mr-2">
+                <span class="block text-[10px] font-bold text-blue-400 uppercase">USDT (TRC-20)</span>
+                <span id="trc20" class="text-[10px] font-mono opacity-80 truncate block">TN6c8PCwF1TU2XKPFDsGHw1fgen1MTRGka</span>
+              </div>
+              <button type="button" class="copy-badge" onclick="copyText(document.getElementById('trc20').innerText)">COPIER</button>
+            </div>
+
+            <div class="payment-row">
+              <div class="overflow-hidden mr-2">
+                <span class="block text-[10px] font-bold text-yellow-400 uppercase">USDT (BEP-20)</span>
+                <span id="bep20" class="text-[10px] font-mono opacity-80 truncate block">0x532795969be892b943c160b94c075ca3385e2ea0</span>
+              </div>
+              <button type="button" class="copy-badge" onclick="copyText(document.getElementById('bep20').innerText)">COPIER</button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 mt-2">
+              <div class="bg-white/5 p-3 rounded-xl border border-white/10">
+                <span class="block text-[9px] font-bold text-blue-300 uppercase mb-1">Wave (CI)</span>
+                <div class="flex justify-between items-center">
+                  <span class="text-[11px] font-bold">0546247885</span>
+                  <button type="button" onclick="copyText('+2250546247885')">📋</button>
+                </div>
+              </div>
+              <div class="bg-white/5 p-3 rounded-xl border border-white/10">
+                <span class="block text-[9px] font-bold text-red-400 uppercase mb-1">Airtel (RDC)</span>
+                <div class="flex justify-between items-center">
+                  <span class="text-[11px] font-bold">0971028041</span>
+                  <button type="button" onclick="copyText('0971028041')">📋</button>
+                </div>
+              </div>
+            </div>
+
+            <p class="text-[10px] text-gray-400 font-bold mt-4 leading-relaxed">
+              ⚠️ IMPORTANT : Mets <span class="text-white">la référence dépôt</span> dans la “Note” si possible.
+            </p>
+          </div>
+
+          <!-- PROOF -->
+          <div class="pt-2">
+            <label class="text-[11px] font-bold text-gray-900 uppercase ml-1 block mb-2">📸 Preuve de paiement (Obligatoire)</label>
+            <input type="file" id="file" accept="image/*" required
+              class="w-full text-xs bg-white rounded-xl p-3 border border-gray-200
+              file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs
+              file:font-bold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+          </div>
+
+          <button type="submit" id="submitBtn"
+            class="w-full brand-gradient text-white py-4 rounded-2xl font-black text-sm uppercase shadow-xl hover:scale-[1.02] transition-transform">
+            Confirmer le dépôt
+          </button>
+        </form>
+      </div>
+
+      <!-- SUCCESS -->
+      <div id="success-msg" class="hidden text-center py-12">
+        <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
+          <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24">
+            <path d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        <h3 class="text-3xl font-black text-gray-900 mb-2">Dépôt envoyé ✅</h3>
+        <p class="text-gray-500 text-sm mb-8 font-medium">
+          Référence : <strong id="final-id" class="text-gray-900"></strong><br>
+          Statut : <span class="font-black">EN ATTENTE</span> (validation admin)
+        </p>
+        <button onclick="location.href='index.html'"
+          class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-xs uppercase hover:bg-gray-800 transition-colors">
+          Retour à la boutique
+        </button>
+      </div>
+
+    </div>
+
+    <div class="mt-8 text-center">
+      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Paiement sécurisé par ViralFlowr</p>
+    </div>
+  </div>
+
+  <script>
+    // ====== CONFIG ======
+    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
+
+    // token stocké après login (à adapter si tu utilises un autre nom)
+    const TOKEN_KEY = "vf_token";
+
+    function copyText(txt){
+      navigator.clipboard.writeText(String(txt || ""));
+      alert("Copié !");
+    }
+
+    function makeTopupId(){
+      return "TOPUP-" + Date.now() + "-" + Math.floor(1000 + Math.random()*9000);
+    }
+
+    // ✅ REF persistant
+    let topupId = sessionStorage.getItem('active_topup_id');
+    if (!topupId) {
+      topupId = makeTopupId();
+      sessionStorage.setItem('active_topup_id', topupId);
+    }
+    document.getElementById('topup-id').innerText = topupId;
+
+    // ====== AUTH CHECK ======
+    const token = localStorage.getItem(TOKEN_KEY) || "";
+    const authWarning = document.getElementById("auth-warning");
+    if (!token) {
+      authWarning.classList.remove("hidden");
+    }
+
+    // ====== BALANCE (best-effort) ======
+    // NOTE: avec Apps Script + no-cors, on ne peut pas lire la réponse.
+    // Donc ici on affiche juste "—" si pas de système JSONP.
+    // Si tu veux le solde en live, je te donne la version JSONP doGet.
+    function refreshBalance(){
+      if (!token){
+        document.getElementById("balance").innerText = "—";
+        return;
+      }
+      // Placeholder (si tu ajoutes JSONP plus tard, on remplace ici)
+      document.getElementById("balance").innerText = "—";
+    }
+    document.getElementById("refreshBalanceBtn").addEventListener("click", refreshBalance);
+    refreshBalance();
+
+    // ====== SUBMIT TOPUP ======
+    document.getElementById('topupForm').onsubmit = async (e) => {
+      e.preventDefault();
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerText = "Validation en cours...";
+
+      const amount = parseFloat(String(document.getElementById("amount").value || "").replace(",", "."));
+      const method = document.getElementById("method").value;
+      const provider_ref = String(document.getElementById("provider_ref").value || "").trim();
+      const note = String(document.getElementById("note").value || "").trim();
+
+      if (!token){
+        alert("⚠️ Connecte-toi d'abord (token manquant).");
+        btn.disabled = false;
+        btn.innerText = "Confirmer le dépôt";
+        return;
+      }
+
+      if (!amount || !Number.isFinite(amount) || amount <= 0){
+        alert("⚠️ Montant invalide.");
+        btn.disabled = false;
+        btn.innerText = "Confirmer le dépôt";
+        return;
+      }
+
+      if (!provider_ref){
+        alert("⚠️ Mets la référence / TXID / ID transaction.");
+        btn.disabled = false;
+        btn.innerText = "Confirmer le dépôt";
+        return;
+      }
+
+      const file = document.getElementById('file').files[0];
+      if (!file) {
+        alert("⚠️ Ajoute la preuve de paiement.");
+        btn.disabled=false; btn.innerText="Confirmer le dépôt";
+        return;
+      }
+
+      let fileData = "";
+      try {
+        fileData = await new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onload = () => resolve(r.result);
+          r.onerror = reject;
+          r.readAsDataURL(file);
+        });
+      } catch (e2) {
+        alert("⚠️ Impossible de lire l'image. Réessaie.");
+        btn.disabled=false; btn.innerText="Confirmer le dépôt";
+        return;
+      }
+
+      const payload = {
+        action: "wallet_topup_create",
+        token: token,
+        amount: amount,
+        currency: "USD",
+        method: method,
+        note: (note ? (topupId + " | " + note) : topupId),
+        txid: provider_ref,
+
+        fileData: fileData,
+        fileType: file.type || "image/jpeg",
+        fileName: file.name || ("preuve_topup_" + topupId + ".jpg")
+      };
+
+      try {
+        // no-cors (comme ta page paiement) pour éviter CORS Apps Script
+        await fetch(GOOGLE_URL, {
+          method:'POST',
+          mode:'no-cors',
+          body: JSON.stringify(payload)
+        });
+
+        confetti({ particleCount: 160, spread: 70, origin: { y: 0.65 } });
+
+        document.getElementById('form-container').classList.add('hidden');
+        document.getElementById('final-id').innerText = topupId;
+        document.getElementById('success-msg').classList.remove('hidden');
+
+        // reset id pour prochain dépôt
+        sessionStorage.removeItem('active_topup_id');
+
+      } catch (err) {
+        alert("Erreur de connexion. Réessayez.");
+        btn.disabled = false;
+        btn.innerText = "Confirmer le dépôt";
+      }
+    };
+  </script>
+</body>
+</html>
