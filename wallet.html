@@ -41,6 +41,20 @@
     .btn-primary { color:#fff; }
     .box-note { border:2px dashed #E5E7EB; border-radius: 22px; background: #FBFBFB; }
     .small { font-size: 12px; }
+    .input{
+      width:100%;
+      height:44px;
+      padding:0 14px;
+      border-radius:14px;
+      background:#fff;
+      border:1px solid #E5E7EB;
+      outline:none;
+      font-weight:800;
+      font-size:13px;
+      transition:.2s;
+    }
+    .input:focus{ border-color:#F07E13; box-shadow:0 6px 16px rgba(240,126,19,.10); }
+    .select{ appearance:none; }
   </style>
 </head>
 
@@ -114,8 +128,8 @@
           <div class="font-black text-[12px] uppercase tracking-[.18em] text-[#B65E0B]">Pourquoi déposer de l’argent ?</div>
           <ul class="mt-2 text-[13px] font-semibold text-[#3B2A16] leading-relaxed list-disc pl-5">
             <li>Tu ajoutes du <b>crédit</b> dans ton wallet.</li>
-            <li>Après ça, tu peux payer les commandes <b>instantanément</b> sans refaire de paiement à chaque fois.</li>
-            <li>Ton solde se met à jour après validation / synchronisation (Binance Pay ou Mobile Money via WhatsApp).</li>
+            <li>Après ça, tu peux payer les commandes <b>instantanément</b> sans refaire de paiement.</li>
+            <li>Binance Pay = <b>validation auto</b> via ta NOTE (check_binance.py). Mobile Money = via WhatsApp.</li>
           </ul>
         </div>
 
@@ -124,14 +138,53 @@
           <div class="text-[10px] font-black uppercase tracking-[.22em] text-gray-300 text-center">Note de dépôt (important)</div>
           <div class="text-center text-2xl md:text-3xl font-black tracking-tight mt-2 mono" id="topupNote">TOPUP-—</div>
 
-          <div class="flex items-center justify-center gap-2 mt-3">
-            <button id="copyNoteBtn" class="btn btn-outline">
-              Copier la note
-            </button>
+          <div class="flex flex-wrap items-center justify-center gap-2 mt-3">
+            <button id="copyNoteBtn" class="btn btn-outline">Copier la note</button>
+            <button id="newNoteBtn" class="btn btn-outline">Nouvelle note</button>
           </div>
 
           <div class="mt-3 text-center text-[12px] font-bold text-gray-500">
-            ⚠️ Mets cette <b>NOTE</b> dans Binance (“Note / Message”) ou dans ton message WhatsApp (Mobile Money) pour t’identifier.
+            ⚠️ Mets cette <b>NOTE</b> dans Binance (“Note / Message”) ou dans ton message WhatsApp (Mobile Money).
+          </div>
+        </div>
+
+        <!-- ✅ VALIDATION CLIENT (SANS PREUVE) -->
+        <div class="mt-6 p-5 rounded-2xl bg-white border border-gray-200">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-300">J’ai payé — synchroniser mon dépôt</div>
+              <div class="text-[13px] font-semibold text-gray-600 mt-2 leading-relaxed">
+                Après paiement Binance/USDT, clique <b>“J’ai payé”</b> pour enregistrer la demande (PENDING).
+                Ton solde se mettra à jour quand <b>check_binance.py</b> détecte la transaction avec la NOTE.
+              </div>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-3 mt-4">
+            <div>
+              <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Montant (USD)</label>
+              <input id="amountInp" type="number" min="1" step="0.01" class="input" placeholder="Ex: 10">
+            </div>
+
+            <div>
+              <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Méthode</label>
+              <div class="relative">
+                <select id="methodSel" class="input select pr-10">
+                  <option value="BINANCE_PAY">Binance Pay</option>
+                  <option value="USDT_TRC20">USDT (TRC-20)</option>
+                  <option value="USDT_BEP20">USDT (BEP-20)</option>
+                </select>
+                <div class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">▾</div>
+              </div>
+            </div>
+
+            <div class="flex items-end">
+              <button id="paidBtn" class="btn brand-gradient btn-primary w-full">J’ai payé</button>
+            </div>
+          </div>
+
+          <div class="mt-3 text-[12px] font-bold text-gray-400">
+            ✅ Pas de preuve demandée. La <b>NOTE</b> suffit (auto Binance) / WhatsApp (Mobile Money).
           </div>
         </div>
 
@@ -146,7 +199,7 @@
                 <div class="text-[10px] font-black uppercase tracking-[.2em] text-gray-400">Binance Pay (ID)</div>
                 <div class="text-xl font-black mt-1 mono" id="binanceId">744370418</div>
                 <div class="text-[12px] font-semibold text-gray-400 mt-2">
-                  ✅ Mets la NOTE ci-dessus dans “Note/Message” pendant le paiement.
+                  ✅ Mets la NOTE dans “Note/Message” pendant le paiement.
                 </div>
               </div>
               <button id="copyBinanceBtn" class="btn btn-outline" style="background:#111827;color:white;border-color:#1F2937">
@@ -164,12 +217,10 @@
                   TN6c8PcWF1TU2XKPFDsGHw1fgen1MTRGka
                 </div>
                 <div class="text-[12px] font-semibold text-gray-400 mt-2">
-                  ✅ Envoie USDT puis contacte WhatsApp avec la NOTE.
+                  ✅ Envoie USDT puis clique “J’ai payé”.
                 </div>
               </div>
-              <button id="copyUsdtBtn" class="btn btn-outline">
-                Copier
-              </button>
+              <button id="copyUsdtBtn" class="btn btn-outline">Copier</button>
             </div>
           </div>
 
@@ -179,21 +230,15 @@
               <div>
                 <div class="text-[10px] font-black uppercase tracking-[.2em] text-gray-300">Mobile Money (sans preuve)</div>
                 <div class="text-[13px] font-semibold text-gray-600 mt-2 leading-relaxed">
-                  Si tu veux déposer via <b>Orange Money</b>, <b>Airtel Money</b> ou <b>Wave</b> :
+                  Pour déposer via <b>Orange Money</b>, <b>Airtel Money</b> ou <b>Wave</b> :
                   clique un bouton WhatsApp et envoie le message pré-rempli avec ta NOTE.
                 </div>
               </div>
 
               <div class="flex flex-col gap-2 w-full md:w-[260px]">
-                <a id="waOrange" target="_blank" rel="noopener" class="btn brand-gradient btn-primary w-full">
-                  Orange Money
-                </a>
-                <a id="waAirtel" target="_blank" rel="noopener" class="btn brand-gradient btn-primary w-full">
-                  Airtel Money
-                </a>
-                <a id="waWave" target="_blank" rel="noopener" class="btn brand-gradient btn-primary w-full">
-                  Wave
-                </a>
+                <a id="waOrange" target="_blank" rel="noopener" class="btn brand-gradient btn-primary w-full">Orange Money</a>
+                <a id="waAirtel" target="_blank" rel="noopener" class="btn brand-gradient btn-primary w-full">Airtel Money</a>
+                <a id="waWave" target="_blank" rel="noopener" class="btn brand-gradient btn-primary w-full">Wave</a>
               </div>
             </div>
           </div>
@@ -224,7 +269,7 @@
   </footer>
 
   <script>
-    // ✅ JSONP (évite CORS) + même logique session que tes pages
+    // ✅ JSONP (évite CORS)
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
 
     const alertBox = document.getElementById("alertBox");
@@ -239,7 +284,11 @@
 
     function showAlert(msg, type="info"){
       alertBox.classList.remove("hidden");
-      alertBox.classList.remove("bg-green-50","text-green-700","border-green-200","bg-red-50","text-red-700","border-red-200","bg-gray-50","text-gray-700","border-gray-200");
+      alertBox.classList.remove(
+        "bg-green-50","text-green-700","border-green-200",
+        "bg-red-50","text-red-700","border-red-200",
+        "bg-gray-50","text-gray-700","border-gray-200"
+      );
       if (type==="success") alertBox.classList.add("bg-green-50","text-green-700","border-green-200");
       else if (type==="error") alertBox.classList.add("bg-red-50","text-red-700","border-red-200");
       else alertBox.classList.add("bg-gray-50","text-gray-700","border-gray-200");
@@ -249,7 +298,7 @@
 
     function getSession_(){
       try{
-        const raw = localStorage.getItem("vf_session"); // ✅ ton même nom
+        const raw = localStorage.getItem("vf_session");
         if(!raw) return null;
         const s = JSON.parse(raw);
         if(!s || !s.email) return null;
@@ -257,8 +306,14 @@
       }catch{ return null; }
     }
 
+    function setTopupNote_(email, note){
+      const k = "vf_topup_note_" + String(email||"").toLowerCase();
+      localStorage.setItem(k, note);
+      topupNoteEl.textContent = note;
+      return note;
+    }
+
     function ensureTopupNote_(email){
-      // Note stable par session (stockée)
       const k = "vf_topup_note_" + String(email||"").toLowerCase();
       let note = localStorage.getItem(k);
       if(!note){
@@ -276,7 +331,6 @@
         showAlert("Copié ✅", "success");
         setTimeout(hideAlert, 900);
       }).catch(()=>{
-        // fallback
         const ta = document.createElement("textarea");
         ta.value = t;
         document.body.appendChild(ta);
@@ -288,9 +342,21 @@
       });
     }
 
-    function jsonp_(params, onOk, onErr){
+    function jsonp_(params, onOk, onErr, timeoutMs=12000){
       const cb = "vf_cb_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
+      let done = false;
+
+      const timer = setTimeout(() => {
+        if(done) return;
+        done = true;
+        try { delete window[cb]; } catch(_){}
+        onErr && onErr("TIMEOUT");
+      }, timeoutMs);
+
       window[cb] = function(payload){
+        if(done) return;
+        done = true;
+        clearTimeout(timer);
         try { onOk(payload); }
         finally { try { delete window[cb]; } catch(_){} }
       };
@@ -299,10 +365,15 @@
       const qs = new URLSearchParams({ ...params, callback: cb, t: String(Date.now()) });
       s.src = SCRIPT_URL + "?" + qs.toString();
       s.onerror = function(){
+        if(done) return;
+        done = true;
+        clearTimeout(timer);
         try { delete window[cb]; } catch(_){}
-        onErr && onErr();
+        onErr && onErr("NETWORK");
       };
       document.body.appendChild(s);
+      // cleanup après chargement
+      s.onload = () => setTimeout(() => { try { s.remove(); } catch(_){ } }, 0);
     }
 
     function fmt2(n){
@@ -332,7 +403,7 @@
               ${list.map(tx => `
                 <tr class="border-t">
                   <td class="p-3 font-bold text-gray-500">${tx.created_at || "-"}</td>
-                  <td class="p-3 font-black ${String(tx.type||"").toUpperCase()==="CREDIT" ? "text-green-700" : "text-red-700"}">${tx.type || "-"}</td>
+                  <td class="p-3 font-black ${String(tx.type||"").toUpperCase()==="CREDIT" ? "text-green-700" : "text-orange-700"}">${tx.type || "-"}</td>
                   <td class="p-3 font-black text-gray-900">${fmt2(tx.amount)} $</td>
                   <td class="p-3 font-semibold text-gray-400">${tx.ref || ""}</td>
                 </tr>
@@ -343,9 +414,11 @@
       `;
     }
 
+    // ✅ IMPORTANT: ici on appelle action=wallet_balance (pas wallet_get)
     function loadWallet_(email){
       balanceValue.textContent = "—";
-      jsonp_( { action:"wallet_get", email: email, currency:"USD" },
+      jsonp_(
+        { action:"wallet_balance", email: email, currency:"USD" },
         (res) => {
           if(res && res.ok){
             balanceValue.textContent = fmt2(res.balance);
@@ -355,13 +428,14 @@
             balanceValue.textContent = "0.00";
           }
         },
-        () => {
-          showAlert("Erreur réseau/API: solde non chargé.", "error");
+        (why) => {
+          showAlert("Erreur réseau/API: solde non chargé. (" + why + ")", "error");
           balanceValue.textContent = "0.00";
         }
       );
     }
 
+    // historique (si ton backend l’a)
     function loadTx_(email){
       txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Chargement…</div>`;
       jsonp_(
@@ -373,8 +447,54 @@
             txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Historique indisponible (${res?.error || "ERREUR"}).</div>`;
           }
         },
-        () => {
-          txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Erreur réseau/API: historique non chargé.</div>`;
+        (why) => {
+          txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Erreur réseau/API: historique non chargé. (${why})</div>`;
+        }
+      );
+    }
+
+    // ✅ bouton client “J’ai payé” → crée/registre un topup PENDING (sans preuve)
+    function createTopup_(email, note){
+      const amount = Number(document.getElementById("amountInp").value || 0);
+      const method = String(document.getElementById("methodSel").value || "BINANCE_PAY");
+
+      if(!amount || !isFinite(amount) || amount <= 0){
+        showAlert("Entre un montant valide (USD).", "error");
+        return;
+      }
+
+      const btn = document.getElementById("paidBtn");
+      btn.disabled = true;
+      btn.textContent = "Enregistrement...";
+
+      jsonp_(
+        {
+          action: "wallet_topup_create",
+          email,
+          note,
+          amount: String(amount),
+          method,
+          currency: "USD"
+        },
+        (res) => {
+          btn.disabled = false;
+          btn.textContent = "J’ai payé";
+
+          if(res && res.ok){
+            showAlert("Demande enregistrée ✅. Ton solde sera crédité automatiquement après détection Binance (NOTE).", "success");
+            // refresh
+            setTimeout(() => {
+              loadWallet_(email);
+              loadTx_(email);
+            }, 800);
+          }else{
+            showAlert("Impossible d’enregistrer le dépôt. (" + (res?.error || "ERREUR") + ")", "error");
+          }
+        },
+        (why) => {
+          btn.disabled = false;
+          btn.textContent = "J’ai payé";
+          showAlert("Erreur réseau/API: dépôt non enregistré. (" + why + ")", "error");
         }
       );
     }
@@ -393,11 +513,10 @@
         return;
       }
 
-      // ✅ Ici on considère l’utilisateur connecté (plus de faux message)
       const email = String(s.email || "").trim().toLowerCase();
       userLabel.textContent = email;
 
-      const note = ensureTopupNote_(email);
+      let note = ensureTopupNote_(email);
 
       // WhatsApp prefill (Mobile Money)
       const baseMsg =
@@ -428,6 +547,14 @@
       document.getElementById("copyNoteBtn").addEventListener("click", () => copyText_(note));
       document.getElementById("copyBinanceBtn").addEventListener("click", () => copyText_(BINANCE_PAY_ID));
       document.getElementById("copyUsdtBtn").addEventListener("click", () => copyText_(USDT_TRC20_ADDR));
+
+      document.getElementById("newNoteBtn").addEventListener("click", () => {
+        note = setTopupNote_(email, "TOPUP-" + Date.now() + "-" + Math.floor(1000 + Math.random()*9000));
+        showAlert("Nouvelle note générée ✅", "success");
+        setTimeout(hideAlert, 900);
+      });
+
+      document.getElementById("paidBtn").addEventListener("click", () => createTopup_(email, note));
     })();
   </script>
 
