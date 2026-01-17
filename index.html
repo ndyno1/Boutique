@@ -54,7 +54,7 @@
       overflow: hidden;
     }
 
-    /* ✅ FIX LOGO OVERFLOW (sans changer ton style) */
+    /* ✅ FIX LOGO OVERFLOW */
     .vf-brand-wrap{ min-width:0; overflow:hidden; }
     .vf-brand-text{
       display:block;
@@ -63,6 +63,25 @@
       overflow:hidden;
       text-overflow:ellipsis;
       line-height:1;
+    }
+
+    /* ✅ Style icones header (cohérent) */
+    .icon-btn{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      background:#fff;
+      border:1px solid #E5E7EB;
+      color:#374151;
+      transition:.2s;
+    }
+    .icon-btn:hover{
+      border-color:#F07E13;
+      color:#F07E13;
+      transform:translateY(-1px);
     }
   </style>
 </head>
@@ -76,7 +95,7 @@
   <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-100 shadow-sm backdrop-blur-md bg-white/95">
     <div class="max-w-[1280px] mx-auto px-4 h-16 flex items-center justify-between gap-4">
 
-      <!-- ✅ LOGO FIX: ne déborde plus -->
+      <!-- ✅ LOGO -->
       <a href="index.html" class="flex items-center gap-2 shrink-0 vf-brand-wrap" aria-label="ViralFlowr">
         <div class="text-2xl font-black tracking-tighter text-gray-900 vf-brand-text">
           Viral<span class="text-[#F07E13]">Flowr</span>
@@ -88,8 +107,6 @@
         <a href="index.html" class="hover:text-gray-900 transition-colors">Boutique</a>
         <a href="about.html" class="hover:text-gray-900 transition-colors">À Propos</a>
         <a href="https://t.me/Viralflow" target="_blank" rel="noopener" class="hover:text-blue-500 transition-colors">Telegram</a>
-
-        <!-- ✅ AJOUT DI CORPORATION -->
         <a href="https://www.instagram.com/di_corporation_1/" target="_blank" rel="noopener" class="hover:text-pink-500 transition-colors">Instagram</a>
         <a href="https://www.tiktok.com/@dicorporation" target="_blank" rel="noopener" class="hover:text-gray-900 transition-colors">TikTok</a>
       </div>
@@ -115,9 +132,20 @@
         <!-- Zone compte (remplie par JS) -->
         <div id="accountArea" class="hidden sm:flex items-center gap-2"></div>
 
+        <!-- ✅ WALLET ICON (NOUVEAU) -->
+        <a href="wallet.html" class="icon-btn" title="Portefeuille" aria-label="Portefeuille">
+          <!-- wallet icon -->
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
+            <path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/>
+            <path d="M20 12h-4a2 2 0 0 0 0 4h4"/>
+            <circle cx="16" cy="14" r="0.5" />
+          </svg>
+        </a>
+
         <!-- Instagram icon -->
         <a href="https://www.instagram.com/di_corporation_1/" target="_blank" rel="noopener"
-          class="hidden sm:flex items-center justify-center w-10 h-10 rounded-xl bg-white border border-gray-200 text-gray-700 hover:text-[#F07E13] hover:border-[#F07E13] transition">
+          class="hidden sm:flex icon-btn" aria-label="Instagram">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
             <path d="M16 11.37a4 4 0 1 1-7.87 1.26 4 4 0 0 1 7.87-1.26z"></path>
@@ -127,7 +155,7 @@
 
         <!-- TikTok icon -->
         <a href="https://www.tiktok.com/@dicorporation" target="_blank" rel="noopener"
-          class="hidden sm:flex items-center justify-center w-10 h-10 rounded-xl bg-white border border-gray-200 text-gray-700 hover:text-[#F07E13] hover:border-[#F07E13] transition">
+          class="hidden sm:flex icon-btn" aria-label="TikTok">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
             <path d="M16.7 7.4c-1-1-1.6-2.3-1.7-3.7h-3v12c0 1.3-1 2.3-2.3 2.3-1.2 0-2.2-1-2.2-2.2 0-1.3 1-2.3 2.2-2.3.3 0 .6.1.9.2V9.3c-.3-.1-.6-.1-.9-.1C6.6 9.2 4 11.8 4 15c0 3.2 2.6 5.8 5.8 5.8 3.2 0 5.8-2.6 5.8-5.8V11c1.1.8 2.4 1.2 3.8 1.2V9.3c-1.1 0-2.2-.4-3-.9z"/>
           </svg>
@@ -185,8 +213,6 @@
         <a href="about.html" class="hover:text-gray-900">À Propos</a>
         <a href="https://wa.me/+243850373991" target="_blank" rel="noopener" class="hover:text-green-500">Contact Support</a>
         <a href="https://t.me/Viralflow" target="_blank" rel="noopener" class="hover:text-blue-500">Telegram Community</a>
-
-        <!-- ✅ AJOUT DI CORPORATION -->
         <a href="https://www.instagram.com/di_corporation_1/" target="_blank" rel="noopener" class="hover:text-pink-500">Instagram</a>
         <a href="https://www.tiktok.com/@dicorporation" target="_blank" rel="noopener" class="hover:text-gray-900">TikTok</a>
       </div>
