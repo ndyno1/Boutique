@@ -473,6 +473,17 @@
       return parseFloat(totalTxt) || 0;
     }
 
+    function setPayMode_(mode){
+      PAY_MODE = mode === "WALLET" ? "WALLET" : "CLASSIC";
+      const proof = document.getElementById("proofSection");
+      if (PAY_MODE === "WALLET") {
+        proof.classList.add("hidden");
+      } else {
+        proof.classList.remove("hidden");
+      }
+    }
+
+    // JSONP pour balance (évite CORS)
     function jsonp_(params, onOk, onErr){
       const cb = "VF_CB_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
       window[cb] = function(payload){
@@ -517,31 +528,48 @@
       }
     }
 
+    function refreshWalletBalance_(cb){
+      if(!WALLET_EMAIL) { cb && cb(false); return; }
+      jsonp_(
+        { action:"wallet_balance", email: WALLET_EMAIL, currency:"USD" }, // ✅ wallet_balance
+        (res) => {
+          if(res && res.ok){
+            WALLET_OK = true;
+            WALLET_BAL = Number(res.balance || 0);
+            updateWalletUI_();
+            cb && cb(true);
+          }else{
+            WALLET_OK = false;
+            cb && cb(false);
+          }
+        },
+        () => { WALLET_OK = false; cb && cb(false); }
+      );
+    }
+
     function initWallet_(){
       const s = getSession_();
       if(!s) return;
 
       WALLET_EMAIL = String(s.email||"").trim().toLowerCase();
 
-      // Si ton doGet wallet_get existe -> on affiche
-      jsonp_(
-        { action:"wallet_get", email: WALLET_EMAIL, currency:"USD" },
-        (res) => {
-          if(res && res.ok){
-            WALLET_OK = true;
-            WALLET_BAL = Number(res.balance || 0);
-            updateWalletUI_();
-          }else{
-            WALLET_OK = false;
-          }
-        },
-        () => { WALLET_OK = false; }
-      );
+      refreshWalletBalance_();
 
       document.getElementById("walletPayBtn").addEventListener("click", () => {
-        PAY_MODE = "WALLET";
-        // Lance un paiement wallet direct (sans preuve)
-        document.getElementById("orderForm").requestSubmit();
+        // re-check balance juste avant payer
+        refreshWalletBalance_((ok) => {
+          const need = getTotalNumber_();
+          if(!ok){
+            alert("⚠️ Impossible de charger le solde wallet.");
+            return;
+          }
+          if(WALLET_BAL < need || need <= 0){
+            alert("⚠️ Solde insuffisant. Dépose du crédit puis réessaie.");
+            return;
+          }
+          setPayMode_("WALLET");
+          document.getElementById("orderForm").requestSubmit();
+        });
       });
     }
 
@@ -593,7 +621,6 @@
 
     // init wallet after initial price computed
     initWallet_();
-    // update once for non-smm
     updateWalletUI_();
 
     // ====== SUBMIT (envoi compatible doPost V18.2) ======
@@ -613,13 +640,13 @@
       if (!idS) {
         alert("⚠️ ID service manquant (paramètre id).");
         btn.disabled=false; btn.innerText="Confirmer le paiement";
-        PAY_MODE = "CLASSIC";
+        setPayMode_("CLASSIC");
         return;
       }
 
       if (isSMM) {
         const link = document.getElementById('boost-link').value.trim();
-        if (!link) { alert("⚠️ Mets le lien à booster."); btn.disabled=false; btn.innerText="Confirmer le paiement"; PAY_MODE="CLASSIC"; return; }
+        if (!link) { alert("⚠️ Mets le lien à booster."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
 
         const hasMin = Number.isFinite(minParam);
         const hasMax = Number.isFinite(maxParam);
@@ -627,12 +654,12 @@
 
         if (!q || q <= 0) {
           alert("⚠️ Quantité invalide.");
-          btn.disabled=false; btn.innerText="Confirmer le paiement"; PAY_MODE="CLASSIC"; return;
+          btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return;
         }
 
         if ((hasMin && q < parseInt(minParam,10)) || (hasMax && q > parseInt(maxParam,10))) {
           alert(`⚠️ Quantité invalide. Min=${hasMin ? parseInt(minParam,10) : 0}${hasMax ? ` / Max=${parseInt(maxParam,10)}` : ""}.`);
-          btn.disabled=false; btn.innerText="Confirmer le paiement"; PAY_MODE="CLASSIC"; return;
+          btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return;
         }
 
         input1 = link;
@@ -645,8 +672,8 @@
       else if (isAbo) {
         const creds = document.getElementById('creds').value.trim();
         const contact = document.getElementById('delivery-contact-abo').value.trim();
-        if (!creds) { alert("⚠️ Mets tes identifiants (mail + mot de passe)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; PAY_MODE="CLASSIC"; return; }
-        if (!contact) { alert("⚠️ Mets un contact livraison (WhatsApp ou Email)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; PAY_MODE="CLASSIC"; return; }
+        if (!creds) { alert("⚠️ Mets tes identifiants (mail + mot de passe)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
+        if (!contact) { alert("⚠️ Mets un contact livraison (WhatsApp ou Email)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
 
         input1 = creds + "\nNET-contact-" + contact;
         qtyVal = 1;
@@ -654,7 +681,7 @@
       }
       else if (isCarte) {
         const contact = document.getElementById('card-delivery').value.trim();
-        if (!contact) { alert("⚠️ Mets un contact livraison (WhatsApp ou Email)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; PAY_MODE="CLASSIC"; return; }
+        if (!contact) { alert("⚠️ Mets un contact livraison (WhatsApp ou Email)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
         input1 = "NET-contact-" + contact;
         qtyVal = 1;
         if (isEmail(contact)) emailForSheet = contact;
@@ -662,7 +689,7 @@
       else {
         const main = document.getElementById('main-input').value.trim();
         const em = document.getElementById('email-client').value.trim();
-        if (!main) { alert("⚠️ Remplis l'information requise."); btn.disabled=false; btn.innerText="Confirmer le paiement"; PAY_MODE="CLASSIC"; return; }
+        if (!main) { alert("⚠️ Remplis l'information requise."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
         input1 = main;
         qtyVal = 1;
         if (isEmail(em)) emailForSheet = em;
@@ -671,8 +698,13 @@
       if (!input1) {
         alert("⚠️ Information requise manquante.");
         btn.disabled=false; btn.innerText="Confirmer le paiement";
-        PAY_MODE="CLASSIC";
+        setPayMode_("CLASSIC");
         return;
+      }
+
+      // ✅ si WALLET et email pas fourni -> on met l’email session
+      if (PAY_MODE === "WALLET" && !emailForSheet && WALLET_EMAIL) {
+        emailForSheet = WALLET_EMAIL;
       }
 
       // ✅ CLASSIC = preuve obligatoire
@@ -685,7 +717,7 @@
         if (!file) {
           alert("⚠️ Ajoute la preuve de paiement (paiement classique).");
           btn.disabled=false; btn.innerText="Confirmer le paiement";
-          PAY_MODE="CLASSIC";
+          setPayMode_("CLASSIC");
           return;
         }
 
@@ -699,7 +731,7 @@
         } catch (e2) {
           alert("⚠️ Impossible de lire l'image. Réessaie.");
           btn.disabled=false; btn.innerText="Confirmer le paiement";
-          PAY_MODE="CLASSIC";
+          setPayMode_("CLASSIC");
           return;
         }
 
@@ -707,9 +739,7 @@
         fileName = file.name || ("preuve_" + orderId + ".jpg");
       }
 
-      // ✅ Payload (ajout WALLET si besoin)
       const payload = {
-        // optionnel mais utile si tu ajoutes handler server
         action: (PAY_MODE === "WALLET") ? "wallet_pay" : "",
 
         orderId: orderId,
@@ -747,8 +777,7 @@
         btn.disabled = false;
         btn.innerText = "Confirmer le paiement";
       } finally {
-        // reset -> si le user veut repayer normalement après
-        PAY_MODE = "CLASSIC";
+        setPayMode_("CLASSIC");
       }
     };
   </script>
