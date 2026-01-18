@@ -298,11 +298,21 @@
                   <button type="button" onclick="copyText('+2250546247885')">📋</button>
                 </div>
               </div>
+
               <div class="bg-white/5 p-3 rounded-xl border border-white/10">
                 <span class="block text-[9px] font-bold text-red-400 uppercase mb-1">Airtel Money (RDC)</span>
                 <div class="flex justify-between items-center">
                   <span class="text-[11px] font-bold">0971028041</span>
                   <button type="button" onclick="copyText('0971028041')">📋</button>
+                </div>
+              </div>
+
+              <!-- ✅ NOUVEAU NUMERO PAIEMENT -->
+              <div class="bg-white/5 p-3 rounded-xl border border-white/10">
+                <span class="block text-[9px] font-bold text-green-300 uppercase mb-1">M-Pesa (RDC)</span>
+                <div class="flex justify-between items-center">
+                  <span class="text-[11px] font-bold">0850373991</span>
+                  <button type="button" onclick="copyText('0850373991')">📋</button>
                 </div>
               </div>
             </div>
@@ -649,7 +659,8 @@
       btn.innerText = "Validation en cours..." ;
 
       let input1 = "";
-      let emailForSheet = "";
+      let emailForSheet = "";   // ✅ on stocke le contact ici (email OU whatsapp/numéro)
+      let contactValue = "";    // ✅ contact séparé (NE PLUS mélanger avec input1)
       let qtyVal = 1;
 
       const totalNumber = getTotalNumber_();
@@ -679,12 +690,14 @@
           btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return;
         }
 
-        input1 = link;
+        input1 = link; // ✅ uniquement le lien (on ne colle plus le contact ici)
         qtyVal = q;
 
         const contact = String(document.getElementById('contact-smm').value || "").trim();
-        if (isEmail(contact)) emailForSheet = contact;
-        if (contact && !isEmail(contact)) input1 += "\nNET-contact-" + contact;
+        if (contact) {
+          contactValue = contact;
+          emailForSheet = contact; // ✅ stocké dans "Email Client" (même si c'est un numéro)
+        }
       }
       else if (isAbo) {
         const creds = document.getElementById('creds').value.trim();
@@ -692,24 +705,34 @@
         if (!creds) { alert("⚠️ Ajoute tes identifiants (mail + mot de passe)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
         if (!contact) { alert("⚠️ Ajoute un contact de livraison (WhatsApp ou Email)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
 
-        input1 = creds + "\nNET-contact-" + contact;
+        input1 = creds;         // ✅ uniquement identifiants
+        contactValue = contact;  // ✅ contact séparé
+        emailForSheet = contact; // ✅ stocké en colonne Email Client
         qtyVal = 1;
-        if (isEmail(contact)) emailForSheet = contact;
       }
       else if (isCarte) {
         const contact = document.getElementById('card-delivery').value.trim();
         if (!contact) { alert("⚠️ Ajoute un contact de livraison (WhatsApp ou Email)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
-        input1 = "NET-contact-" + contact;
+
+        // ✅ on ne stocke PAS le numéro dans input1
+        input1 = "CONTACT: voir colonne Email Client";
+        contactValue = contact;
+        emailForSheet = contact;
         qtyVal = 1;
-        if (isEmail(contact)) emailForSheet = contact;
       }
       else {
         const main = document.getElementById('main-input').value.trim();
         const em = document.getElementById('email-client').value.trim();
         if (!main) { alert("⚠️ Remplis l'information requise."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
+
         input1 = main;
         qtyVal = 1;
-        if (isEmail(em)) emailForSheet = em;
+
+        // email optionnel (stocké à part)
+        if (em) {
+          contactValue = em;
+          emailForSheet = em;
+        }
       }
 
       if (!input1) {
@@ -719,8 +742,10 @@
         return;
       }
 
+      // ✅ Si Wallet et pas de contact saisi, on prend l'email du wallet
       if (PAY_MODE === "WALLET" && !emailForSheet && WALLET_EMAIL) {
         emailForSheet = WALLET_EMAIL;
+        if (!contactValue) contactValue = WALLET_EMAIL;
       }
 
       let fileData = "";
@@ -761,10 +786,16 @@
         produit: nom,
         idService: idS,
         categorie: cat,
+
+        // ✅ input1 = identifiant/lien/creds UNIQUEMENT (plus de numéro collé dedans)
         input1: input1,
+
+        // ✅ contact envoyé séparément (et stocké côté sheet via "email")
+        contact: contactValue,
+        email: emailForSheet,
+
         quantite: qtyVal,
         total: totalNumber,
-        email: emailForSheet,
 
         payMethod: (PAY_MODE === "WALLET") ? "WALLET" : "CLASSIC",
         walletEmail: (PAY_MODE === "WALLET") ? WALLET_EMAIL : "",
