@@ -11,18 +11,19 @@ const SOCIAL = {
   tiktok: "https://www.tiktok.com/@dicorporation",
   telegram: "https://t.me/Viralflow",
   // ✅ Bouton WABA (WhatsApp Business)
-  waba: "https://wa.me/243850373991"
+  waba: "https://wa.me/243850373991",
 };
 
 // ---------- helpers ----------
-const safe = (v) => (v === null || v === undefined) ? "" : String(v);
+const safe = (v) => (v === null || v === undefined ? "" : String(v));
 
-const escHtml = (s) => safe(s)
-  .replaceAll("&", "&amp;")
-  .replaceAll("<", "&lt;")
-  .replaceAll(">", "&gt;")
-  .replaceAll('"', "&quot;")
-  .replaceAll("'", "&#039;");
+const escHtml = (s) =>
+  safe(s)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 
 function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
@@ -36,22 +37,27 @@ function toDirectOGImage(url) {
   const u = safe(url).trim();
   if (!u) return "";
 
+  // already direct lh3
   if (u.includes("lh3.googleusercontent.com/d/")) {
     return u.includes("=") ? u : `${u}=w1200`;
   }
 
+  // drive file/d/<id>
   const m1 = u.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
-  if (m1 && m1[1]) return `https://lh3.googleusercontent.com/d/${m1[1]}=w1200`;
+  if (m1?.[1]) return `https://lh3.googleusercontent.com/d/${m1[1]}=w1200`;
 
+  // drive open?id=<id>
   const m2 = u.match(/drive\.google\.com\/open\?id=([^&]+)/i);
-  if (m2 && m2[1]) return `https://lh3.googleusercontent.com/d/${m2[1]}=w1200`;
+  if (m2?.[1]) return `https://lh3.googleusercontent.com/d/${m2[1]}=w1200`;
 
+  // direct image url
   if (/\.(png|jpg|jpeg|webp|gif)(\?.*)?$/i.test(u)) return u;
 
   return u;
 }
 
-// ✅ Paiement: utilise C via p.desc
+// ✅ Paiement: utilise C via p.desc (paiement.html)
+// ✅ IMPORTANT: on n'envoie PAS long_desc à paiement (tu l'utilises sur page produit uniquement)
 function buildPayUrl(p) {
   const qp = new URLSearchParams();
   qp.set("nom", safe(p.nom));
@@ -65,7 +71,6 @@ function buildPayUrl(p) {
   // ✅ C = desc (paiement.html)
   qp.set("desc", safe(p.desc).trim());
 
-  // IMPORTANT: ne pas envoyer long => paiement n'affiche pas long_box
   return `/paiement.html?${qp.toString()}`;
 }
 
@@ -75,16 +80,48 @@ async function fetchProducts() {
   const res = await fetch(url);
   const txt = await res.text();
 
-  const start = txt.indexOf("(");
-  const end = txt.lastIndexOf(")");
-  if (start === -1 || end === -1 || end <= start) {
+  // JSONP: cb(<json>);
+  const re = new RegExp(`${cb}\\((.*)\\)\\s*;?\\s*$`, "s");
+  const m = txt.match(re);
+  if (!m || !m[1]) {
     throw new Error("Réponse JSONP invalide. Vérifie action=get_products.");
   }
 
-  const jsonStr = txt.slice(start + 1, end).trim();
-  const data = JSON.parse(jsonStr);
+  const data = JSON.parse(m[1].trim());
   if (!Array.isArray(data)) throw new Error("Le endpoint ne renvoie pas une liste.");
   return data;
+}
+
+// ---------- SVG snippets (rangé + réutilisable) ----------
+const SVG = {
+  home: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M3 11l9-8 9 8"></path>
+    <path d="M9 22V12h6v10"></path>
+  </svg>`,
+  instagram: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+    <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
+    <path d="M16 11.37a4 4 0 1 1-7.87 1.26 4 4 0 0 1 7.87-1.26z"></path>
+    <path d="M17.5 6.5h.01"></path>
+  </svg>`,
+  tiktok: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M16.7 7.4c-1-1-1.6-2.3-1.7-3.7h-3v12c0 1.3-1 2.3-2.3 2.3-1.2 0-2.2-1-2.2-2.2 0-1.3 1-2.3 2.2-2.3.3 0 .6.1.9.2V9.3c-.3-.1-.6-.1-.9-.1C6.6 9.2 4 11.8 4 15c0 3.2 2.6 5.8 5.8 5.8 3.2 0 5.8-2.6 5.8-5.8V11c1.1.8 2.4 1.2 3.8 1.2V9.3c-1.1 0-2.2-.4-3-.9z"/>
+  </svg>`,
+  telegram: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M9.9 15.6 9.7 19c.4 0 .6-.2.8-.4l1.9-1.8 4 2.9c.7.4 1.2.2 1.4-.7l2.6-12.1c.3-1.2-.4-1.7-1.2-1.4L3.6 10.3c-1.1.4-1.1 1.1-.2 1.4l4 1.2 9.2-5.8c.4-.3.8-.1.5.2z"/>
+  </svg>`,
+  whatsapp: `<svg width="16" height="16" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
+  </svg>`,
+};
+
+function numOrInfinity(v) {
+  const s = safe(v).trim();
+  if (!s) return "";
+  return s;
+}
+
+function ogFallback() {
+  return "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
 }
 
 // ---------- templates ----------
@@ -95,14 +132,36 @@ function templateProductPage(p) {
   const prix = safe(p.prix).trim() || "0";
 
   const imgRaw = safe(p.img).trim();
-  const ogImg = toDirectOGImage(imgRaw) || "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
+  const ogImg = toDirectOGImage(imgRaw) || ogFallback();
 
   // ✅ K = long_desc (page produit)
   const longDesc = safe(p.long_desc).trim();
 
   const payUrl = buildPayUrl(p);
 
-  const ogDesc = `${prix} $ • ${cat}${longDesc ? " • " + longDesc.replace(/\s+/g, " ").slice(0, 120) : ""}`.slice(0, 200);
+  const ogDesc = `${prix} $ • ${cat}${
+    longDesc ? " • " + longDesc.replace(/\s+/g, " ").slice(0, 120) : ""
+  }`.slice(0, 200);
+
+  // JSON-LD (propre, sans casser logique)
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: nom,
+    image: [ogImg],
+    description: longDesc || `${cat} • ${prix}$`,
+    brand: { "@type": "Brand", name: "ViralFlowr" },
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "USD",
+      price: String(prix).replace(",", "."),
+      availability: "https://schema.org/InStock",
+      url: `https://viralflowr.com/p/${encodeURIComponent(id)}/`,
+    },
+  };
+
+  const minTxt = numOrInfinity(p.min) || "1";
+  const maxTxt = numOrInfinity(p.max) || "∞";
 
   return `<!DOCTYPE html>
 <html lang="fr" class="font-inter">
@@ -111,6 +170,7 @@ function templateProductPage(p) {
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>${escHtml(nom)} | ViralFlowr</title>
   <meta name="description" content="${escHtml(ogDesc)}">
+  <link rel="canonical" href="https://viralflowr.com/p/${encodeURIComponent(id)}/">
 
   <meta property="og:type" content="product">
   <meta property="og:site_name" content="ViralFlowr">
@@ -122,6 +182,8 @@ function templateProductPage(p) {
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="${escHtml(ogImg)}">
 
+  <script type="application/ld+json">${escHtml(JSON.stringify(jsonLd))}</script>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
@@ -132,7 +194,6 @@ function templateProductPage(p) {
     .btn-gradient:hover { background: linear-gradient(90deg, #d96d0c 0%, #F07E13 100%); }
     .shadow-card { box-shadow: 0 0 7px 0 rgba(0,0,0,.15); }
 
-    /* ✅ Boutons header (style compact, sans casser le design) */
     .btn-mini{
       height:40px; padding:0 14px; border-radius:999px;
       font-weight:900; font-size:11px; letter-spacing:.10em;
@@ -162,7 +223,6 @@ function templateProductPage(p) {
     }
     .icon-btn:hover{ transform: translateY(-1px); border-color:#F07E13; color:#F07E13; }
 
-    /* ✅ Mobile: cache texte, garde icônes */
     @media (max-width: 420px){
       .btn-mini, .btn-waba{ padding:0 10px; font-size:10px; letter-spacing:.08em; }
       .btn-mini .txt, .btn-waba .txt{ display:none; }
@@ -181,43 +241,24 @@ function templateProductPage(p) {
         </div>
       </a>
 
-      <!-- ✅ Boutons + Réseaux (garde logique/style, ajout demandé) -->
       <div class="flex items-center gap-2">
-        <!-- Réseaux (icônes) -->
         <a class="hidden sm:flex icon-btn" href="${escHtml(SOCIAL.instagram)}" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
-            <path d="M16 11.37a4 4 0 1 1-7.87 1.26 4 4 0 0 1 7.87-1.26z"></path>
-            <path d="M17.5 6.5h.01"></path>
-          </svg>
+          ${SVG.instagram}
         </a>
-
         <a class="hidden sm:flex icon-btn" href="${escHtml(SOCIAL.tiktok)}" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M16.7 7.4c-1-1-1.6-2.3-1.7-3.7h-3v12c0 1.3-1 2.3-2.3 2.3-1.2 0-2.2-1-2.2-2.2 0-1.3 1-2.3 2.2-2.3.3 0 .6.1.9.2V9.3c-.3-.1-.6-.1-.9-.1C6.6 9.2 4 11.8 4 15c0 3.2 2.6 5.8 5.8 5.8 3.2 0 5.8-2.6 5.8-5.8V11c1.1.8 2.4 1.2 3.8 1.2V9.3c-1.1 0-2.2-.4-3-.9z"/>
-          </svg>
+          ${SVG.tiktok}
         </a>
-
         <a class="hidden sm:flex icon-btn" href="${escHtml(SOCIAL.telegram)}" target="_blank" rel="noopener noreferrer" aria-label="Telegram">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M9.9 15.6 9.7 19c.4 0 .6-.2.8-.4l1.9-1.8 4 2.9c.7.4 1.2.2 1.4-.7l2.6-12.1c.3-1.2-.4-1.7-1.2-1.4L3.6 10.3c-1.1.4-1.1 1.1-.2 1.4l4 1.2 9.2-5.8c.4-.3.8-.1.5.2z"/>
-          </svg>
+          ${SVG.telegram}
         </a>
 
-        <!-- ✅ Bouton Boutique -->
         <a href="/index.html" class="btn-mini" aria-label="Boutique">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 11l9-8 9 8"></path>
-            <path d="M9 22V12h6v10"></path>
-          </svg>
+          ${SVG.home}
           <span class="txt">Boutique</span>
         </a>
 
-        <!-- ✅ Bouton WABA -->
         <a href="${escHtml(SOCIAL.waba)}" target="_blank" rel="noopener noreferrer" class="btn-waba" aria-label="WABA WhatsApp">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="white" aria-hidden="true">
-            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347M12.05 21.785h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884Z"/>
-          </svg>
+          ${SVG.whatsapp}
           <span class="txt">WABA</span>
         </a>
       </div>
@@ -237,7 +278,7 @@ function templateProductPage(p) {
               <div class="shrink-0">
                 <div class="w-[140px] h-[140px] bg-[#F8FAFC] rounded-2xl border border-gray-100 flex items-center justify-center p-4">
                   <img src="${escHtml(imgRaw || ogImg)}" class="w-full h-full object-contain"
-                       onerror="this.src='https://cdn-icons-png.flaticon.com/512/11520/11520110.png'"
+                       onerror="this.src='${escHtml(ogFallback())}'"
                        alt="${escHtml(nom)}">
                 </div>
               </div>
@@ -248,7 +289,6 @@ function templateProductPage(p) {
                   ${escHtml(longDesc || "Aucune description.")}
                 </div>
 
-                <!-- ✅ Réseaux sociaux (section visible sur page produit) -->
                 <div class="mt-6 flex flex-wrap items-center gap-2">
                   <span class="text-[11px] font-black uppercase tracking-widest text-gray-400">Réseaux :</span>
                   <a href="${escHtml(SOCIAL.instagram)}" target="_blank" rel="noopener noreferrer"
@@ -270,7 +310,7 @@ function templateProductPage(p) {
           </div>
         </div>
 
-        <div class="flex flex-col gap-4">
+        <aside class="flex flex-col gap-4">
           <div class="bg-white border border-gray-100 shadow-card rounded-xl p-6 flex flex-col gap-6">
             <div class="grid grid-cols-2 gap-4 items-end">
               <div>
@@ -278,8 +318,8 @@ function templateProductPage(p) {
                 <span class="text-3xl font-black text-[#201B16] tracking-tighter">${escHtml(prix)} $</span>
               </div>
               <div class="flex flex-col text-right text-[11px] text-gray-400 font-medium">
-                <span>Min : <strong class="text-gray-700">${escHtml(safe(p.min) || "1")}</strong></span>
-                <span>Max : <strong class="text-gray-700">${escHtml(safe(p.max) || "∞")}</strong></span>
+                <span>Min : <strong class="text-gray-700">${escHtml(minTxt)}</strong></span>
+                <span>Max : <strong class="text-gray-700">${escHtml(maxTxt)}</strong></span>
               </div>
             </div>
 
@@ -288,12 +328,9 @@ function templateProductPage(p) {
               Acheter maintenant
             </a>
 
-            <!-- ✅ Bouton WABA (aide rapide) -->
             <a href="${escHtml(SOCIAL.waba)}" target="_blank" rel="noopener noreferrer"
                class="w-full h-12 rounded-full bg-[#25D366] text-white font-black text-[13px] uppercase tracking-wide shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="white" aria-hidden="true">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
-              </svg>
+              ${SVG.whatsapp}
               Contacter WABA
             </a>
 
@@ -303,16 +340,12 @@ function templateProductPage(p) {
             </a>
           </div>
 
-          <!-- ✅ Bouton Boutique (en plus, demandé) -->
           <a href="/index.html"
              class="bg-white border border-gray-200 shadow-card rounded-xl p-4 flex items-center justify-center gap-2 text-gray-600 font-black uppercase text-[12px] hover:text-orange-600 hover:border-orange-200 transition">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 11l9-8 9 8"></path>
-              <path d="M9 22V12h6v10"></path>
-            </svg>
+            ${SVG.home}
             Retour Boutique
           </a>
-        </div>
+        </aside>
 
       </div>
     </div>
@@ -326,29 +359,11 @@ function templateProductPage(p) {
         </div>
 
         <div class="flex flex-wrap items-center gap-3">
-          <a class="btn-mini" href="/index.html">
-            <span class="txt">Boutique</span>
-          </a>
-          <a class="btn-waba" href="${escHtml(SOCIAL.waba)}" target="_blank" rel="noopener noreferrer">
-            <span class="txt">WABA</span>
-          </a>
-          <a class="icon-btn" href="${escHtml(SOCIAL.instagram)}" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
-              <path d="M16 11.37a4 4 0 1 1-7.87 1.26 4 4 0 0 1 7.87-1.26z"></path>
-              <path d="M17.5 6.5h.01"></path>
-            </svg>
-          </a>
-          <a class="icon-btn" href="${escHtml(SOCIAL.tiktok)}" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M16.7 7.4c-1-1-1.6-2.3-1.7-3.7h-3v12c0 1.3-1 2.3-2.3 2.3-1.2 0-2.2-1-2.2-2.2 0-1.3 1-2.3 2.2-2.3.3 0 .6.1.9.2V9.3c-.3-.1-.6-.1-.9-.1C6.6 9.2 4 11.8 4 15c0 3.2 2.6 5.8 5.8 5.8 3.2 0 5.8-2.6 5.8-5.8V11c1.1.8 2.4 1.2 3.8 1.2V9.3c-1.1 0-2.2-.4-3-.9z"/>
-            </svg>
-          </a>
-          <a class="icon-btn" href="${escHtml(SOCIAL.telegram)}" target="_blank" rel="noopener noreferrer" aria-label="Telegram">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M9.9 15.6 9.7 19c.4 0 .6-.2.8-.4l1.9-1.8 4 2.9c.7.4 1.2.2 1.4-.7l2.6-12.1c.3-1.2-.4-1.7-1.2-1.4L3.6 10.3c-1.1.4-1.1 1.1-.2 1.4l4 1.2 9.2-5.8c.4-.3.8-.1.5.2z"/>
-            </svg>
-          </a>
+          <a class="btn-mini" href="/index.html"><span class="txt">Boutique</span></a>
+          <a class="btn-waba" href="${escHtml(SOCIAL.waba)}" target="_blank" rel="noopener noreferrer"><span class="txt">WABA</span></a>
+          <a class="icon-btn" href="${escHtml(SOCIAL.instagram)}" target="_blank" rel="noopener noreferrer" aria-label="Instagram">${SVG.instagram}</a>
+          <a class="icon-btn" href="${escHtml(SOCIAL.tiktok)}" target="_blank" rel="noopener noreferrer" aria-label="TikTok">${SVG.tiktok}</a>
+          <a class="icon-btn" href="${escHtml(SOCIAL.telegram)}" target="_blank" rel="noopener noreferrer" aria-label="Telegram">${SVG.telegram}</a>
         </div>
       </div>
 
@@ -369,7 +384,7 @@ function templateSharePage(p) {
   const prix = safe(p.prix).trim() || "0";
 
   const imgRaw = safe(p.img).trim();
-  const ogImg = toDirectOGImage(imgRaw) || "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
+  const ogImg = toDirectOGImage(imgRaw) || ogFallback();
 
   const payUrl = buildPayUrl(p);
   const ogDesc = `${prix} $ • ${cat}`.slice(0, 200);
