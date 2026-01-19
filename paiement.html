@@ -67,10 +67,42 @@
     .icon-btn:hover{ transform:translateY(-1px); border-color:#F07E13; color:#F07E13; }
 
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+    /* ✅ Hard lock UI when order already sent */
+    .locked-overlay{
+      position:fixed; inset:0; background:rgba(0,0,0,.35);
+      display:none; align-items:center; justify-content:center;
+      z-index:9999;
+      padding:16px;
+    }
+    .locked-card{
+      width:min(520px, 100%);
+      background:#fff; border:1px solid #eee; border-radius:24px;
+      padding:18px;
+      box-shadow:0 20px 60px rgba(0,0,0,.2);
+    }
   </style>
 </head>
 
 <body class="p-4 md:p-8">
+
+  <!-- ✅ overlay anti double-envoi -->
+  <div id="lockedOverlay" class="locked-overlay">
+    <div class="locked-card">
+      <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Commande déjà validée</div>
+      <div class="mt-2 text-lg font-black text-gray-900">Cette commande a déjà été envoyée ✅</div>
+      <div class="mt-2 text-sm text-gray-600 font-medium">
+        ID : <span id="lockedId" class="font-black text-gray-900"></span><br/>
+        Pour éviter un double envoi, le formulaire est bloqué.
+      </div>
+      <div class="mt-4 grid grid-cols-2 gap-2">
+        <button class="w-full bg-gray-900 text-white py-3 rounded-2xl font-black text-[11px] uppercase"
+          onclick="location.href='index.html'">Boutique</button>
+        <button class="w-full bg-white border border-gray-200 py-3 rounded-2xl font-black text-[11px] uppercase hover:border-[#F07E13] hover:text-[#F07E13]"
+          onclick="document.getElementById('lockedOverlay').style.display='none'">OK</button>
+      </div>
+    </div>
+  </div>
 
   <div class="checkout-container">
 
@@ -198,10 +230,7 @@
               <div id="qty-hint" class="text-[11px] text-gray-500 font-bold mt-2 hidden"></div>
             </div>
 
-            <div>
-              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact (WhatsApp ou Email) (optionnel)</label>
-              <input type="text" id="contact-smm" placeholder="+243... ou email" class="w-full bg-white rounded-xl p-3 text-sm font-medium">
-            </div>
+            <!-- ✅ SUPPRIMÉ: champ contact (numéro/mail) pour SMM -->
           </div>
 
           <!-- ✅ ABONNEMENT -->
@@ -416,11 +445,6 @@
       try { return decodeURIComponent(String(v || "")); } catch(e){ return String(v || ""); }
     }
 
-    function isEmail(v){
-      const s = String(v||"").trim();
-      return s.includes("@") && s.indexOf("@") > 0 && s.indexOf(".") > s.indexOf("@") + 1;
-    }
-
     function makeOrderId(){
       return "VF-" + Date.now() + "-" + Math.floor(1000 + Math.random()*9000);
     }
@@ -432,6 +456,34 @@
       sessionStorage.setItem('active_order_id', orderId);
     }
     document.getElementById('live-order-id').innerText = orderId;
+
+    // ✅ Anti double-envoi (idempotence front)
+    const SENT_KEY = "vf_order_sent_" + orderId;      // bloque après succès
+    const INFLIGHT_KEY = "vf_order_inflight_" + orderId; // bloque pendant envoi
+    let SUBMIT_LOCK = false;
+
+    function showLocked_(oid){
+      document.getElementById("lockedId").textContent = String(oid || "");
+      document.getElementById("lockedOverlay").style.display = "flex";
+    }
+
+    function hardLockForm_(){
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerText = "Commande déjà envoyée ✅";
+      try { btn.style.opacity = ".7"; } catch(_){}
+      // wallet button too
+      const wbtn = document.getElementById("walletPayBtn");
+      if (wbtn) { wbtn.disabled = true; wbtn.style.opacity = ".6"; wbtn.style.cursor = "not-allowed"; }
+    }
+
+    // Si déjà envoyé: bloquer + afficher success direct
+    if (sessionStorage.getItem(SENT_KEY) === "1") {
+      hardLockForm_();
+      document.getElementById('form-container').classList.add('hidden');
+      document.getElementById('final-id').innerText = orderId;
+      document.getElementById('success-msg').classList.remove('hidden');
+    }
 
     // ====== PARAMS URL ======
     const params   = new URLSearchParams(window.location.search);
@@ -550,6 +602,13 @@
       const hint = document.getElementById("walletHint");
       const btn = document.getElementById("walletPayBtn");
 
+      if (sessionStorage.getItem(SENT_KEY) === "1") {
+        btn.disabled = true; btn.style.opacity = ".6"; btn.style.cursor = "not-allowed";
+        hint.textContent = "✅ Commande déjà envoyée.";
+        hint.className = "text-[11px] font-black mt-2 text-green-700";
+        return;
+      }
+
       if (WALLET_BAL >= need && need > 0) {
         hint.textContent = "✅ Solde suffisant : paiement possible sans preuve.";
         hint.className = "text-[11px] font-black mt-2 text-green-700";
@@ -588,6 +647,12 @@
       refreshWalletBalance_();
 
       document.getElementById("walletPayBtn").addEventListener("click", () => {
+        // ✅ anti double click wallet
+        if (SUBMIT_LOCK || sessionStorage.getItem(INFLIGHT_KEY) === "1" || sessionStorage.getItem(SENT_KEY) === "1") {
+          showLocked_(orderId);
+          return;
+        }
+
         refreshWalletBalance_((ok) => {
           const need = getTotalNumber_();
           if(!ok){ alert("⚠️ Impossible de charger le solde wallet."); return; }
@@ -654,13 +719,20 @@
     document.getElementById('orderForm').onsubmit = async (e) => {
       e.preventDefault();
 
+      // ✅ anti double submit + anti resend after success
+      if (sessionStorage.getItem(SENT_KEY) === "1") { showLocked_(orderId); return; }
+      if (SUBMIT_LOCK || sessionStorage.getItem(INFLIGHT_KEY) === "1") return;
+
+      SUBMIT_LOCK = true;
+      sessionStorage.setItem(INFLIGHT_KEY, "1");
+
       const btn = document.getElementById('submitBtn');
       btn.disabled = true;
       btn.innerText = "Validation en cours..." ;
 
       let input1 = "";
-      let emailForSheet = "";   // ✅ on stocke le contact ici (email OU whatsapp/numéro)
-      let contactValue = "";    // ✅ contact séparé (NE PLUS mélanger avec input1)
+      let emailForSheet = "";   // email/whatsapp pour catégories qui en ont besoin (pas SMM)
+      let contactValue = "";    // contact séparé
       let qtyVal = 1;
 
       const totalNumber = getTotalNumber_();
@@ -669,12 +741,21 @@
         alert("⚠️ ID du service manquant (paramètre id).");
         btn.disabled=false; btn.innerText="Confirmer le paiement";
         setPayMode_("CLASSIC");
+        SUBMIT_LOCK = false;
+        sessionStorage.removeItem(INFLIGHT_KEY);
         return;
       }
 
       if (isSMM) {
         const link = document.getElementById('boost-link').value.trim();
-        if (!link) { alert("⚠️ Ajoute le lien à booster."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
+        if (!link) {
+          alert("⚠️ Ajoute le lien à booster.");
+          btn.disabled=false; btn.innerText="Confirmer le paiement";
+          setPayMode_("CLASSIC");
+          SUBMIT_LOCK = false;
+          sessionStorage.removeItem(INFLIGHT_KEY);
+          return;
+        }
 
         const hasMin = Number.isFinite(minParam);
         const hasMax = Number.isFinite(maxParam);
@@ -682,39 +763,68 @@
 
         if (!q || q <= 0) {
           alert("⚠️ Quantité invalide.");
-          btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return;
+          btn.disabled=false; btn.innerText="Confirmer le paiement";
+          setPayMode_("CLASSIC");
+          SUBMIT_LOCK = false;
+          sessionStorage.removeItem(INFLIGHT_KEY);
+          return;
         }
 
         if ((hasMin && q < parseInt(minParam,10)) || (hasMax && q > parseInt(maxParam,10))) {
           alert(`⚠️ Quantité invalide. Min=${hasMin ? parseInt(minParam,10) : 0}${hasMax ? ` / Max=${parseInt(maxParam,10)}` : ""}.`);
-          btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return;
+          btn.disabled=false; btn.innerText="Confirmer le paiement";
+          setPayMode_("CLASSIC");
+          SUBMIT_LOCK = false;
+          sessionStorage.removeItem(INFLIGHT_KEY);
+          return;
         }
 
-        input1 = link; // ✅ uniquement le lien (on ne colle plus le contact ici)
+        input1 = link; // ✅ SMM: uniquement le lien
         qtyVal = q;
 
-        const contact = String(document.getElementById('contact-smm').value || "").trim();
-        if (contact) {
-          contactValue = contact;
-          emailForSheet = contact; // ✅ stocké dans "Email Client" (même si c'est un numéro)
+        // ✅ SMM: aucun champ numéro/mail
+        // Si wallet: on stocke l'email wallet pour suivi (optionnel côté sheet)
+        if (PAY_MODE === "WALLET" && WALLET_EMAIL) {
+          emailForSheet = WALLET_EMAIL;
+          contactValue = WALLET_EMAIL;
         }
       }
       else if (isAbo) {
         const creds = document.getElementById('creds').value.trim();
         const contact = document.getElementById('delivery-contact-abo').value.trim();
-        if (!creds) { alert("⚠️ Ajoute tes identifiants (mail + mot de passe)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
-        if (!contact) { alert("⚠️ Ajoute un contact de livraison (WhatsApp ou Email)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
+        if (!creds) {
+          alert("⚠️ Ajoute tes identifiants (mail + mot de passe).");
+          btn.disabled=false; btn.innerText="Confirmer le paiement";
+          setPayMode_("CLASSIC");
+          SUBMIT_LOCK = false;
+          sessionStorage.removeItem(INFLIGHT_KEY);
+          return;
+        }
+        if (!contact) {
+          alert("⚠️ Ajoute un contact de livraison (WhatsApp ou Email).");
+          btn.disabled=false; btn.innerText="Confirmer le paiement";
+          setPayMode_("CLASSIC");
+          SUBMIT_LOCK = false;
+          sessionStorage.removeItem(INFLIGHT_KEY);
+          return;
+        }
 
-        input1 = creds;         // ✅ uniquement identifiants
+        input1 = creds;          // ✅ uniquement identifiants
         contactValue = contact;  // ✅ contact séparé
         emailForSheet = contact; // ✅ stocké en colonne Email Client
         qtyVal = 1;
       }
       else if (isCarte) {
         const contact = document.getElementById('card-delivery').value.trim();
-        if (!contact) { alert("⚠️ Ajoute un contact de livraison (WhatsApp ou Email)."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
+        if (!contact) {
+          alert("⚠️ Ajoute un contact de livraison (WhatsApp ou Email).");
+          btn.disabled=false; btn.innerText="Confirmer le paiement";
+          setPayMode_("CLASSIC");
+          SUBMIT_LOCK = false;
+          sessionStorage.removeItem(INFLIGHT_KEY);
+          return;
+        }
 
-        // ✅ on ne stocke PAS le numéro dans input1
         input1 = "CONTACT: voir colonne Email Client";
         contactValue = contact;
         emailForSheet = contact;
@@ -723,12 +833,18 @@
       else {
         const main = document.getElementById('main-input').value.trim();
         const em = document.getElementById('email-client').value.trim();
-        if (!main) { alert("⚠️ Remplis l'information requise."); btn.disabled=false; btn.innerText="Confirmer le paiement"; setPayMode_("CLASSIC"); return; }
+        if (!main) {
+          alert("⚠️ Remplis l'information requise.");
+          btn.disabled=false; btn.innerText="Confirmer le paiement";
+          setPayMode_("CLASSIC");
+          SUBMIT_LOCK = false;
+          sessionStorage.removeItem(INFLIGHT_KEY);
+          return;
+        }
 
         input1 = main;
         qtyVal = 1;
 
-        // email optionnel (stocké à part)
         if (em) {
           contactValue = em;
           emailForSheet = em;
@@ -739,10 +855,12 @@
         alert("⚠️ Information manquante.");
         btn.disabled=false; btn.innerText="Confirmer le paiement";
         setPayMode_("CLASSIC");
+        SUBMIT_LOCK = false;
+        sessionStorage.removeItem(INFLIGHT_KEY);
         return;
       }
 
-      // ✅ Si Wallet et pas de contact saisi, on prend l'email du wallet
+      // ✅ Si Wallet et pas d'email, on prend l'email du wallet
       if (PAY_MODE === "WALLET" && !emailForSheet && WALLET_EMAIL) {
         emailForSheet = WALLET_EMAIL;
         if (!contactValue) contactValue = WALLET_EMAIL;
@@ -758,6 +876,8 @@
           alert("⚠️ Ajoute la preuve de paiement (paiement classique).");
           btn.disabled=false; btn.innerText="Confirmer le paiement";
           setPayMode_("CLASSIC");
+          SUBMIT_LOCK = false;
+          sessionStorage.removeItem(INFLIGHT_KEY);
           return;
         }
 
@@ -772,6 +892,8 @@
           alert("⚠️ Impossible de lire l'image. Réessaie.");
           btn.disabled=false; btn.innerText="Confirmer le paiement";
           setPayMode_("CLASSIC");
+          SUBMIT_LOCK = false;
+          sessionStorage.removeItem(INFLIGHT_KEY);
           return;
         }
 
@@ -787,10 +909,9 @@
         idService: idS,
         categorie: cat,
 
-        // ✅ input1 = identifiant/lien/creds UNIQUEMENT (plus de numéro collé dedans)
         input1: input1,
 
-        // ✅ contact envoyé séparément (et stocké côté sheet via "email")
+        // contact séparé (SMM = vide)
         contact: contactValue,
         email: emailForSheet,
 
@@ -802,15 +923,28 @@
 
         fileData: fileData,
         fileType: fileType,
-        fileName: fileName
+        fileName: fileName,
+
+        // ✅ idempotence côté backend si tu veux l’utiliser plus tard
+        idempotencyKey: "IDEMP_" + orderId
       };
 
       try {
+        // ✅ Dernière barrière (si quelqu’un relance la page pendant l’envoi)
+        if (sessionStorage.getItem(SENT_KEY) === "1") { showLocked_(orderId); return; }
+
         await fetch(GOOGLE_URL, {
           method:'POST',
           mode:'no-cors',
           body: JSON.stringify(payload)
         });
+
+        // ✅ Marque envoyé (bloque tout futur envoi de ce orderId)
+        sessionStorage.setItem(SENT_KEY, "1");
+        sessionStorage.removeItem(INFLIGHT_KEY);
+
+        // (optionnel) on garde l'ID actif pour afficher le succès sur refresh
+        // sessionStorage.removeItem('active_order_id'); // si tu veux forcer nouvel ID au prochain achat, décommente
 
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
 
@@ -822,8 +956,17 @@
         alert("Erreur de connexion. Réessayez.");
         btn.disabled = false;
         btn.innerText = "Confirmer le paiement";
+        SUBMIT_LOCK = false;
+        sessionStorage.removeItem(INFLIGHT_KEY);
       } finally {
         setPayMode_("CLASSIC");
+        // si envoyé => on garde lock
+        if (sessionStorage.getItem(SENT_KEY) === "1") {
+          hardLockForm_();
+          SUBMIT_LOCK = true;
+        } else {
+          SUBMIT_LOCK = false;
+        }
       }
     };
   </script>
