@@ -117,9 +117,7 @@
               Actualiser
             </button>
 
-            <button id="logoutBtn" class="btn btn-outline">
-              Déconnexion
-            </button>
+            <button id="logoutBtn" class="btn btn-outline">Déconnexion</button>
           </div>
         </div>
 
@@ -306,6 +304,44 @@
       }catch{ return null; }
     }
 
+    // ✅ UI LOGIN/LOGOUT GLOBAL
+    function applyAuthUI_(){
+      const btn = document.getElementById("logoutBtn");
+      if(!btn) return;
+
+      const s = getSession_();
+
+      if(!s){
+        btn.textContent = "Connexion";
+        btn.disabled = false;
+        btn.onclick = () => { window.location.href = "wallet.html"; };
+        return;
+      }
+
+      btn.textContent = "Déconnexion";
+      btn.disabled = false;
+      btn.onclick = () => {
+        localStorage.removeItem("vf_session");
+        showAlert("Déconnecté ✅", "success");
+        applyAuthUI_();
+
+        // mini refresh UI wallet
+        userLabel.textContent = "Non connecté";
+        balanceValue.textContent = "—";
+        txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Connecte-toi pour voir ton solde.</div>`;
+
+        // redirection vers wallet (page connexion)
+        setTimeout(() => { window.location.href = "wallet.html"; }, 350);
+      };
+    }
+
+    // si la session change dans un autre onglet/page
+    window.addEventListener("storage", (e) => {
+      if(e.key === "vf_session"){
+        applyAuthUI_();
+      }
+    });
+
     function setTopupNote_(email, note){
       const k = "vf_topup_note_" + String(email||"").toLowerCase();
       localStorage.setItem(k, note);
@@ -372,7 +408,6 @@
         onErr && onErr("NETWORK");
       };
       document.body.appendChild(s);
-      // cleanup après chargement
       s.onload = () => setTimeout(() => { try { s.remove(); } catch(_){ } }, 0);
     }
 
@@ -414,7 +449,7 @@
       `;
     }
 
-    // ✅ IMPORTANT: ici on appelle action=wallet_balance (pas wallet_get)
+    // ✅ charge solde via email (ta logique)
     function loadWallet_(email){
       balanceValue.textContent = "—";
       jsonp_(
@@ -435,7 +470,6 @@
       );
     }
 
-    // historique (si ton backend l’a)
     function loadTx_(email){
       txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Chargement…</div>`;
       jsonp_(
@@ -453,7 +487,6 @@
       );
     }
 
-    // ✅ bouton client “J’ai payé” → crée/registre un topup PENDING (sans preuve)
     function createTopup_(email, note){
       const amount = Number(document.getElementById("amountInp").value || 0);
       const method = String(document.getElementById("methodSel").value || "BINANCE_PAY");
@@ -482,7 +515,6 @@
 
           if(res && res.ok){
             showAlert("Demande enregistrée ✅. Ton solde sera crédité automatiquement après détection Binance (NOTE).", "success");
-            // refresh
             setTimeout(() => {
               loadWallet_(email);
               loadTx_(email);
@@ -504,6 +536,8 @@
       document.getElementById("binanceId").textContent = BINANCE_PAY_ID;
       document.getElementById("usdtAddr").textContent = USDT_TRC20_ADDR;
 
+      applyAuthUI_(); // ✅ bouton Connexion/Déconnexion
+
       const s = getSession_();
       if(!s){
         showAlert("Connecte-toi d’abord pour utiliser le wallet.", "error");
@@ -518,7 +552,6 @@
 
       let note = ensureTopupNote_(email);
 
-      // WhatsApp prefill (Mobile Money)
       const baseMsg =
         `Bonjour, je veux déposer du crédit sur mon wallet ViralFlowr.%0A` +
         `Email: ${encodeURIComponent(email)}%0A` +
@@ -531,18 +564,11 @@
       document.getElementById("waAirtel").href = `https://wa.me/${SUPPORT_WA}?text=${baseMsg.replace("Méthode:%20____","Méthode:%20AIRTEL%20MONEY")}`;
       document.getElementById("waWave").href   = `https://wa.me/${SUPPORT_WA}?text=${baseMsg.replace("Méthode:%20____","Méthode:%20WAVE")}`;
 
-      // Load data
       loadWallet_(email);
       loadTx_(email);
 
-      // Buttons
       document.getElementById("refreshBtn").addEventListener("click", () => loadWallet_(email));
       document.getElementById("refreshTxBtn").addEventListener("click", () => loadTx_(email));
-
-      document.getElementById("logoutBtn").addEventListener("click", () => {
-        localStorage.removeItem("vf_session");
-        location.href = "login.html";
-      });
 
       document.getElementById("copyNoteBtn").addEventListener("click", () => copyText_(note));
       document.getElementById("copyBinanceBtn").addEventListener("click", () => copyText_(BINANCE_PAY_ID));
