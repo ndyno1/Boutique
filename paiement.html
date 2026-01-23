@@ -381,10 +381,18 @@
         <p class="text-gray-500 text-sm mb-8 font-medium">
           Votre commande <strong id="final-id" class="text-gray-900"></strong> est en cours de traitement.
         </p>
-        <button onclick="location.href='index.html'"
-          class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-xs uppercase hover:bg-gray-800 transition-colors">
-          Retour à la boutique
-        </button>
+
+        <!-- ✅ Nouveau : reset pour faire une autre commande -->
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="startNewOrder_(true)"
+            class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-xs uppercase hover:bg-gray-800 transition-colors">
+            Nouvelle commande
+          </button>
+          <button onclick="location.href='index.html'"
+            class="w-full bg-white border border-gray-200 py-4 rounded-2xl font-black text-xs uppercase hover:border-[#F07E13] hover:text-[#F07E13] transition-colors">
+            Boutique
+          </button>
+        </div>
       </div>
 
     </div>
@@ -449,7 +457,46 @@
       return "VF-" + Date.now() + "-" + Math.floor(1000 + Math.random()*9000);
     }
 
-    // ✅ ID persistant
+    // ✅ Helper: reset session pour faire une autre commande
+    function startNewOrder_(goShop){
+      try{
+        const old = sessionStorage.getItem('active_order_id');
+        if (old) {
+          sessionStorage.removeItem("vf_order_sent_" + old);
+          sessionStorage.removeItem("vf_order_inflight_" + old);
+        }
+        sessionStorage.removeItem('active_order_id');
+        // vf_service_id on peut le garder, ou l'enlever:
+        // sessionStorage.removeItem('vf_service_id');
+      }catch(_){}
+      if (goShop) location.href = "index.html";
+      else location.reload();
+    }
+
+    // ====== PARAMS URL (défini tôt) ======
+    const params = new URLSearchParams(window.location.search);
+    const idS = (params.get('id') || "").trim();
+
+    // ✅ Fix principal : si on change de produit/service -> nouvel orderId (sinon ça reste bloqué)
+    (function ensureFreshOrderIdForService_(){
+      try{
+        const prevServiceId = sessionStorage.getItem("vf_service_id") || "";
+        const active = sessionStorage.getItem("active_order_id") || "";
+
+        if (idS && prevServiceId && idS !== prevServiceId) {
+          // on purge aussi les locks liés à l'ancien orderId (propre)
+          if (active) {
+            sessionStorage.removeItem("vf_order_sent_" + active);
+            sessionStorage.removeItem("vf_order_inflight_" + active);
+          }
+          sessionStorage.removeItem("active_order_id");
+        }
+
+        if (idS) sessionStorage.setItem("vf_service_id", idS);
+      }catch(_){}
+    })();
+
+    // ✅ ID persistant (mais reset quand succès / changement service)
     let orderId = sessionStorage.getItem('active_order_id');
     if (!orderId) {
       orderId = makeOrderId();
@@ -485,12 +532,10 @@
       document.getElementById('success-msg').classList.remove('hidden');
     }
 
-    // ====== PARAMS URL ======
-    const params   = new URLSearchParams(window.location.search);
+    // ====== PARAMS URL (suite) ======
     const nom      = params.get('nom') || "Service";
     const prixInit = parseFloat(params.get('prix')) || 0;
     const cat      = params.get('cat') || "";
-    const idS      = params.get('id')  || "";
 
     const desc     = safeDecode(params.get('desc') || "");
     const longDesc = safeDecode(params.get('long') || params.get('long_desc') || "");
@@ -943,8 +988,8 @@
         sessionStorage.setItem(SENT_KEY, "1");
         sessionStorage.removeItem(INFLIGHT_KEY);
 
-        // (optionnel) on garde l'ID actif pour afficher le succès sur refresh
-        // sessionStorage.removeItem('active_order_id'); // si tu veux forcer nouvel ID au prochain achat, décommente
+        // ✅ FIX IMPORTANT : on force un nouvel ID pour la prochaine commande
+        sessionStorage.removeItem('active_order_id');
 
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
 
