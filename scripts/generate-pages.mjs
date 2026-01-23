@@ -9,7 +9,7 @@ const SCRIPT_URL =
 const SOCIAL = {
   instagram: "https://www.instagram.com/di_corporation_1/",
   tiktok: "https://www.tiktok.com/@dicorporation",
-  telegram: "https://t.me/Viralflow",
+  telegram: "https://t.me/Viralflowr",
   // ✅ Bouton WABA (WhatsApp Business)
   waba: "https://wa.me/243850373991",
 };
@@ -98,6 +98,31 @@ const SVG = {
     <path d="M3 11l9-8 9 8"></path>
     <path d="M9 22V12h6v10"></path>
   </svg>`,
+  orders: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M9 6h11"></path>
+    <path d="M9 12h11"></path>
+    <path d="M9 18h11"></path>
+    <path d="M4 6h.01"></path>
+    <path d="M4 12h.01"></path>
+    <path d="M4 18h.01"></path>
+  </svg>`,
+  wallet: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
+    <path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/>
+    <path d="M20 12h-4a2 2 0 0 0 0 4h4"/>
+    <circle cx="16" cy="14" r="0.5" />
+  </svg>`,
+  login: `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+    <path d="M10 17l5-5-5-5"></path>
+    <path d="M15 12H3"></path>
+  </svg>`,
+  register: `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+    <circle cx="8.5" cy="7" r="4"></circle>
+    <path d="M20 8v6"></path>
+    <path d="M23 11h-6"></path>
+  </svg>`,
   instagram: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
     <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
     <path d="M16 11.37a4 4 0 1 1-7.87 1.26 4 4 0 0 1 7.87-1.26z"></path>
@@ -167,7 +192,7 @@ function templateProductPage(p) {
 <html lang="fr" class="font-inter">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>${escHtml(nom)} | ViralFlowr</title>
   <meta name="description" content="${escHtml(ogDesc)}">
   <link rel="canonical" href="https://viralflowr.com/p/${encodeURIComponent(id)}/">
@@ -188,19 +213,33 @@ function templateProductPage(p) {
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
-    body { font-family: 'Inter', sans-serif; background-color: #F3F3F3; color: #201B16; }
+    :root{ color-scheme: light; }
+    html, body { width:100%; max-width:100%; overflow-x:hidden; }
+    *{ box-sizing:border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F3F3F3;
+      color: #201B16;
+      -webkit-text-size-adjust: 100%;
+      padding-bottom: env(safe-area-inset-bottom);
+      overscroll-behavior-x: none;
+    }
+
     .text-orange-bsv { color: #F07E13; }
     .btn-gradient { background: linear-gradient(90deg, #F07E13 0%, #FFB26B 100%); }
     .btn-gradient:hover { background: linear-gradient(90deg, #d96d0c 0%, #F07E13 100%); }
     .shadow-card { box-shadow: 0 0 7px 0 rgba(0,0,0,.15); }
 
+    /* ✅ mini boutons (ne débordent pas) */
     .btn-mini{
       height:40px; padding:0 14px; border-radius:999px;
       font-weight:900; font-size:11px; letter-spacing:.10em;
       text-transform:uppercase;
       display:inline-flex; align-items:center; justify-content:center; gap:8px;
       border:1px solid #E5E7EB; background:#fff; color:#111827;
-      transition:.2s; white-space:nowrap;
+      transition:.2s; white-space:nowrap; flex:0 0 auto;
+      max-width:100%;
     }
     .btn-mini:hover{ transform: translateY(-1px); border-color:#F07E13; color:#F07E13; }
 
@@ -211,7 +250,8 @@ function templateProductPage(p) {
       display:inline-flex; align-items:center; justify-content:center; gap:8px;
       border:1px solid rgba(37,211,102,.25);
       background:#25D366; color:#fff;
-      transition:.2s; white-space:nowrap;
+      transition:.2s; white-space:nowrap; flex:0 0 auto;
+      max-width:100%;
     }
     .btn-waba:hover{ transform: translateY(-1px); filter: brightness(.98); }
 
@@ -219,10 +259,19 @@ function templateProductPage(p) {
       width:40px; height:40px; border-radius:999px;
       border:1px solid #E5E7EB; background:#fff; color:#374151;
       display:flex; align-items:center; justify-content:center;
-      transition:.2s;
+      transition:.2s; flex:0 0 auto;
     }
     .icon-btn:hover{ transform: translateY(-1px); border-color:#F07E13; color:#F07E13; }
 
+    /* ✅ zone logo / header qui ne déborde pas */
+    .vf-brand-wrap{ min-width:0; overflow:hidden; }
+    .vf-brand-text{
+      display:block; max-width:100%;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      line-height:1;
+    }
+
+    /* ✅ sur très petit écran: cache les textes des boutons */
     @media (max-width: 420px){
       .btn-mini, .btn-waba{ padding:0 10px; font-size:10px; letter-spacing:.08em; }
       .btn-mini .txt, .btn-waba .txt{ display:none; }
@@ -235,13 +284,21 @@ function templateProductPage(p) {
 
   <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-200 shadow-sm">
     <div class="max-w-[1240px] mx-auto h-16 px-4 flex items-center justify-between gap-3">
-      <a class="flex items-center gap-2" href="/index.html" aria-label="Boutique ViralFlowr">
-        <div class="text-2xl font-black tracking-tighter">
+      <a class="flex items-center gap-2 shrink-0 vf-brand-wrap" href="/index.html" aria-label="Boutique ViralFlowr">
+        <div class="text-2xl font-black tracking-tighter vf-brand-text">
           Viral<span class="text-orange-bsv">Flowr</span>
         </div>
       </a>
 
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 flex-wrap justify-end">
+        <!-- ✅ Compte (auto) -->
+        <div id="accountArea" class="hidden sm:flex items-center gap-2"></div>
+
+        <!-- ✅ Commandes + Wallet -->
+        <a class="icon-btn" href="/commandes.html" title="Mes commandes" aria-label="Mes commandes">${SVG.orders}</a>
+        <a class="icon-btn" href="/wallet.html" title="Portefeuille" aria-label="Portefeuille">${SVG.wallet}</a>
+
+        <!-- Social (desktop only) -->
         <a class="hidden sm:flex icon-btn" href="${escHtml(SOCIAL.instagram)}" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
           ${SVG.instagram}
         </a>
@@ -283,9 +340,9 @@ function templateProductPage(p) {
                 </div>
               </div>
 
-              <div class="flex-1">
+              <div class="flex-1 min-w-0">
                 <span class="text-[#767676] text-xs font-bold uppercase tracking-wider mb-2 block">Description :</span>
-                <div class="text-sm text-[#515052] leading-relaxed whitespace-pre-line font-medium">
+                <div class="text-sm text-[#515052] leading-relaxed whitespace-pre-line font-medium break-words">
                   ${escHtml(longDesc || "Aucune description.")}
                 </div>
 
@@ -360,6 +417,8 @@ function templateProductPage(p) {
 
         <div class="flex flex-wrap items-center gap-3">
           <a class="btn-mini" href="/index.html"><span class="txt">Boutique</span></a>
+          <a class="btn-mini" href="/commandes.html"><span class="txt">Commandes</span></a>
+          <a class="btn-mini" href="/wallet.html"><span class="txt">Wallet</span></a>
           <a class="btn-waba" href="${escHtml(SOCIAL.waba)}" target="_blank" rel="noopener noreferrer"><span class="txt">WABA</span></a>
           <a class="icon-btn" href="${escHtml(SOCIAL.instagram)}" target="_blank" rel="noopener noreferrer" aria-label="Instagram">${SVG.instagram}</a>
           <a class="icon-btn" href="${escHtml(SOCIAL.tiktok)}" target="_blank" rel="noopener noreferrer" aria-label="TikTok">${SVG.tiktok}</a>
@@ -372,6 +431,85 @@ function templateProductPage(p) {
       </div>
     </div>
   </footer>
+
+  <!-- ✅ FIX: bouton Déconnexion devient Connexion après logout (session UI) -->
+  <script>
+    function _vfSafe(v){ return (v === null || v === undefined) ? "" : String(v); }
+
+    function getSession_(){
+      try{
+        const raw = localStorage.getItem("vf_session");
+        if(!raw) return null;
+        const s = JSON.parse(raw);
+        if(!s || (!s.email && !s.username)) return null;
+        return s;
+      }catch{ return null; }
+    }
+
+    // sync multi-onglets
+    window.addEventListener("storage", (e) => {
+      if (e.key === "vf_session") renderAccountUI_();
+    });
+
+    function renderAccountUI_(){
+      const area = document.getElementById("accountArea");
+      if(!area) return;
+
+      const s = getSession_();
+      area.innerHTML = "";
+      area.classList.remove("hidden");
+
+      if(!s){
+        area.innerHTML = \`
+          <a href="/login.html" class="btn-mini" aria-label="Connexion">
+            ${SVG.login}
+            <span class="txt">Connexion</span>
+          </a>
+          <a href="/register.html" class="btn-mini" style="border-color:transparent;color:white;" aria-label="Inscription">
+            <span style="display:inline-flex;align-items:center;gap:8px;" class="txt-wrap">
+              ${SVG.register}
+              <span class="txt">Inscription</span>
+            </span>
+          </a>
+        \`;
+
+        // applique le gradient sur le bouton inscription (sans casser le style)
+        const last = area.querySelectorAll("a")[1];
+        if(last){
+          last.style.background = "linear-gradient(90deg, #F07E13 0%, #FFB26B 100%)";
+        }
+        return;
+      }
+
+      const display = _vfSafe(s.username || s.email || "Compte");
+      const first = display.slice(0,1).toUpperCase();
+
+      area.innerHTML = \`
+        <div class="hidden md:flex items-center gap-2 bg-white border border-gray-200 px-3 py-2 rounded-2xl">
+          <div class="w-8 h-8 rounded-xl" style="background:linear-gradient(90deg,#F07E13 0%,#FFB26B 100%);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:12px;">
+            \${first}
+          </div>
+          <div class="leading-tight">
+            <div class="text-[11px] font-black text-gray-900">Bonjour, \${display}</div>
+            <div class="text-[9px] font-black uppercase tracking-widest text-gray-300">Connecté</div>
+          </div>
+        </div>
+        <button id="logoutBtn" class="btn-mini" type="button">Déconnexion</button>
+      \`;
+
+      const btn = document.getElementById("logoutBtn");
+      if(btn){
+        btn.addEventListener("click", () => {
+          localStorage.removeItem("vf_session");
+          // option: marqueur (si tu veux écouter vf_session_changed ailleurs)
+          localStorage.setItem("vf_session_changed", String(Date.now()));
+          renderAccountUI_();
+        });
+      }
+    }
+
+    renderAccountUI_();
+  </script>
 
 </body>
 </html>`;
@@ -393,7 +531,7 @@ function templateSharePage(p) {
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>${escHtml(nom)} | ViralFlowr</title>
   <meta name="description" content="${escHtml(ogDesc)}">
 
