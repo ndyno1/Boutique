@@ -314,8 +314,8 @@
       if(!s){
         btn.textContent = "Connexion";
         btn.disabled = false;
-        // ✅ REDIRECT VERS longin.html
-        btn.onclick = () => { window.location.href = "longin.html"; };
+        // ✅ REDIRECT VERS login.html
+        btn.onclick = () => { window.location.href = "login.html"; };
         return;
       }
 
@@ -331,8 +331,8 @@
         balanceValue.textContent = "—";
         txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Connecte-toi pour voir ton solde.</div>`;
 
-        // ✅ redirection vers longin.html
-        setTimeout(() => { window.location.href = "longin.html"; }, 350);
+        // ✅ redirection vers login.html
+        setTimeout(() => { window.location.href = "login.html"; }, 350);
       };
     }
 
