@@ -229,7 +229,8 @@
         btn.textContent = "Connexion";
         btn.disabled = false;
         btn.classList.remove("opacity-50","cursor-not-allowed");
-        btn.onclick = () => { window.location.href = "/wallet.html"; };
+        // ✅ REDIRECT VERS connexion.html
+        btn.onclick = () => { window.location.href = "/connexion.html"; };
         return;
       }
 
@@ -482,9 +483,10 @@
         document.getElementById("userEmail").textContent = "—";
         stateBox.innerHTML = `
           <div class="text-gray-900 font-black text-lg">Tu n’es pas connecté.</div>
-          <div class="text-gray-500 font-bold mt-2">Connecte-toi dans Wallet pour voir tes commandes.</div>
+          <div class="text-gray-500 font-bold mt-2">Connecte-toi pour voir tes commandes.</div>
           <div class="mt-4">
-            <a class="btn brand-gradient btn-primary w-full sm:w-auto" href="/wallet.html">Aller au Wallet</a>
+            <!-- ✅ REDIRECT VERS connexion.html -->
+            <a class="btn brand-gradient btn-primary w-full sm:w-auto" href="/connexion.html">Connexion</a>
           </div>
         `;
         return;
