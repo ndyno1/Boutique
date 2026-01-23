@@ -229,8 +229,8 @@
         btn.textContent = "Connexion";
         btn.disabled = false;
         btn.classList.remove("opacity-50","cursor-not-allowed");
-        // ✅ REDIRECT VERS connexion.html
-        btn.onclick = () => { window.location.href = "/connexion.html"; };
+        // ✅ REDIRECT VERS login.html
+        btn.onclick = () => { window.location.href = "/login.html"; };
         return;
       }
 
@@ -485,8 +485,8 @@
           <div class="text-gray-900 font-black text-lg">Tu n’es pas connecté.</div>
           <div class="text-gray-500 font-bold mt-2">Connecte-toi pour voir tes commandes.</div>
           <div class="mt-4">
-            <!-- ✅ REDIRECT VERS connexion.html -->
-            <a class="btn brand-gradient btn-primary w-full sm:w-auto" href="/connexion.html">Connexion</a>
+            <!-- ✅ REDIRECT VERS login.html -->
+            <a class="btn brand-gradient btn-primary w-full sm:w-auto" href="/login.html">Connexion</a>
           </div>
         `;
         return;
