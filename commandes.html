@@ -14,8 +14,8 @@
     html, body{
       width:100%;
       max-width:100%;
-      overflow-x:hidden;            /* ✅ stop scroll horizontal */
-      overscroll-behavior-x:none;   /* ✅ stop “glisse” latérale */
+      overflow-x:hidden;
+      overscroll-behavior-x:none;
     }
     *{ box-sizing:border-box; }
 
@@ -27,7 +27,6 @@
       text-rendering:optimizeLegibility;
     }
 
-    /* ✅ Conteneur “verrouillé” mobile (aucun débordement) */
     .page{
       width:100%;
       max-width:980px;
@@ -48,7 +47,7 @@
       box-shadow:0 10px 25px rgba(0,0,0,.06);
       width:100%;
       max-width:100%;
-      overflow:hidden; /* ✅ empêche un enfant de pousser la carte */
+      overflow:hidden;
     }
 
     .badge{
@@ -61,7 +60,6 @@
       max-width:100%;
     }
 
-    /* ✅ Boutons mobiles qui “ne poussent pas” */
     .btn{
       height:44px;
       border-radius:16px;
@@ -87,19 +85,18 @@
     .btn-primary{ color:#fff; }
     .btn-primary:hover{ filter:brightness(.98); }
 
-    /* ✅ Header mobile: wrap + pas de débordement */
     .topbar{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      flex-wrap:wrap;      /* ✅ wrap sur mobile */
+      flex-wrap:wrap;
       margin-bottom:18px;
     }
     .top-actions{
       display:flex;
       gap:8px;
-      flex-wrap:wrap;      /* ✅ wrap sur mobile */
+      flex-wrap:wrap;
       justify-content:flex-end;
       width:100%;
     }
@@ -107,7 +104,6 @@
       .top-actions{ width:auto; }
     }
 
-    /* ✅ Texte/IDs qui ne débordent jamais */
     .safe-text{
       min-width:0;
       overflow-wrap:anywhere;
@@ -137,7 +133,6 @@
       to{ transform: translateX(-50%) translateY(0); opacity:1 }
     }
 
-    /* ✅ Livraison: ne doit jamais créer un scroll horizontal */
     .delbox{
       background:#0b1220;
       color:#fff;
@@ -153,7 +148,6 @@
       max-width:100%;
     }
 
-    /* ✅ Empêche le bug “100vw + scrollbar” sur mobile */
     .fullw{ width:100%; max-width:100%; }
   </style>
 </head>
@@ -223,6 +217,47 @@
       clearTimeout(window.__vf_toast_t);
       window.__vf_toast_t = setTimeout(()=> el.classList.remove("show"), 2200);
     }
+
+    // ✅ PATCH: met à jour le bouton Connexion / Déconnexion
+    function applyAuthUI_(){
+      const btn = document.getElementById("logoutBtn");
+      if(!btn) return;
+
+      const s = getSession_();
+
+      if(!s){
+        btn.textContent = "Connexion";
+        btn.disabled = false;
+        btn.classList.remove("opacity-50","cursor-not-allowed");
+        btn.onclick = () => { window.location.href = "/wallet.html"; };
+        return;
+      }
+
+      btn.textContent = "Déconnexion";
+      btn.disabled = false;
+      btn.classList.remove("opacity-50","cursor-not-allowed");
+      btn.onclick = () => {
+        localStorage.removeItem("vf_session");
+        toast("Déconnecté.");
+
+        // ✅ update UI direct
+        applyAuthUI_();
+
+        // ✅ refresh contenu page
+        loadOrders_();
+      };
+    }
+
+    // ✅ si session change dans un autre onglet
+    window.addEventListener("storage", (e) => {
+      if (e.key === "vf_session") {
+        applyAuthUI_();
+        if (!getSession_()) {
+          // si déconnecté ailleurs, on refresh l’écran ici aussi
+          loadOrders_();
+        }
+      }
+    });
 
     function jsonp_(params, onOk, onErr){
       const cb = "VF_CB_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
@@ -331,9 +366,7 @@
         const canRecharge = !!(o.allowRecharge);
         const created = (o.createdAt || o.date) ? esc_(o.createdAt || o.date) : "—";
 
-        const deliveryRaw = String(
-          o.manualResponse || o.colM || o.delivery || o.reponse || o.response || ""
-        );
+        const deliveryRaw = String(o.manualResponse || o.colM || o.delivery || o.reponse || o.response || "");
         const hasDelivery = deliveryRaw.trim().length > 0;
         const isManual = (o && o.isManual === true) || (hasDelivery && !(o && o.isSmm === true));
         const showDelivery = isManual && hasDelivery;
@@ -371,13 +404,6 @@
                 <div class="text-[12px] font-bold text-gray-500 mt-1 safe-text">
                   Date: <span class="text-gray-700 font-black safe-text">${created}</span>
                 </div>
-
-                ${o.rechargeCount ? `
-                  <div class="text-[12px] font-bold text-gray-500 mt-1 safe-text">
-                    Recharges: <span class="text-gray-700 font-black">${Number(o.rechargeCount||0)}</span>
-                    ${o.lastRechargeAt ? ` • Dernière: <span class="text-gray-700 font-black safe-text">${esc_(o.lastRechargeAt)}</span>` : ""}
-                  </div>
-                ` : ""}
 
                 ${!canRecharge ? `
                   <div class="text-[11px] font-black text-gray-400 mt-2 uppercase tracking-widest safe-text">
@@ -430,39 +456,6 @@
         }
       });
 
-      wrap.querySelectorAll(".rechargeBtn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const orderId = btn.getAttribute("data-order");
-          if (!orderId) return;
-
-          btn.disabled = true;
-          btn.textContent = "Rechargement…";
-
-          const s = getSession_();
-          const email = s && s.email ? String(s.email).trim().toLowerCase() : "";
-          const token = s && s.token ? String(s.token) : "";
-
-          jsonp_(
-            { action: "order_recharge", email, token, orderId },
-            (res) => {
-              if (res && res.ok) {
-                toast("✅ Recharge demandée !");
-                loadOrders_();
-              } else {
-                toast("❌ Impossible: " + ((res && (res.message || res.error)) || "Erreur"));
-                btn.disabled = false;
-                btn.textContent = "Recharger";
-              }
-            },
-            () => {
-              toast("❌ Erreur réseau");
-              btn.disabled = false;
-              btn.textContent = "Recharger";
-            }
-          );
-        });
-      });
-
       wrap.querySelectorAll(".copyDeliveryBtn").forEach(btn => {
         btn.addEventListener("click", async () => {
           const id = btn.getAttribute("data-target");
@@ -482,7 +475,11 @@
       stateBox.classList.remove("hidden");
       stateBox.innerHTML = "Chargement…";
 
+      // ✅ refresh bouton selon session
+      applyAuthUI_();
+
       if (!s){
+        document.getElementById("userEmail").textContent = "—";
         stateBox.innerHTML = `
           <div class="text-gray-900 font-black text-lg">Tu n’es pas connecté.</div>
           <div class="text-gray-500 font-bold mt-2">Connecte-toi dans Wallet pour voir tes commandes.</div>
@@ -513,12 +510,9 @@
     }
 
     document.getElementById("refreshBtn").addEventListener("click", loadOrders_);
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-      localStorage.removeItem("vf_session");
-      toast("Déconnecté.");
-      loadOrders_();
-    });
 
+    // ✅ init
+    applyAuthUI_();
     loadOrders_();
   </script>
 </body>
