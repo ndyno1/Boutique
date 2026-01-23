@@ -19,6 +19,20 @@
     .btn-outline:hover { border-color:#F07E13; color:#F07E13; }
     .btn-primary { color:#fff; }
     .btn-primary:hover { filter:brightness(.98); }
+
+    /* ✅ mini toast */
+    .toast {
+      position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+      background: rgba(17,24,39,.95); color: #fff;
+      padding: 12px 14px; border-radius: 16px;
+      font-weight: 800; font-size: 12px; letter-spacing: .04em;
+      box-shadow: 0 10px 25px rgba(0,0,0,.18);
+      z-index: 9999;
+      max-width: min(92vw, 520px);
+      display:none;
+    }
+    .toast.show{ display:block; animation: pop .18s ease-out; }
+    @keyframes pop{ from{ transform: translateX(-50%) translateY(8px); opacity:0 } to{ transform: translateX(-50%) translateY(0); opacity:1 } }
   </style>
 </head>
 
@@ -45,7 +59,9 @@
         <div>
           <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Compte connecté</div>
           <div id="userEmail" class="text-lg font-black text-gray-900">—</div>
-          <div class="text-[12px] font-bold text-gray-500 mt-1">Ici tu vois l’historique de tes commandes + bouton Recharger si disponible.</div>
+          <div class="text-[12px] font-bold text-gray-500 mt-1">
+            Ici tu vois l’historique de tes commandes + bouton Recharger si disponible.
+          </div>
         </div>
         <div class="flex gap-2">
           <button id="refreshBtn" class="btn brand-gradient btn-primary">Actualiser</button>
@@ -65,6 +81,9 @@
     </div>
   </div>
 
+  <!-- ✅ Toast -->
+  <div id="toast" class="toast"></div>
+
   <script>
     const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
 
@@ -78,8 +97,13 @@
       }catch{ return null; }
     }
 
+    // ✅ toast propre (remplace alert)
     function toast(msg){
-      alert(msg);
+      const el = document.getElementById("toast");
+      el.textContent = String(msg || "");
+      el.classList.add("show");
+      clearTimeout(window.__vf_toast_t);
+      window.__vf_toast_t = setTimeout(()=> el.classList.remove("show"), 2200);
     }
 
     function jsonp_(params, onOk, onErr){
@@ -114,6 +138,14 @@
       }[c]));
     }
 
+    // ✅ Texte sous le bouton quand recharge désactivée
+    function reasonRechargeOff_(o){
+      if (!o) return "Recharge indisponible.";
+      if (!o.allowRecharge) return "Recharge non disponible pour ce service.";
+      if (!o.fournisseurOrderId) return "ID fournisseur manquant (commande non envoyée au panel).";
+      return "Recharge indisponible.";
+    }
+
     function renderOrders_(orders){
       const stateBox = document.getElementById("stateBox");
       const wrap = document.getElementById("ordersWrap");
@@ -132,6 +164,7 @@
       orders.forEach(o => {
         const [badgeCls, badgeTxt] = badgeForStatus_(o.status);
 
+        // ✅ recharge seulement si allowRecharge + id fournisseur
         const canRecharge = !!(o.allowRecharge && o.fournisseurOrderId);
         const created = o.createdAt ? esc_(o.createdAt) : "—";
 
@@ -149,15 +182,18 @@
 
               <div class="mt-3">
                 <div class="text-lg font-black text-gray-900 leading-tight">${esc_(o.produit || "—")}</div>
+
                 <div class="text-[12px] font-bold text-gray-500 mt-1">
                   Cat: <span class="text-gray-700 font-black">${esc_(o.categorie || "—")}</span> •
                   Service: <span class="text-gray-700 font-black">${esc_(o.idService || "—")}</span>
                 </div>
+
                 <div class="text-[12px] font-bold text-gray-500 mt-1">
                   Qté: <span class="text-gray-700 font-black">${Number(o.quantite||1)}</span> •
                   Total: <span class="text-gray-700 font-black">${Number(o.total||0).toFixed(2)} $</span> •
                   Paiement: <span class="text-gray-700 font-black">${esc_(o.payMethod || "—")}</span>
                 </div>
+
                 <div class="text-[12px] font-bold text-gray-500 mt-1">
                   Date: <span class="text-gray-700 font-black">${created}</span>
                 </div>
@@ -171,6 +207,12 @@
                   <div class="text-[12px] font-bold text-gray-500 mt-1">
                     Recharges: <span class="text-gray-700 font-black">${Number(o.rechargeCount||0)}</span>
                     ${o.lastRechargeAt ? ` • Dernière: <span class="text-gray-700 font-black">${esc_(o.lastRechargeAt)}</span>` : ""}
+                  </div>
+                ` : ""}
+
+                ${!canRecharge ? `
+                  <div class="text-[11px] font-black text-gray-400 mt-2 uppercase tracking-widest">
+                    ${esc_(reasonRechargeOff_(o))}
                   </div>
                 ` : ""}
               </div>
@@ -201,15 +243,16 @@
 
           const s = getSession_();
           const email = s && s.email ? String(s.email).trim().toLowerCase() : "";
+          const token = s && s.token ? String(s.token) : ""; // ✅ si tu as un token côté wallet
 
           jsonp_(
-            { action: "order_recharge", email, orderId },
+            { action: "order_recharge", email, token, orderId },
             (res) => {
               if (res && res.ok) {
                 toast("✅ Recharge demandée ! (refillId: " + (res.refillId || "OK") + ")");
                 loadOrders_(); // refresh
               } else {
-                toast("❌ Impossible: " + ((res && (res.error || res.message)) || "Erreur"));
+                toast("❌ Impossible: " + ((res && (res.message || res.error)) || "Erreur"));
                 btn.disabled = false;
                 btn.textContent = "Recharger";
               }
@@ -245,13 +288,14 @@
       }
 
       const email = String(s.email || "").trim().toLowerCase();
+      const token = s && s.token ? String(s.token) : ""; // ✅ si tu as un token côté wallet
       document.getElementById("userEmail").textContent = email;
 
       jsonp_(
-        { action:"order_history", email, limit:"80" },
+        { action:"order_history", email, token, limit:"80" },
         (res) => {
           if (!res || !res.ok){
-            stateBox.innerHTML = "Erreur: " + ((res && res.error) || "Impossible de charger l'historique.");
+            stateBox.innerHTML = "Erreur: " + ((res && (res.error || res.message)) || "Impossible de charger l'historique.");
             return;
           }
           renderOrders_(res.orders || []);
