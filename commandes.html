@@ -20,7 +20,6 @@
     .btn-primary { color:#fff; }
     .btn-primary:hover { filter:brightness(.98); }
 
-    /* ✅ mini toast */
     .toast {
       position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
       background: rgba(17,24,39,.95); color: #fff;
@@ -39,7 +38,6 @@
 <body class="p-4 md:p-8">
   <div class="max-w-[980px] mx-auto">
 
-    <!-- Header -->
     <div class="flex items-center justify-between gap-3 mb-6">
       <a href="/index.html" class="inline-flex items-center gap-2">
         <span class="text-2xl font-black tracking-tighter">
@@ -53,14 +51,13 @@
       </div>
     </div>
 
-    <!-- Top card -->
     <div class="card p-6 md:p-8 mb-6">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Compte connecté</div>
           <div id="userEmail" class="text-lg font-black text-gray-900">—</div>
           <div class="text-[12px] font-bold text-gray-500 mt-1">
-            Ici tu vois l’historique de tes commandes + bouton Recharger si disponible.
+            Historique de tes commandes + bouton Recharger si disponible.
           </div>
         </div>
         <div class="flex gap-2">
@@ -69,7 +66,6 @@
       </div>
     </div>
 
-    <!-- Orders list -->
     <div id="stateBox" class="card p-6 md:p-8 text-center text-gray-500 font-bold">
       Chargement…
     </div>
@@ -81,7 +77,6 @@
     </div>
   </div>
 
-  <!-- ✅ Toast -->
   <div id="toast" class="toast"></div>
 
   <script>
@@ -97,7 +92,6 @@
       }catch{ return null; }
     }
 
-    // ✅ toast propre (remplace alert)
     function toast(msg){
       const el = document.getElementById("toast");
       el.textContent = String(msg || "");
@@ -108,17 +102,35 @@
 
     function jsonp_(params, onOk, onErr){
       const cb = "VF_CB_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
+
+      let done = false;
+      const timer = setTimeout(() => {
+        if (done) return;
+        done = true;
+        try { delete window[cb]; } catch(_){}
+        onErr && onErr("TIMEOUT");
+      }, 12000);
+
       window[cb] = function(payload){
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
         try { onOk(payload); }
         finally { try { delete window[cb]; } catch(_){} }
       };
+
       const s = document.createElement("script");
       const qs = new URLSearchParams({ ...params, callback: cb, t: String(Date.now()) });
       s.src = GOOGLE_URL + "?" + qs.toString();
+
       s.onerror = function(){
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
         try { delete window[cb]; } catch(_){}
-        onErr && onErr();
+        onErr && onErr("NETWORK");
       };
+
       document.body.appendChild(s);
     }
 
@@ -138,12 +150,9 @@
       }[c]));
     }
 
-    // ✅ Texte sous le bouton quand recharge désactivée
-    function reasonRechargeOff_(o){
-      if (!o) return "Recharge indisponible.";
-      if (!o.allowRecharge) return "Recharge non disponible pour ce service.";
-      if (!o.fournisseurOrderId) return "ID fournisseur manquant (commande non envoyée au panel).";
-      return "Recharge indisponible.";
+    // ✅ raisons "client-safe" (pas de détails fournisseur)
+    function reasonRechargeOffClientSafe_(){
+      return "Recharge indisponible pour cette commande.";
     }
 
     function renderOrders_(orders){
@@ -164,8 +173,8 @@
       orders.forEach(o => {
         const [badgeCls, badgeTxt] = badgeForStatus_(o.status);
 
-        // ✅ recharge seulement si allowRecharge + id fournisseur
-        const canRecharge = !!(o.allowRecharge && o.fournisseurOrderId);
+        // ✅ ne dépend PAS d'un fournisseur/id fournisseur côté client
+        const canRecharge = !!(o.allowRecharge);
         const created = o.createdAt ? esc_(o.createdAt) : "—";
 
         const card = document.createElement("div");
@@ -198,11 +207,6 @@
                   Date: <span class="text-gray-700 font-black">${created}</span>
                 </div>
 
-                <div class="text-[12px] font-bold text-gray-500 mt-2">
-                  Fournisseur: <span class="text-gray-700 font-black">${esc_(o.fournisseur || "—")}</span>
-                  ${o.fournisseurOrderId ? ` • ID fournisseur: <span class="text-gray-700 font-black">${esc_(o.fournisseurOrderId)}</span>` : ""}
-                </div>
-
                 ${o.rechargeCount ? `
                   <div class="text-[12px] font-bold text-gray-500 mt-1">
                     Recharges: <span class="text-gray-700 font-black">${Number(o.rechargeCount||0)}</span>
@@ -212,7 +216,7 @@
 
                 ${!canRecharge ? `
                   <div class="text-[11px] font-black text-gray-400 mt-2 uppercase tracking-widest">
-                    ${esc_(reasonRechargeOff_(o))}
+                    ${esc_(reasonRechargeOffClientSafe_())}
                   </div>
                 ` : ""}
               </div>
@@ -232,7 +236,6 @@
         wrap.appendChild(card);
       });
 
-      // Bind recharge buttons
       wrap.querySelectorAll(".rechargeBtn").forEach(btn => {
         btn.addEventListener("click", () => {
           const orderId = btn.getAttribute("data-order");
@@ -243,14 +246,14 @@
 
           const s = getSession_();
           const email = s && s.email ? String(s.email).trim().toLowerCase() : "";
-          const token = s && s.token ? String(s.token) : ""; // ✅ si tu as un token côté wallet
+          const token = s && s.token ? String(s.token) : "";
 
           jsonp_(
             { action: "order_recharge", email, token, orderId },
             (res) => {
               if (res && res.ok) {
-                toast("✅ Recharge demandée ! (refillId: " + (res.refillId || "OK") + ")");
-                loadOrders_(); // refresh
+                toast("✅ Recharge demandée !");
+                loadOrders_();
               } else {
                 toast("❌ Impossible: " + ((res && (res.message || res.error)) || "Erreur"));
                 btn.disabled = false;
@@ -288,7 +291,7 @@
       }
 
       const email = String(s.email || "").trim().toLowerCase();
-      const token = s && s.token ? String(s.token) : ""; // ✅ si tu as un token côté wallet
+      const token = s && s.token ? String(s.token) : "";
       document.getElementById("userEmail").textContent = email;
 
       jsonp_(
@@ -306,7 +309,6 @@
       );
     }
 
-    // Buttons
     document.getElementById("refreshBtn").addEventListener("click", loadOrders_);
     document.getElementById("logoutBtn").addEventListener("click", () => {
       localStorage.removeItem("vf_session");
@@ -314,7 +316,6 @@
       loadOrders_();
     });
 
-    // Start
     loadOrders_();
   </script>
 </body>
