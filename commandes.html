@@ -32,6 +32,19 @@
     }
     .toast.show{ display:block; animation: pop .18s ease-out; }
     @keyframes pop{ from{ transform: translateX(-50%) translateY(8px); opacity:0 } to{ transform: translateX(-50%) translateY(0); opacity:1 } }
+
+    .delbox{
+      background:#0b1220;
+      color:#fff;
+      border-radius:16px;
+      padding:12px;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.02em;
+      white-space:pre-wrap;
+      word-break:break-word;
+      line-height:1.45;
+    }
   </style>
 </head>
 
@@ -150,9 +163,41 @@
       }[c]));
     }
 
-    // ✅ raisons "client-safe" (pas de détails fournisseur)
     function reasonRechargeOffClientSafe_(){
       return "Recharge indisponible pour cette commande.";
+    }
+
+    function buildReorderLink_(o){
+      const idService = o && o.idService ? String(o.idService) : "";
+      const orderId = o && o.orderId ? String(o.orderId) : "";
+      const qs = new URLSearchParams({
+        id: idService,
+        reorder: "1",
+        hide_desc: "1",      // ✅ empêche l'affichage long_desc
+        orderId: orderId     // ✅ affiche l'ID commande sur paiement.html
+      });
+      return "/paiement.html?" + qs.toString();
+    }
+
+    async function copyText_(txt){
+      const t = String(txt || "");
+      try{
+        if (navigator.clipboard && navigator.clipboard.writeText){
+          await navigator.clipboard.writeText(t);
+          toast("✅ Copié");
+          return;
+        }
+      }catch(_){}
+      // fallback
+      const ta = document.createElement("textarea");
+      ta.value = t;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); toast("✅ Copié"); }
+      catch(e){ toast("❌ Copie impossible"); }
+      document.body.removeChild(ta);
     }
 
     function renderOrders_(orders){
@@ -170,12 +215,18 @@
       wrap.classList.remove("hidden");
       wrap.innerHTML = "";
 
-      orders.forEach(o => {
+      orders.forEach((o, idx) => {
         const [badgeCls, badgeTxt] = badgeForStatus_(o.status);
 
-        // ✅ ne dépend PAS d'un fournisseur/id fournisseur côté client
         const canRecharge = !!(o.allowRecharge);
         const created = o.createdAt ? esc_(o.createdAt) : "—";
+
+        // ✅ Livraison visible uniquement si commande MANUELLE (pas SMM)
+        const isManual = (o && o.isManual === true);
+        const delivery = (o && (o.manualResponse || o.delivery || o.reponse || o.response)) ? String(o.manualResponse || o.delivery || o.reponse || o.response) : "";
+        const showDelivery = isManual && delivery.trim().length > 0;
+
+        const deliveryId = "delivery_" + idx;
 
         const card = document.createElement("div");
         card.className = "card p-6";
@@ -219,6 +270,16 @@
                     ${esc_(reasonRechargeOffClientSafe_())}
                   </div>
                 ` : ""}
+
+                ${showDelivery ? `
+                  <div class="mt-4">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Livraison</div>
+                    <div id="${deliveryId}" class="delbox">${esc_(delivery)}</div>
+                    <div class="mt-2 flex gap-2 flex-wrap">
+                      <button class="btn btn-outline copyDeliveryBtn" data-target="${deliveryId}">Copier</button>
+                    </div>
+                  </div>
+                ` : ""}
               </div>
             </div>
 
@@ -228,7 +289,9 @@
                       ${canRecharge ? "" : "disabled"}>
                 Recharger
               </button>
-              <a class="btn btn-outline" href="/paiement.html?id=${encodeURIComponent(o.idService || "")}">Recommander</a>
+
+              <!-- ✅ Recommander: cache long_desc + affiche orderId -->
+              <a class="btn btn-outline" href="${buildReorderLink_(o)}">Recommander</a>
             </div>
           </div>
         `;
@@ -236,6 +299,7 @@
         wrap.appendChild(card);
       });
 
+      // Recharge
       wrap.querySelectorAll(".rechargeBtn").forEach(btn => {
         btn.addEventListener("click", () => {
           const orderId = btn.getAttribute("data-order");
@@ -266,6 +330,16 @@
               btn.textContent = "Recharger";
             }
           );
+        });
+      });
+
+      // Copy delivery
+      wrap.querySelectorAll(".copyDeliveryBtn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.getAttribute("data-target");
+          const el = id ? document.getElementById(id) : null;
+          if (!el) return;
+          await copyText_(el.textContent || "");
         });
       });
     }
