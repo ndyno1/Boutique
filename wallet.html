@@ -14,7 +14,6 @@
     .brand-gradient { background: linear-gradient(90deg, #F07E13 0%, #FFB26B 100%); }
     .brand-gradient:hover { background: linear-gradient(90deg, #d96d0c 0%, #F07E13 100%); }
     .card { background:#fff; border:1px solid #eee; border-radius:24px; box-shadow: 0 12px 25px rgba(0,0,0,.06); }
-    .pill { border-radius: 999px; }
     .icon-btn{
       display:flex; align-items:center; justify-content:center;
       width:40px; height:40px; border-radius:14px;
@@ -60,7 +59,6 @@
 
 <body class="min-h-screen flex flex-col">
 
-  <!-- HEADER -->
   <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-200 shadow-sm">
     <div class="max-w-[1240px] mx-auto h-16 px-4 flex items-center justify-between gap-4">
       <a class="flex items-center gap-2 shrink-0 vf-brand-wrap" href="index.html" aria-label="ViralFlowr">
@@ -91,13 +89,10 @@
         <div class="text-[11px] font-black uppercase tracking-[.2em] text-gray-300 mt-1">Dépôt • Crédit • Paiement instantané</div>
       </div>
 
-      <!-- ALERT -->
       <div id="alertBox" class="hidden mb-4 px-4 py-3 rounded-2xl border text-sm font-bold"></div>
 
-      <!-- CARD -->
       <section class="card p-6 md:p-8">
 
-        <!-- TOP ROW -->
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-300">Solde (USD)</div>
@@ -116,23 +111,19 @@
               </svg>
               Actualiser
             </button>
-
             <button id="logoutBtn" class="btn btn-outline">Déconnexion</button>
           </div>
         </div>
 
-        <!-- WHY DEPOSIT -->
         <div class="mt-6 p-4 rounded-2xl bg-[#FFF7EE] border border-[#FFD7B0]">
           <div class="font-black text-[12px] uppercase tracking-[.18em] text-[#B65E0B]">Pourquoi déposer de l’argent ?</div>
           <ul class="mt-2 text-[13px] font-semibold text-[#3B2A16] leading-relaxed list-disc pl-5">
             <li>Tu ajoutes du <b>crédit</b> dans ton wallet.</li>
             <li>Après ça, tu peux payer les commandes <b>instantanément</b> sans refaire de paiement.</li>
-            <li>Binance Pay = <b>validation auto</b> via ta NOTE (check_binance.py). Mobile Money = via WhatsApp.</li>
-            <li><b>Monero (XMR)</b> = <b>validation auto</b> après confirmations (adresse unique).</li>
+            <li><b>Moneroo</b> = paiement Mobile Money + redirection automatique vers la page de paiement.</li>
           </ul>
         </div>
 
-        <!-- NOTE -->
         <div class="mt-6 box-note p-5">
           <div class="text-[10px] font-black uppercase tracking-[.22em] text-gray-300 text-center">Note de dépôt (important)</div>
           <div class="text-center text-2xl md:text-3xl font-black tracking-tight mt-2 mono" id="topupNote">TOPUP-—</div>
@@ -143,136 +134,52 @@
           </div>
 
           <div class="mt-3 text-center text-[12px] font-bold text-gray-500">
-            ⚠️ Mets cette <b>NOTE</b> dans Binance (“Note / Message”) ou dans ton message WhatsApp (Mobile Money). (XMR = adresse unique)
+            ⚠️ Ta NOTE sert de référence interne (wallet).
           </div>
         </div>
 
-        <!-- ✅ VALIDATION CLIENT (SANS PREUVE) -->
         <div class="mt-6 p-5 rounded-2xl bg-white border border-gray-200">
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-300">J’ai payé — synchroniser mon dépôt</div>
-              <div class="text-[13px] font-semibold text-gray-600 mt-2 leading-relaxed">
-                Après paiement Binance/USDT/XMR, clique <b>“J’ai payé”</b> pour enregistrer la demande (PENDING).
-                Ton solde se mettra à jour quand le système détecte la transaction (NOTE Binance / confirmations XMR).
-              </div>
+          <div>
+            <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-300">Recharger mon wallet</div>
+            <div class="text-[13px] font-semibold text-gray-600 mt-2 leading-relaxed">
+              Sélectionne la méthode. Si tu choisis <b>Mobile Money (Moneroo)</b>, tu seras <b>redirigé automatiquement</b> vers la page Moneroo pour payer.
             </div>
           </div>
 
-          <div class="grid md:grid-cols-3 gap-3 mt-4">
+          <div class="grid md:grid-cols-4 gap-3 mt-4">
             <div>
               <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Montant (USD)</label>
               <input id="amountInp" type="number" min="1" step="0.01" class="input" placeholder="Ex: 10">
             </div>
 
             <div>
+              <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Téléphone (Mobile Money)</label>
+              <input id="phoneInp" type="text" class="input" placeholder="Ex: +243...">
+            </div>
+
+            <div>
               <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Méthode</label>
               <div class="relative">
                 <select id="methodSel" class="input select pr-10">
+                  <option value="MONEROO_MOMO">Mobile Money (Moneroo)</option>
                   <option value="BINANCE_PAY">Binance Pay</option>
                   <option value="USDT_TRC20">USDT (TRC-20)</option>
                   <option value="USDT_BEP20">USDT (BEP-20)</option>
-                  <option value="XMR">Monero (XMR)</option>
                 </select>
                 <div class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">▾</div>
               </div>
             </div>
 
             <div class="flex items-end">
-              <button id="paidBtn" class="btn brand-gradient btn-primary w-full">J’ai payé</button>
+              <button id="paidBtn" class="btn brand-gradient btn-primary w-full">Continuer</button>
             </div>
           </div>
 
           <div class="mt-3 text-[12px] font-bold text-gray-400">
-            ✅ Pas de preuve demandée. NOTE Binance / WhatsApp (Mobile Money) / <b>XMR auto</b> après confirmations.
-          </div>
-
-          <!-- ✅ XMR BOX (affiché seulement si méthode XMR) -->
-          <div id="xmrBox" class="hidden mt-4 p-4 rounded-2xl bg-white border border-gray-200">
-            <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-300">Dépôt Monero (XMR)</div>
-            <div class="mt-2 text-[13px] font-semibold text-gray-600 leading-relaxed">
-              Envoie ton XMR à <b>l’adresse unique</b> ci-dessous. Ton wallet sera crédité automatiquement après confirmations.
-            </div>
-
-            <div class="mt-3">
-              <div class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Adresse XMR</div>
-              <div id="xmrAddr" class="mt-1 p-3 rounded-2xl bg-gray-50 border border-gray-200 mono break-all font-black">—</div>
-              <div class="flex gap-2 mt-2">
-                <button id="copyXmrAddrBtn" class="btn btn-outline">Copier l’adresse</button>
-              </div>
-            </div>
-
-            <div class="mt-3">
-              <div class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Montant à envoyer (XMR)</div>
-              <div id="xmrAmt" class="mt-1 p-3 rounded-2xl bg-gray-50 border border-gray-200 mono font-black">—</div>
-              <div class="text-[12px] font-bold text-gray-400 mt-2">
-                Si le montant affiche “—”, tu peux quand même envoyer : le crédit se fait sur le <b>montant USD</b> enregistré.
-              </div>
-            </div>
-
-            <div class="mt-3 text-[12px] font-bold text-gray-400">
-              ⚠️ Important : en XMR, la <b>NOTE</b> ne sert pas. C’est l’<b>adresse unique</b> qui identifie ton dépôt.
-            </div>
+            ✅ Moneroo: redirection + retour automatique + confirmation serveur.
           </div>
         </div>
 
-        <!-- PAY METHODS -->
-        <div class="mt-6">
-          <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-300 mb-3">Moyens disponibles</div>
-
-          <!-- BINANCE PAY -->
-          <div class="p-4 rounded-2xl bg-[#0B0F14] text-white">
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <div class="text-[10px] font-black uppercase tracking-[.2em] text-gray-400">Binance Pay (ID)</div>
-                <div class="text-xl font-black mt-1 mono" id="binanceId">744370418</div>
-                <div class="text-[12px] font-semibold text-gray-400 mt-2">
-                  ✅ Mets la NOTE dans “Note/Message” pendant le paiement.
-                </div>
-              </div>
-              <button id="copyBinanceBtn" class="btn btn-outline" style="background:#111827;color:white;border-color:#1F2937">
-                Copier
-              </button>
-            </div>
-          </div>
-
-          <!-- USDT TRC20 -->
-          <div class="mt-3 p-4 rounded-2xl bg-white border border-gray-200">
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <div class="text-[10px] font-black uppercase tracking-[.2em] text-gray-300">USDT (TRC-20)</div>
-                <div class="text-[13px] font-black mt-1 mono break-all" id="usdtAddr">
-                  TN6c8PcWF1TU2XKPFDsGHw1fgen1MTRGka
-                </div>
-                <div class="text-[12px] font-semibold text-gray-400 mt-2">
-                  ✅ Envoie USDT puis clique “J’ai payé”.
-                </div>
-              </div>
-              <button id="copyUsdtBtn" class="btn btn-outline">Copier</button>
-            </div>
-          </div>
-
-          <!-- MOBILE MONEY (NO PROOF) -->
-          <div class="mt-3 p-4 rounded-2xl bg-white border border-gray-200">
-            <div class="flex items-start justify-between gap-3 flex-col md:flex-row">
-              <div>
-                <div class="text-[10px] font-black uppercase tracking-[.2em] text-gray-300">Mobile Money (sans preuve)</div>
-                <div class="text-[13px] font-semibold text-gray-600 mt-2 leading-relaxed">
-                  Pour déposer via <b>Orange Money</b>, <b>Airtel Money</b> ou <b>Wave</b> :
-                  clique un bouton WhatsApp et envoie le message pré-rempli avec ta NOTE.
-                </div>
-              </div>
-
-              <div class="flex flex-col gap-2 w-full md:w-[260px]">
-                <a id="waOrange" target="_blank" rel="noopener" class="btn brand-gradient btn-primary w-full">Orange Money</a>
-                <a id="waAirtel" target="_blank" rel="noopener" class="btn brand-gradient btn-primary w-full">Airtel Money</a>
-                <a id="waWave" target="_blank" rel="noopener" class="btn brand-gradient btn-primary w-full">Wave</a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- HISTORY -->
         <div class="mt-7">
           <div class="flex items-center justify-between">
             <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-300">Historique</div>
@@ -306,16 +213,6 @@
     const topupNoteEl = document.getElementById("topupNote");
     const txBox = document.getElementById("txBox");
 
-    const BINANCE_PAY_ID = "744370418";
-    const USDT_TRC20_ADDR = "TN6c8PcWF1TU2XKPFDsGHw1fgen1MTRGka";
-    const SUPPORT_WA = "243850373991"; // sans +
-
-    // ✅ XMR UI refs
-    const xmrBox = document.getElementById("xmrBox");
-    const xmrAddr = document.getElementById("xmrAddr");
-    const xmrAmt  = document.getElementById("xmrAmt");
-    const copyXmrAddrBtn = document.getElementById("copyXmrAddrBtn");
-
     function showAlert(msg, type="info"){
       alertBox.classList.remove("hidden");
       alertBox.classList.remove(
@@ -340,11 +237,9 @@
       }catch{ return null; }
     }
 
-    // ✅ UI LOGIN/LOGOUT GLOBAL
     function applyAuthUI_(){
       const btn = document.getElementById("logoutBtn");
       if(!btn) return;
-
       const s = getSession_();
 
       if(!s){
@@ -359,25 +254,12 @@
       btn.onclick = () => {
         localStorage.removeItem("vf_session");
         showAlert("Déconnecté ✅", "success");
-        applyAuthUI_();
-
-        userLabel.textContent = "Non connecté";
-        balanceValue.textContent = "—";
-        txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Connecte-toi pour voir ton solde.</div>`;
-
-        // reset XMR UI
-        xmrBox.classList.add("hidden");
-        xmrAddr.textContent = "—";
-        xmrAmt.textContent = "—";
-
         setTimeout(() => { window.location.href = "login.html"; }, 350);
       };
     }
 
     window.addEventListener("storage", (e) => {
-      if(e.key === "vf_session"){
-        applyAuthUI_();
-      }
+      if(e.key === "vf_session") applyAuthUI_();
     });
 
     function setTopupNote_(email, note){
@@ -524,22 +406,10 @@
       );
     }
 
-    function setXmrUI_(visible, address="—", amount="—"){
-      if(!xmrBox) return;
-      if(visible){
-        xmrBox.classList.remove("hidden");
-        xmrAddr.textContent = address || "—";
-        xmrAmt.textContent  = (amount === 0 ? "0" : (amount || "—"));
-      }else{
-        xmrBox.classList.add("hidden");
-        xmrAddr.textContent = "—";
-        xmrAmt.textContent  = "—";
-      }
-    }
-
     function createTopup_(email, note){
       const amount = Number(document.getElementById("amountInp").value || 0);
-      const method = String(document.getElementById("methodSel").value || "BINANCE_PAY").toUpperCase();
+      const method = String(document.getElementById("methodSel").value || "MONEROO_MOMO").toUpperCase();
+      const phone = String(document.getElementById("phoneInp").value || "").trim();
 
       if(!amount || !isFinite(amount) || amount <= 0){
         showAlert("Entre un montant valide (USD).", "error");
@@ -548,10 +418,10 @@
 
       const btn = document.getElementById("paidBtn");
       btn.disabled = true;
-      btn.textContent = "Enregistrement...";
+      btn.textContent = "Traitement...";
 
-      // reset XMR UI before request
-      setXmrUI_(false);
+      // return_url = cette page (Moneroo va renvoyer status + monerooPaymentId)
+      const returnUrl = window.location.origin + window.location.pathname;
 
       jsonp_(
         {
@@ -560,51 +430,68 @@
           note,
           amount: String(amount),
           method,
-          currency: "USD"
-          // optionnel si ton GAS supporte:
-          // rate_usd_per_xmr: "XXX"
+          phone,
+          currency: "USD",
+          return_url: returnUrl
         },
         (res) => {
           btn.disabled = false;
-          btn.textContent = "J’ai payé";
+          btn.textContent = "Continuer";
 
           if(res && res.ok){
-            // Message différent si XMR
-            if(String(res.method||"").toUpperCase()==="XMR"){
-              showAlert("Demande enregistrée ✅. Envoie le XMR à l’adresse unique ci-dessous. Crédit auto après confirmations.", "success");
-              setXmrUI_(true, res.xmr_address || "—", res.expected_xmr || "—");
-            }else{
-              showAlert("Demande enregistrée ✅. Ton solde sera crédité automatiquement après détection Binance (NOTE).", "success");
-              setXmrUI_(false);
+            if(res.mode === "redirect" && res.checkout_url){
+              showAlert("Redirection vers Moneroo…", "success");
+              setTimeout(() => { window.location.href = res.checkout_url; }, 300);
+              return;
             }
 
-            setTimeout(() => {
-              loadWallet_(email);
-              loadTx_(email);
-            }, 800);
-
-          }else{
-            showAlert("Impossible d’enregistrer le dépôt. (" + (res?.error || "ERREUR") + ")", "error");
-            setXmrUI_(false);
+            showAlert("Demande enregistrée ✅.", "success");
+            setTimeout(() => { loadWallet_(email); loadTx_(email); }, 800);
+            return;
           }
+
+          showAlert("Impossible d’enregistrer. (" + (res?.error || "ERREUR") + ")", "error");
         },
         (why) => {
           btn.disabled = false;
-          btn.textContent = "J’ai payé";
+          btn.textContent = "Continuer";
           showAlert("Erreur réseau/API: dépôt non enregistré. (" + why + ")", "error");
-          setXmrUI_(false);
         }
       );
     }
 
-    // INIT
+    function maybeHandleMonerooReturn_(email){
+      const u = new URL(window.location.href);
+      const paymentId = u.searchParams.get("monerooPaymentId");
+      const status = u.searchParams.get("monerooPaymentStatus") || u.searchParams.get("status");
+
+      if(!paymentId) return;
+
+      showAlert("Paiement détecté… confirmation en cours", "info");
+
+      jsonp_(
+        { action:"moneroo_confirm", email, paymentId },
+        (res) => {
+          if(res && res.ok && res.credited){
+            showAlert("Crédit ajouté ✅ (" + (res.amount||"") + " " + (res.currency||"") + ")", "success");
+            loadWallet_(email);
+            loadTx_(email);
+          }else{
+            showAlert("Paiement non confirmé. (" + (res?.error || status || "ERREUR") + ")", "error");
+          }
+
+          // nettoyer l'URL (enlever les params Moneroo)
+          u.searchParams.delete("monerooPaymentId");
+          u.searchParams.delete("monerooPaymentStatus");
+          u.searchParams.delete("status");
+          window.history.replaceState({}, document.title, u.pathname + u.search);
+        },
+        (why) => showAlert("Confirmation échouée (" + why + ")", "error"),
+        20000
+      );
+    }
+
     (function(){
-      document.getElementById("binanceId").textContent = BINANCE_PAY_ID;
-      document.getElementById("usdtAddr").textContent = USDT_TRC20_ADDR;
-
-      // copy XMR addr
-      copyXmrAddrBtn?.addEventListener("click", () => copyText_(xmrAddr.textContent));
-
       applyAuthUI_();
 
       const s = getSession_();
@@ -613,7 +500,6 @@
         userLabel.textContent = "Non connecté";
         balanceValue.textContent = "—";
         txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Connecte-toi pour voir ton solde.</div>`;
-        setXmrUI_(false);
         return;
       }
 
@@ -622,38 +508,20 @@
 
       let note = ensureTopupNote_(email);
 
-      const baseMsg =
-        `Bonjour, je veux déposer du crédit sur mon wallet ViralFlowr.%0A` +
-        `Email: ${encodeURIComponent(email)}%0A` +
-        `NOTE: ${encodeURIComponent(note)}%0A` +
-        `Montant (USD): ____%0A` +
-        `Méthode: ____%0A` +
-        `Merci.`;
-
-      document.getElementById("waOrange").href = `https://wa.me/${SUPPORT_WA}?text=${baseMsg.replace("Méthode:%20____","Méthode:%20ORANGE%20MONEY")}`;
-      document.getElementById("waAirtel").href = `https://wa.me/${SUPPORT_WA}?text=${baseMsg.replace("Méthode:%20____","Méthode:%20AIRTEL%20MONEY")}`;
-      document.getElementById("waWave").href   = `https://wa.me/${SUPPORT_WA}?text=${baseMsg.replace("Méthode:%20____","Méthode:%20WAVE")}`;
-
       loadWallet_(email);
       loadTx_(email);
+
+      // si retour Moneroo => confirme automatiquement
+      maybeHandleMonerooReturn_(email);
 
       document.getElementById("refreshBtn").addEventListener("click", () => loadWallet_(email));
       document.getElementById("refreshTxBtn").addEventListener("click", () => loadTx_(email));
 
       document.getElementById("copyNoteBtn").addEventListener("click", () => copyText_(note));
-      document.getElementById("copyBinanceBtn").addEventListener("click", () => copyText_(BINANCE_PAY_ID));
-      document.getElementById("copyUsdtBtn").addEventListener("click", () => copyText_(USDT_TRC20_ADDR));
-
       document.getElementById("newNoteBtn").addEventListener("click", () => {
         note = setTopupNote_(email, "TOPUP-" + Date.now() + "-" + Math.floor(1000 + Math.random()*9000));
         showAlert("Nouvelle note générée ✅", "success");
         setTimeout(hideAlert, 900);
-      });
-
-      // update XMR UI visibility when changing method (UX)
-      document.getElementById("methodSel").addEventListener("change", (ev) => {
-        const m = String(ev.target.value || "").toUpperCase();
-        if(m !== "XMR") setXmrUI_(false);
       });
 
       document.getElementById("paidBtn").addEventListener("click", () => createTopup_(email, note));
