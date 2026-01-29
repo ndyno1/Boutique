@@ -121,6 +121,7 @@
             <li>Tu ajoutes du <b>crédit</b> dans ton wallet.</li>
             <li>Après ça, tu peux payer les commandes <b>instantanément</b> sans refaire de paiement.</li>
             <li><b>Moneroo</b> = paiement Mobile Money + redirection automatique vers la page de paiement.</li>
+            <li><b>Dépôt manuel</b> (Binance/USDT) = on t’ouvre WhatsApp avec un message déjà rempli.</li>
           </ul>
         </div>
 
@@ -142,11 +143,12 @@
           <div>
             <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-300">Recharger mon wallet</div>
             <div class="text-[13px] font-semibold text-gray-600 mt-2 leading-relaxed">
-              Sélectionne la méthode. Si tu choisis <b>Mobile Money (Moneroo)</b>, tu seras <b>redirigé automatiquement</b> vers la page Moneroo pour payer.
+              Sélectionne la méthode.
+              <b>Moneroo</b> = redirection automatique.
+              <b>Binance/USDT</b> = dépôt manuel via WhatsApp (message pré-rempli).
             </div>
           </div>
 
-          <!-- ✅ HINT dynamique selon méthode -->
           <div id="methodHint" class="mt-3 text-[12px] font-bold text-gray-500">
             ✅ Moneroo: redirection + retour automatique + confirmation serveur.
           </div>
@@ -157,8 +159,8 @@
               <input id="amountInp" type="number" min="1" step="0.01" class="input" placeholder="Ex: 10">
             </div>
 
-            <!-- ✅ Champ 2 dynamique -->
-            <div>
+            <!-- ✅ Champ 2 dynamique (SUPPRIMÉ pour BINANCE) -->
+            <div id="field2Wrap">
               <label id="field2Label" class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">
                 Téléphone (Mobile Money)
               </label>
@@ -171,9 +173,9 @@
               <div class="relative">
                 <select id="methodSel" class="input select pr-10">
                   <option value="MONEROO_MOMO">Mobile Money (Moneroo)</option>
-                  <option value="BINANCE_PAY">Binance Pay</option>
-                  <option value="USDT_TRC20">USDT (TRC-20)</option>
-                  <option value="USDT_BEP20">USDT (BEP-20)</option>
+                  <option value="BINANCE_PAY">Binance Pay (manuel WhatsApp)</option>
+                  <option value="USDT_TRC20">USDT (TRC-20) (manuel WhatsApp)</option>
+                  <option value="USDT_BEP20">USDT (BEP-20) (manuel WhatsApp)</option>
                 </select>
                 <div class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">▾</div>
               </div>
@@ -184,15 +186,18 @@
             </div>
           </div>
 
-          <!-- ✅ zone instructions “mode manuel” si ton API renvoie pas de redirect -->
+          <!-- ✅ zone “manuel” -->
           <div id="manualBox" class="hidden mt-4 p-4 rounded-2xl bg-gray-50 border border-gray-200">
-            <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-400">Instructions</div>
+            <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-400">Dépôt manuel</div>
             <div id="manualText" class="mt-2 text-[13px] font-semibold text-gray-700 leading-relaxed"></div>
             <div id="manualMeta" class="mt-3 text-[12px] font-bold text-gray-500"></div>
 
             <div class="flex flex-wrap gap-2 mt-3">
+              <button id="openWaBtn" class="btn brand-gradient btn-primary" style="height:38px;padding:0 12px;font-size:11px;">
+                Ouvrir WhatsApp
+              </button>
               <button id="copyManualBtn" class="btn btn-outline" style="height:38px;padding:0 12px;font-size:11px;">
-                Copier
+                Copier le message
               </button>
               <button id="hideManualBtn" class="btn btn-outline" style="height:38px;padding:0 12px;font-size:11px;">
                 Fermer
@@ -225,9 +230,20 @@
   </footer>
 
   <script>
-    // ✅ JSONP (évite CORS)
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
+    // =========================
+    // ✅ CONFIG
+    // =========================
 
+    // ✅ TON DEPLOIEMENT (celui que tu as donné)
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
+
+    // ✅ WhatsApp du support (sans + ni espace). Modifie si besoin.
+    // Ex: RDC: 243850000000
+    const WHATSAPP_SUPPORT = "2438503737991";
+
+    // =========================
+    // UI refs
+    // =========================
     const alertBox = document.getElementById("alertBox");
     const balanceValue = document.getElementById("balanceValue");
     const userLabel = document.getElementById("userLabel");
@@ -236,6 +252,8 @@
 
     const methodSel = document.getElementById("methodSel");
     const methodHint = document.getElementById("methodHint");
+
+    const field2Wrap = document.getElementById("field2Wrap");
     const field2Label = document.getElementById("field2Label");
     const field2Inp = document.getElementById("field2Inp");
     const field2Help = document.getElementById("field2Help");
@@ -243,9 +261,13 @@
     const manualBox = document.getElementById("manualBox");
     const manualText = document.getElementById("manualText");
     const manualMeta = document.getElementById("manualMeta");
+    const openWaBtn = document.getElementById("openWaBtn");
     const copyManualBtn = document.getElementById("copyManualBtn");
     const hideManualBtn = document.getElementById("hideManualBtn");
 
+    // =========================
+    // Helpers UI
+    // =========================
     function showAlert(msg, type="info"){
       alertBox.classList.remove("hidden");
       alertBox.classList.remove(
@@ -331,6 +353,9 @@
       });
     }
 
+    // =========================
+    // JSONP (évite CORS)
+    // =========================
     function jsonp_(params, onOk, onErr, timeoutMs=12000){
       const cb = "vf_cb_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
       let done = false;
@@ -370,6 +395,17 @@
       return x.toFixed(2);
     }
 
+    function isPhoneLike_(v){
+      const s = String(v||"").trim();
+      if(!s) return false;
+      const cleaned = s.replace(/\s+/g,"");
+      if(cleaned.length < 8) return false;
+      return /^[+0-9][0-9+]*$/.test(cleaned);
+    }
+
+    // =========================
+    // Wallet data
+    // =========================
     function renderTx_(list){
       if(!Array.isArray(list) || list.length===0){
         txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Aucune transaction.</div>`;
@@ -439,16 +475,49 @@
       );
     }
 
-    function isPhoneLike_(v){
-      const s = String(v||"").trim();
-      if(!s) return false;
-      // accepte +243..., 00243..., ou chiffres simples
-      const cleaned = s.replace(/\s+/g,"");
-      if(cleaned.length < 8) return false;
-      return /^[+0-9][0-9+]*$/.test(cleaned);
+    // =========================
+    // ✅ DEPOT MANUEL WHATSAPP
+    // =========================
+    function buildWhatsappMessage_({ email, amount, method, note, phone, txid }){
+      const lines = [];
+      lines.push("Bonjour 👋, je veux recharger mon wallet ViralFlowr.");
+      lines.push("");
+      lines.push("📌 Email: " + email);
+      lines.push("💵 Montant: " + fmt2(amount) + " USD");
+      lines.push("💳 Méthode: " + method);
+      lines.push("🧾 Note: " + note);
+      if(phone) lines.push("📱 Téléphone: " + phone);
+      if(txid) lines.push("🔗 TXID: " + txid);
+      lines.push("");
+      lines.push("Merci ✅");
+      return lines.join("\n");
     }
 
-    // ✅ UI champ 2 selon méthode
+    function openWhatsApp_(phoneDigits, message){
+      const phone = String(phoneDigits||"").replace(/[^\d]/g,"");
+      const text = encodeURIComponent(String(message||""));
+      const url = "https://wa.me/" + phone + "?text=" + text;
+      window.open(url, "_blank", "noopener");
+    }
+
+    function showManual_(message, meta){
+      manualBox.classList.remove("hidden");
+      manualText.textContent = "Clique sur WhatsApp pour envoyer le message pré-rempli au support.";
+      const parts = [];
+      if(meta?.amount) parts.push("Montant: " + meta.amount);
+      if(meta?.method) parts.push("Méthode: " + meta.method);
+      if(meta?.note) parts.push("Note: " + meta.note);
+      manualMeta.textContent = parts.join(" • ");
+
+      copyManualBtn.onclick = () => copyText_(message);
+      openWaBtn.onclick = () => openWhatsApp_(WHATSAPP_SUPPORT, message);
+      hideManualBtn.onclick = () => manualBox.classList.add("hidden");
+    }
+
+    // =========================
+    // ✅ UI selon méthode
+    // - BINANCE: champ supprimé
+    // =========================
     function applyMethodUI_(){
       const method = String(methodSel.value || "MONEROO_MOMO").toUpperCase();
 
@@ -456,59 +525,56 @@
       field2Inp.value = "";
       field2Help.textContent = "";
       manualBox.classList.add("hidden");
-      manualText.textContent = "";
       manualMeta.textContent = "";
+      manualText.textContent = "";
 
       if(method === "MONEROO_MOMO"){
+        field2Wrap.classList.remove("hidden");
         field2Label.textContent = "Téléphone (Mobile Money)";
         field2Inp.placeholder = "Ex: +243...";
         field2Inp.dataset.required = "1";
         field2Help.textContent = "Obligatoire. Exemple: +243850000000";
         methodHint.textContent = "✅ Moneroo: redirection + retour automatique + confirmation serveur.";
-      } else if(method === "BINANCE_PAY"){
-        field2Label.textContent = "Binance Pay (ID/Email) (optionnel)";
-        field2Inp.placeholder = "Ex: ID Binance ou email";
-        field2Inp.dataset.required = "0";
-        field2Help.textContent = "Optionnel. Tu peux laisser vide.";
-        methodHint.textContent = "✅ Binance Pay: selon ton API, peut afficher un lien/QR ou instructions.";
-      } else if(method === "USDT_TRC20"){
-        field2Label.textContent = "TxID / Hash (optionnel)";
-        field2Inp.placeholder = "Colle le hash après paiement";
-        field2Inp.dataset.required = "0";
-        field2Help.textContent = "Optionnel au moment de créer. Tu peux le remplir après transfert.";
-        methodHint.textContent = "✅ USDT TRC-20: ton serveur peut renvoyer une adresse + instructions.";
-      } else if(method === "USDT_BEP20"){
-        field2Label.textContent = "TxID / Hash (optionnel)";
-        field2Inp.placeholder = "Colle le hash après paiement";
-        field2Inp.dataset.required = "0";
-        field2Help.textContent = "Optionnel au moment de créer. Tu peux le remplir après transfert.";
-        methodHint.textContent = "✅ USDT BEP-20: ton serveur peut renvoyer une adresse + instructions.";
-      } else {
-        field2Label.textContent = "Référence (optionnel)";
-        field2Inp.placeholder = "Optionnel";
-        field2Inp.dataset.required = "0";
-        field2Help.textContent = "";
-        methodHint.textContent = "✅ Choisis une méthode.";
+        return;
       }
+
+      if(method === "BINANCE_PAY"){
+        // ✅ ENLEVER LE CHAMP POUR BINANCE
+        field2Wrap.classList.add("hidden");
+        methodHint.textContent = "✅ Dépôt manuel (Binance): on ouvre WhatsApp avec un message pré-rempli.";
+        return;
+      }
+
+      if(method === "USDT_TRC20"){
+        field2Wrap.classList.remove("hidden");
+        field2Label.textContent = "TxID / Hash (optionnel)";
+        field2Inp.placeholder = "Colle le hash après paiement (optionnel)";
+        field2Inp.dataset.required = "0";
+        field2Help.textContent = "Optionnel. Tu peux envoyer le TXID sur WhatsApp.";
+        methodHint.textContent = "✅ Dépôt manuel USDT TRC-20: WhatsApp pré-rempli + validation support.";
+        return;
+      }
+
+      if(method === "USDT_BEP20"){
+        field2Wrap.classList.remove("hidden");
+        field2Label.textContent = "TxID / Hash (optionnel)";
+        field2Inp.placeholder = "Colle le hash après paiement (optionnel)";
+        field2Inp.dataset.required = "0";
+        field2Help.textContent = "Optionnel. Tu peux envoyer le TXID sur WhatsApp.";
+        methodHint.textContent = "✅ Dépôt manuel USDT BEP-20: WhatsApp pré-rempli + validation support.";
+        return;
+      }
+
+      // fallback
+      field2Wrap.classList.add("hidden");
+      methodHint.textContent = "✅ Choisis une méthode.";
     }
 
-    function showManual_(text, metaObj){
-      manualBox.classList.remove("hidden");
-      manualText.textContent = String(text || "");
-      const parts = [];
-      if(metaObj){
-        if(metaObj.amount) parts.push("Montant: " + metaObj.amount);
-        if(metaObj.currency) parts.push("Devise: " + metaObj.currency);
-        if(metaObj.network) parts.push("Réseau: " + metaObj.network);
-        if(metaObj.address) parts.push("Adresse: " + metaObj.address);
-        if(metaObj.note) parts.push("Note: " + metaObj.note);
-      }
-      manualMeta.textContent = parts.join(" • ");
-      const toCopy = [text, manualMeta.textContent].filter(Boolean).join("\n");
-      copyManualBtn.onclick = () => copyText_(toCopy);
-      hideManualBtn.onclick = () => manualBox.classList.add("hidden");
-    }
-
+    // =========================
+    // Création dépôt
+    // - Moneroo => API => redirect
+    // - Binance/USDT => WhatsApp pré-rempli (manuel)
+    // =========================
     function createTopup_(email, note){
       const amount = Number(document.getElementById("amountInp").value || 0);
       const method = String(methodSel.value || "MONEROO_MOMO").toUpperCase();
@@ -519,86 +585,108 @@
         return;
       }
 
-      // ✅ validation selon méthode
-      let phone = "";
-      let binance = "";
-      let txid = "";
-
-      if(method === "MONEROO_MOMO"){
-        phone = field2;
-        if(!isPhoneLike_(phone)){
-          showAlert("Téléphone Mobile Money invalide. Exemple: +243850000000", "error");
-          return;
-        }
-      } else if(method === "BINANCE_PAY"){
-        binance = field2; // optionnel
-      } else if(method === "USDT_TRC20" || method === "USDT_BEP20"){
-        txid = field2; // optionnel
-      }
-
       const btn = document.getElementById("paidBtn");
       btn.disabled = true;
       btn.textContent = "Traitement...";
 
-      // return_url = cette page (Moneroo renvoie status + monerooPaymentId)
-      const returnUrl = window.location.origin + window.location.pathname;
-
-      const params = {
-        action: "wallet_topup_create",
-        email,
-        note,
-        amount: String(amount),
-        method,
-        currency: "USD",
-        return_url: returnUrl
-      };
-
-      // n'envoyer que ce qui sert
-      if(phone) params.phone = phone;
-      if(binance) params.binance = binance;
-      if(txid) params.txid = txid;
-
-      jsonp_(
-        params,
-        (res) => {
+      // MONEROO
+      if(method === "MONEROO_MOMO"){
+        const phone = field2;
+        if(!isPhoneLike_(phone)){
           btn.disabled = false;
           btn.textContent = "Continuer";
+          showAlert("Téléphone Mobile Money invalide. Exemple: +243850000000", "error");
+          return;
+        }
 
-          if(res && res.ok){
-            // ✅ redirect (Moneroo)
-            if(res.mode === "redirect" && res.checkout_url){
+        const returnUrl = window.location.origin + window.location.pathname;
+
+        jsonp_(
+          {
+            action: "wallet_topup_create",
+            email,
+            note,
+            amount: String(amount),
+            method,
+            phone,
+            currency: "USD",
+            return_url: returnUrl
+          },
+          (res) => {
+            btn.disabled = false;
+            btn.textContent = "Continuer";
+
+            if(res && res.ok && res.mode === "redirect" && res.checkout_url){
               showAlert("Redirection vers Moneroo…", "success");
               setTimeout(() => { window.location.href = res.checkout_url; }, 300);
               return;
             }
 
-            // ✅ mode manuel (crypto/binance) si ton API renvoie instructions
-            if(res.mode === "manual"){
-              showAlert("Demande enregistrée ✅", "success");
-              const text = res.instructions || "Suis les instructions de paiement.";
-              showManual_(text, {
-                amount: (res.amount || fmt2(amount)) + " USD",
-                currency: res.currency || "USD",
-                network: res.network || method,
-                address: res.address || "",
-                note: note
-              });
+            if(res && res.ok){
+              showAlert("Demande enregistrée ✅.", "success");
               setTimeout(() => { loadWallet_(email); loadTx_(email); }, 800);
               return;
             }
 
-            showAlert("Demande enregistrée ✅.", "success");
-            setTimeout(() => { loadWallet_(email); loadTx_(email); }, 800);
-            return;
+            showAlert("Impossible d’enregistrer. (" + (res?.error || "ERREUR") + ")", "error");
+          },
+          (why) => {
+            btn.disabled = false;
+            btn.textContent = "Continuer";
+            showAlert("Erreur réseau/API: dépôt non enregistré. (" + why + ")", "error");
           }
+        );
 
-          showAlert("Impossible d’enregistrer. (" + (res?.error || "ERREUR") + ")", "error");
+        return;
+      }
+
+      // ✅ DEPOT MANUEL (BINANCE/USDT) => WhatsApp pré-rempli
+      const txid = (method === "USDT_TRC20" || method === "USDT_BEP20") ? field2 : "";
+
+      const waMessage = buildWhatsappMessage_({
+        email,
+        amount,
+        method,
+        note,
+        phone: "",
+        txid
+      });
+
+      // Optionnel: essayer d'enregistrer un "pending" côté API, mais quoi qu'il arrive => WhatsApp.
+      jsonp_(
+        {
+          action: "wallet_topup_create",
+          email,
+          note,
+          amount: String(amount),
+          method,
+          txid: txid,
+          currency: "USD",
+          return_url: window.location.origin + window.location.pathname
         },
-        (why) => {
+        (res) => {
           btn.disabled = false;
           btn.textContent = "Continuer";
-          showAlert("Erreur réseau/API: dépôt non enregistré. (" + why + ")", "error");
-        }
+          if(res && res.ok){
+            showAlert("Dépôt manuel: message WhatsApp prêt ✅", "success");
+            setTimeout(() => { loadTx_(email); }, 600);
+          } else {
+            showAlert("Dépôt manuel: WhatsApp prêt (API: " + (res?.error || "ERREUR") + ")", "info");
+          }
+
+          showManual_(waMessage, { amount: fmt2(amount) + " USD", method, note });
+          openWhatsApp_(WHATSAPP_SUPPORT, waMessage);
+        },
+        (_why) => {
+          btn.disabled = false;
+          btn.textContent = "Continuer";
+
+          // même si API down => WhatsApp
+          showAlert("Dépôt manuel: WhatsApp prêt ✅", "success");
+          showManual_(waMessage, { amount: fmt2(amount) + " USD", method, note });
+          openWhatsApp_(WHATSAPP_SUPPORT, waMessage);
+        },
+        8000
       );
     }
 
@@ -606,7 +694,6 @@
       const u = new URL(window.location.href);
       const paymentId = u.searchParams.get("monerooPaymentId");
       const status = u.searchParams.get("monerooPaymentStatus") || u.searchParams.get("status");
-
       if(!paymentId) return;
 
       showAlert("Paiement détecté… confirmation en cours", "info");
@@ -622,7 +709,6 @@
             showAlert("Paiement non confirmé. (" + (res?.error || status || "ERREUR") + ")", "error");
           }
 
-          // nettoyer l'URL
           u.searchParams.delete("monerooPaymentId");
           u.searchParams.delete("monerooPaymentStatus");
           u.searchParams.delete("status");
@@ -633,6 +719,9 @@
       );
     }
 
+    // =========================
+    // INIT
+    // =========================
     (function(){
       applyAuthUI_();
 
@@ -650,13 +739,12 @@
 
       let note = ensureTopupNote_(email);
 
-      applyMethodUI_(); // ✅ init UI champ selon méthode
+      applyMethodUI_();
       methodSel.addEventListener("change", applyMethodUI_);
 
       loadWallet_(email);
       loadTx_(email);
 
-      // retour Moneroo => confirme
       maybeHandleMonerooReturn_(email);
 
       document.getElementById("refreshBtn").addEventListener("click", () => loadWallet_(email));
