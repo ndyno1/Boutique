@@ -146,15 +146,24 @@
             </div>
           </div>
 
+          <!-- ✅ HINT dynamique selon méthode -->
+          <div id="methodHint" class="mt-3 text-[12px] font-bold text-gray-500">
+            ✅ Moneroo: redirection + retour automatique + confirmation serveur.
+          </div>
+
           <div class="grid md:grid-cols-4 gap-3 mt-4">
             <div>
               <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Montant (USD)</label>
               <input id="amountInp" type="number" min="1" step="0.01" class="input" placeholder="Ex: 10">
             </div>
 
+            <!-- ✅ Champ 2 dynamique -->
             <div>
-              <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Téléphone (Mobile Money)</label>
-              <input id="phoneInp" type="text" class="input" placeholder="Ex: +243...">
+              <label id="field2Label" class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">
+                Téléphone (Mobile Money)
+              </label>
+              <input id="field2Inp" type="text" class="input" placeholder="Ex: +243...">
+              <div id="field2Help" class="mt-2 text-[11px] font-extrabold text-gray-400"></div>
             </div>
 
             <div>
@@ -175,8 +184,20 @@
             </div>
           </div>
 
-          <div class="mt-3 text-[12px] font-bold text-gray-400">
-            ✅ Moneroo: redirection + retour automatique + confirmation serveur.
+          <!-- ✅ zone instructions “mode manuel” si ton API renvoie pas de redirect -->
+          <div id="manualBox" class="hidden mt-4 p-4 rounded-2xl bg-gray-50 border border-gray-200">
+            <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-400">Instructions</div>
+            <div id="manualText" class="mt-2 text-[13px] font-semibold text-gray-700 leading-relaxed"></div>
+            <div id="manualMeta" class="mt-3 text-[12px] font-bold text-gray-500"></div>
+
+            <div class="flex flex-wrap gap-2 mt-3">
+              <button id="copyManualBtn" class="btn btn-outline" style="height:38px;padding:0 12px;font-size:11px;">
+                Copier
+              </button>
+              <button id="hideManualBtn" class="btn btn-outline" style="height:38px;padding:0 12px;font-size:11px;">
+                Fermer
+              </button>
+            </div>
           </div>
         </div>
 
@@ -212,6 +233,18 @@
     const userLabel = document.getElementById("userLabel");
     const topupNoteEl = document.getElementById("topupNote");
     const txBox = document.getElementById("txBox");
+
+    const methodSel = document.getElementById("methodSel");
+    const methodHint = document.getElementById("methodHint");
+    const field2Label = document.getElementById("field2Label");
+    const field2Inp = document.getElementById("field2Inp");
+    const field2Help = document.getElementById("field2Help");
+
+    const manualBox = document.getElementById("manualBox");
+    const manualText = document.getElementById("manualText");
+    const manualMeta = document.getElementById("manualMeta");
+    const copyManualBtn = document.getElementById("copyManualBtn");
+    const hideManualBtn = document.getElementById("hideManualBtn");
 
     function showAlert(msg, type="info"){
       alertBox.classList.remove("hidden");
@@ -406,42 +439,151 @@
       );
     }
 
+    function isPhoneLike_(v){
+      const s = String(v||"").trim();
+      if(!s) return false;
+      // accepte +243..., 00243..., ou chiffres simples
+      const cleaned = s.replace(/\s+/g,"");
+      if(cleaned.length < 8) return false;
+      return /^[+0-9][0-9+]*$/.test(cleaned);
+    }
+
+    // ✅ UI champ 2 selon méthode
+    function applyMethodUI_(){
+      const method = String(methodSel.value || "MONEROO_MOMO").toUpperCase();
+
+      // reset
+      field2Inp.value = "";
+      field2Help.textContent = "";
+      manualBox.classList.add("hidden");
+      manualText.textContent = "";
+      manualMeta.textContent = "";
+
+      if(method === "MONEROO_MOMO"){
+        field2Label.textContent = "Téléphone (Mobile Money)";
+        field2Inp.placeholder = "Ex: +243...";
+        field2Inp.dataset.required = "1";
+        field2Help.textContent = "Obligatoire. Exemple: +243850000000";
+        methodHint.textContent = "✅ Moneroo: redirection + retour automatique + confirmation serveur.";
+      } else if(method === "BINANCE_PAY"){
+        field2Label.textContent = "Binance Pay (ID/Email) (optionnel)";
+        field2Inp.placeholder = "Ex: ID Binance ou email";
+        field2Inp.dataset.required = "0";
+        field2Help.textContent = "Optionnel. Tu peux laisser vide.";
+        methodHint.textContent = "✅ Binance Pay: selon ton API, peut afficher un lien/QR ou instructions.";
+      } else if(method === "USDT_TRC20"){
+        field2Label.textContent = "TxID / Hash (optionnel)";
+        field2Inp.placeholder = "Colle le hash après paiement";
+        field2Inp.dataset.required = "0";
+        field2Help.textContent = "Optionnel au moment de créer. Tu peux le remplir après transfert.";
+        methodHint.textContent = "✅ USDT TRC-20: ton serveur peut renvoyer une adresse + instructions.";
+      } else if(method === "USDT_BEP20"){
+        field2Label.textContent = "TxID / Hash (optionnel)";
+        field2Inp.placeholder = "Colle le hash après paiement";
+        field2Inp.dataset.required = "0";
+        field2Help.textContent = "Optionnel au moment de créer. Tu peux le remplir après transfert.";
+        methodHint.textContent = "✅ USDT BEP-20: ton serveur peut renvoyer une adresse + instructions.";
+      } else {
+        field2Label.textContent = "Référence (optionnel)";
+        field2Inp.placeholder = "Optionnel";
+        field2Inp.dataset.required = "0";
+        field2Help.textContent = "";
+        methodHint.textContent = "✅ Choisis une méthode.";
+      }
+    }
+
+    function showManual_(text, metaObj){
+      manualBox.classList.remove("hidden");
+      manualText.textContent = String(text || "");
+      const parts = [];
+      if(metaObj){
+        if(metaObj.amount) parts.push("Montant: " + metaObj.amount);
+        if(metaObj.currency) parts.push("Devise: " + metaObj.currency);
+        if(metaObj.network) parts.push("Réseau: " + metaObj.network);
+        if(metaObj.address) parts.push("Adresse: " + metaObj.address);
+        if(metaObj.note) parts.push("Note: " + metaObj.note);
+      }
+      manualMeta.textContent = parts.join(" • ");
+      const toCopy = [text, manualMeta.textContent].filter(Boolean).join("\n");
+      copyManualBtn.onclick = () => copyText_(toCopy);
+      hideManualBtn.onclick = () => manualBox.classList.add("hidden");
+    }
+
     function createTopup_(email, note){
       const amount = Number(document.getElementById("amountInp").value || 0);
-      const method = String(document.getElementById("methodSel").value || "MONEROO_MOMO").toUpperCase();
-      const phone = String(document.getElementById("phoneInp").value || "").trim();
+      const method = String(methodSel.value || "MONEROO_MOMO").toUpperCase();
+      const field2 = String(field2Inp.value || "").trim();
 
       if(!amount || !isFinite(amount) || amount <= 0){
         showAlert("Entre un montant valide (USD).", "error");
         return;
       }
 
+      // ✅ validation selon méthode
+      let phone = "";
+      let binance = "";
+      let txid = "";
+
+      if(method === "MONEROO_MOMO"){
+        phone = field2;
+        if(!isPhoneLike_(phone)){
+          showAlert("Téléphone Mobile Money invalide. Exemple: +243850000000", "error");
+          return;
+        }
+      } else if(method === "BINANCE_PAY"){
+        binance = field2; // optionnel
+      } else if(method === "USDT_TRC20" || method === "USDT_BEP20"){
+        txid = field2; // optionnel
+      }
+
       const btn = document.getElementById("paidBtn");
       btn.disabled = true;
       btn.textContent = "Traitement...";
 
-      // return_url = cette page (Moneroo va renvoyer status + monerooPaymentId)
+      // return_url = cette page (Moneroo renvoie status + monerooPaymentId)
       const returnUrl = window.location.origin + window.location.pathname;
 
+      const params = {
+        action: "wallet_topup_create",
+        email,
+        note,
+        amount: String(amount),
+        method,
+        currency: "USD",
+        return_url: returnUrl
+      };
+
+      // n'envoyer que ce qui sert
+      if(phone) params.phone = phone;
+      if(binance) params.binance = binance;
+      if(txid) params.txid = txid;
+
       jsonp_(
-        {
-          action: "wallet_topup_create",
-          email,
-          note,
-          amount: String(amount),
-          method,
-          phone,
-          currency: "USD",
-          return_url: returnUrl
-        },
+        params,
         (res) => {
           btn.disabled = false;
           btn.textContent = "Continuer";
 
           if(res && res.ok){
+            // ✅ redirect (Moneroo)
             if(res.mode === "redirect" && res.checkout_url){
               showAlert("Redirection vers Moneroo…", "success");
               setTimeout(() => { window.location.href = res.checkout_url; }, 300);
+              return;
+            }
+
+            // ✅ mode manuel (crypto/binance) si ton API renvoie instructions
+            if(res.mode === "manual"){
+              showAlert("Demande enregistrée ✅", "success");
+              const text = res.instructions || "Suis les instructions de paiement.";
+              showManual_(text, {
+                amount: (res.amount || fmt2(amount)) + " USD",
+                currency: res.currency || "USD",
+                network: res.network || method,
+                address: res.address || "",
+                note: note
+              });
+              setTimeout(() => { loadWallet_(email); loadTx_(email); }, 800);
               return;
             }
 
@@ -480,7 +622,7 @@
             showAlert("Paiement non confirmé. (" + (res?.error || status || "ERREUR") + ")", "error");
           }
 
-          // nettoyer l'URL (enlever les params Moneroo)
+          // nettoyer l'URL
           u.searchParams.delete("monerooPaymentId");
           u.searchParams.delete("monerooPaymentStatus");
           u.searchParams.delete("status");
@@ -508,10 +650,13 @@
 
       let note = ensureTopupNote_(email);
 
+      applyMethodUI_(); // ✅ init UI champ selon méthode
+      methodSel.addEventListener("change", applyMethodUI_);
+
       loadWallet_(email);
       loadTx_(email);
 
-      // si retour Moneroo => confirme automatiquement
+      // retour Moneroo => confirme
       maybeHandleMonerooReturn_(email);
 
       document.getElementById("refreshBtn").addEventListener("click", () => loadWallet_(email));
