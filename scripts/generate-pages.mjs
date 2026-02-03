@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 
 const SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
+  "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
 
 // ✅ Réseaux sociaux (tu peux changer les liens ici)
 const SOCIAL = {
