@@ -50,8 +50,13 @@
     </form>
   </div>
 
+  <!-- iframe caché pour POST cross-origin sans CORS -->
+  <iframe id="vf_iframe" name="vf_iframe" style="display:none;width:0;height:0;border:0;"></iframe>
+
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
+
+    let PENDING_REQ = null;
 
     function showErr(msg){
       const box = document.getElementById("err");
@@ -64,7 +69,58 @@
       box.classList.add("hidden");
     }
 
-    document.getElementById("loginForm").addEventListener("submit", async (ev) => {
+    function makeHidden(name, value){
+      const i = document.createElement("input");
+      i.type = "hidden";
+      i.name = name;
+      i.value = value;
+      return i;
+    }
+
+    // ✅ recevoir la réponse du Apps Script (postMessage depuis l'iframe)
+    window.addEventListener("message", (event) => {
+      // event.origin sera généralement https://script.google.com ou https://script.googleusercontent.com
+      let data = event.data;
+      try {
+        if (typeof data === "string") data = JSON.parse(data);
+      } catch (_) {}
+
+      if (!data || !data.request_id || data.request_id !== PENDING_REQ) return;
+
+      PENDING_REQ = null;
+
+      const btn = document.getElementById("btn");
+      btn.disabled = false;
+      btn.textContent = "Se connecter";
+
+      if (!data.ok) {
+        showErr(data.message || data.error || "Connexion échouée.");
+        return;
+      }
+
+      if (!data.token) {
+        showErr("Connexion OK mais token manquant. Vérifie ton Apps Script (login doit renvoyer token).");
+        return;
+      }
+
+      const email = String(data?.user?.email || "").trim() || String(document.getElementById("email").value || "").trim().toLowerCase();
+      const username = String(data?.user?.username || email);
+
+      const session = {
+        email,
+        username,
+        token: String(data.token).trim(),
+        ts: Date.now()
+      };
+
+      localStorage.setItem("vf_session", JSON.stringify(session));
+      localStorage.setItem("vf_token", session.token); // optionnel compat
+      localStorage.setItem("vf_session_changed", String(Date.now()));
+
+      window.location.href = "index.html";
+    });
+
+    document.getElementById("loginForm").addEventListener("submit", (ev) => {
       ev.preventDefault();
       hideErr();
 
@@ -75,45 +131,38 @@
       const email = String(document.getElementById("email").value || "").trim().toLowerCase();
       const password = String(document.getElementById("password").value || "");
 
-      try {
-        const res = await fetch(SCRIPT_URL + "?action=login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "login", email, password })
-        });
+      // ID pour matcher la réponse
+      const requestId = "req_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
+      PENDING_REQ = requestId;
 
-        const payload = await res.json();
+      // ✅ POST via FORM (pas de CORS)
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = SCRIPT_URL;
+      form.target = "vf_iframe";
 
-        if (!payload || !payload.ok) {
-          showErr(payload?.message || payload?.error || "Connexion échouée.");
-          return;
+      form.appendChild(makeHidden("action", "login"));
+      form.appendChild(makeHidden("email", email));
+      form.appendChild(makeHidden("password", password));
+
+      // indique au serveur qu'on veut une réponse HTML qui fait postMessage
+      form.appendChild(makeHidden("transport", "iframe"));
+      form.appendChild(makeHidden("origin", location.origin));
+      form.appendChild(makeHidden("request_id", requestId));
+
+      document.body.appendChild(form);
+      form.submit();
+      form.remove();
+
+      // petit timeout au cas où le script ne répond pas
+      setTimeout(() => {
+        if (PENDING_REQ === requestId) {
+          PENDING_REQ = null;
+          btn.disabled = false;
+          btn.textContent = "Se connecter";
+          showErr("Pas de réponse du serveur. Vérifie le déploiement Apps Script (Web App) et l'action login.");
         }
-
-        if (!payload.token) {
-          showErr("Connexion OK mais token manquant. Vérifie ton Apps Script (login doit renvoyer token).");
-          return;
-        }
-
-        // ✅ STOCKE TOKEN DANS vf_session (OBLIGATOIRE pour prix revendeur)
-        const session = {
-          email: payload?.user?.email || email,
-          username: payload?.user?.username || payload?.user?.email || email,
-          token: String(payload.token).trim(),
-          ts: Date.now()
-        };
-
-        localStorage.setItem("vf_session", JSON.stringify(session));
-        localStorage.setItem("vf_token", session.token); // optionnel compat
-        localStorage.setItem("vf_session_changed", String(Date.now()));
-
-        window.location.href = "index.html";
-
-      } catch (e) {
-        showErr("Erreur réseau ou CORS. " + String(e));
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Se connecter";
-      }
+      }, 15000);
     });
   </script>
 </body>
