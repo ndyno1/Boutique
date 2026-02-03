@@ -51,163 +51,95 @@
   </div>
 
   <script>
-    // ✅ Mets ton URL Apps Script ici
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
 
-    const form = document.getElementById("loginForm");
-    const msg  = document.getElementById("msg");
-    const btn  = document.getElementById("btn");
+  function vfLogin(email, password) {
+    const rid = "REQ-" + Date.now();
 
-    let activeRequestId = "";
+    // 1) écoute la réponse (elle vient du frame googleusercontent)
+    function onMsg(e) {
+      // sécurité : l’origine de l’iframe Apps Script
+      try {
+        const host = new URL(e.origin).hostname;
+        if (!host.endsWith("script.googleusercontent.com")) return;
+      } catch (_) { return; }
 
-    function uid() {
-      return "REQ-" + Date.now() + "-" + Math.floor(Math.random() * 1e9);
-    }
+      const data = e.data || {};
+      if (data.request_id !== rid) return;
 
-    function show(type, text) {
-      msg.classList.remove("hidden");
-      msg.textContent = text;
+      window.removeEventListener("message", onMsg);
 
-      msg.classList.remove("bg-red-50","border-red-200","text-red-700");
-      msg.classList.remove("bg-green-50","border-green-200","text-green-700");
-      msg.classList.add("border");
-
-      if (type === "ok") {
-        msg.classList.add("bg-green-50","border-green-200","text-green-700");
-      } else {
-        msg.classList.add("bg-red-50","border-red-200","text-red-700");
-      }
-    }
-
-    function setLoading(on) {
-      btn.disabled = !!on;
-      btn.style.opacity = on ? "0.75" : "1";
-      btn.textContent = on ? "Connexion..." : "Se connecter";
-    }
-
-    function clearOldTransport() {
-      const oldFrame = document.getElementById("vf_login_iframe");
-      if (oldFrame) oldFrame.remove();
-
-      const oldForm = document.getElementById("vf_login_post_form");
-      if (oldForm) oldForm.remove();
-    }
-
-    // ✅ Listener: on accepte UNIQUEMENT la réponse venant de googleusercontent/script
-    window.addEventListener("message", (ev) => {
-      const okOrigin =
-        (typeof ev.origin === "string") &&
-        (ev.origin.includes("script.googleusercontent.com") || ev.origin.includes("script.google.com"));
-
-      if (!okOrigin) return;
-
-      const res = ev.data;
-      if (!res || typeof res !== "object") return;
-
-      // ✅ anti-mix: on vérifie request_id
-      if (activeRequestId && res.request_id && res.request_id !== activeRequestId) return;
-
-      setLoading(false);
-
-      if (!res.ok) {
-        show("err", res.message || res.error || "Connexion échouée");
+      if (!data.ok) {
+        alert("Login échoué: " + (data.error || "UNKNOWN"));
         return;
       }
 
-      // ✅ IMPORTANT : stocker token pour afficher prix revendeur
+      // 2) stocke session + token
       const session = {
-        email: (res.user && res.user.email) || res.email || document.getElementById("email").value || "",
-        username: (res.user && res.user.username) || res.username || "",
-        role: (res.user && res.user.role) || res.role || "",
-        isReseller: !!((res.user && res.user.isReseller) || res.isReseller),
-        token: res.token || res.vf_token || res.session_token || "",
-        ts: Date.now()
+        email: data.email || email,
+        username: data.username || data.user || email,
+        ts: Date.now(),
+        // optionnel : utile pour afficher un badge revendeur
+        is_reseller: !!data.is_reseller
       };
 
       localStorage.setItem("vf_session", JSON.stringify(session));
-      if (session.token) localStorage.setItem("vf_token", session.token);
+      if (data.token) localStorage.setItem("vf_token", String(data.token));
       localStorage.setItem("vf_session_changed", String(Date.now()));
 
-      show("ok", "Connexion OK. Redirection…");
-      setTimeout(() => location.href = "index.html", 450);
-    });
+      // 3) redirige
+      location.href = "index.html";
+    }
 
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      show("err", ""); // reset
-      msg.classList.add("hidden");
+    window.addEventListener("message", onMsg);
 
-      setLoading(true);
-      clearOldTransport();
-
-      activeRequestId = uid();
-
-      // ✅ Crée iframe invisible
-      const iframe = document.createElement("iframe");
+    // 2) crée iframe + form POST (pas de CORS)
+    let iframe = document.getElementById("vf_login_iframe");
+    if (!iframe) {
+      iframe = document.createElement("iframe");
       iframe.id = "vf_login_iframe";
       iframe.name = "vf_login_iframe";
       iframe.style.display = "none";
       document.body.appendChild(iframe);
+    }
 
-      // ✅ Crée form POST caché vers Apps Script
-      const post = document.createElement("form");
-      post.id = "vf_login_post_form";
-      post.method = "POST";
-      post.target = "vf_login_iframe";
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.target = "vf_login_iframe";
 
-      // ✅ action en query string (ton doPost lit params.action)
-      const actionUrl =
-        SCRIPT_URL +
-        "?action=login" +
-        "&transport=iframe" +
-        "&origin=" + encodeURIComponent(location.origin) +
-        "&request_id=" + encodeURIComponent(activeRequestId);
+    // IMPORTANT: origin EXACT du site courant
+    const origin = location.origin;
 
-      post.action = actionUrl;
+    form.action =
+      SCRIPT_URL +
+      "?action=login" +
+      "&transport=iframe" +
+      "&origin=" + encodeURIComponent(origin) +
+      "&request_id=" + encodeURIComponent(rid);
 
-      // champs body
-      const email = document.createElement("input");
-      email.type = "hidden";
-      email.name = "email";
-      email.value = document.getElementById("email").value.trim();
+    function add(name, value) {
+      const i = document.createElement("input");
+      i.type = "hidden";
+      i.name = name;
+      i.value = value;
+      form.appendChild(i);
+    }
 
-      const pass = document.createElement("input");
-      pass.type = "hidden";
-      pass.name = "password";
-      pass.value = document.getElementById("password").value;
+    add("email", email);
+    add("password", password);
 
-      // action aussi en body (au cas où)
-      const actionB = document.createElement("input");
-      actionB.type = "hidden";
-      actionB.name = "action";
-      actionB.value = "login";
+    document.body.appendChild(form);
+    form.submit();
+    form.remove();
+  }
 
-      post.appendChild(email);
-      post.appendChild(pass);
-      post.appendChild(actionB);
+  // Exemple bouton:
+  // document.getElementById("btnLogin").onclick = () => vfLogin(
+  //   document.getElementById("email").value,
+  //   document.getElementById("password").value
+  // );
+</script>
 
-      document.body.appendChild(post);
-
-      // timeout sécurité
-      const t = setTimeout(() => {
-        setLoading(false);
-        show("err", "Pas de réponse du serveur. Vérifie le déploiement Web App et l'action login.");
-      }, 15000);
-
-      // si réponse arrive, on clear via message handler
-      const onMsgClear = (ev) => {
-        const okOrigin =
-          (typeof ev.origin === "string") &&
-          (ev.origin.includes("script.googleusercontent.com") || ev.origin.includes("script.google.com"));
-        if (!okOrigin) return;
-        clearTimeout(t);
-        window.removeEventListener("message", onMsgClear);
-      };
-      window.addEventListener("message", onMsgClear);
-
-      post.submit();
-    });
-  </script>
 
 </body>
 </html>
