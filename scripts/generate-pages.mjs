@@ -68,22 +68,119 @@ function buildPayUrl(p, prixOverride = null) {
   return `/paiement.html?${qp.toString()}`;
 }
 
+/**
+ * ✅ FETCH PRODUCTS (MIS À JOUR)
+ * - Ne change pas la logique: on veut toujours récupérer la liste des produits via JSONP.
+ * - Mais accepte aussi les formats API fréquents: {products:[]}, {data:[]}, etc.
+ * - Ajoute un diagnostic clair si l’endpoint renvoie une erreur (401/403/404) ou un objet.
+ *
+ * Option debug: mets DEBUG_FETCH_PRODUCTS=1 dans ton runner pour voir un aperçu de la réponse.
+ */
 async function fetchProducts() {
   const cb = "cb";
   const url = `${SCRIPT_URL}?action=get_products&callback=${cb}&t=${Date.now()}`;
-  const res = await fetch(url);
+
+  const res = await fetch(url, {
+    method: "GET",
+    headers: { Accept: "application/json,text/javascript,*/*" },
+  });
+
   const txt = await res.text();
+  const DEBUG_FETCH_PRODUCTS =
+    process.env.DEBUG_FETCH_PRODUCTS === "1" ||
+    process.env.DEBUG_PRODUCTS === "1" ||
+    process.env.DEBUG === "1";
+
+  const preview = (s, n = 240) => {
+    const v = safe(s);
+    return v.length > n ? v.slice(0, n) + "…" : v;
+  };
+
+  if (DEBUG_FETCH_PRODUCTS) {
+    console.log("[fetchProducts] URL:", url);
+    console.log("[fetchProducts] HTTP:", res.status, res.statusText);
+    console.log(
+      "[fetchProducts] content-type:",
+      res.headers.get("content-type") || ""
+    );
+    console.log("[fetchProducts] body preview:", preview(txt));
+  }
+
+  if (!res.ok) {
+    throw new Error(
+      `HTTP ${res.status} ${res.statusText} • Aperçu: ${preview(txt)}`
+    );
+  }
 
   // JSONP: cb(<json>);
   const re = new RegExp(`${cb}\\((.*)\\)\\s*;?\\s*$`, "s");
   const m = txt.match(re);
-  if (!m || !m[1]) {
-    throw new Error("Réponse JSONP invalide. Vérifie action=get_products.");
+
+  let jsonText = "";
+  if (m && m[1]) {
+    jsonText = m[1].trim();
+  } else {
+    // Fallback si jamais le endpoint renvoie du JSON pur (sans callback)
+    const trimmed = txt.trim();
+    const looksLikeJson =
+      (trimmed.startsWith("{") && trimmed.endsWith("}")) ||
+      (trimmed.startsWith("[") && trimmed.endsWith("]"));
+
+    if (!looksLikeJson) {
+      throw new Error(
+        `Réponse JSONP invalide. Vérifie action=get_products. Aperçu: ${preview(
+          txt
+        )}`
+      );
+    }
+    jsonText = trimmed;
   }
 
-  const data = JSON.parse(m[1].trim());
-  if (!Array.isArray(data)) throw new Error("Le endpoint ne renvoie pas une liste.");
-  return data;
+  let payload;
+  try {
+    payload = JSON.parse(jsonText);
+  } catch (e) {
+    throw new Error(
+      `JSON invalide dans la réponse. Aperçu: ${preview(jsonText)}`
+    );
+  }
+
+  // ✅ Extraction robuste d'une "liste" sans changer le reste du script
+  const list =
+    Array.isArray(payload)
+      ? payload
+      : payload && Array.isArray(payload.products)
+      ? payload.products
+      : payload && Array.isArray(payload.items)
+      ? payload.items
+      : payload && Array.isArray(payload.data)
+      ? payload.data
+      : payload?.data && Array.isArray(payload.data.products)
+      ? payload.data.products
+      : payload?.data && Array.isArray(payload.data.items)
+      ? payload.data.items
+      : payload?.result && Array.isArray(payload.result)
+      ? payload.result
+      : payload?.results && Array.isArray(payload.results)
+      ? payload.results
+      : null;
+
+  if (!list) {
+    const keys =
+      payload && typeof payload === "object" ? Object.keys(payload) : [];
+    const msg =
+      safe(payload?.message) ||
+      safe(payload?.error) ||
+      safe(payload?.status) ||
+      "";
+    throw new Error(
+      `Le endpoint ne renvoie pas une liste. Keys=${
+        keys.length ? keys.join(", ") : "N/A"
+      }${msg ? " • " + msg : ""}`
+    );
+  }
+
+  return list;
 }
 
 // ---------- SVG snippets ----------
