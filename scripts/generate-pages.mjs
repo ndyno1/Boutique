@@ -5,12 +5,11 @@ import path from "path";
 const SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
 
-// ✅ Réseaux sociaux (tu peux changer les liens ici)
+// ✅ Réseaux sociaux
 const SOCIAL = {
   instagram: "https://www.instagram.com/di_corporation_1/",
   tiktok: "https://www.tiktok.com/@dicorporation",
   telegram: "https://t.me/Viralflowr",
-  // ✅ Bouton WABA (WhatsApp Business)
   waba: "https://wa.me/243850373991",
 };
 
@@ -37,40 +36,32 @@ function toDirectOGImage(url) {
   const u = safe(url).trim();
   if (!u) return "";
 
-  // already direct lh3
   if (u.includes("lh3.googleusercontent.com/d/")) {
     return u.includes("=") ? u : `${u}=w1200`;
   }
 
-  // drive file/d/<id>
   const m1 = u.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
   if (m1?.[1]) return `https://lh3.googleusercontent.com/d/${m1[1]}=w1200`;
 
-  // drive open?id=<id>
   const m2 = u.match(/drive\.google\.com\/open\?id=([^&]+)/i);
   if (m2?.[1]) return `https://lh3.googleusercontent.com/d/${m2[1]}=w1200`;
 
-  // direct image url
   if (/\.(png|jpg|jpeg|webp|gif)(\?.*)?$/i.test(u)) return u;
 
   return u;
 }
 
-// ✅ Paiement: utilise C via p.desc (paiement.html)
-// ✅ IMPORTANT: on n'envoie PAS long_desc à paiement (tu l'utilises sur page produit uniquement)
-function buildPayUrl(p) {
+// Paiement: utilise desc (paiement.html) + prix (sera overridé côté page via JS si revendeur)
+function buildPayUrl(p, prixOverride = null) {
   const qp = new URLSearchParams();
   qp.set("nom", safe(p.nom));
-  qp.set("prix", safe(p.prix));
+  qp.set("prix", safe(prixOverride !== null ? prixOverride : p.prix));
   qp.set("cat", safe(p.cat));
   qp.set("id", safe(p.id));
   qp.set("min", safe(p.min));
   qp.set("max", safe(p.max));
   qp.set("img", safe(p.img || ""));
-
-  // ✅ C = desc (paiement.html)
   qp.set("desc", safe(p.desc).trim());
-
   return `/paiement.html?${qp.toString()}`;
 }
 
@@ -80,7 +71,6 @@ async function fetchProducts() {
   const res = await fetch(url);
   const txt = await res.text();
 
-  // JSONP: cb(<json>);
   const re = new RegExp(`${cb}\\((.*)\\)\\s*;?\\s*$`, "s");
   const m = txt.match(re);
   if (!m || !m[1]) {
@@ -92,7 +82,7 @@ async function fetchProducts() {
   return data;
 }
 
-// ---------- SVG snippets (rangé + réutilisable) ----------
+// ---------- SVG snippets ----------
 const SVG = {
   home: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <path d="M3 11l9-8 9 8"></path>
@@ -159,16 +149,13 @@ function templateProductPage(p) {
   const imgRaw = safe(p.img).trim();
   const ogImg = toDirectOGImage(imgRaw) || ogFallback();
 
-  // ✅ K = long_desc (page produit)
   const longDesc = safe(p.long_desc).trim();
-
   const payUrl = buildPayUrl(p);
 
   const ogDesc = `${prix} $ • ${cat}${
     longDesc ? " • " + longDesc.replace(/\s+/g, " ").slice(0, 120) : ""
   }`.slice(0, 200);
 
-  // JSON-LD (propre, sans casser logique)
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -231,7 +218,6 @@ function templateProductPage(p) {
     .btn-gradient:hover { background: linear-gradient(90deg, #d96d0c 0%, #F07E13 100%); }
     .shadow-card { box-shadow: 0 0 7px 0 rgba(0,0,0,.15); }
 
-    /* ✅ mini boutons (ne débordent pas) */
     .btn-mini{
       height:40px; padding:0 14px; border-radius:999px;
       font-weight:900; font-size:11px; letter-spacing:.10em;
@@ -263,7 +249,6 @@ function templateProductPage(p) {
     }
     .icon-btn:hover{ transform: translateY(-1px); border-color:#F07E13; color:#F07E13; }
 
-    /* ✅ zone logo / header qui ne déborde pas */
     .vf-brand-wrap{ min-width:0; overflow:hidden; }
     .vf-brand-text{
       display:block; max-width:100%;
@@ -271,7 +256,6 @@ function templateProductPage(p) {
       line-height:1;
     }
 
-    /* ✅ sur très petit écran: cache les textes des boutons */
     @media (max-width: 420px){
       .btn-mini, .btn-waba{ padding:0 10px; font-size:10px; letter-spacing:.08em; }
       .btn-mini .txt, .btn-waba .txt{ display:none; }
@@ -291,14 +275,11 @@ function templateProductPage(p) {
       </a>
 
       <div class="flex items-center gap-2 flex-wrap justify-end">
-        <!-- ✅ Compte (auto) -->
         <div id="accountArea" class="hidden sm:flex items-center gap-2"></div>
 
-        <!-- ✅ Commandes + Wallet -->
         <a class="icon-btn" href="/commandes.html" title="Mes commandes" aria-label="Mes commandes">${SVG.orders}</a>
         <a class="icon-btn" href="/wallet.html" title="Portefeuille" aria-label="Portefeuille">${SVG.wallet}</a>
 
-        <!-- Social (desktop only) -->
         <a class="hidden sm:flex icon-btn" href="${escHtml(SOCIAL.instagram)}" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
           ${SVG.instagram}
         </a>
@@ -372,7 +353,7 @@ function templateProductPage(p) {
             <div class="grid grid-cols-2 gap-4 items-end">
               <div>
                 <span class="text-gray-500 text-xs font-medium block mb-1">Prix Total:</span>
-                <span class="text-3xl font-black text-[#201B16] tracking-tighter">${escHtml(prix)} $</span>
+                <span id="priceValue" class="text-3xl font-black text-[#201B16] tracking-tighter">${escHtml(prix)} $</span>
               </div>
               <div class="flex flex-col text-right text-[11px] text-gray-400 font-medium">
                 <span>Min : <strong class="text-gray-700">${escHtml(minTxt)}</strong></span>
@@ -380,7 +361,7 @@ function templateProductPage(p) {
               </div>
             </div>
 
-            <a href="${escHtml(payUrl)}"
+            <a id="buyBtn" href="${escHtml(payUrl)}"
                class="w-full h-12 rounded-full btn-gradient text-white font-bold text-[15px] uppercase tracking-wide shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center">
               Acheter maintenant
             </a>
@@ -432,7 +413,7 @@ function templateProductPage(p) {
     </div>
   </footer>
 
-  <!-- ✅ FIX: bouton Déconnexion devient Connexion après logout (session UI) -->
+  <!-- session UI -->
   <script>
     function _vfSafe(v){ return (v === null || v === undefined) ? "" : String(v); }
 
@@ -446,7 +427,6 @@ function templateProductPage(p) {
       }catch{ return null; }
     }
 
-    // sync multi-onglets
     window.addEventListener("storage", (e) => {
       if (e.key === "vf_session") renderAccountUI_();
     });
@@ -460,7 +440,7 @@ function templateProductPage(p) {
       area.classList.remove("hidden");
 
       if(!s){
-        area.innerHTML = \`
+        area.innerHTML = `
           <a href="/login.html" class="btn-mini" aria-label="Connexion">
             ${SVG.login}
             <span class="txt">Connexion</span>
@@ -471,9 +451,7 @@ function templateProductPage(p) {
               <span class="txt">Inscription</span>
             </span>
           </a>
-        \`;
-
-        // applique le gradient sur le bouton inscription (sans casser le style)
+        `;
         const last = area.querySelectorAll("a")[1];
         if(last){
           last.style.background = "linear-gradient(90deg, #F07E13 0%, #FFB26B 100%)";
@@ -484,24 +462,23 @@ function templateProductPage(p) {
       const display = _vfSafe(s.username || s.email || "Compte");
       const first = display.slice(0,1).toUpperCase();
 
-      area.innerHTML = \`
+      area.innerHTML = `
         <div class="hidden md:flex items-center gap-2 bg-white border border-gray-200 px-3 py-2 rounded-2xl">
           <div class="w-8 h-8 rounded-xl" style="background:linear-gradient(90deg,#F07E13 0%,#FFB26B 100%);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:12px;">
-            \${first}
+            ${first}
           </div>
           <div class="leading-tight">
-            <div class="text-[11px] font-black text-gray-900">Bonjour, \${display}</div>
+            <div class="text-[11px] font-black text-gray-900">Bonjour, ${display}</div>
             <div class="text-[9px] font-black uppercase tracking-widest text-gray-300">Connecté</div>
           </div>
         </div>
         <button id="logoutBtn" class="btn-mini" type="button">Déconnexion</button>
-      \`;
+      `;
 
       const btn = document.getElementById("logoutBtn");
       if(btn){
         btn.addEventListener("click", () => {
           localStorage.removeItem("vf_session");
-          // option: marqueur (si tu veux écouter vf_session_changed ailleurs)
           localStorage.setItem("vf_session_changed", String(Date.now()));
           renderAccountUI_();
         });
@@ -509,6 +486,117 @@ function templateProductPage(p) {
     }
 
     renderAccountUI_();
+  </script>
+
+  <!-- ✅ prix revendeur dynamique -->
+  <script>
+    const VF_SCRIPT_URL = "${escHtml(SCRIPT_URL)}";
+    const VF_PRODUCT_ID = "${escHtml(id)}";
+
+    function _vfSafe2(v){ return (v === null || v === undefined) ? "" : String(v); }
+
+    function _vfGetSession(){
+      try{
+        const raw = localStorage.getItem("vf_session");
+        if(!raw) return null;
+        const s = JSON.parse(raw);
+        if(!s || (!s.email && !s.username)) return null;
+        return s;
+      }catch{ return null; }
+    }
+
+    function _vfGetToken(){
+      try{
+        const s = _vfGetSession();
+        const t =
+          (s && (s.token || s.vf_token || s.session_token || s.access_token || s.reseller_token)) ||
+          localStorage.getItem("vf_token") ||
+          "";
+        return String(t || "").trim();
+      }catch{ return ""; }
+    }
+
+    function _vfPickPrice(prod){
+      const v = prod && (
+        prod.prix_affiche ??
+        prod.prix ??
+        prod.price ??
+        prod.amount ??
+        prod.PV ?? prod.pv ??
+        prod.RESELLER ?? prod.reseller ??
+        prod.prix_revendeur
+      );
+      return _vfSafe2(v).trim();
+    }
+
+    function _vfBuildPayUrl(prod, priceOverride){
+      const qp = new URLSearchParams();
+      qp.set("nom", _vfSafe2(prod.nom));
+      qp.set("prix", _vfSafe2(priceOverride));
+      qp.set("cat", _vfSafe2(prod.cat));
+      qp.set("id", _vfSafe2(prod.id));
+      qp.set("min", _vfSafe2(prod.min));
+      qp.set("max", _vfSafe2(prod.max));
+      qp.set("img", _vfSafe2(prod.img || ""));
+      qp.set("desc", _vfSafe2(prod.desc || "").trim());
+      return "/paiement.html?" + qp.toString();
+    }
+
+    function _vfJsonpGetProducts(token){
+      return new Promise((resolve, reject) => {
+        const cb = "vf_cb_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
+        window[cb] = (payload) => {
+          try{
+            const list = Array.isArray(payload) ? payload : (Array.isArray(payload && payload.products) ? payload.products : []);
+            resolve(list);
+          }finally{
+            try{ delete window[cb]; }catch(e){}
+          }
+        };
+
+        const tokenParam = token ? ("&token=" + encodeURIComponent(token)) : "";
+        const s = document.createElement("script");
+        s.src = VF_SCRIPT_URL + "?action=get_products" + tokenParam + "&callback=" + cb + "&t=" + Date.now();
+        s.onerror = () => {
+          try{ delete window[cb]; }catch(e){}
+          reject(new Error("JSONP error"));
+        };
+        document.body.appendChild(s);
+      });
+    }
+
+    async function _vfRefreshPrice(){
+      const token = _vfGetToken();
+      if(!token) return;
+
+      try{
+        const list = await _vfJsonpGetProducts(token);
+        const prod = list.find(x => _vfSafe2(x && x.id).trim() === VF_PRODUCT_ID);
+        if(!prod) return;
+
+        const raw = _vfPickPrice(prod);
+        if(!raw) return;
+
+        const num = parseFloat(String(raw).replace(",", "."));
+        const txt = Number.isFinite(num) ? num.toFixed(2) : raw;
+
+        const priceEl = document.getElementById("priceValue");
+        if(priceEl) priceEl.textContent = txt + " $";
+
+        const buyBtn = document.getElementById("buyBtn");
+        if(buyBtn) buyBtn.href = _vfBuildPayUrl(prod, txt);
+
+      }catch(e){
+        // silencieux
+      }
+    }
+
+    _vfRefreshPrice();
+    window.addEventListener("storage", (e) => {
+      if (e.key === "vf_session" || e.key === "vf_token" || e.key === "vf_session_changed") {
+        _vfRefreshPrice();
+      }
+    });
   </script>
 
 </body>
@@ -524,7 +612,8 @@ function templateSharePage(p) {
   const imgRaw = safe(p.img).trim();
   const ogImg = toDirectOGImage(imgRaw) || ogFallback();
 
-  const payUrl = buildPayUrl(p);
+  // ✅ REDIRIGE VERS PAGE PRODUIT (prix dynamique possible)
+  const productUrl = `/p/${encodeURIComponent(id)}/`;
   const ogDesc = `${prix} $ • ${cat}`.slice(0, 200);
 
   return `<!doctype html>
@@ -545,10 +634,10 @@ function templateSharePage(p) {
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="${escHtml(ogImg)}">
 
-  <meta http-equiv="refresh" content="0;url=${escHtml(payUrl)}">
+  <meta http-equiv="refresh" content="0;url=${escHtml(productUrl)}">
 </head>
 <body style="font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial; padding:20px;">
-  <a href="${escHtml(payUrl)}">Ouvrir la commande</a>
+  <a href="${escHtml(productUrl)}">Ouvrir le produit</a>
 </body>
 </html>`;
 }
