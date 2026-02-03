@@ -317,246 +317,264 @@
   </footer>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
 
-    let ALL_PRODUCTS = [];
-    let CURRENT_FILTER = "all";
+  let ALL_PRODUCTS = [];
+  let CURRENT_FILTER = "all";
 
-    const FILTER_MAP = {
-      "Abonnement": ["ABONNEMENT","CARTE"],
-      "Carte2":     ["CARTE2"],
-      "Boost":      ["BOOST","BOOST2","SMM1","SMM2","SMM3","PEAKERR","PEAK"],
-      "Materiel":   ["MATERIEL","GADGET","PHONE"],
-      "IMEI":       ["IMEI"],
-      "Jeux":       ["JEUX","JEU","GAME","GAMING","PSN","PLAYSTATION","XBOX","STEAM","NINTENDO"]
+  const FILTER_MAP = {
+    "Abonnement": ["ABONNEMENT","CARTE"],
+    "Carte2":     ["CARTE2"],
+    "Boost":      ["BOOST","BOOST2","SMM1","SMM2","SMM3","PEAKERR","PEAK"],
+    "Materiel":   ["MATERIEL","GADGET","PHONE"],
+    "IMEI":       ["IMEI"],
+    "Jeux":       ["JEUX","JEU","GAME","GAMING","PSN","PLAYSTATION","XBOX","STEAM","NINTENDO"]
+  };
+
+  const input = document.getElementById('searchInput');
+  const placeholderBox = document.getElementById('placeholder-box');
+
+  input.addEventListener('focus', () => placeholderBox.style.display = 'none');
+  input.addEventListener('blur', () => { if(input.value === "") placeholderBox.style.display = 'block'; });
+
+  function safe(v){ return (v === null || v === undefined) ? "" : String(v); }
+  function up(v){ return safe(v).trim().toUpperCase(); }
+
+  // ✅ champs compat API
+  function pName(p){ return safe(p.nom || p.name || p.title); }
+  function pCat(p){ return safe(p.cat || p.category || p.categorie); }
+  function pImg(p){ return safe(p.img || p.image || p.photo || p.imageUrl || p.ImageURL); }
+  function pMin(p){ return safe(p.min || p.minqnt || p.minQty || p.min_qty || p.MIN); }
+  function pMax(p){ return safe(p.max || p.maxqnt || p.maxQty || p.max_qty || p.MAX); }
+
+  // ✅ PRIX : on prend d'abord prix_affiche (déjà calculé par API selon token)
+  function pPrice(p){
+    const v = (p && (
+      p.prix_affiche ??
+      p.prix ??
+      p.price ??
+      p.amount ??
+      p.prix_client ??
+      p.prix_revendeur ??
+      p.PV ??
+      p.RESELLER
+    ));
+    return safe(v);
+  }
+
+  function getSession_() {
+    try {
+      const raw = localStorage.getItem("vf_session");
+      if (!raw) return null;
+      const s = JSON.parse(raw);
+      if (!s || (!s.email && !s.username)) return null;
+      return s;
+    } catch { return null; }
+  }
+
+  // ✅ récup token (plusieurs noms possibles)
+  function getToken_(){
+    try{
+      const s = getSession_();
+      const t =
+        (s && (s.token || s.vf_token || s.session_token || s.access_token || s.reseller_token)) ||
+        localStorage.getItem("vf_token") ||
+        "";
+      return String(t || "").trim();
+    }catch{
+      return "";
+    }
+  }
+
+  // ✅ Sync entre pages/onglets
+  window.addEventListener("storage", (e) => {
+    if (e.key === "vf_session" || e.key === "vf_token" || e.key === "vf_session_changed") {
+      renderAccountUI_();
+      initProducts(); // ✅ recharge prix selon token
+    }
+  });
+
+  function renderAccountUI_() {
+    const area = document.getElementById("accountArea");
+    const s = getSession_();
+
+    area.innerHTML = "";
+    area.classList.remove("hidden");
+
+    if (!s) {
+      area.innerHTML = `
+        <a href="login.html" class="btn-auth btn-auth-outline">Connexion</a>
+        <a href="register.html" class="btn-auth btn-auth-primary brand-gradient text-white shadow-md">Inscription</a>
+      `;
+      return;
+    }
+
+    const display = safe(s.username || s.email || "Compte");
+
+    area.innerHTML = `
+      <div class="hidden md:flex items-center gap-2 bg-white border border-gray-200 px-3 py-2 rounded-2xl">
+        <div class="w-8 h-8 rounded-xl brand-gradient flex items-center justify-center text-white font-black text-sm">
+          ${display.slice(0,1).toUpperCase()}
+        </div>
+        <div class="leading-tight">
+          <div class="text-[11px] font-black text-gray-900">Bonjour, ${display}</div>
+          <div class="text-[9px] font-black uppercase tracking-widest text-gray-300">Connecté</div>
+        </div>
+      </div>
+      <button id="logoutBtn" class="btn-auth btn-auth-outline">Déconnexion</button>
+    `;
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("vf_session");
+      localStorage.setItem("vf_session_changed", String(Date.now()));
+      renderAccountUI_();
+      initProducts(); // ✅ repasse prix client
+    });
+  }
+
+  function showLoadError_(msg){
+    const box = document.getElementById("loadError");
+    box.textContent = msg;
+    box.classList.remove("hidden");
+  }
+  function hideLoadError_(){
+    const box = document.getElementById("loadError");
+    box.classList.add("hidden");
+    box.textContent = "";
+  }
+
+  function initProducts() {
+    hideLoadError_();
+
+    const cbName = "vf_cb_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
+    window[cbName] = function(payload) {
+      try {
+        if (payload && payload.error) {
+          showLoadError_("Erreur API produits: " + safe(payload.error));
+          ALL_PRODUCTS = [];
+        } else {
+          ALL_PRODUCTS = Array.isArray(payload) ? payload : (Array.isArray(payload.products) ? payload.products : []);
+        }
+        render();
+      } finally {
+        try { delete window[cbName]; } catch(_) {}
+      }
     };
 
-    const input = document.getElementById('searchInput');
-    const placeholderBox = document.getElementById('placeholder-box');
-    input.addEventListener('focus', () => placeholderBox.style.display = 'none');
-    input.addEventListener('blur', () => { if(input.value === "") placeholderBox.style.display = 'block'; });
+    // ✅ IMPORTANT : envoie le token si connecté → prix revendeur
+    const token = getToken_();
+    const tokenParam = token ? `&token=${encodeURIComponent(token)}` : "";
 
-    function safe(v){ return (v === null || v === undefined) ? "" : String(v); }
-    function up(v){ return safe(v).trim().toUpperCase(); }
+    const s = document.createElement('script');
+    s.src = `${SCRIPT_URL}?action=get_products${tokenParam}&callback=${cbName}&t=${Date.now()}`;
+    s.onerror = () => {
+      showLoadError_("Impossible de charger les produits (API). Vérifie ton déploiement Apps Script / doGet JSONP.");
+      ALL_PRODUCTS = [];
+      render();
+      try { delete window[cbName]; } catch(_) {}
+    };
+    document.body.appendChild(s);
+  }
 
-    function pName(p){ return safe(p.nom || p.name || p.title); }
-    function pCat(p){ return safe(p.cat || p.category || p.categorie); }
-    function pPrice(p){ return safe(p.prix || p.price || p.amount); }
-    function pImg(p){ return safe(p.img || p.image || p.photo); }
-    function pMin(p){ return safe(p.min || p.minqnt || p.minQty || p.min_qty); }
-    function pMax(p){ return safe(p.max || p.maxqnt || p.maxQty || p.max_qty); }
+  function matchCatByFilter(productCatUpper, filterKey){
+    if (filterKey === "all") return true;
 
-    function getSession_() {
-      try {
-        const raw = localStorage.getItem("vf_session");
-        if (!raw) return null;
-        const s = JSON.parse(raw);
-        if (!s || (!s.email && !s.username)) return null;
-        return s;
-      } catch { return null; }
+    const allowed = FILTER_MAP[filterKey];
+    if (!allowed) return (productCatUpper === up(filterKey));
+
+    for (const a of allowed){
+      const A = up(a);
+      if (productCatUpper === A) return true;
+
+      if (A === "IMEI" && productCatUpper.includes("IMEI")) return true;
+      if ((A === "PEAKERR" || A === "PEAK") && (productCatUpper.includes("PEAK") || productCatUpper.includes("PEAKERR"))) return true;
+      if (A.startsWith("SMM") && productCatUpper.includes("SMM")) return true;
+      if (filterKey === "Jeux" && productCatUpper.includes(A)) return true;
     }
+    return false;
+  }
 
-    // ✅ Sync entre pages/onglets
-    window.addEventListener("storage", (e) => {
-      if (e.key === "vf_session") renderAccountUI_();
+  function render() {
+    const grid = document.getElementById('product-grid');
+    const query = (input.value || "").toLowerCase().trim();
+
+    const filtered = ALL_PRODUCTS.filter(p => {
+      const catU = up(pCat(p));
+      const nameL = pName(p).toLowerCase();
+      const catL  = pCat(p).toLowerCase();
+
+      const matchCat = matchCatByFilter(catU, CURRENT_FILTER);
+
+      const matchSearch =
+        !query ||
+        nameL.includes(query) ||
+        catL.includes(query) ||
+        safe(p.id).toLowerCase().includes(query);
+
+      return matchCat && matchSearch;
     });
 
-    function renderAccountUI_() {
-      const area = document.getElementById("accountArea");
-      const s = getSession_();
+    if (filtered.length === 0) {
+      grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-300 font-bold uppercase">Aucun article trouvé</div>';
+      return;
+    }
 
-      area.innerHTML = "";
-      area.classList.remove("hidden");
+    grid.innerHTML = filtered.map(p => {
+      const img = pImg(p) || 'https://cdn-icons-png.flaticon.com/512/11520/11520110.png';
 
-      if (!s) {
-        area.innerHTML = `
-          <a href="login.html" class="btn-auth btn-auth-outline">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-              <path d="M10 17l5-5-5-5"></path>
-              <path d="M15 12H3"></path>
-            </svg>
-            Connexion
-          </a>
-          <a href="register.html" class="btn-auth btn-auth-primary brand-gradient text-white shadow-md">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="8.5" cy="7" r="4"></circle>
-              <path d="M20 8v6"></path>
-              <path d="M23 11h-6"></path>
-            </svg>
-            Inscription
-          </a>
-        `;
-        return;
-      }
+      const priceRaw = pPrice(p);
+      const priceNum = parseFloat(String(priceRaw).replace(",", "."));
+      const priceTxt = Number.isFinite(priceNum) ? priceNum.toFixed(2) : safe(priceRaw);
 
-      const display = safe(s.username || s.email || "Compte");
+      const id = encodeURIComponent(safe(p.id).trim());
+      const productUrl = `p/${id}/`;
 
-      area.innerHTML = `
-        <div class="hidden md:flex items-center gap-2 bg-white border border-gray-200 px-3 py-2 rounded-2xl">
-          <div class="w-8 h-8 rounded-xl brand-gradient flex items-center justify-center text-white font-black text-sm">
-            ${display.slice(0,1).toUpperCase()}
+      const min = pMin(p);
+      const max = pMax(p);
+
+      return `
+        <div onclick="location.href='${productUrl}'"
+          class="hover-card group bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col cursor-pointer shadow-sm">
+          <div class="aspect-square bg-[#F8FAFC] rounded-[22px] mb-4 flex items-center justify-content-center p-6 overflow-hidden">
+            <img src="${img}"
+              class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
+              onerror="this.src='https://cdn-icons-png.flaticon.com/512/11520/11520110.png'">
           </div>
-          <div class="leading-tight">
-            <div class="text-[11px] font-black text-gray-900">Bonjour, ${display}</div>
-            <div class="text-[9px] font-black uppercase tracking-widest text-gray-300">Connecté</div>
+          <div class="px-1">
+            <span class="text-[9px] font-black text-[#F07E13] uppercase tracking-tighter mb-1 block">${safe(pCat(p))}</span>
+            <h3 class="text-[13px] font-bold text-gray-900 leading-tight mb-4 h-8 overflow-hidden line-clamp-2">${safe(pName(p))}</h3>
+            <div class="flex items-center justify-between">
+              <span class="text-gray-900 font-black text-lg tracking-tighter">${priceTxt} $</span>
+              <div class="bg-gray-900 text-white p-1.5 rounded-lg group-hover:brand-gradient transition-all">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                  <path d="M12 4v16m8-8H4"></path>
+                </svg>
+              </div>
+            </div>
+
+            ${(min || max) ? `
+              <div class="mt-3 text-[9px] font-black uppercase tracking-widest text-gray-300">
+                Min ${safe(min) || "-"} • Max ${safe(max) || "-"}
+              </div>` : ``}
           </div>
         </div>
-        <button id="logoutBtn" class="btn-auth btn-auth-outline">Déconnexion</button>
       `;
+    }).join('');
+  }
 
-      document.getElementById("logoutBtn").addEventListener("click", () => {
-        localStorage.removeItem("vf_session");
-        // ✅ force sync pour d'autres pages (même si même onglet)
-        localStorage.setItem("vf_session_changed", String(Date.now()));
-        renderAccountUI_();
-        // option: rester sur index, ou rediriger
-        // location.href = "login.html";
-      });
-    }
+  function filterCat(cat, btn) {
+    document.querySelectorAll('.cat-btn').forEach(b => {
+      b.classList.remove('text-white', 'brand-gradient', 'active');
+      b.classList.add('bg-white', 'text-gray-500');
+    });
+    btn.classList.add('text-white', 'brand-gradient', 'active');
+    btn.classList.remove('bg-white', 'text-gray-500');
+    CURRENT_FILTER = cat;
+    render();
+  }
 
-    function showLoadError_(msg){
-      const box = document.getElementById("loadError");
-      box.textContent = msg;
-      box.classList.remove("hidden");
-    }
-    function hideLoadError_(){
-      const box = document.getElementById("loadError");
-      box.classList.add("hidden");
-      box.textContent = "";
-    }
+  // init
+  renderAccountUI_();
+  initProducts();
+</script>
 
-    function initProducts() {
-      hideLoadError_();
-
-      const cbName = "vf_cb_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
-      window[cbName] = function(payload) {
-        try {
-          if (payload && payload.error) {
-            showLoadError_("Erreur API produits: " + safe(payload.error));
-            ALL_PRODUCTS = [];
-          } else {
-            ALL_PRODUCTS = Array.isArray(payload) ? payload : (Array.isArray(payload.products) ? payload.products : []);
-          }
-          render();
-        } finally {
-          try { delete window[cbName]; } catch(_) {}
-        }
-      };
-
-      const s = document.createElement('script');
-      s.src = `${SCRIPT_URL}?action=get_products&callback=${cbName}&t=${Date.now()}`;
-      s.onerror = () => {
-        showLoadError_("Impossible de charger les produits (API). Vérifie ton déploiement Apps Script / doGet JSONP.");
-        ALL_PRODUCTS = [];
-        render();
-        try { delete window[cbName]; } catch(_) {}
-      };
-      document.body.appendChild(s);
-    }
-
-    function matchCatByFilter(productCatUpper, filterKey){
-      if (filterKey === "all") return true;
-
-      const allowed = FILTER_MAP[filterKey];
-      if (!allowed) return (productCatUpper === up(filterKey));
-
-      for (const a of allowed){
-        const A = up(a);
-
-        if (productCatUpper === A) return true;
-
-        if (A === "IMEI" && productCatUpper.includes("IMEI")) return true;
-        if ((A === "PEAKERR" || A === "PEAK") && (productCatUpper.includes("PEAK") || productCatUpper.includes("PEAKERR"))) return true;
-        if (A.startsWith("SMM") && productCatUpper.includes("SMM")) return true;
-
-        if (filterKey === "Jeux" && productCatUpper.includes(A)) return true;
-      }
-      return false;
-    }
-
-    function render() {
-      const grid = document.getElementById('product-grid');
-      const query = (input.value || "").toLowerCase().trim();
-
-      const filtered = ALL_PRODUCTS.filter(p => {
-        const catU = up(pCat(p));
-        const nameL = pName(p).toLowerCase();
-        const catL  = pCat(p).toLowerCase();
-
-        const matchCat = matchCatByFilter(catU, CURRENT_FILTER);
-
-        const matchSearch =
-          !query ||
-          nameL.includes(query) ||
-          catL.includes(query) ||
-          safe(p.id).toLowerCase().includes(query);
-
-        return matchCat && matchSearch;
-      });
-
-      if (filtered.length === 0) {
-        grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-300 font-bold uppercase">Aucun article trouvé</div>';
-        return;
-      }
-
-      grid.innerHTML = filtered.map(p => {
-        const img = pImg(p) || 'https://cdn-icons-png.flaticon.com/512/11520/11520110.png';
-
-        const priceRaw = pPrice(p);
-        const price = parseFloat(priceRaw || 0);
-        const priceTxt = isFinite(price) ? price.toFixed(2) : safe(priceRaw);
-
-        const id = encodeURIComponent(safe(p.id).trim());
-        const productUrl = `p/${id}/`;
-
-        const min = pMin(p);
-        const max = pMax(p);
-
-        return `
-          <div onclick="location.href='${productUrl}'"
-            class="hover-card group bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col cursor-pointer shadow-sm">
-            <div class="aspect-square bg-[#F8FAFC] rounded-[22px] mb-4 flex items-center justify-center p-6 overflow-hidden">
-              <img src="${img}"
-                class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
-                onerror="this.src='https://cdn-icons-png.flaticon.com/512/11520/11520110.png'">
-            </div>
-            <div class="px-1">
-              <span class="text-[9px] font-black text-[#F07E13] uppercase tracking-tighter mb-1 block">${safe(pCat(p))}</span>
-              <h3 class="text-[13px] font-bold text-gray-900 leading-tight mb-4 h-8 overflow-hidden line-clamp-2">${safe(pName(p))}</h3>
-              <div class="flex items-center justify-between">
-                <span class="text-gray-900 font-black text-lg tracking-tighter">${priceTxt} $</span>
-                <div class="bg-gray-900 text-white p-1.5 rounded-lg group-hover:brand-gradient transition-all">
-                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
-                    <path d="M12 4v16m8-8H4"></path>
-                  </svg>
-                </div>
-              </div>
-
-              ${(min || max) ? `
-                <div class="mt-3 text-[9px] font-black uppercase tracking-widest text-gray-300">
-                  Min ${safe(min) || "-"} • Max ${safe(max) || "-"}
-                </div>` : ``}
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function filterCat(cat, btn) {
-      document.querySelectorAll('.cat-btn').forEach(b => {
-        b.classList.remove('text-white', 'brand-gradient', 'active');
-        b.classList.add('bg-white', 'text-gray-500');
-      });
-      btn.classList.add('text-white', 'brand-gradient', 'active');
-      btn.classList.remove('bg-white', 'text-gray-500');
-      CURRENT_FILTER = cat;
-      render();
-    }
-
-    renderAccountUI_();
-    initProducts();
-  </script>
-</body>
-</html>
