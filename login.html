@@ -1,302 +1,592 @@
 <!DOCTYPE html>
 <html lang="fr" class="font-inter">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Connexion | ViralFlowr</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>ViralFlowr | Boutique Officielle - Digital & Matériel</title>
+
+  <meta name="theme-color" content="#111827" />
+  <link rel="icon" href="favicon.png" />
+  <link rel="apple-touch-icon" href="favicon.png" />
+
+  <meta property="og:title" content="ViralFlowr | Boutique Officielle" />
+  <meta property="og:description" content="Services Elite, Déblocage IMEI et Matériel High-Tech garantis." />
+  <meta property="og:image" content="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png" />
+  <meta property="og:type" content="website" />
 
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
-    body { font-family: 'Inter', sans-serif; background-color: #F3F3F3; color: #201B16; }
-    .text-orange-bsv { color: #F07E13; }
-    .brand-gradient { background: linear-gradient(90deg, #F07E13 0%, #FFB26B 100%); }
-    .brand-gradient:hover { background: linear-gradient(90deg, #d96d0c 0%, #F07E13 100%); }
-
-    .input-field {
-      width: 100%;
-      height: 52px;
-      padding-left: 1.5rem;
-      border-radius: 40px;
-      background-color: white;
-      border: 2px solid #E5E7EB;
-      outline: none;
-      transition: all 0.2s;
-      font-weight: 600;
-      color: #18181B;
+    html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+    body {
+      font-family: 'Inter', sans-serif;
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+      min-height: 100svh;
+      overscroll-behavior-x: none;
+      touch-action: pan-y;
+      -webkit-text-size-adjust: 100%;
+      padding-bottom: env(safe-area-inset-bottom);
     }
-    .input-field:focus {
-      border-color: #F07E13;
-      box-shadow: 0 4px 12px rgba(240, 126, 19, 0.1);
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+
+    @keyframes placeholderAnimate {
+      0% { opacity: 0; transform: translateY(8px); }
+      15% { opacity: 1; transform: translateY(0); }
+      85% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-8px); }
+    }
+    .animate-text { animation: placeholderAnimate 4s infinite; }
+
+    .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
+    .hover-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .hover-card:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); border-color: #F07E13; }
+
+    .btn-support {
+      background: #25D366;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      line-height: 1;
+      transition: 0.3s;
+      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
+      white-space: nowrap;
+      max-width: 100%;
+    }
+    .btn-support svg { flex: 0 0 auto; }
+    .btn-support:hover { transform: scale(1.05); box-shadow: 0 10px 15px -3px rgba(37, 211, 102, 0.3); }
+
+    .btn-auth {
+      padding: 9px 14px;
+      border-radius: 14px;
+      font-weight: 900;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      transition: .25s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
+    }
+    .btn-auth:hover { transform: translateY(-1px); }
+    .btn-auth-outline { background: white; border: 1px solid #E5E7EB; color: #111827; }
+    .btn-auth-outline:hover { border-color: #F07E13; color: #F07E13; }
+    .btn-auth-primary { color: white; }
+
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .vf-brand-wrap{ min-width:0; overflow:hidden; }
+    .vf-brand-text{
+      display:block;
+      max-width:100%;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      line-height:1;
+    }
+
+    .icon-btn{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      background:#fff;
+      border:1px solid #E5E7EB;
+      color:#374151;
+      transition:.2s;
+      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
+    }
+    .icon-btn:hover{
+      border-color:#F07E13;
+      color:#F07E13;
+      transform:translateY(-1px);
+    }
+
+    #catNav{
+      touch-action: pan-x;
+      overscroll-behavior-x: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    header { transform: translateZ(0); -webkit-transform: translateZ(0); }
+
+    @media (max-width: 768px){
+      header { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+    }
+
+    @media (max-width: 420px){
+      .icon-btn{ width:36px; height:36px; border-radius:12px; }
+      .btn-support{ padding: 8px 10px; border-radius: 12px; font-size: 11px; gap: 6px; }
+      .btn-support .btn-support-text{ display:none; }
+      .btn-auth{ padding: 8px 10px; border-radius: 12px; font-size: 10px; letter-spacing: .10em; gap: 6px; }
+      .vf-brand-text{ font-size: 22px; }
     }
   </style>
 </head>
 
-<body class="flex flex-col min-h-screen">
+<body class="bg-[#F8FAFC]">
 
-  <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-200 shadow-sm">
-    <div class="max-w-[1240px] mx-auto h-16 px-4 flex items-center justify-between">
-      <a class="flex items-center gap-2" href="index.html">
-        <div class="text-2xl font-black tracking-tighter">
-          Viral<span class="text-orange-bsv">Flowr</span>
+  <div class="bg-gray-900 text-white py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-center">
+    MARKETPLACE PROFESSIONNELLE • LIVRAISON INTERNATIONALE • PAIEMENT SÉCURISÉ
+  </div>
+
+  <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-100 shadow-sm backdrop-blur-md bg-white/95">
+    <div class="max-w-[1280px] mx-auto px-4 h-16 flex items-center justify-between gap-2 sm:gap-4">
+
+      <a href="index.html" class="flex items-center gap-2 shrink-0 vf-brand-wrap" aria-label="ViralFlowr">
+        <div class="text-2xl font-black tracking-tighter text-gray-900 vf-brand-text">
+          Viral<span class="text-[#F07E13]">Flowr</span>
         </div>
       </a>
-      <div class="flex items-center gap-2 text-sm font-medium text-[#767676]">
-        <span class="hidden sm:inline">Pas de compte ?</span>
-        <a href="register.html" class="text-[#F07E13] font-bold hover:underline">S'inscrire</a>
+
+      <div class="hidden lg:flex items-center gap-6 text-[11px] font-black uppercase tracking-widest text-gray-400">
+        <a href="index.html" class="hover:text-gray-900 transition-colors">Boutique</a>
+        <a href="about.html" class="hover:text-gray-900 transition-colors">À Propos</a>
+      </div>
+
+      <div class="relative flex-1 max-w-[600px] hidden md:flex items-center">
+        <input type="text" id="searchInput" oninput="render()"
+          class="w-full h-11 pl-5 pr-12 rounded-xl bg-[#F1F5F9] text-sm font-semibold focus:ring-2 focus:ring-[#F07E13] focus:bg-white outline-none transition-all border-none">
+
+        <div id="placeholder-box" class="absolute left-5 pointer-events-none text-gray-400 text-sm font-semibold">
+          <span id="animated-placeholder" class="inline-block animate-text">Que cherchez-vous ? (SMM, iPhone, IMEI, Netflix...)</span>
+        </div>
+
+        <button type="button" class="absolute right-1.5 top-1.5 brand-gradient p-2 rounded-lg text-white shadow-md" aria-label="Rechercher">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+
+        <div id="accountArea" class="hidden sm:flex items-center gap-2"></div>
+
+        <a href="commandes.html" class="icon-btn" title="Mes commandes" aria-label="Mes commandes">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 6h11"></path>
+            <path d="M9 12h11"></path>
+            <path d="M9 18h11"></path>
+            <path d="M4 6h.01"></path>
+            <path d="M4 12h.01"></path>
+            <path d="M4 18h.01"></path>
+          </svg>
+        </a>
+
+        <a href="wallet.html" class="icon-btn" title="Portefeuille" aria-label="Portefeuille">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
+            <path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/>
+            <path d="M20 12h-4a2 2 0 0 0 0 4h4"/>
+            <circle cx="16" cy="14" r="0.5" />
+          </svg>
+        </a>
+
+        <a href="https://www.instagram.com/di_corporation_1/" target="_blank" rel="noopener noreferrer"
+          class="hidden sm:flex icon-btn" aria-label="Instagram">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
+            <path d="M16 11.37a4 4 0 1 1-7.87 1.26 4 4 0 0 1 7.87-1.26z"></path>
+            <path d="M17.5 6.5h.01"></path>
+          </svg>
+        </a>
+
+        <a href="https://www.tiktok.com/@dicorporation" target="_blank" rel="noopener noreferrer"
+          class="hidden sm:flex icon-btn" aria-label="TikTok">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16.7 7.4c-1-1-1.6-2.3-1.7-3.7h-3v12c0 1.3-1 2.3-2.3 2.3-1.2 0-2.2-1-2.2-2.2 0-1.3 1-2.3 2.2-2.3.3 0 .6.1.9.2V9.3c-.3-.1-.6-.1-.9-.1C6.6 9.2 4 11.8 4 15c0 3.2 2.6 5.8 5.8 5.8 3.2 0 5.8-2.6 5.8-5.8V11c1.1.8 2.4 1.2 3.8 1.2V9.3c-1.1 0-2.2-.4-3-.9z"/>
+          </svg>
+        </a>
+
+        <a href="https://wa.me/243850373991" target="_blank" rel="noopener noreferrer" class="btn-support">
+          <svg width="18" height="18" fill="white" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+          </svg>
+          <span class="btn-support-text">Aide</span>
+        </a>
       </div>
     </div>
   </header>
 
-  <main class="flex-1 flex items-center justify-center p-4">
-    <div class="bg-white rounded-[20px] shadow-lg p-8 md:p-12 w-full max-w-[500px] relative">
-      <a href="index.html" class="absolute right-6 top-6 text-gray-400 hover:text-black text-xl transition-transform hover:scale-110">✕</a>
+  <main class="max-w-[1280px] mx-auto px-4 py-8">
 
-      <div class="flex flex-col items-center gap-6">
-        <h1 class="text-3xl font-bold text-[#18181B] tracking-tight">Se connecter</h1>
-
-        <button type="button" class="w-full h-[52px] rounded-[40px] bg-[#1a73e8] hover:bg-[#1669d6] flex items-center justify-center gap-4 transition-colors group">
-          <div class="p-2 rounded-full bg-white w-8 h-8 flex items-center justify-center">
-            <svg width="18" height="18" viewBox="0 0 48 48">
-              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
-              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
-              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
-              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
-              <path fill="none" d="M0 0h48v48H0z"></path>
-            </svg>
-          </div>
-          <span class="text-white font-bold text-sm tracking-wide">Continuer avec Google</span>
-        </button>
-
-        <div class="flex items-center gap-4 w-full">
-          <div class="h-[1px] bg-gray-200 flex-1"></div>
-          <span class="text-gray-400 text-sm font-medium">Ou</span>
-          <div class="h-[1px] bg-gray-200 flex-1"></div>
+    <section class="mb-10">
+      <article class="relative w-full h-[250px] md:h-[400px] rounded-[32px] overflow-hidden shadow-2xl group border-4 border-white">
+        <img src="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" alt="ViralFlowr">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"></div>
+        <div class="relative z-10 p-8 md:p-16 flex flex-col justify-end h-full text-white">
+          <h1 class="text-3xl md:text-6xl font-black max-w-2xl leading-[0.95] mb-4 tracking-tighter uppercase italic">L'Univers Digital <br>& Matériel.</h1>
+          <p class="text-xs md:text-lg font-medium opacity-90 max-w-md">Services Elite, Déblocage IMEI et Matériel High-Tech garantis.</p>
         </div>
+      </article>
+    </section>
 
-        <form id="loginForm" class="w-full flex flex-col gap-4">
-          <div id="msgBox" role="alert" aria-live="polite" class="hidden w-full text-sm font-semibold px-4 py-3 rounded-2xl border"></div>
-
-          <div>
-            <input type="email" id="email" placeholder="Email" class="input-field" required>
-          </div>
-
-          <div class="relative">
-            <input type="password" id="password" placeholder="Mot de passe" class="input-field" required>
-            <button type="button" id="toggleBtn" class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" aria-label="Afficher le mot de passe" aria-pressed="false">
-              <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-            </button>
-          </div>
-
-          <a href="#" id="forgotLink" class="text-sm text-[#F07E13] font-bold hover:underline text-center mt-[-5px]">
-            Mot de passe oublié ?
-          </a>
-
-          <button type="submit" id="submitBtn" class="mt-4 w-full h-[52px] rounded-[40px] brand-gradient text-white font-bold text-base shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all disabled:opacity-70 disabled:cursor-not-allowed">
-            Se connecter
-          </button>
-        </form>
-
-        <p class="text-sm text-[#767676] mt-2">
-          Nouveau ici ? <a href="register.html" class="text-[#F07E13] font-bold hover:underline ml-1">Créer un compte</a>
-        </p>
-      </div>
+    <div class="flex items-center gap-3 overflow-x-auto no-scrollbar pb-6 mb-10 border-b border-gray-100" id="catNav">
+      <button onclick="filterCat('all', this)" class="cat-btn active bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">⚡ Tous</button>
+      <button onclick="filterCat('Materiel', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">📦 MATÉRIEL & GADGETS</button>
+      <button onclick="filterCat('Abonnement', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">📺 ABONNEMENTS</button>
+      <button onclick="filterCat('Carte2', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">💳 CARTES CADEAUX</button>
+      <button onclick="filterCat('IMEI', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">📱 IMEI & RÉSEAU</button>
+      <button onclick="filterCat('Boost', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">🚀 BOOST SMM</button>
+      <button onclick="filterCat('Jeux', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">🎮 JEUX</button>
     </div>
+
+    <div id="loadError" class="hidden mb-6 bg-red-50 border border-red-200 text-red-700 font-bold text-xs rounded-2xl px-4 py-3"></div>
+
+    <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 mb-24">
+      <div class="h-64 bg-white rounded-3xl animate-pulse shadow-sm"></div>
+      <div class="h-64 bg-white rounded-3xl animate-pulse shadow-sm"></div>
+      <div class="h-64 bg-white rounded-3xl animate-pulse shadow-sm"></div>
+    </div>
+
   </main>
 
-  <footer class="bg-white border-t border-gray-200 py-8">
-    <div class="max-w-[1240px] mx-auto px-4 text-center">
-      <p class="text-[11px] text-[#767676]">© 2026 ViralFlowr. Tous droits réservés.</p>
+  <footer class="bg-white border-t border-gray-100 py-12">
+    <div class="max-w-[1280px] mx-auto px-4 flex flex-col items-center">
+      <div class="text-2xl font-black tracking-tighter mb-6">Viral<span class="text-[#F07E13]">Flowr</span></div>
+
+      <div class="flex flex-wrap justify-center gap-8 mb-8 text-[11px] font-black uppercase text-gray-400 tracking-widest">
+        <a href="about.html" class="hover:text-gray-900">À Propos</a>
+        <a href="https://wa.me/243850373991" target="_blank" rel="noopener noreferrer" class="hover:text-green-500">Contact Support</a>
+        <a href="https://t.me/Viralflow" target="_blank" rel="noopener noreferrer" class="hover:text-blue-500">Telegram Community</a>
+        <a href="https://www.instagram.com/di_corporation_1/" target="_blank" rel="noopener noreferrer" class="hover:text-pink-500">Instagram</a>
+        <a href="https://www.tiktok.com/@dicorporation" target="_blank" rel="noopener noreferrer" class="hover:text-gray-900">TikTok</a>
+      </div>
+
+      <p class="text-[9px] text-gray-300 text-center max-w-lg leading-relaxed uppercase">
+        © 2026 ViralFlowr Enterprise. Livraison garantie. Les marques citées appartiennent à leurs propriétaires.
+      </p>
     </div>
   </footer>
 
   <script>
-    // ✅ URL WebApp /exec (ton ID)
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
 
-    const msgBox = document.getElementById("msgBox");
-    const btn = document.getElementById("submitBtn");
-    const defaultBtnText = btn.textContent;
+    let ALL_PRODUCTS = [];
+    let CURRENT_FILTER = "all";
 
-    function showMsg(text, type = "info") {
-      msgBox.classList.remove("hidden");
-      msgBox.classList.remove(
-        "bg-green-50","text-green-700","border-green-200",
-        "bg-red-50","text-red-700","border-red-200",
-        "bg-gray-50","text-gray-700","border-gray-200"
+    // ✅ Statut revendeur renvoyé par l'API
+    let IS_RESELLER = false;
+    let RESELLER_EMAIL_USED = "";
+
+    const FILTER_MAP = {
+      "Abonnement": ["ABONNEMENT","CARTE"],
+      "Carte2":     ["CARTE2"],
+      "Boost":      ["BOOST","BOOST2","SMM1","SMM2","SMM3","PEAKERR","PEAK"],
+      "Materiel":   ["MATERIEL","GADGET","PHONE"],
+      "IMEI":       ["IMEI"],
+      "Jeux":       ["JEUX","JEU","GAME","GAMING","PSN","PLAYSTATION","XBOX","STEAM","NINTENDO"]
+    };
+
+    const input = document.getElementById('searchInput');
+    const placeholderBox = document.getElementById('placeholder-box');
+    input.addEventListener('focus', () => placeholderBox.style.display = 'none');
+    input.addEventListener('blur', () => { if(input.value === "") placeholderBox.style.display = 'block'; });
+
+    function safe(v){ return (v === null || v === undefined) ? "" : String(v); }
+    function up(v){ return safe(v).trim().toUpperCase(); }
+
+    function pName(p){ return safe(p.nom || p.name || p.title); }
+    function pCat(p){ return safe(p.cat || p.category || p.categorie); }
+
+    // ✅ IMPORTANT: prix affiché (revendeur) si dispo
+    function pPrice(p){
+      return safe(
+        (p && (
+          p.prix_affiche ??
+          p.prix ??
+          p.price ??
+          p.amount ??
+          p.PV ?? p.pv ??
+          p.prix_client ??
+          p.RESELLER ?? p.reseller ??
+          p.prix_revendeur
+        ))
       );
-      if (type === "success") msgBox.classList.add("bg-green-50","text-green-700","border-green-200");
-      else if (type === "error") msgBox.classList.add("bg-red-50","text-red-700","border-red-200");
-      else msgBox.classList.add("bg-gray-50","text-gray-700","border-gray-200");
-
-      msgBox.textContent = text;
-      msgBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
 
-    function setLoading(isLoading) {
-      btn.disabled = isLoading;
-      btn.textContent = isLoading ? "Connexion..." : defaultBtnText;
+    function pImg(p){ return safe(p.img || p.image || p.photo); }
+    function pMin(p){ return safe(p.min || p.minqnt || p.minQty || p.min_qty); }
+    function pMax(p){ return safe(p.max || p.maxqnt || p.maxQty || p.max_qty); }
+
+    function getSession_() {
+      try {
+        const raw = localStorage.getItem("vf_session");
+        if (!raw) return null;
+        const s = JSON.parse(raw);
+        if (!s || (!s.email && !s.username)) return null;
+        return s;
+      } catch { return null; }
     }
 
-    function isValidEmail(email) {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email);
+    // ✅ IMPORTANT: token UNIQUEMENT depuis vf_session.token
+    function getToken_(){
+      try{
+        const s = getSession_();
+        return String((s && s.token) ? s.token : "").trim();
+      }catch{
+        return "";
+      }
     }
 
-    function normalizeServerError(codeOrText) {
-      const code = String(codeOrText || "").trim();
+    // ✅ Sync entre pages/onglets
+    window.addEventListener("storage", (e) => {
+      if (e.key === "vf_session" || e.key === "vf_token" || e.key === "vf_session_changed") {
+        renderAccountUI_();
+        initProducts(); // recharge => prix revendeur
+      }
+    });
 
-      const map = {
-        USER_NOT_FOUND: "Aucun compte trouvé avec cet email. Crée un compte ou vérifie l’adresse.",
-        INVALID_PASSWORD: "Mot de passe incorrect. Réessaie.",
-        USER_DISABLED: "Ce compte est désactivé. Contacte le support.",
-        MISSING_FIELDS: "Veuillez remplir tous les champs requis.",
-        INVALID_EMAIL: "Adresse email invalide. Vérifie l’orthographe.",
-        RATE_LIMIT: "Trop de tentatives. Réessaie dans quelques minutes.",
-        NOT_AUTHORIZED: "Accès refusé (déploiement serveur). Contacte le support si besoin.",
-        INTERNAL_ERROR: "Erreur interne du serveur. Réessaie plus tard."
+    function renderAccountUI_() {
+      const area = document.getElementById("accountArea");
+      const s = getSession_();
+
+      area.innerHTML = "";
+      area.classList.remove("hidden");
+
+      if (!s) {
+        area.innerHTML = `
+          <a href="login.html" class="btn-auth btn-auth-outline">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+              <path d="M10 17l5-5-5-5"></path>
+              <path d="M15 12H3"></path>
+            </svg>
+            Connexion
+          </a>
+          <a href="register.html" class="btn-auth btn-auth-primary brand-gradient text-white shadow-md">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="8.5" cy="7" r="4"></circle>
+              <path d="M20 8v6"></path>
+              <path d="M23 11h-6"></path>
+            </svg>
+            Inscription
+          </a>
+        `;
+        return;
+      }
+
+      const display = safe(s.username || s.email || "Compte");
+      const badge = IS_RESELLER
+        ? `<span class="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-widest bg-orange-50 text-[#F07E13] border border-orange-200">Revendeur</span>`
+        : ``;
+
+      area.innerHTML = `
+        <div class="hidden md:flex items-center gap-2 bg-white border border-gray-200 px-3 py-2 rounded-2xl">
+          <div class="w-8 h-8 rounded-xl brand-gradient flex items-center justify-center text-white font-black text-sm">
+            ${display.slice(0,1).toUpperCase()}
+          </div>
+          <div class="leading-tight">
+            <div class="text-[11px] font-black text-gray-900">Bonjour, ${display} ${badge}</div>
+            <div class="text-[9px] font-black uppercase tracking-widest text-gray-300">
+              ${IS_RESELLER && RESELLER_EMAIL_USED ? ("email revendeur: " + RESELLER_EMAIL_USED) : "Connecté"}
+            </div>
+          </div>
+        </div>
+        <button id="logoutBtn" class="btn-auth btn-auth-outline">Déconnexion</button>
+      `;
+
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        localStorage.removeItem("vf_session");
+        localStorage.removeItem("vf_token");
+        localStorage.setItem("vf_session_changed", String(Date.now()));
+        IS_RESELLER = false;
+        RESELLER_EMAIL_USED = "";
+        renderAccountUI_();
+        initProducts(); // recharger prix client
+      });
+    }
+
+    function showLoadError_(msg){
+      const box = document.getElementById("loadError");
+      box.textContent = msg;
+      box.classList.remove("hidden");
+    }
+    function hideLoadError_(){
+      const box = document.getElementById("loadError");
+      box.classList.add("hidden");
+      box.textContent = "";
+    }
+
+    function initProducts() {
+      hideLoadError_();
+
+      // ✅ évite accumulation JSONP
+      const old = document.getElementById("vf_products_loader");
+      if (old) old.remove();
+
+      const cbName = "vf_cb_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
+
+      window[cbName] = function(payload) {
+        try {
+          if (payload && payload.ok === false) {
+            showLoadError_("Erreur API produits: " + safe(payload.error || payload.details));
+            ALL_PRODUCTS = [];
+            IS_RESELLER = false;
+            RESELLER_EMAIL_USED = "";
+          } else {
+            // ✅ API renvoie {ok,is_reseller, reseller_email_used, products}
+            IS_RESELLER = !!(payload && payload.is_reseller);
+            RESELLER_EMAIL_USED = safe(payload && payload.reseller_email_used);
+
+            ALL_PRODUCTS = Array.isArray(payload) ? payload : (Array.isArray(payload?.products) ? payload.products : []);
+          }
+
+          renderAccountUI_();
+          render();
+        } finally {
+          try { delete window[cbName]; } catch(_) {}
+        }
       };
 
-      // si c'est déjà une phrase lisible, on la renvoie
-      if (!map[code] && code.length > 0 && code.length < 180 && /[a-zA-ZÀ-ÿ]/.test(code) && !/^[A-Z0-9_]+$/.test(code)) {
-        return code;
+      const token = getToken_();
+      const session = getSession_();
+
+      // ✅ message clair si tu es "connecté" mais sans token
+      if (session && !token) {
+        showLoadError_("⚠️ Connexion incomplète : token manquant. Reconnecte-toi pour activer le prix revendeur.");
       }
 
-      return map[code] || "Connexion impossible. Vérifie tes infos et réessaie.";
+      const tokenParam = token ? ("&token=" + encodeURIComponent(token)) : "";
+
+      const s = document.createElement('script');
+      s.id = "vf_products_loader";
+      s.src = SCRIPT_URL + "?action=get_products" + tokenParam + "&callback=" + cbName + "&t=" + Date.now();
+      s.onerror = () => {
+        showLoadError_("Impossible de charger les produits (API). Vérifie ton déploiement Apps Script / doGet JSONP.");
+        ALL_PRODUCTS = [];
+        IS_RESELLER = false;
+        RESELLER_EMAIL_USED = "";
+        renderAccountUI_();
+        render();
+        try { delete window[cbName]; } catch(_) {}
+      };
+      document.body.appendChild(s);
     }
 
-    function guessHelpfulNetworkCause(err) {
-      const msg = String(err || "");
-      if (/failed to fetch/i.test(msg) || /networkerror/i.test(msg)) {
-        return "Connexion impossible (réseau/CORS). Vérifie : 1) l’URL du SCRIPT_URL, 2) le Web App Apps Script est bien déployé en accès public, 3) ta connexion internet.";
+    function matchCatByFilter(productCatUpper, filterKey){
+      if (filterKey === "all") return true;
+
+      const allowed = FILTER_MAP[filterKey];
+      if (!allowed) return (productCatUpper === up(filterKey));
+
+      for (const a of allowed){
+        const A = up(a);
+
+        if (productCatUpper === A) return true;
+        if (A === "IMEI" && productCatUpper.includes("IMEI")) return true;
+        if ((A === "PEAKERR" || A === "PEAK") && (productCatUpper.includes("PEAK") || productCatUpper.includes("PEAKERR"))) return true;
+        if (A.startsWith("SMM") && productCatUpper.includes("SMM")) return true;
+        if (filterKey === "Jeux" && productCatUpper.includes(A)) return true;
       }
-      if (/aborted/i.test(msg)) {
-        return "La requête a expiré (connexion lente). Réessaie.";
-      }
-      return "Erreur réseau. Vérifie ta connexion et réessaie.";
+      return false;
     }
 
-    // Voir/Cacher mot de passe
-    document.getElementById("toggleBtn").addEventListener("click", (e) => {
-      const passInput = document.getElementById("password");
-      const eye = document.getElementById("eyeIcon");
-      const btnEye = e.currentTarget;
+    function render() {
+      const grid = document.getElementById('product-grid');
+      const query = (input.value || "").toLowerCase().trim();
 
-      const willShow = (passInput.type === "password");
-      passInput.type = willShow ? "text" : "password";
+      const filtered = ALL_PRODUCTS.filter(p => {
+        const catU = up(pCat(p));
+        const nameL = pName(p).toLowerCase();
+        const catL  = pCat(p).toLowerCase();
 
-      btnEye.setAttribute("aria-pressed", willShow ? "true" : "false");
+        const matchCat = matchCatByFilter(catU, CURRENT_FILTER);
 
-      if (willShow) {
-        eye.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
-      } else {
-        eye.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+        const matchSearch =
+          !query ||
+          nameL.includes(query) ||
+          catL.includes(query) ||
+          safe(p.id).toLowerCase().includes(query);
+
+        return matchCat && matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-300 font-bold uppercase">Aucun article trouvé</div>';
+        return;
       }
-    });
 
-    // "Mot de passe oublié ?" (UX simple)
-    document.getElementById("forgotLink").addEventListener("click", (e) => {
-      e.preventDefault();
-      showMsg("Si tu as oublié ton mot de passe, contacte le support ViralFlowr pour le réinitialiser.", "info");
-    });
+      grid.innerHTML = filtered.map(p => {
+        const img = pImg(p) || 'https://cdn-icons-png.flaticon.com/512/11520/11520110.png';
 
-    // Connexion réelle (Apps Script)
-    document.getElementById("loginForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      if (btn.disabled) return; // anti double-click
-
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
-
-      if (!isValidEmail(email)) return showMsg("Adresse email invalide. Exemple: nom@domaine.com", "error");
-      if (password.length < 6) return showMsg("Mot de passe trop court (minimum 6 caractères).", "error");
-
-      setLoading(true);
-      showMsg("Connexion…", "info");
-
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000); // 15s
-
-      try {
-        const r = await fetch(SCRIPT_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" }, // évite preflight
-          redirect: "follow",
-          body: JSON.stringify({ action: "login", email, password }),
-          signal: controller.signal
-        });
-
-        const txt = await r.text();
-
-        // HTTP non-OK (404, 403, 500...)
-        if (!r.ok) {
-          if (r.status === 404) {
-            showMsg("Serveur introuvable (404). Vérifie l’URL du script Apps Script.", "error");
-            return;
-          }
-          if (r.status === 403) {
-            showMsg("Accès refusé (403). Le Web App doit être déployé en accès public (Anyone).", "error");
-            return;
-          }
-          showMsg("Erreur serveur (" + r.status + "). Réessaie plus tard.", "error");
-          return;
+        const priceRaw = pPrice(p);
+        let priceTxt = "—";
+        if (safe(priceRaw).trim() !== "") {
+          const priceNum = parseFloat(String(priceRaw).replace(",", "."));
+          priceTxt = Number.isFinite(priceNum) ? priceNum.toFixed(2) : safe(priceRaw);
         }
 
-        // Si Apps Script renvoie une page HTML (déploiement/autorisation)
-        const looksLikeHtml =
-          /^\s*<!doctype html/i.test(txt) ||
-          /^\s*<html/i.test(txt) ||
-          (txt.includes("<head>") && txt.includes("<body>"));
+        const id = encodeURIComponent(safe(p.id).trim());
+        const productUrl = `p/${id}/`;
 
-        if (looksLikeHtml) {
-          showMsg(
-            "Le serveur a renvoyé une page HTML au lieu d’une réponse de connexion. " +
-            "➡️ Vérifie que le Web App Apps Script est bien déployé (Execute as: Me) + (Who has access: Anyone) " +
-            "et que tu utilises bien l’URL /exec.",
-            "error"
-          );
-          return;
-        }
+        const min = pMin(p);
+        const max = pMax(p);
 
-        // Parse JSON
-        let data;
-        try {
-          data = JSON.parse(txt);
-        } catch {
-          showMsg(
-            "Réponse serveur invalide (non-JSON). " +
-            "➡️ Le backend doit renvoyer un JSON comme { ok:true, user:{...} } ou { ok:false, error:'...' }.",
-            "error"
-          );
-          return;
-        }
+        return `
+          <div onclick="location.href='${productUrl}'"
+            class="hover-card group bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col cursor-pointer shadow-sm">
+            <div class="aspect-square bg-[#F8FAFC] rounded-[22px] mb-4 flex items-center justify-center p-6 overflow-hidden">
+              <img src="${img}"
+                class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
+                onerror="this.src='https://cdn-icons-png.flaticon.com/512/11520/11520110.png'">
+            </div>
+            <div class="px-1">
+              <span class="text-[9px] font-black text-[#F07E13] uppercase tracking-tighter mb-1 block">${safe(pCat(p))}</span>
+              <h3 class="text-[13px] font-bold text-gray-900 leading-tight mb-4 h-8 overflow-hidden line-clamp-2">${safe(pName(p))}</h3>
+              <div class="flex items-center justify-between">
+                <span class="text-gray-900 font-black text-lg tracking-tighter">${priceTxt} $</span>
+                <div class="bg-gray-900 text-white p-1.5 rounded-lg group-hover:brand-gradient transition-all">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                    <path d="M12 4v16m8-8H4"></path>
+                  </svg>
+                </div>
+              </div>
 
-        if (data && data.ok) {
-          // ✅ Session simple
-          const user = data.user || { email };
-          localStorage.setItem("vf_session", JSON.stringify({
-            email: user.email || email,
-            username: user.username || "",
-            ts: Date.now()
-          }));
+              ${(min || max) ? `
+                <div class="mt-3 text-[9px] font-black uppercase tracking-widest text-gray-300">
+                  Min ${safe(min) || "-"} • Max ${safe(max) || "-"}
+                </div>` : ``}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
 
-          showMsg("Connexion réussie ✅ Redirection…", "success");
-          setTimeout(() => window.location.href = "index.html", 800);
-        } else {
-          const friendly = normalizeServerError(data?.error || data?.message || txt);
-          showMsg(friendly, "error");
-        }
+    function filterCat(cat, btn) {
+      document.querySelectorAll('.cat-btn').forEach(b => {
+        b.classList.remove('text-white', 'brand-gradient', 'active');
+        b.classList.add('bg-white', 'text-gray-500');
+      });
+      btn.classList.add('text-white', 'brand-gradient', 'active');
+      btn.classList.remove('bg-white', 'text-gray-500');
+      CURRENT_FILTER = cat;
+      render();
+    }
 
-      } catch (err) {
-        showMsg(guessHelpfulNetworkCause(err), "error");
-      } finally {
-        clearTimeout(timeout);
-        setLoading(false);
-      }
-    });
+    renderAccountUI_();
+    initProducts();
   </script>
 </body>
 </html>
