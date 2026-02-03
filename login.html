@@ -1,176 +1,353 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="font-inter">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Connexion | ViralFlowr</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>ViralFlowr | Connexion</title>
+
+  <meta name="theme-color" content="#111827" />
+  <link rel="icon" href="favicon.png" />
+  <link rel="apple-touch-icon" href="favicon.png" />
 
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
-    body { font-family: Inter, sans-serif; }
+    html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+    body{
+      font-family:'Inter',sans-serif;
+      background:#F8FAFC;
+      min-height:100svh;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
+    .icon-btn{
+      display:flex; align-items:center; justify-content:center;
+      width:40px; height:40px; border-radius:14px;
+      background:#fff; border:1px solid #E5E7EB; color:#374151;
+      transition:.2s; -webkit-tap-highlight-color: transparent;
+    }
+    .icon-btn:hover{ border-color:#F07E13; color:#F07E13; transform:translateY(-1px); }
+    .btn-auth{
+      padding: 9px 14px; border-radius: 14px; font-weight: 900; font-size: 11px;
+      text-transform: uppercase; letter-spacing: .12em; transition: .25s;
+      display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-auth-outline{ background:white; border:1px solid #E5E7EB; color:#111827; }
+    .btn-auth-outline:hover{ border-color:#F07E13; color:#F07E13; }
   </style>
 </head>
 
-<body class="bg-slate-50 min-h-screen flex items-center justify-center px-4">
+<body>
 
-  <div class="w-full max-w-md bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
-    <div class="mb-6">
-      <div class="text-2xl font-black tracking-tight">
-        Viral<span class="text-[#F07E13]">Flowr</span>
-      </div>
-      <div class="text-slate-500 font-semibold text-sm mt-1">Connexion revendeur / client</div>
-    </div>
-
-    <div id="msg" class="hidden mb-4 text-sm font-bold rounded-2xl px-4 py-3"></div>
-
-    <form id="loginForm" class="space-y-4">
-      <div>
-        <label class="text-xs font-extrabold uppercase tracking-widest text-slate-400">Email</label>
-        <input id="email" name="email" type="email" autocomplete="username" required
-          class="mt-2 w-full h-11 px-4 rounded-2xl bg-slate-100 font-semibold outline-none focus:ring-2 focus:ring-[#F07E13]" />
-      </div>
-
-      <div>
-        <label class="text-xs font-extrabold uppercase tracking-widest text-slate-400">Mot de passe</label>
-        <input id="password" name="password" type="password" autocomplete="current-password" required
-          class="mt-2 w-full h-11 px-4 rounded-2xl bg-slate-100 font-semibold outline-none focus:ring-2 focus:ring-[#F07E13]" />
-      </div>
-
-      <button id="btn" type="submit"
-        class="w-full h-12 rounded-2xl font-black text-white shadow-sm"
-        style="background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%);">
-        Se connecter
-      </button>
-
-      <div class="text-center text-xs font-bold text-slate-400">
-        Pas de compte ? <a class="text-[#F07E13]" href="register.html">Créer un compte</a>
-      </div>
-    </form>
+  <div class="bg-gray-900 text-white py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-center">
+    CONNEXION • ESPACE CLIENT / REVENDEUR
   </div>
 
+  <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-100 shadow-sm">
+    <div class="max-w-[1280px] mx-auto px-4 h-16 flex items-center justify-between gap-2 sm:gap-4">
+      <a href="index.html" class="flex items-center gap-2 shrink-0" aria-label="ViralFlowr">
+        <div class="text-2xl font-black tracking-tighter text-gray-900">
+          Viral<span class="text-[#F07E13]">Flowr</span>
+        </div>
+      </a>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <a href="index.html" class="icon-btn" title="Retour boutique" aria-label="Retour boutique">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 18l-6-6 6-6"></path>
+          </svg>
+        </a>
+        <a href="register.html" class="btn-auth btn-auth-outline">Inscription</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-[900px] mx-auto px-4 py-10">
+    <div class="grid md:grid-cols-2 gap-8 items-start">
+
+      <section class="bg-white rounded-[28px] border border-gray-100 shadow-sm p-6 md:p-8">
+        <h1 class="text-2xl md:text-3xl font-black tracking-tighter text-gray-900">Connexion</h1>
+        <p class="text-sm font-semibold text-gray-400 mt-2">
+          Connecte-toi pour accéder aux prix et au portefeuille.
+        </p>
+
+        <div id="errBox" class="hidden mt-5 bg-red-50 border border-red-200 text-red-700 font-bold text-xs rounded-2xl px-4 py-3"></div>
+        <div id="okBox" class="hidden mt-5 bg-green-50 border border-green-200 text-green-700 font-bold text-xs rounded-2xl px-4 py-3"></div>
+
+        <form id="loginForm" class="mt-6 space-y-4" autocomplete="on">
+          <div>
+            <label class="block text-[11px] font-black uppercase tracking-widest text-gray-400 mb-2">Email</label>
+            <input id="email" name="email" type="email" required
+              class="w-full h-12 px-4 rounded-2xl bg-[#F1F5F9] text-sm font-semibold focus:ring-2 focus:ring-[#F07E13] focus:bg-white outline-none transition-all border-none"
+              placeholder="ex: otowekeandy@gmail.com" />
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-black uppercase tracking-widest text-gray-400 mb-2">Mot de passe</label>
+            <div class="relative">
+              <input id="password" name="password" type="password" required
+                class="w-full h-12 px-4 pr-12 rounded-2xl bg-[#F1F5F9] text-sm font-semibold focus:ring-2 focus:ring-[#F07E13] focus:bg-white outline-none transition-all border-none"
+                placeholder="••••••••••" />
+              <button id="togglePwd" type="button"
+                class="absolute right-2 top-2.5 w-9 h-9 rounded-xl border border-gray-200 bg-white text-gray-600 font-black text-xs hover:border-[#F07E13] hover:text-[#F07E13] transition">
+                👁
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between gap-3">
+            <label class="flex items-center gap-2 text-xs font-bold text-gray-500">
+              <input id="remember" type="checkbox" class="accent-[#F07E13]" />
+              Se souvenir
+            </label>
+            <a href="index.html" class="text-xs font-black text-gray-300 hover:text-[#F07E13] transition">Retour boutique</a>
+          </div>
+
+          <button id="submitBtn" type="submit"
+            class="w-full h-12 rounded-2xl brand-gradient text-white font-black uppercase tracking-widest text-[12px] shadow-md hover:opacity-95 transition disabled:opacity-60 disabled:cursor-not-allowed">
+            Se connecter
+          </button>
+
+          <p class="text-[11px] font-bold text-gray-400">
+            Pas de compte ? <a href="register.html" class="font-black text-[#F07E13] hover:underline">Créer un compte</a>
+          </p>
+        </form>
+
+        <!-- iframe caché (fallback CORS) -->
+        <iframe id="vf_iframe" name="vf_iframe" class="hidden"></iframe>
+      </section>
+
+      <aside class="bg-white rounded-[28px] border border-gray-100 shadow-sm p-6 md:p-8">
+        <h2 class="text-xl font-black tracking-tighter text-gray-900">Astuce Revendeur</h2>
+        <p class="text-sm font-semibold text-gray-400 mt-2 leading-relaxed">
+          Si tu es revendeur, le serveur doit renvoyer un <span class="text-gray-900">token</span>.
+          Le site le stocke dans <span class="text-gray-900">localStorage.vf_token</span> puis la boutique affiche les prix revendeur.
+        </p>
+
+        <div class="mt-5 bg-gray-50 border border-gray-100 rounded-2xl p-4">
+          <div class="text-[11px] font-black uppercase tracking-widest text-gray-400">Clés utilisées</div>
+          <ul class="mt-2 text-xs font-bold text-gray-600 space-y-1">
+            <li>• <span class="text-gray-900">vf_session</span> (email, username, token...)</li>
+            <li>• <span class="text-gray-900">vf_token</span> (token revendeur)</li>
+            <li>• <span class="text-gray-900">vf_session_changed</span> (sync onglets)</li>
+          </ul>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
   <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
+    // =========================
+    // CONFIG
+    // =========================
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
 
-  function vfDebug(msg, obj){
-    console.log("[VF LOGIN]", msg, obj || "");
-    const box = document.getElementById("vfDebugBox");
-    if (box){
-      const line = document.createElement("div");
-      line.style.fontFamily = "monospace";
-      line.style.fontSize = "12px";
-      line.textContent = msg + (obj ? " " + JSON.stringify(obj) : "");
-      box.appendChild(line);
+    // =========================
+    // UI helpers
+    // =========================
+    const $ = (id) => document.getElementById(id);
+
+    function showErr(msg){
+      $("okBox").classList.add("hidden");
+      $("okBox").textContent = "";
+      $("errBox").textContent = String(msg || "Erreur inconnue");
+      $("errBox").classList.remove("hidden");
     }
-  }
-
-  function vfLogin(email, password) {
-    const rid = "REQ-" + Date.now();
-
-    vfDebug("Start login rid=" + rid);
-
-    // Timeout : si aucune réponse
-    const timer = setTimeout(() => {
-      window.removeEventListener("message", onMsg);
-      vfDebug("TIMEOUT: aucune réponse postMessage reçue");
-      alert("Aucune réponse du serveur (postMessage). Vérifie doPost/login + origin.");
-    }, 12000);
-
-    function isAllowedOrigin(origin){
-      try{
-        const h = new URL(origin).hostname;
-        return (
-          h.endsWith("script.googleusercontent.com") ||
-          h.endsWith("script.google.com")
-        );
-      }catch(e){ return false; }
+    function showOk(msg){
+      $("errBox").classList.add("hidden");
+      $("errBox").textContent = "";
+      $("okBox").textContent = String(msg || "OK");
+      $("okBox").classList.remove("hidden");
+    }
+    function setLoading(on){
+      const btn = $("submitBtn");
+      btn.disabled = !!on;
+      btn.textContent = on ? "Connexion..." : "Se connecter";
     }
 
-    function onMsg(e) {
-      if (!isAllowedOrigin(e.origin)) {
-        // laisse une trace pour voir si un message arrive d'une autre origine
-        vfDebug("Message ignoré (origine non autorisée): " + e.origin);
-        return;
+    // =========================
+    // Security: jamais password dans URL
+    // =========================
+    (function prefillEmailOnly(){
+      const params = new URLSearchParams(location.search);
+      const email = params.get("email");
+      if (email) $("email").value = email;
+
+      if (params.get("password")) {
+        // on nettoie l'URL
+        params.delete("password");
+        const clean = location.pathname + (params.toString() ? ("?" + params.toString()) : "");
+        history.replaceState(null, "", clean);
+        showErr("Sécurité : le mot de passe ne doit jamais être passé dans l’URL.");
       }
+    })();
 
-      vfDebug("Message reçu depuis: " + e.origin, e.data);
+    // show/hide password
+    $("togglePwd").addEventListener("click", () => {
+      const p = $("password");
+      p.type = (p.type === "password") ? "text" : "password";
+    });
 
-      const data = e.data || {};
-      if (data.request_id !== rid) {
-        vfDebug("Message ignoré (request_id différent)", data);
-        return;
-      }
+    // =========================
+    // Storage (session + token)
+    // =========================
+    function saveSession_(resp, emailInput){
+      const token =
+        (resp && (resp.token || resp.vf_token || resp.session_token || resp.access_token || resp.reseller_token)) || "";
 
-      clearTimeout(timer);
-      window.removeEventListener("message", onMsg);
-
-      if (!data.ok) {
-        alert("Login échoué: " + (data.error || "UNKNOWN"));
-        return;
-      }
+      const username = (resp && (resp.username || resp.user || resp.name)) || emailInput;
 
       const session = {
-        email: data.email || email,
-        username: data.username || data.user || email,
-        ts: Date.now(),
-        is_reseller: !!data.is_reseller
+        email: emailInput,
+        username: username,
+        token: token,
+        is_reseller: !!(resp && (resp.is_reseller || resp.reseller || resp.role === "reseller" || resp.type === "reseller")),
+        ts: Date.now()
       };
 
       localStorage.setItem("vf_session", JSON.stringify(session));
-      if (data.token) localStorage.setItem("vf_token", String(data.token));
+      if (token) localStorage.setItem("vf_token", String(token));
       localStorage.setItem("vf_session_changed", String(Date.now()));
-
-      vfDebug("Session enregistrée, redirection -> index.html");
-      location.href = "index.html";
     }
 
-    window.addEventListener("message", onMsg);
-
-    // Iframe caché
-    let iframe = document.getElementById("vf_login_iframe");
-    if (!iframe) {
-      iframe = document.createElement("iframe");
-      iframe.id = "vf_login_iframe";
-      iframe.name = "vf_login_iframe";
-      iframe.style.display = "none";
-      document.body.appendChild(iframe);
+    function nextUrl_(){
+      const params = new URLSearchParams(location.search);
+      const next = params.get("next");
+      // sécurité: autoriser seulement chemins relatifs
+      if (next && /^[a-z0-9\-\/_.]+$/i.test(next)) return next;
+      return "index.html";
     }
 
-    // Form POST vers Apps Script (pas de CORS)
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.target = "vf_login_iframe";
+    // =========================
+    // 1) Tentative fetch (si CORS OK)
+    // 2) Fallback iframe postMessage (si CORS KO)
+    // =========================
+    async function tryFetchLogin_(email, password){
+      const payload = { action: "login", email, password };
 
-    const origin = location.origin; // IMPORTANT: origine réelle du site
-    form.action =
-      SCRIPT_URL +
-      "?action=login" +
-      "&transport=iframe" +
-      "&origin=" + encodeURIComponent(origin) +
-      "&request_id=" + encodeURIComponent(rid);
+      const r = await fetch(SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        // IMPORTANT: si CORS bloque, ça va tomber en catch
+        mode: "cors"
+      });
 
-    function add(name, value) {
-      const i = document.createElement("input");
-      i.type = "hidden";
-      i.name = name;
-      i.value = value;
-      form.appendChild(i);
+      // Certains déploiements renvoient du texte
+      const text = await r.text();
+      let data = null;
+      try { data = JSON.parse(text); } catch(_) { data = { ok:false, error:"BAD_RESPONSE", details:text }; }
+      return data;
     }
 
-    add("email", email);
-    add("password", password);
+    function iframeLogin_(email, password){
+      return new Promise((resolve) => {
+        const reqId = "REQ-" + Date.now() + "-" + Math.floor(Math.random()*1000000);
 
-    document.body.appendChild(form);
-    form.submit();
-    form.remove();
-  }
-</script>
+        // Form POST => iframe
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = SCRIPT_URL;
+        form.target = "vf_iframe";
 
-<!-- Ajoute ça quelque part dans ta page pour voir le debug -->
-<div id="vfDebugBox" style="padding:10px;background:#111827;color:#fff;border-radius:12px;margin-top:10px;"></div>
+        const add = (k, v) => {
+          const i = document.createElement("input");
+          i.type = "hidden";
+          i.name = k;
+          i.value = String(v ?? "");
+          form.appendChild(i);
+        };
 
+        add("action", "login");
+        add("email", email);
+        add("password", password);
 
+        // transport iframe + origin + request id (ton doPost les lit déjà)
+        add("transport", "iframe");
+        add("origin", location.origin);
+        add("request_id", reqId);
+
+        // handler message
+        const iframe = $("vf_iframe");
+
+        const handler = (event) => {
+          // On accepte uniquement les messages venant de NOTRE iframe
+          if (!iframe || event.source !== iframe.contentWindow) return;
+
+          // Origines possibles : googleusercontent / script.google.com
+          const o = String(event.origin || "");
+          const okOrigin =
+            /(^https:\/\/script\.google\.com$)/i.test(o) ||
+            /\.googleusercontent\.com$/i.test(o);
+
+          if (!okOrigin) return;
+
+          let msg = event.data;
+          try { if (typeof msg === "string") msg = JSON.parse(msg); } catch(_) {}
+
+          // on retire listener
+          window.removeEventListener("message", handler);
+
+          // Nettoyage
+          try { form.remove(); } catch(_) {}
+
+          resolve(msg || { ok:false, error:"NO_DATA" });
+        };
+
+        window.addEventListener("message", handler);
+
+        // Envoi
+        document.body.appendChild(form);
+        form.submit();
+      });
+    }
+
+    $("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const email = String($("email").value || "").trim();
+      const password = String($("password").value || "");
+
+      if (!email || !password) {
+        showErr("Entre ton email et ton mot de passe.");
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        // 1) fetch (si CORS OK)
+        let resp = null;
+        try {
+          resp = await tryFetchLogin_(email, password);
+        } catch (corsErr) {
+          // 2) fallback iframe
+          resp = await iframeLogin_(email, password);
+        }
+
+        if (!resp || typeof resp !== "object") resp = { ok:false, error:"BAD_RESPONSE" };
+
+        if (!resp.ok) {
+          showErr(resp.error || resp.message || "Connexion refusée.");
+          setLoading(false);
+          return;
+        }
+
+        // Sauvegarde token/session pour prix revendeur
+        saveSession_(resp, email);
+
+        showOk("Connexion OK. Redirection...");
+        setTimeout(() => location.href = nextUrl_(), 450);
+
+      } catch (err) {
+        showErr("Erreur réseau / serveur : " + String(err));
+        setLoading(false);
+      }
+    });
+  </script>
 
 </body>
 </html>
