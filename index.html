@@ -285,6 +285,10 @@
     let ALL_PRODUCTS = [];
     let CURRENT_FILTER = "all";
 
+    // ✅ Statut revendeur renvoyé par l'API
+    let IS_RESELLER = false;
+    let RESELLER_EMAIL_USED = "";
+
     const FILTER_MAP = {
       "Abonnement": ["ABONNEMENT","CARTE"],
       "Carte2":     ["CARTE2"],
@@ -305,8 +309,7 @@
     function pName(p){ return safe(p.nom || p.name || p.title); }
     function pCat(p){ return safe(p.cat || p.category || p.categorie); }
 
-    // ✅ IMPORTANT: on prend le prix "affiché" si l'API le renvoie (revendeur),
-    // sinon on retombe sur prix client.
+    // ✅ IMPORTANT: prix affiché (revendeur) si dispo
     function pPrice(p){
       return safe(
         (p && (
@@ -336,22 +339,21 @@
       } catch { return null; }
     }
 
+    // ✅ IMPORTANT: token UNIQUEMENT depuis vf_session.token
     function getToken_(){
       try{
         const s = getSession_();
-        const t =
-          (s && (s.token || s.vf_token || s.session_token || s.access_token || s.reseller_token)) ||
-          localStorage.getItem("vf_token") ||
-          "";
-        return String(t || "").trim();
-      }catch{ return ""; }
+        return String((s && s.token) ? s.token : "").trim();
+      }catch{
+        return "";
+      }
     }
 
     // ✅ Sync entre pages/onglets
     window.addEventListener("storage", (e) => {
       if (e.key === "vf_session" || e.key === "vf_token" || e.key === "vf_session_changed") {
         renderAccountUI_();
-        initProducts(); // ✅ recharge produits => prix revendeur
+        initProducts(); // recharge => prix revendeur
       }
     });
 
@@ -386,6 +388,9 @@
       }
 
       const display = safe(s.username || s.email || "Compte");
+      const badge = IS_RESELLER
+        ? `<span class="ml-2 inline-flex items-center rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-widest bg-orange-50 text-[#F07E13] border border-orange-200">Revendeur</span>`
+        : ``;
 
       area.innerHTML = `
         <div class="hidden md:flex items-center gap-2 bg-white border border-gray-200 px-3 py-2 rounded-2xl">
@@ -393,8 +398,10 @@
             ${display.slice(0,1).toUpperCase()}
           </div>
           <div class="leading-tight">
-            <div class="text-[11px] font-black text-gray-900">Bonjour, ${display}</div>
-            <div class="text-[9px] font-black uppercase tracking-widest text-gray-300">Connecté</div>
+            <div class="text-[11px] font-black text-gray-900">Bonjour, ${display} ${badge}</div>
+            <div class="text-[9px] font-black uppercase tracking-widest text-gray-300">
+              ${IS_RESELLER && RESELLER_EMAIL_USED ? ("email revendeur: " + RESELLER_EMAIL_USED) : "Connecté"}
+            </div>
           </div>
         </div>
         <button id="logoutBtn" class="btn-auth btn-auth-outline">Déconnexion</button>
@@ -402,9 +409,12 @@
 
       document.getElementById("logoutBtn").addEventListener("click", () => {
         localStorage.removeItem("vf_session");
+        localStorage.removeItem("vf_token");
         localStorage.setItem("vf_session_changed", String(Date.now()));
+        IS_RESELLER = false;
+        RESELLER_EMAIL_USED = "";
         renderAccountUI_();
-        initProducts(); // ✅ recharger prix client
+        initProducts(); // recharger prix client
       });
     }
 
@@ -422,19 +432,28 @@
     function initProducts() {
       hideLoadError_();
 
-      // ✅ supprime l'ancien loader JSONP (évite accumulation)
+      // ✅ évite accumulation JSONP
       const old = document.getElementById("vf_products_loader");
       if (old) old.remove();
 
       const cbName = "vf_cb_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
+
       window[cbName] = function(payload) {
         try {
-          if (payload && payload.error) {
-            showLoadError_("Erreur API produits: " + safe(payload.error));
+          if (payload && payload.ok === false) {
+            showLoadError_("Erreur API produits: " + safe(payload.error || payload.details));
             ALL_PRODUCTS = [];
+            IS_RESELLER = false;
+            RESELLER_EMAIL_USED = "";
           } else {
-            ALL_PRODUCTS = Array.isArray(payload) ? payload : (Array.isArray(payload.products) ? payload.products : []);
+            // ✅ API renvoie {ok,is_reseller, reseller_email_used, products}
+            IS_RESELLER = !!(payload && payload.is_reseller);
+            RESELLER_EMAIL_USED = safe(payload && payload.reseller_email_used);
+
+            ALL_PRODUCTS = Array.isArray(payload) ? payload : (Array.isArray(payload?.products) ? payload.products : []);
           }
+
+          renderAccountUI_();
           render();
         } finally {
           try { delete window[cbName]; } catch(_) {}
@@ -442,6 +461,13 @@
       };
 
       const token = getToken_();
+      const session = getSession_();
+
+      // ✅ message clair si tu es "connecté" mais sans token
+      if (session && !token) {
+        showLoadError_("⚠️ Connexion incomplète : token manquant. Reconnecte-toi pour activer le prix revendeur.");
+      }
+
       const tokenParam = token ? ("&token=" + encodeURIComponent(token)) : "";
 
       const s = document.createElement('script');
@@ -450,6 +476,9 @@
       s.onerror = () => {
         showLoadError_("Impossible de charger les produits (API). Vérifie ton déploiement Apps Script / doGet JSONP.");
         ALL_PRODUCTS = [];
+        IS_RESELLER = false;
+        RESELLER_EMAIL_USED = "";
+        renderAccountUI_();
         render();
         try { delete window[cbName]; } catch(_) {}
       };
@@ -466,11 +495,9 @@
         const A = up(a);
 
         if (productCatUpper === A) return true;
-
         if (A === "IMEI" && productCatUpper.includes("IMEI")) return true;
         if ((A === "PEAKERR" || A === "PEAK") && (productCatUpper.includes("PEAK") || productCatUpper.includes("PEAKERR"))) return true;
         if (A.startsWith("SMM") && productCatUpper.includes("SMM")) return true;
-
         if (filterKey === "Jeux" && productCatUpper.includes(A)) return true;
       }
       return false;
