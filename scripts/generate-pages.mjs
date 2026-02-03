@@ -5,7 +5,6 @@ import path from "path";
 const SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
 
-// ✅ Réseaux sociaux
 const SOCIAL = {
   instagram: "https://www.instagram.com/di_corporation_1/",
   tiktok: "https://www.tiktok.com/@dicorporation",
@@ -51,7 +50,11 @@ function toDirectOGImage(url) {
   return u;
 }
 
-// Paiement: utilise desc (paiement.html) + prix (sera overridé côté page via JS si revendeur)
+function ogFallback() {
+  return "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
+}
+
+// Paiement: utilise desc (paiement.html)
 function buildPayUrl(p, prixOverride = null) {
   const qp = new URLSearchParams();
   qp.set("nom", safe(p.nom));
@@ -61,7 +64,7 @@ function buildPayUrl(p, prixOverride = null) {
   qp.set("min", safe(p.min));
   qp.set("max", safe(p.max));
   qp.set("img", safe(p.img || ""));
-  qp.set("desc", safe(p.desc).trim());
+  qp.set("desc", safe(p.desc || "").trim());
   return `/paiement.html?${qp.toString()}`;
 }
 
@@ -71,6 +74,7 @@ async function fetchProducts() {
   const res = await fetch(url);
   const txt = await res.text();
 
+  // JSONP: cb(<json>);
   const re = new RegExp(`${cb}\\((.*)\\)\\s*;?\\s*$`, "s");
   const m = txt.match(re);
   if (!m || !m[1]) {
@@ -135,10 +139,6 @@ function numOrInfinity(v) {
   return s;
 }
 
-function ogFallback() {
-  return "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
-}
-
 // ---------- templates ----------
 function templateProductPage(p) {
   const id = safe(p.id).trim();
@@ -175,6 +175,10 @@ function templateProductPage(p) {
   const minTxt = numOrInfinity(p.min) || "1";
   const maxTxt = numOrInfinity(p.max) || "∞";
 
+  // ✅ inject SVG dans JS sans casser la string principale
+  const JS_SVG_LOGIN = JSON.stringify(SVG.login);
+  const JS_SVG_REGISTER = JSON.stringify(SVG.register);
+
   return `<!DOCTYPE html>
 <html lang="fr" class="font-inter">
 <head>
@@ -200,10 +204,8 @@ function templateProductPage(p) {
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
-    :root{ color-scheme: light; }
     html, body { width:100%; max-width:100%; overflow-x:hidden; }
     *{ box-sizing:border-box; }
-
     body {
       font-family: 'Inter', sans-serif;
       background-color: #F3F3F3;
@@ -212,12 +214,9 @@ function templateProductPage(p) {
       padding-bottom: env(safe-area-inset-bottom);
       overscroll-behavior-x: none;
     }
-
     .text-orange-bsv { color: #F07E13; }
     .btn-gradient { background: linear-gradient(90deg, #F07E13 0%, #FFB26B 100%); }
-    .btn-gradient:hover { background: linear-gradient(90deg, #d96d0c 0%, #F07E13 100%); }
     .shadow-card { box-shadow: 0 0 7px 0 rgba(0,0,0,.15); }
-
     .btn-mini{
       height:40px; padding:0 14px; border-radius:999px;
       font-weight:900; font-size:11px; letter-spacing:.10em;
@@ -228,7 +227,6 @@ function templateProductPage(p) {
       max-width:100%;
     }
     .btn-mini:hover{ transform: translateY(-1px); border-color:#F07E13; color:#F07E13; }
-
     .btn-waba{
       height:40px; padding:0 14px; border-radius:999px;
       font-weight:900; font-size:11px; letter-spacing:.10em;
@@ -239,23 +237,18 @@ function templateProductPage(p) {
       transition:.2s; white-space:nowrap; flex:0 0 auto;
       max-width:100%;
     }
-    .btn-waba:hover{ transform: translateY(-1px); filter: brightness(.98); }
-
     .icon-btn{
       width:40px; height:40px; border-radius:999px;
       border:1px solid #E5E7EB; background:#fff; color:#374151;
       display:flex; align-items:center; justify-content:center;
       transition:.2s; flex:0 0 auto;
     }
-    .icon-btn:hover{ transform: translateY(-1px); border-color:#F07E13; color:#F07E13; }
-
     .vf-brand-wrap{ min-width:0; overflow:hidden; }
     .vf-brand-text{
       display:block; max-width:100%;
       white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
       line-height:1;
     }
-
     @media (max-width: 420px){
       .btn-mini, .btn-waba{ padding:0 10px; font-size:10px; letter-spacing:.08em; }
       .btn-mini .txt, .btn-waba .txt{ display:none; }
@@ -326,23 +319,6 @@ function templateProductPage(p) {
                 <div class="text-sm text-[#515052] leading-relaxed whitespace-pre-line font-medium break-words">
                   ${escHtml(longDesc || "Aucune description.")}
                 </div>
-
-                <div class="mt-6 flex flex-wrap items-center gap-2">
-                  <span class="text-[11px] font-black uppercase tracking-widest text-gray-400">Réseaux :</span>
-                  <a href="${escHtml(SOCIAL.instagram)}" target="_blank" rel="noopener noreferrer"
-                    class="inline-flex items-center gap-2 px-3 py-2 rounded-full border border-gray-200 bg-white text-[11px] font-black text-gray-600 hover:text-orange-600 hover:border-orange-200 transition">
-                    Instagram
-                  </a>
-                  <a href="${escHtml(SOCIAL.tiktok)}" target="_blank" rel="noopener noreferrer"
-                    class="inline-flex items-center gap-2 px-3 py-2 rounded-full border border-gray-200 bg-white text-[11px] font-black text-gray-600 hover:text-orange-600 hover:border-orange-200 transition">
-                    TikTok
-                  </a>
-                  <a href="${escHtml(SOCIAL.telegram)}" target="_blank" rel="noopener noreferrer"
-                    class="inline-flex items-center gap-2 px-3 py-2 rounded-full border border-gray-200 bg-white text-[11px] font-black text-gray-600 hover:text-orange-600 hover:border-orange-200 transition">
-                    Telegram
-                  </a>
-                </div>
-
               </div>
             </div>
           </div>
@@ -395,16 +371,6 @@ function templateProductPage(p) {
         <div class="text-xl font-black tracking-tighter">
           Viral<span class="text-orange-bsv">Flowr</span>
         </div>
-
-        <div class="flex flex-wrap items-center gap-3">
-          <a class="btn-mini" href="/index.html"><span class="txt">Boutique</span></a>
-          <a class="btn-mini" href="/commandes.html"><span class="txt">Commandes</span></a>
-          <a class="btn-mini" href="/wallet.html"><span class="txt">Wallet</span></a>
-          <a class="btn-waba" href="${escHtml(SOCIAL.waba)}" target="_blank" rel="noopener noreferrer"><span class="txt">WABA</span></a>
-          <a class="icon-btn" href="${escHtml(SOCIAL.instagram)}" target="_blank" rel="noopener noreferrer" aria-label="Instagram">${SVG.instagram}</a>
-          <a class="icon-btn" href="${escHtml(SOCIAL.tiktok)}" target="_blank" rel="noopener noreferrer" aria-label="TikTok">${SVG.tiktok}</a>
-          <a class="icon-btn" href="${escHtml(SOCIAL.telegram)}" target="_blank" rel="noopener noreferrer" aria-label="Telegram">${SVG.telegram}</a>
-        </div>
       </div>
 
       <div class="mt-6 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
@@ -413,8 +379,11 @@ function templateProductPage(p) {
     </div>
   </footer>
 
-  <!-- session UI -->
+  <!-- ✅ Account UI (sans backticks) -->
   <script>
+    const _VF_SVG_LOGIN = ${JS_SVG_LOGIN};
+    const _VF_SVG_REGISTER = ${JS_SVG_REGISTER};
+
     function _vfSafe(v){ return (v === null || v === undefined) ? "" : String(v); }
 
     function getSession_(){
@@ -440,21 +409,21 @@ function templateProductPage(p) {
       area.classList.remove("hidden");
 
       if(!s){
-        area.innerHTML = `
-          <a href="/login.html" class="btn-mini" aria-label="Connexion">
-            ${SVG.login}
-            <span class="txt">Connexion</span>
-          </a>
-          <a href="/register.html" class="btn-mini" style="border-color:transparent;color:white;" aria-label="Inscription">
-            <span style="display:inline-flex;align-items:center;gap:8px;" class="txt-wrap">
-              ${SVG.register}
-              <span class="txt">Inscription</span>
-            </span>
-          </a>
-        `;
-        const last = area.querySelectorAll("a")[1];
-        if(last){
-          last.style.background = "linear-gradient(90deg, #F07E13 0%, #FFB26B 100%)";
+        area.innerHTML =
+          '<a href="/login.html" class="btn-mini" aria-label="Connexion">' +
+            _VF_SVG_LOGIN +
+            '<span class="txt">Connexion</span>' +
+          '</a>' +
+          '<a href="/register.html" class="btn-mini" style="border-color:transparent;color:white;" aria-label="Inscription">' +
+            '<span style="display:inline-flex;align-items:center;gap:8px;" class="txt-wrap">' +
+              _VF_SVG_REGISTER +
+              '<span class="txt">Inscription</span>' +
+            '</span>' +
+          '</a>';
+
+        const links = area.querySelectorAll("a");
+        if(links && links[1]){
+          links[1].style.background = "linear-gradient(90deg, #F07E13 0%, #FFB26B 100%)";
         }
         return;
       }
@@ -462,18 +431,17 @@ function templateProductPage(p) {
       const display = _vfSafe(s.username || s.email || "Compte");
       const first = display.slice(0,1).toUpperCase();
 
-      area.innerHTML = `
-        <div class="hidden md:flex items-center gap-2 bg-white border border-gray-200 px-3 py-2 rounded-2xl">
-          <div class="w-8 h-8 rounded-xl" style="background:linear-gradient(90deg,#F07E13 0%,#FFB26B 100%);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:12px;">
-            ${first}
-          </div>
-          <div class="leading-tight">
-            <div class="text-[11px] font-black text-gray-900">Bonjour, ${display}</div>
-            <div class="text-[9px] font-black uppercase tracking-widest text-gray-300">Connecté</div>
-          </div>
-        </div>
-        <button id="logoutBtn" class="btn-mini" type="button">Déconnexion</button>
-      `;
+      area.innerHTML =
+        '<div class="hidden md:flex items-center gap-2 bg-white border border-gray-200 px-3 py-2 rounded-2xl">' +
+          '<div class="w-8 h-8 rounded-xl" style="background:linear-gradient(90deg,#F07E13 0%,#FFB26B 100%);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:12px;">' +
+            first +
+          '</div>' +
+          '<div class="leading-tight">' +
+            '<div class="text-[11px] font-black text-gray-900">Bonjour, ' + display + '</div>' +
+            '<div class="text-[9px] font-black uppercase tracking-widest text-gray-300">Connecté</div>' +
+          '</div>' +
+        '</div>' +
+        '<button id="logoutBtn" class="btn-mini" type="button">Déconnexion</button>';
 
       const btn = document.getElementById("logoutBtn");
       if(btn){
@@ -612,7 +580,7 @@ function templateSharePage(p) {
   const imgRaw = safe(p.img).trim();
   const ogImg = toDirectOGImage(imgRaw) || ogFallback();
 
-  // ✅ REDIRIGE VERS PAGE PRODUIT (prix dynamique possible)
+  // ✅ redirige vers page produit (prix dynamique possible)
   const productUrl = `/p/${encodeURIComponent(id)}/`;
   const ogDesc = `${prix} $ • ${cat}`.slice(0, 200);
 
