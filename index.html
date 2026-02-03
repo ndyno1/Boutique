@@ -5,12 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>ViralFlowr | Boutique Officielle - Digital & Matériel</title>
 
-  <!-- ✅ FIX ANDROID / WHATSAPP PREVIEW (WABA) -->
   <meta name="theme-color" content="#111827" />
   <link rel="icon" href="favicon.png" />
   <link rel="apple-touch-icon" href="favicon.png" />
 
-  <!-- ✅ Open Graph (WhatsApp / Android WebView) -->
   <meta property="og:title" content="ViralFlowr | Boutique Officielle" />
   <meta property="og:description" content="Services Elite, Déblocage IMEI et Matériel High-Tech garantis." />
   <meta property="og:image" content="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png" />
@@ -45,7 +43,6 @@
     .hover-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     .hover-card:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); border-color: #F07E13; }
 
-    /* ✅ WhatsApp bouton */
     .btn-support {
       background: #25D366;
       color: white;
@@ -67,7 +64,6 @@
     .btn-support svg { flex: 0 0 auto; }
     .btn-support:hover { transform: scale(1.05); box-shadow: 0 10px 15px -3px rgba(37, 211, 102, 0.3); }
 
-    /* ✅ Auth buttons */
     .btn-auth {
       padding: 9px 14px;
       border-radius: 14px;
@@ -95,7 +91,6 @@
       overflow: hidden;
     }
 
-    /* ✅ FIX LOGO OVERFLOW */
     .vf-brand-wrap{ min-width:0; overflow:hidden; }
     .vf-brand-text{
       display:block;
@@ -106,7 +101,6 @@
       line-height:1;
     }
 
-    /* ✅ Style icones header (cohérent) */
     .icon-btn{
       display:flex;
       align-items:center;
@@ -127,7 +121,6 @@
       transform:translateY(-1px);
     }
 
-    /* ✅ Cat nav: autorise pan horizontal uniquement ici */
     #catNav{
       touch-action: pan-x;
       overscroll-behavior-x: contain;
@@ -140,32 +133,12 @@
       header { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
     }
 
-    /* ✅ FIX MOBILE OVERFLOW (petits écrans) */
     @media (max-width: 420px){
-      .icon-btn{
-        width:36px;
-        height:36px;
-        border-radius:12px;
-      }
-      .btn-support{
-        padding: 8px 10px;
-        border-radius: 12px;
-        font-size: 11px;
-        gap: 6px;
-      }
-      .btn-support .btn-support-text{
-        display:none;
-      }
-      .btn-auth{
-        padding: 8px 10px;
-        border-radius: 12px;
-        font-size: 10px;
-        letter-spacing: .10em;
-        gap: 6px;
-      }
-      .vf-brand-text{
-        font-size: 22px;
-      }
+      .icon-btn{ width:36px; height:36px; border-radius:12px; }
+      .btn-support{ padding: 8px 10px; border-radius: 12px; font-size: 11px; gap: 6px; }
+      .btn-support .btn-support-text{ display:none; }
+      .btn-auth{ padding: 8px 10px; border-radius: 12px; font-size: 10px; letter-spacing: .10em; gap: 6px; }
+      .vf-brand-text{ font-size: 22px; }
     }
   </style>
 </head>
@@ -179,14 +152,12 @@
   <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-100 shadow-sm backdrop-blur-md bg-white/95">
     <div class="max-w-[1280px] mx-auto px-4 h-16 flex items-center justify-between gap-2 sm:gap-4">
 
-      <!-- ✅ LOGO -->
       <a href="index.html" class="flex items-center gap-2 shrink-0 vf-brand-wrap" aria-label="ViralFlowr">
         <div class="text-2xl font-black tracking-tighter text-gray-900 vf-brand-text">
           Viral<span class="text-[#F07E13]">Flowr</span>
         </div>
       </a>
 
-      <!-- ✅ NAV -->
       <div class="hidden lg:flex items-center gap-6 text-[11px] font-black uppercase tracking-widest text-gray-400">
         <a href="index.html" class="hover:text-gray-900 transition-colors">Boutique</a>
         <a href="about.html" class="hover:text-gray-900 transition-colors">À Propos</a>
@@ -207,13 +178,10 @@
         </button>
       </div>
 
-      <!-- ✅ ACTIONS -->
       <div class="flex items-center gap-2 sm:gap-3">
 
-        <!-- Zone compte (remplie par JS) -->
         <div id="accountArea" class="hidden sm:flex items-center gap-2"></div>
 
-        <!-- ✅ COMMANDES ICON (AJOUTÉ) -->
         <a href="commandes.html" class="icon-btn" title="Mes commandes" aria-label="Mes commandes">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 6h11"></path>
@@ -225,7 +193,6 @@
           </svg>
         </a>
 
-        <!-- ✅ WALLET ICON -->
         <a href="wallet.html" class="icon-btn" title="Portefeuille" aria-label="Portefeuille">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
@@ -235,7 +202,6 @@
           </svg>
         </a>
 
-        <!-- Instagram icon -->
         <a href="https://www.instagram.com/di_corporation_1/" target="_blank" rel="noopener noreferrer"
           class="hidden sm:flex icon-btn" aria-label="Instagram">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -245,7 +211,6 @@
           </svg>
         </a>
 
-        <!-- TikTok icon -->
         <a href="https://www.tiktok.com/@dicorporation" target="_blank" rel="noopener noreferrer"
           class="hidden sm:flex icon-btn" aria-label="TikTok">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -253,7 +218,6 @@
           </svg>
         </a>
 
-        <!-- ✅ WhatsApp -->
         <a href="https://wa.me/243850373991" target="_blank" rel="noopener noreferrer" class="btn-support">
           <svg width="18" height="18" fill="white" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
@@ -277,7 +241,6 @@
       </article>
     </section>
 
-    <!-- ✅ CATEGORIES -->
     <div class="flex items-center gap-3 overflow-x-auto no-scrollbar pb-6 mb-10 border-b border-gray-100" id="catNav">
       <button onclick="filterCat('all', this)" class="cat-btn active bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">⚡ Tous</button>
       <button onclick="filterCat('Materiel', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">📦 MATÉRIEL & GADGETS</button>
@@ -317,264 +280,286 @@
   </footer>
 
   <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
 
-  let ALL_PRODUCTS = [];
-  let CURRENT_FILTER = "all";
+    let ALL_PRODUCTS = [];
+    let CURRENT_FILTER = "all";
 
-  const FILTER_MAP = {
-    "Abonnement": ["ABONNEMENT","CARTE"],
-    "Carte2":     ["CARTE2"],
-    "Boost":      ["BOOST","BOOST2","SMM1","SMM2","SMM3","PEAKERR","PEAK"],
-    "Materiel":   ["MATERIEL","GADGET","PHONE"],
-    "IMEI":       ["IMEI"],
-    "Jeux":       ["JEUX","JEU","GAME","GAMING","PSN","PLAYSTATION","XBOX","STEAM","NINTENDO"]
-  };
+    const FILTER_MAP = {
+      "Abonnement": ["ABONNEMENT","CARTE"],
+      "Carte2":     ["CARTE2"],
+      "Boost":      ["BOOST","BOOST2","SMM1","SMM2","SMM3","PEAKERR","PEAK"],
+      "Materiel":   ["MATERIEL","GADGET","PHONE"],
+      "IMEI":       ["IMEI"],
+      "Jeux":       ["JEUX","JEU","GAME","GAMING","PSN","PLAYSTATION","XBOX","STEAM","NINTENDO"]
+    };
 
-  const input = document.getElementById('searchInput');
-  const placeholderBox = document.getElementById('placeholder-box');
+    const input = document.getElementById('searchInput');
+    const placeholderBox = document.getElementById('placeholder-box');
+    input.addEventListener('focus', () => placeholderBox.style.display = 'none');
+    input.addEventListener('blur', () => { if(input.value === "") placeholderBox.style.display = 'block'; });
 
-  input.addEventListener('focus', () => placeholderBox.style.display = 'none');
-  input.addEventListener('blur', () => { if(input.value === "") placeholderBox.style.display = 'block'; });
+    function safe(v){ return (v === null || v === undefined) ? "" : String(v); }
+    function up(v){ return safe(v).trim().toUpperCase(); }
 
-  function safe(v){ return (v === null || v === undefined) ? "" : String(v); }
-  function up(v){ return safe(v).trim().toUpperCase(); }
+    function pName(p){ return safe(p.nom || p.name || p.title); }
+    function pCat(p){ return safe(p.cat || p.category || p.categorie); }
 
-  // ✅ champs compat API
-  function pName(p){ return safe(p.nom || p.name || p.title); }
-  function pCat(p){ return safe(p.cat || p.category || p.categorie); }
-  function pImg(p){ return safe(p.img || p.image || p.photo || p.imageUrl || p.ImageURL); }
-  function pMin(p){ return safe(p.min || p.minqnt || p.minQty || p.min_qty || p.MIN); }
-  function pMax(p){ return safe(p.max || p.maxqnt || p.maxQty || p.max_qty || p.MAX); }
-
-  // ✅ PRIX : on prend d'abord prix_affiche (déjà calculé par API selon token)
-  function pPrice(p){
-    const v = (p && (
-      p.prix_affiche ??
-      p.prix ??
-      p.price ??
-      p.amount ??
-      p.prix_client ??
-      p.prix_revendeur ??
-      p.PV ??
-      p.RESELLER
-    ));
-    return safe(v);
-  }
-
-  function getSession_() {
-    try {
-      const raw = localStorage.getItem("vf_session");
-      if (!raw) return null;
-      const s = JSON.parse(raw);
-      if (!s || (!s.email && !s.username)) return null;
-      return s;
-    } catch { return null; }
-  }
-
-  // ✅ récup token (plusieurs noms possibles)
-  function getToken_(){
-    try{
-      const s = getSession_();
-      const t =
-        (s && (s.token || s.vf_token || s.session_token || s.access_token || s.reseller_token)) ||
-        localStorage.getItem("vf_token") ||
-        "";
-      return String(t || "").trim();
-    }catch{
-      return "";
-    }
-  }
-
-  // ✅ Sync entre pages/onglets
-  window.addEventListener("storage", (e) => {
-    if (e.key === "vf_session" || e.key === "vf_token" || e.key === "vf_session_changed") {
-      renderAccountUI_();
-      initProducts(); // ✅ recharge prix selon token
-    }
-  });
-
-  function renderAccountUI_() {
-    const area = document.getElementById("accountArea");
-    const s = getSession_();
-
-    area.innerHTML = "";
-    area.classList.remove("hidden");
-
-    if (!s) {
-      area.innerHTML = `
-        <a href="login.html" class="btn-auth btn-auth-outline">Connexion</a>
-        <a href="register.html" class="btn-auth btn-auth-primary brand-gradient text-white shadow-md">Inscription</a>
-      `;
-      return;
+    // ✅ IMPORTANT: on prend le prix "affiché" si l'API le renvoie (revendeur),
+    // sinon on retombe sur prix client.
+    function pPrice(p){
+      return safe(
+        (p && (
+          p.prix_affiche ??
+          p.prix ??
+          p.price ??
+          p.amount ??
+          p.PV ?? p.pv ??
+          p.prix_client ??
+          p.RESELLER ?? p.reseller ??
+          p.prix_revendeur
+        ))
+      );
     }
 
-    const display = safe(s.username || s.email || "Compte");
+    function pImg(p){ return safe(p.img || p.image || p.photo); }
+    function pMin(p){ return safe(p.min || p.minqnt || p.minQty || p.min_qty); }
+    function pMax(p){ return safe(p.max || p.maxqnt || p.maxQty || p.max_qty); }
 
-    area.innerHTML = `
-      <div class="hidden md:flex items-center gap-2 bg-white border border-gray-200 px-3 py-2 rounded-2xl">
-        <div class="w-8 h-8 rounded-xl brand-gradient flex items-center justify-center text-white font-black text-sm">
-          ${display.slice(0,1).toUpperCase()}
-        </div>
-        <div class="leading-tight">
-          <div class="text-[11px] font-black text-gray-900">Bonjour, ${display}</div>
-          <div class="text-[9px] font-black uppercase tracking-widest text-gray-300">Connecté</div>
-        </div>
-      </div>
-      <button id="logoutBtn" class="btn-auth btn-auth-outline">Déconnexion</button>
-    `;
-
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-      localStorage.removeItem("vf_session");
-      localStorage.setItem("vf_session_changed", String(Date.now()));
-      renderAccountUI_();
-      initProducts(); // ✅ repasse prix client
-    });
-  }
-
-  function showLoadError_(msg){
-    const box = document.getElementById("loadError");
-    box.textContent = msg;
-    box.classList.remove("hidden");
-  }
-  function hideLoadError_(){
-    const box = document.getElementById("loadError");
-    box.classList.add("hidden");
-    box.textContent = "";
-  }
-
-  function initProducts() {
-    hideLoadError_();
-
-    const cbName = "vf_cb_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
-    window[cbName] = function(payload) {
+    function getSession_() {
       try {
-        if (payload && payload.error) {
-          showLoadError_("Erreur API produits: " + safe(payload.error));
-          ALL_PRODUCTS = [];
-        } else {
-          ALL_PRODUCTS = Array.isArray(payload) ? payload : (Array.isArray(payload.products) ? payload.products : []);
-        }
-        render();
-      } finally {
-        try { delete window[cbName]; } catch(_) {}
-      }
-    };
-
-    // ✅ IMPORTANT : envoie le token si connecté → prix revendeur
-    const token = getToken_();
-    const tokenParam = token ? `&token=${encodeURIComponent(token)}` : "";
-
-    const s = document.createElement('script');
-    s.src = `${SCRIPT_URL}?action=get_products${tokenParam}&callback=${cbName}&t=${Date.now()}`;
-    s.onerror = () => {
-      showLoadError_("Impossible de charger les produits (API). Vérifie ton déploiement Apps Script / doGet JSONP.");
-      ALL_PRODUCTS = [];
-      render();
-      try { delete window[cbName]; } catch(_) {}
-    };
-    document.body.appendChild(s);
-  }
-
-  function matchCatByFilter(productCatUpper, filterKey){
-    if (filterKey === "all") return true;
-
-    const allowed = FILTER_MAP[filterKey];
-    if (!allowed) return (productCatUpper === up(filterKey));
-
-    for (const a of allowed){
-      const A = up(a);
-      if (productCatUpper === A) return true;
-
-      if (A === "IMEI" && productCatUpper.includes("IMEI")) return true;
-      if ((A === "PEAKERR" || A === "PEAK") && (productCatUpper.includes("PEAK") || productCatUpper.includes("PEAKERR"))) return true;
-      if (A.startsWith("SMM") && productCatUpper.includes("SMM")) return true;
-      if (filterKey === "Jeux" && productCatUpper.includes(A)) return true;
+        const raw = localStorage.getItem("vf_session");
+        if (!raw) return null;
+        const s = JSON.parse(raw);
+        if (!s || (!s.email && !s.username)) return null;
+        return s;
+      } catch { return null; }
     }
-    return false;
-  }
 
-  function render() {
-    const grid = document.getElementById('product-grid');
-    const query = (input.value || "").toLowerCase().trim();
+    function getToken_(){
+      try{
+        const s = getSession_();
+        const t =
+          (s && (s.token || s.vf_token || s.session_token || s.access_token || s.reseller_token)) ||
+          localStorage.getItem("vf_token") ||
+          "";
+        return String(t || "").trim();
+      }catch{ return ""; }
+    }
 
-    const filtered = ALL_PRODUCTS.filter(p => {
-      const catU = up(pCat(p));
-      const nameL = pName(p).toLowerCase();
-      const catL  = pCat(p).toLowerCase();
-
-      const matchCat = matchCatByFilter(catU, CURRENT_FILTER);
-
-      const matchSearch =
-        !query ||
-        nameL.includes(query) ||
-        catL.includes(query) ||
-        safe(p.id).toLowerCase().includes(query);
-
-      return matchCat && matchSearch;
+    // ✅ Sync entre pages/onglets
+    window.addEventListener("storage", (e) => {
+      if (e.key === "vf_session" || e.key === "vf_token" || e.key === "vf_session_changed") {
+        renderAccountUI_();
+        initProducts(); // ✅ recharge produits => prix revendeur
+      }
     });
 
-    if (filtered.length === 0) {
-      grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-300 font-bold uppercase">Aucun article trouvé</div>';
-      return;
-    }
+    function renderAccountUI_() {
+      const area = document.getElementById("accountArea");
+      const s = getSession_();
 
-    grid.innerHTML = filtered.map(p => {
-      const img = pImg(p) || 'https://cdn-icons-png.flaticon.com/512/11520/11520110.png';
+      area.innerHTML = "";
+      area.classList.remove("hidden");
 
-      const priceRaw = pPrice(p);
-      const priceNum = parseFloat(String(priceRaw).replace(",", "."));
-      const priceTxt = Number.isFinite(priceNum) ? priceNum.toFixed(2) : safe(priceRaw);
+      if (!s) {
+        area.innerHTML = `
+          <a href="login.html" class="btn-auth btn-auth-outline">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+              <path d="M10 17l5-5-5-5"></path>
+              <path d="M15 12H3"></path>
+            </svg>
+            Connexion
+          </a>
+          <a href="register.html" class="btn-auth btn-auth-primary brand-gradient text-white shadow-md">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="8.5" cy="7" r="4"></circle>
+              <path d="M20 8v6"></path>
+              <path d="M23 11h-6"></path>
+            </svg>
+            Inscription
+          </a>
+        `;
+        return;
+      }
 
-      const id = encodeURIComponent(safe(p.id).trim());
-      const productUrl = `p/${id}/`;
+      const display = safe(s.username || s.email || "Compte");
 
-      const min = pMin(p);
-      const max = pMax(p);
-
-      return `
-        <div onclick="location.href='${productUrl}'"
-          class="hover-card group bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col cursor-pointer shadow-sm">
-          <div class="aspect-square bg-[#F8FAFC] rounded-[22px] mb-4 flex items-center justify-content-center p-6 overflow-hidden">
-            <img src="${img}"
-              class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
-              onerror="this.src='https://cdn-icons-png.flaticon.com/512/11520/11520110.png'">
+      area.innerHTML = `
+        <div class="hidden md:flex items-center gap-2 bg-white border border-gray-200 px-3 py-2 rounded-2xl">
+          <div class="w-8 h-8 rounded-xl brand-gradient flex items-center justify-center text-white font-black text-sm">
+            ${display.slice(0,1).toUpperCase()}
           </div>
-          <div class="px-1">
-            <span class="text-[9px] font-black text-[#F07E13] uppercase tracking-tighter mb-1 block">${safe(pCat(p))}</span>
-            <h3 class="text-[13px] font-bold text-gray-900 leading-tight mb-4 h-8 overflow-hidden line-clamp-2">${safe(pName(p))}</h3>
-            <div class="flex items-center justify-between">
-              <span class="text-gray-900 font-black text-lg tracking-tighter">${priceTxt} $</span>
-              <div class="bg-gray-900 text-white p-1.5 rounded-lg group-hover:brand-gradient transition-all">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
-                  <path d="M12 4v16m8-8H4"></path>
-                </svg>
-              </div>
-            </div>
-
-            ${(min || max) ? `
-              <div class="mt-3 text-[9px] font-black uppercase tracking-widest text-gray-300">
-                Min ${safe(min) || "-"} • Max ${safe(max) || "-"}
-              </div>` : ``}
+          <div class="leading-tight">
+            <div class="text-[11px] font-black text-gray-900">Bonjour, ${display}</div>
+            <div class="text-[9px] font-black uppercase tracking-widest text-gray-300">Connecté</div>
           </div>
         </div>
+        <button id="logoutBtn" class="btn-auth btn-auth-outline">Déconnexion</button>
       `;
-    }).join('');
-  }
 
-  function filterCat(cat, btn) {
-    document.querySelectorAll('.cat-btn').forEach(b => {
-      b.classList.remove('text-white', 'brand-gradient', 'active');
-      b.classList.add('bg-white', 'text-gray-500');
-    });
-    btn.classList.add('text-white', 'brand-gradient', 'active');
-    btn.classList.remove('bg-white', 'text-gray-500');
-    CURRENT_FILTER = cat;
-    render();
-  }
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        localStorage.removeItem("vf_session");
+        localStorage.setItem("vf_session_changed", String(Date.now()));
+        renderAccountUI_();
+        initProducts(); // ✅ recharger prix client
+      });
+    }
 
-  // init
-  renderAccountUI_();
-  initProducts();
-</script>
+    function showLoadError_(msg){
+      const box = document.getElementById("loadError");
+      box.textContent = msg;
+      box.classList.remove("hidden");
+    }
+    function hideLoadError_(){
+      const box = document.getElementById("loadError");
+      box.classList.add("hidden");
+      box.textContent = "";
+    }
 
+    function initProducts() {
+      hideLoadError_();
+
+      // ✅ supprime l'ancien loader JSONP (évite accumulation)
+      const old = document.getElementById("vf_products_loader");
+      if (old) old.remove();
+
+      const cbName = "vf_cb_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
+      window[cbName] = function(payload) {
+        try {
+          if (payload && payload.error) {
+            showLoadError_("Erreur API produits: " + safe(payload.error));
+            ALL_PRODUCTS = [];
+          } else {
+            ALL_PRODUCTS = Array.isArray(payload) ? payload : (Array.isArray(payload.products) ? payload.products : []);
+          }
+          render();
+        } finally {
+          try { delete window[cbName]; } catch(_) {}
+        }
+      };
+
+      const token = getToken_();
+      const tokenParam = token ? ("&token=" + encodeURIComponent(token)) : "";
+
+      const s = document.createElement('script');
+      s.id = "vf_products_loader";
+      s.src = SCRIPT_URL + "?action=get_products" + tokenParam + "&callback=" + cbName + "&t=" + Date.now();
+      s.onerror = () => {
+        showLoadError_("Impossible de charger les produits (API). Vérifie ton déploiement Apps Script / doGet JSONP.");
+        ALL_PRODUCTS = [];
+        render();
+        try { delete window[cbName]; } catch(_) {}
+      };
+      document.body.appendChild(s);
+    }
+
+    function matchCatByFilter(productCatUpper, filterKey){
+      if (filterKey === "all") return true;
+
+      const allowed = FILTER_MAP[filterKey];
+      if (!allowed) return (productCatUpper === up(filterKey));
+
+      for (const a of allowed){
+        const A = up(a);
+
+        if (productCatUpper === A) return true;
+
+        if (A === "IMEI" && productCatUpper.includes("IMEI")) return true;
+        if ((A === "PEAKERR" || A === "PEAK") && (productCatUpper.includes("PEAK") || productCatUpper.includes("PEAKERR"))) return true;
+        if (A.startsWith("SMM") && productCatUpper.includes("SMM")) return true;
+
+        if (filterKey === "Jeux" && productCatUpper.includes(A)) return true;
+      }
+      return false;
+    }
+
+    function render() {
+      const grid = document.getElementById('product-grid');
+      const query = (input.value || "").toLowerCase().trim();
+
+      const filtered = ALL_PRODUCTS.filter(p => {
+        const catU = up(pCat(p));
+        const nameL = pName(p).toLowerCase();
+        const catL  = pCat(p).toLowerCase();
+
+        const matchCat = matchCatByFilter(catU, CURRENT_FILTER);
+
+        const matchSearch =
+          !query ||
+          nameL.includes(query) ||
+          catL.includes(query) ||
+          safe(p.id).toLowerCase().includes(query);
+
+        return matchCat && matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-300 font-bold uppercase">Aucun article trouvé</div>';
+        return;
+      }
+
+      grid.innerHTML = filtered.map(p => {
+        const img = pImg(p) || 'https://cdn-icons-png.flaticon.com/512/11520/11520110.png';
+
+        const priceRaw = pPrice(p);
+        let priceTxt = "—";
+        if (safe(priceRaw).trim() !== "") {
+          const priceNum = parseFloat(String(priceRaw).replace(",", "."));
+          priceTxt = Number.isFinite(priceNum) ? priceNum.toFixed(2) : safe(priceRaw);
+        }
+
+        const id = encodeURIComponent(safe(p.id).trim());
+        const productUrl = `p/${id}/`;
+
+        const min = pMin(p);
+        const max = pMax(p);
+
+        return `
+          <div onclick="location.href='${productUrl}'"
+            class="hover-card group bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col cursor-pointer shadow-sm">
+            <div class="aspect-square bg-[#F8FAFC] rounded-[22px] mb-4 flex items-center justify-center p-6 overflow-hidden">
+              <img src="${img}"
+                class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
+                onerror="this.src='https://cdn-icons-png.flaticon.com/512/11520/11520110.png'">
+            </div>
+            <div class="px-1">
+              <span class="text-[9px] font-black text-[#F07E13] uppercase tracking-tighter mb-1 block">${safe(pCat(p))}</span>
+              <h3 class="text-[13px] font-bold text-gray-900 leading-tight mb-4 h-8 overflow-hidden line-clamp-2">${safe(pName(p))}</h3>
+              <div class="flex items-center justify-between">
+                <span class="text-gray-900 font-black text-lg tracking-tighter">${priceTxt} $</span>
+                <div class="bg-gray-900 text-white p-1.5 rounded-lg group-hover:brand-gradient transition-all">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                    <path d="M12 4v16m8-8H4"></path>
+                  </svg>
+                </div>
+              </div>
+
+              ${(min || max) ? `
+                <div class="mt-3 text-[9px] font-black uppercase tracking-widest text-gray-300">
+                  Min ${safe(min) || "-"} • Max ${safe(max) || "-"}
+                </div>` : ``}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterCat(cat, btn) {
+      document.querySelectorAll('.cat-btn').forEach(b => {
+        b.classList.remove('text-white', 'brand-gradient', 'active');
+        b.classList.add('bg-white', 'text-gray-500');
+      });
+      btn.classList.add('text-white', 'brand-gradient', 'active');
+      btn.classList.remove('bg-white', 'text-gray-500');
+      CURRENT_FILTER = cat;
+      render();
+    }
+
+    renderAccountUI_();
+    initProducts();
+  </script>
+</body>
+</html>
