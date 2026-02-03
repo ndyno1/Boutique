@@ -53,20 +53,56 @@
   <script>
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
 
+  function vfDebug(msg, obj){
+    console.log("[VF LOGIN]", msg, obj || "");
+    const box = document.getElementById("vfDebugBox");
+    if (box){
+      const line = document.createElement("div");
+      line.style.fontFamily = "monospace";
+      line.style.fontSize = "12px";
+      line.textContent = msg + (obj ? " " + JSON.stringify(obj) : "");
+      box.appendChild(line);
+    }
+  }
+
   function vfLogin(email, password) {
     const rid = "REQ-" + Date.now();
 
-    // 1) écoute la réponse (elle vient du frame googleusercontent)
+    vfDebug("Start login rid=" + rid);
+
+    // Timeout : si aucune réponse
+    const timer = setTimeout(() => {
+      window.removeEventListener("message", onMsg);
+      vfDebug("TIMEOUT: aucune réponse postMessage reçue");
+      alert("Aucune réponse du serveur (postMessage). Vérifie doPost/login + origin.");
+    }, 12000);
+
+    function isAllowedOrigin(origin){
+      try{
+        const h = new URL(origin).hostname;
+        return (
+          h.endsWith("script.googleusercontent.com") ||
+          h.endsWith("script.google.com")
+        );
+      }catch(e){ return false; }
+    }
+
     function onMsg(e) {
-      // sécurité : l’origine de l’iframe Apps Script
-      try {
-        const host = new URL(e.origin).hostname;
-        if (!host.endsWith("script.googleusercontent.com")) return;
-      } catch (_) { return; }
+      if (!isAllowedOrigin(e.origin)) {
+        // laisse une trace pour voir si un message arrive d'une autre origine
+        vfDebug("Message ignoré (origine non autorisée): " + e.origin);
+        return;
+      }
+
+      vfDebug("Message reçu depuis: " + e.origin, e.data);
 
       const data = e.data || {};
-      if (data.request_id !== rid) return;
+      if (data.request_id !== rid) {
+        vfDebug("Message ignoré (request_id différent)", data);
+        return;
+      }
 
+      clearTimeout(timer);
       window.removeEventListener("message", onMsg);
 
       if (!data.ok) {
@@ -74,12 +110,10 @@
         return;
       }
 
-      // 2) stocke session + token
       const session = {
         email: data.email || email,
         username: data.username || data.user || email,
         ts: Date.now(),
-        // optionnel : utile pour afficher un badge revendeur
         is_reseller: !!data.is_reseller
       };
 
@@ -87,13 +121,13 @@
       if (data.token) localStorage.setItem("vf_token", String(data.token));
       localStorage.setItem("vf_session_changed", String(Date.now()));
 
-      // 3) redirige
+      vfDebug("Session enregistrée, redirection -> index.html");
       location.href = "index.html";
     }
 
     window.addEventListener("message", onMsg);
 
-    // 2) crée iframe + form POST (pas de CORS)
+    // Iframe caché
     let iframe = document.getElementById("vf_login_iframe");
     if (!iframe) {
       iframe = document.createElement("iframe");
@@ -103,13 +137,12 @@
       document.body.appendChild(iframe);
     }
 
+    // Form POST vers Apps Script (pas de CORS)
     const form = document.createElement("form");
     form.method = "POST";
     form.target = "vf_login_iframe";
 
-    // IMPORTANT: origin EXACT du site courant
-    const origin = location.origin;
-
+    const origin = location.origin; // IMPORTANT: origine réelle du site
     form.action =
       SCRIPT_URL +
       "?action=login" +
@@ -132,13 +165,11 @@
     form.submit();
     form.remove();
   }
-
-  // Exemple bouton:
-  // document.getElementById("btnLogin").onclick = () => vfLogin(
-  //   document.getElementById("email").value,
-  //   document.getElementById("password").value
-  // );
 </script>
+
+<!-- Ajoute ça quelque part dans ta page pour voir le debug -->
+<div id="vfDebugBox" style="padding:10px;background:#111827;color:#fff;border-radius:12px;margin-top:10px;"></div>
+
 
 
 </body>
