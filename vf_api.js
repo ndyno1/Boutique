@@ -1,4 +1,3 @@
-
 /** ===========================
  *  VF API CLIENT (NO CORS) — UPDATED (KEEP LOGIC)
  *  - GET  => JSONP (script tag)
@@ -51,15 +50,24 @@
     );
   };
 
-  // origin qu'on envoie au serveur (qui servira de targetOrigin côté postMessage serveur)
+  // ✅ Détecte si on est dans un panel / preview Apps Script (googleusercontent)
+  const isAppsScriptPanel_ = () => {
+    const h = String(location.hostname || "").toLowerCase();
+    return (h === "script.google.com" || h.endsWith(".googleusercontent.com"));
+  };
+
+  // ✅ origin qu'on envoie au serveur (sera utilisé côté serveur comme targetOrigin pour postMessage)
   const pickClientOriginParam_ = () => {
-    // Si tu veux forcer, tu peux faire VF_CONFIG.postMessageTargetOrigin = "*"
+    // 1) Panel/preview => toujours "*"
+    if (isAppsScriptPanel_()) return "*";
+
+    // 2) Si forcé explicitement dans VF_CONFIG
     if (CFG.postMessageTargetOrigin) return String(CFG.postMessageTargetOrigin);
 
-    // Sur viralflowr/localhost => strict = location.origin
+    // 3) Sur viralflowr/localhost => strict
     if (isTrustedHostForStrictOrigin_()) return String(location.origin);
 
-    // Dans des previews/panels (googleusercontent etc.) => "*" évite targetOrigin mismatch
+    // 4) fallback
     return "*";
   };
 
@@ -69,7 +77,7 @@
   }
 
   // Pending requests by request_id
-  // Map<rid, { resolve, reject, timer, iframe }>
+  // Map<rid, { resolve, reject, timer, iframe, form }>
   const pending = new Map();
 
   function cleanupReq_(rid){
@@ -179,7 +187,6 @@
         ifr.name = "vf_iframe_" + rid;
         ifr.id   = "vf_iframe_" + rid;
         ifr.style.display = "none";
-        // About:blank hérite de l'origin du parent (ok)
         ifr.src = "about:blank";
         document.body.appendChild(ifr);
 
@@ -204,28 +211,31 @@
 
         // mandatory bridge fields
         add("transport", "iframe");
-        const isAppsScriptPanel_ = () => {
-  const h = String(location.hostname || "").toLowerCase();
-  return (h === "script.google.com" || h.endsWith(".googleusercontent.com"));
-};
 
-// origin qu'on envoie au serveur
-const pickClientOriginParam_ = () => {
-  // ✅ si on est dans userCodeAppPanel / googleusercontent => toujours "*"
-  if (isAppsScriptPanel_()) return "*";
+        const originParam = pickClientOriginParam_();
+        if (DEBUG) console.log("[vfBridge] originParam =", originParam, "pageOrigin =", location.origin);
 
-  // Si tu forces VF_CONFIG.postMessageTargetOrigin, on respecte
-  if (CFG.postMessageTargetOrigin) return String(CFG.postMessageTargetOrigin);
+        add("origin", originParam);
+        add("request_id", rid);
 
-  // Sur viralflowr/localhost => strict
-  if (isTrustedHostForStrictOrigin_()) return String(location.origin);
+        // payload fields
+        Object.keys(payload || {}).forEach((k) => add(k, payload[k]));
 
-  // fallback
-  return "*";
-};
+        pending.set(rid, { resolve, reject, timer, iframe: ifr, form });
 
+        document.body.appendChild(form);
 
-        // nettoyage form (l'iframe reste jusqu'à la réponse ou timeout)
+        if (DEBUG) console.log("[vfBridge] POST rid=", rid, "payload=", payload);
+
+        try {
+          form.submit();
+        } catch (e) {
+          cleanupReq_(rid);
+          reject(e);
+          return;
+        }
+
+        // nettoyage du form (l'iframe reste jusqu'à la réponse ou timeout)
         setTimeout(() => { try { if (form && form.parentNode) form.parentNode.removeChild(form); } catch(_) {} }, 1500);
       });
     });
@@ -260,4 +270,3 @@ const pickClientOriginParam_ = () => {
   };
 
 })();
-
