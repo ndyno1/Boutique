@@ -12,6 +12,23 @@
     body{ font-family:Inter,system-ui,sans-serif; background:#F8FAFC; }
     .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
   </style>
+
+  <!-- ✅ VF CONFIG DOIT ÊTRE AVANT vf_api.js -->
+  <script>
+    window.VF_CONFIG = {
+      scriptUrl: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec",
+      timeoutMs: 20000,
+      debug: false,
+      // En prod -> strict / en test (preview/panels) -> "*"
+      postMessageTargetOrigin:
+        (location.hostname === "viralflowr.com" || location.hostname.endsWith(".viralflowr.com"))
+          ? location.origin
+          : "*"
+    };
+  </script>
+
+  <!-- ✅ Charge ton script global (sans inline) -->
+  <script src="/vf_api.js?v=3" defer></script>
 </head>
 
 <body class="min-h-screen flex items-center justify-center px-4">
@@ -52,142 +69,6 @@
   </div>
 
   <script>
-  /** ===========================
-   *  VF API CLIENT (NO CORS)
-   *  - GET => JSONP
-   *  - POST => hidden iframe form + postMessage (si ton GAS renvoie postMessage)
-   * =========================== */
-
-  const VF_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
-
-  (function initVfBridge(){
-    if (window.__vfBridgeReady) return;
-    window.__vfBridgeReady = true;
-
-    const pending = new Map();
-
-    function ensureIframe_(){
-      if (document.getElementById("vf_iframe")) return;
-      const iframe = document.createElement("iframe");
-      iframe.name = "vf_iframe";
-      iframe.id = "vf_iframe";
-      iframe.style.display = "none";
-      document.body.appendChild(iframe);
-    }
-
-    // écoute réponses postMessage
-    window.addEventListener("message", (event) => {
-      const o = String(event.origin || "");
-      const okOrigin = (o === "https://script.google.com") || o.endsWith(".googleusercontent.com");
-      if (!okOrigin) return;
-
-      let msg = event.data;
-      try { if (typeof msg === "string") msg = JSON.parse(msg); } catch(_) {}
-
-      if (!msg || typeof msg !== "object") return;
-      const rid = msg.request_id;
-      if (!rid || !pending.has(rid)) return;
-
-      const { resolve, timer } = pending.get(rid);
-      clearTimeout(timer);
-      pending.delete(rid);
-      resolve(msg);
-    });
-
-    // JSONP GET
-    function vfJsonp(action, params = {}, timeoutMs = 15000){
-      return new Promise((resolve, reject) => {
-        const cb = "__vf_cb_" + Date.now() + "_" + Math.floor(Math.random() * 1e6);
-
-        const timer = setTimeout(() => {
-          try { delete window[cb]; } catch(_) {}
-          script.remove();
-          reject(new Error("JSONP_TIMEOUT"));
-        }, timeoutMs);
-
-        window[cb] = (data) => {
-          clearTimeout(timer);
-          try { resolve(data); } finally {
-            try { delete window[cb]; } catch(_) {}
-            script.remove();
-          }
-        };
-
-        const qs = new URLSearchParams({ action, callback: cb, ...params });
-        const script = document.createElement("script");
-        script.src = VF_SCRIPT_URL + "?" + qs.toString();
-        script.onerror = () => {
-          clearTimeout(timer);
-          try { delete window[cb]; } catch(_) {}
-          script.remove();
-          reject(new Error("JSONP_ERROR"));
-        };
-        document.head.appendChild(script);
-      });
-    }
-
-    // POST iframe
-    function vfPost(payload = {}, timeoutMs = 15000){
-      return new Promise((resolve) => {
-        ensureIframe_();
-
-        const rid = "REQ-" + Date.now() + "-" + Math.floor(Math.random() * 1e6);
-
-        const timer = setTimeout(() => {
-          if (!pending.has(rid)) return;
-          pending.delete(rid);
-          resolve({ ok:false, error:"TRANSPORT_TIMEOUT", details:"Le serveur n’a pas répondu via postMessage." , request_id: rid });
-        }, timeoutMs);
-
-        pending.set(rid, { resolve, timer });
-
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = VF_SCRIPT_URL;
-        form.target = "vf_iframe";
-
-        const add = (k, v) => {
-          const input = document.createElement("input");
-          input.type = "hidden";
-          input.name = k;
-          input.value = (v === undefined || v === null) ? "" : String(v);
-          form.appendChild(input);
-        };
-
-        add("transport", "iframe");
-        add("origin", location.origin);
-        add("request_id", rid);
-
-        Object.keys(payload).forEach((k) => add(k, payload[k]));
-
-        document.body.appendChild(form);
-        form.submit();
-
-        setTimeout(() => { try { form.remove(); } catch(_) {} }, 1500);
-      });
-    }
-
-    // API globale
-    window.VF_API = {
-      // GET
-      getProducts: ({ cat="all", token="" } = {}) => vfJsonp("get_products", { cat, token }),
-      orderHistory: ({ email, limit=80 } = {}) => vfJsonp("order_history", { email, limit }),
-
-      // POST
-      register: ({ username, email, password }) => vfPost({ action:"register", username, email, password }),
-      login: ({ email, password }) => vfPost({ action:"login", email, password }),
-
-      walletBalance: ({ token, currency="USD" }) => vfPost({ action:"db_wallet_balance", token, currency }),
-      walletTopupCreate: (data) => vfPost({ action:"db_wallet_topup_create", ...data }),
-      walletPay: (data) => vfPost({ action:"wallet_pay", ...data }),
-      resellerPay: (data) => vfPost({ action:"reseller_pay", ...data }),
-      createOrder: (data) => vfPost({ ...data }),
-      chatSupport: ({ chat, orderId, email }) => vfPost({ chat, orderId, email }),
-    };
-  })();
-  </script>
-
-  <script>
     const $ = (id) => document.getElementById(id);
 
     function showMsg(type, text){
@@ -210,41 +91,51 @@
       if (s && (s.email || s.username)) location.href = getNext();
     }catch(_){}
 
-    $("loginForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
+    // ✅ Attendre que vf_api.js soit chargé (defer => après parsing HTML)
+    window.addEventListener("DOMContentLoaded", () => {
+      const api = window.vfApi; // <-- ton /vf_api.js expose ça
 
-      const email = $("email").value.trim();
-      const password = $("password").value;
+      if (!api || typeof api.login !== "function") {
+        showMsg("err", "Erreur: vf_api.js n'est pas chargé (vfApi introuvable). Vérifie /vf_api.js et le chemin.");
+        return;
+      }
 
-      $("btn").disabled = true;
-      $("btn").classList.add("opacity-70");
-      showMsg("ok", "Connexion en cours...");
+      $("loginForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-      try{
-        const res = await window.VF_API.login({ email, password });
+        const email = $("email").value.trim();
+        const password = $("password").value;
 
-        if (!res || res.ok !== true){
-          const err = (res && (res.error || res.message)) ? (res.error || res.message) : "LOGIN_FAILED";
-          const det = (res && res.details) ? (" - " + res.details) : "";
-          showMsg("err", "Erreur connexion: " + err + det);
+        $("btn").disabled = true;
+        $("btn").classList.add("opacity-70");
+        showMsg("ok", "Connexion en cours...");
+
+        try{
+          const res = await api.login({ email, password });
+
+          if (!res || res.ok !== true){
+            const err = (res && (res.error || res.message)) ? (res.error || res.message) : "LOGIN_FAILED";
+            const det = (res && res.details) ? (" - " + res.details) : "";
+            showMsg("err", "Erreur connexion: " + err + det);
+            $("btn").disabled = false;
+            $("btn").classList.remove("opacity-70");
+            return;
+          }
+
+          // Sauvegarde session + token (si présent)
+          if (res.session) localStorage.setItem("vf_session", JSON.stringify(res.session));
+          if (res.token) localStorage.setItem("vf_token", String(res.token));
+          localStorage.setItem("vf_session_changed", String(Date.now()));
+
+          showMsg("ok", "Connecté. Redirection...");
+          setTimeout(() => location.href = getNext(), 400);
+
+        }catch(err){
+          showMsg("err", "Erreur connexion (transport): " + (err && err.message ? err.message : String(err)));
           $("btn").disabled = false;
           $("btn").classList.remove("opacity-70");
-          return;
         }
-
-        // Sauvegarde session + token (si présent)
-        if (res.session) localStorage.setItem("vf_session", JSON.stringify(res.session));
-        if (res.token) localStorage.setItem("vf_token", String(res.token));
-        localStorage.setItem("vf_session_changed", String(Date.now()));
-
-        showMsg("ok", "Connecté. Redirection...");
-        setTimeout(() => location.href = getNext(), 400);
-
-      }catch(err){
-        showMsg("err", "Erreur connexion (transport): " + (err && err.message ? err.message : String(err)));
-        $("btn").disabled = false;
-        $("btn").classList.remove("opacity-70");
-      }
+      });
     });
   </script>
 </body>
