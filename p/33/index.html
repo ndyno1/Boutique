@@ -33,9 +33,13 @@
       padding-bottom: env(safe-area-inset-bottom);
       overscroll-behavior-x: none;
     }
+    .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
+    .no-scrollbar::-webkit-scrollbar{ display:none; }
+
     .text-orange-bsv { color: #F07E13; }
     .btn-gradient { background: linear-gradient(90deg, #F07E13 0%, #FFB26B 100%); }
     .shadow-card { box-shadow: 0 0 7px 0 rgba(0,0,0,.15); }
+
     .btn-mini{
       height:40px; padding:0 14px; border-radius:999px;
       font-weight:900; font-size:11px; letter-spacing:.10em;
@@ -46,6 +50,7 @@
       max-width:100%;
     }
     .btn-mini:hover{ transform: translateY(-1px); border-color:#F07E13; color:#F07E13; }
+
     .btn-waba{
       height:40px; padding:0 14px; border-radius:999px;
       font-weight:900; font-size:11px; letter-spacing:.10em;
@@ -68,6 +73,7 @@
       white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
       line-height:1;
     }
+
     @media (max-width: 420px){
       .btn-mini, .btn-waba{ padding:0 10px; font-size:10px; letter-spacing:.08em; }
       .btn-mini .txt, .btn-waba .txt{ display:none; }
@@ -86,7 +92,7 @@
         </div>
       </a>
 
-      <div class="flex items-center gap-2 flex-wrap justify-end">
+      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar max-w-full">
         <div id="accountArea" class="hidden sm:flex items-center gap-2"></div>
 
         <a class="icon-btn" href="/commandes.html" title="Mes commandes" aria-label="Mes commandes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -297,7 +303,7 @@ Si vous n’êtes pas d’accord, veuillez ne pas effectuer l’achat.
     </div>
   </footer>
 
-  <!-- ✅ Account UI (sans backticks) -->
+  <!-- Account UI -->
   <script>
     const _VF_SVG_LOGIN = "<svg width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" viewBox=\"0 0 24 24\" aria-hidden=\"true\">\n    <path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\"></path>\n    <path d=\"M10 17l5-5-5-5\"></path>\n    <path d=\"M15 12H3\"></path>\n  </svg>";
     const _VF_SVG_REGISTER = "<svg width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" viewBox=\"0 0 24 24\" aria-hidden=\"true\">\n    <path d=\"M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"></path>\n    <circle cx=\"8.5\" cy=\"7\" r=\"4\"></circle>\n    <path d=\"M20 8v6\"></path>\n    <path d=\"M23 11h-6\"></path>\n  </svg>";
@@ -311,7 +317,7 @@ Si vous n’êtes pas d’accord, veuillez ne pas effectuer l’achat.
         const s = JSON.parse(raw);
         if(!s || (!s.email && !s.username)) return null;
         return s;
-      }catch{ return null; }
+      }catch(e){ return null; }
     }
 
     window.addEventListener("storage", (e) => {
@@ -374,12 +380,24 @@ Si vous n’êtes pas d’accord, veuillez ne pas effectuer l’achat.
     renderAccountUI_();
   </script>
 
-  <!-- ✅ prix revendeur dynamique -->
+  <!-- Prix revendeur dynamique + lien paiement cohérent -->
   <script>
     const VF_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
     const VF_PRODUCT_ID = "33";
 
     function _vfSafe2(v){ return (v === null || v === undefined) ? "" : String(v); }
+
+    function _vfGetStore(){
+      return (window.vfApi && window.vfApi.storage) ? window.vfApi.storage
+           : (window.vfStorage ? window.vfStorage : null);
+    }
+
+    function _vfGetCookie(name){
+      try{
+        const m = document.cookie.match(new RegExp("(^|;)\\s*" + name + "\\s*=\\s*([^;]+)"));
+        return m ? decodeURIComponent(m[2]) : "";
+      }catch(e){ return ""; }
+    }
 
     function _vfGetSession(){
       try{
@@ -388,29 +406,53 @@ Si vous n’êtes pas d’accord, veuillez ne pas effectuer l’achat.
         const s = JSON.parse(raw);
         if(!s || (!s.email && !s.username)) return null;
         return s;
-      }catch{ return null; }
+      }catch(e){ return null; }
     }
 
     function _vfGetToken(){
+      // 0) session fields
       try{
         const s = _vfGetSession();
-        const t =
-          (s && (s.token || s.vf_token || s.session_token || s.access_token || s.reseller_token)) ||
-          localStorage.getItem("vf_token") ||
-          "";
-        return String(t || "").trim();
-      }catch{ return ""; }
+        const t = s && (s.token || s.vf_token || s.reseller_token || s.access_token || s.session_token);
+        if (t) return String(t).trim();
+      }catch(e){}
+
+      // 1) vf_api.js storage
+      try{
+        const st = _vfGetStore();
+        if (st && typeof st.getToken === "function"){
+          const t = st.getToken();
+          if (t) return String(t).trim();
+        }
+      }catch(e){}
+
+      // 2) localStorage
+      try{
+        const t2 = localStorage.getItem("vf_token");
+        if (t2) return String(t2).trim();
+      }catch(e){}
+
+      // 3) cookie
+      const ck = _vfGetCookie("vf_token");
+      if (ck){
+        try{ localStorage.setItem("vf_token", ck); }catch(e){}
+        return String(ck).trim();
+      }
+
+      return "";
     }
 
     function _vfPickPrice(prod){
+      // IMPORTANT: revendeur en priorité
       const v = prod && (
         prod.prix_affiche ??
+        prod.prix_revendeur ??
+        prod.RESELLER ?? prod.reseller ??
         prod.prix ??
         prod.price ??
         prod.amount ??
         prod.PV ?? prod.pv ??
-        prod.RESELLER ?? prod.reseller ??
-        prod.prix_revendeur
+        prod.prix_client
       );
       return _vfSafe2(v).trim();
     }
@@ -428,13 +470,22 @@ Si vous n’êtes pas d’accord, veuillez ne pas effectuer l’achat.
       return "/paiement.html?" + qp.toString();
     }
 
+    function _vfExtractList(payload){
+      if (Array.isArray(payload)) return payload;
+      if (payload && Array.isArray(payload.products)) return payload.products;
+      if (payload && Array.isArray(payload.items)) return payload.items;
+      if (payload && Array.isArray(payload.data)) return payload.data;
+      if (payload && payload.data && Array.isArray(payload.data.products)) return payload.data.products;
+      if (payload && payload.data && Array.isArray(payload.data.items)) return payload.data.items;
+      return [];
+    }
+
     function _vfJsonpGetProducts(token){
       return new Promise((resolve, reject) => {
         const cb = "vf_cb_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
         window[cb] = (payload) => {
           try{
-            const list = Array.isArray(payload) ? payload : (Array.isArray(payload && payload.products) ? payload.products : []);
-            resolve(list);
+            resolve(_vfExtractList(payload));
           }finally{
             try{ delete window[cb]; }catch(e){}
           }
@@ -455,6 +506,15 @@ Si vous n’êtes pas d’accord, veuillez ne pas effectuer l’achat.
       const token = _vfGetToken();
       if(!token) return;
 
+      // UI: loading (évite que l’utilisateur pense que c’est le prix client)
+      const priceEl = document.getElementById("priceValue");
+      const buyBtn = document.getElementById("buyBtn");
+      if (priceEl) priceEl.textContent = "... $";
+      if (buyBtn){
+        buyBtn.classList.add("opacity-60");
+        buyBtn.style.pointerEvents = "none";
+      }
+
       try{
         const list = await _vfJsonpGetProducts(token);
         const prod = list.find(x => _vfSafe2(x && x.id).trim() === VF_PRODUCT_ID);
@@ -466,18 +526,35 @@ Si vous n’êtes pas d’accord, veuillez ne pas effectuer l’achat.
         const num = parseFloat(String(raw).replace(",", "."));
         const txt = Number.isFinite(num) ? num.toFixed(2) : raw;
 
-        const priceEl = document.getElementById("priceValue");
         if(priceEl) priceEl.textContent = txt + " $";
-
-        const buyBtn = document.getElementById("buyBtn");
-        if(buyBtn) buyBtn.href = _vfBuildPayUrl(prod, txt);
-
+        if(buyBtn){
+          buyBtn.href = _vfBuildPayUrl(prod, txt);
+          buyBtn.classList.remove("opacity-60");
+          buyBtn.style.pointerEvents = "auto";
+        }
       }catch(e){
-        // silencieux
+        // si erreur: on laisse le prix client
+        if (priceEl) priceEl.textContent = "9 $";
+        if (buyBtn){
+          buyBtn.classList.remove("opacity-60");
+          buyBtn.style.pointerEvents = "auto";
+        }
       }
     }
 
-    _vfRefreshPrice();
+    function _vfStartPrice(){
+      _vfRefreshPrice();
+
+      // petit retry si token apparaît après coup
+      setTimeout(() => { _vfRefreshPrice(); }, 700);
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", _vfStartPrice);
+    } else {
+      _vfStartPrice();
+    }
+
     window.addEventListener("storage", (e) => {
       if (e.key === "vf_session" || e.key === "vf_token" || e.key === "vf_session_changed") {
         _vfRefreshPrice();
