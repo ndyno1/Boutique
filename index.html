@@ -50,7 +50,7 @@
   <!-- Config avant /vf_api.js (optionnel) -->
   <script>
     const inAppsScriptPanel =
-      window.__VF_IN_APPS_SCRIPT_PANEL ||
+      !!window.__VF_IN_APPS_SCRIPT_PANEL ||
       /script\.googleusercontent\.com|script\.google\.com/i.test(document.referrer || "");
 
     window.VF_CONFIG = {
@@ -256,13 +256,13 @@
     </section>
 
     <div class="flex items-center gap-3 overflow-x-auto no-scrollbar pb-6 mb-10 border-b border-gray-100" id="catNav">
-      <button onclick="filterCat('all', this)" class="cat-btn active bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">⚡ Tous</button>
-      <button onclick="filterCat('Materiel', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">📦 MATÉRIEL & GADGETS</button>
-      <button onclick="filterCat('Abonnement', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">📺 ABONNEMENTS</button>
-      <button onclick="filterCat('Carte2', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">💳 CARTES CADEAUX</button>
-      <button onclick="filterCat('IMEI', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">📱 IMEI & RÉSEAU</button>
-      <button onclick="filterCat('Boost', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">🚀 BOOST SMM</button>
-      <button onclick="filterCat('Jeux', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">🎮 JEUX</button>
+      <button onclick="filterCat('all', this)" class="cat-btn active bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Tous</button>
+      <button onclick="filterCat('Materiel', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Matériel & Gadgets</button>
+      <button onclick="filterCat('Abonnement', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Abonnements</button>
+      <button onclick="filterCat('Carte2', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Cartes cadeaux</button>
+      <button onclick="filterCat('IMEI', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">IMEI & Réseau</button>
+      <button onclick="filterCat('Boost', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Boost SMM</button>
+      <button onclick="filterCat('Jeux', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Jeux</button>
     </div>
 
     <div id="loadError" class="hidden mb-6 bg-red-50 border border-red-200 text-red-700 font-bold text-xs rounded-2xl px-4 py-3"></div>
@@ -300,7 +300,12 @@
 
   <script>
     // ========= CONFIG =========
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
+    const SCRIPT_URL =
+      (window.VF_CONFIG && window.VF_CONFIG.scriptUrl)
+      ? String(window.VF_CONFIG.scriptUrl)
+      : "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
+
+    const FALLBACK_IMG = "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
 
     let ALL_PRODUCTS = [];
     let CURRENT_FILTER = "all";
@@ -315,15 +320,32 @@
     };
 
     // ========= UI SEARCH PLACEHOLDER =========
-    const input = document.getElementById('searchInput');
-    const placeholderBox = document.getElementById('placeholder-box');
-    input.addEventListener('focus', () => placeholderBox.style.display = 'none');
-    input.addEventListener('blur', () => { if(input.value === "") placeholderBox.style.display = 'block'; });
-    input.addEventListener('input', () => render());
+    const input = document.getElementById("searchInput");
+    const placeholderBox = document.getElementById("placeholder-box");
+
+    if (input && placeholderBox) {
+      input.addEventListener("focus", () => placeholderBox.style.display = "none");
+      input.addEventListener("blur", () => { if (input.value === "") placeholderBox.style.display = "block"; });
+      input.addEventListener("input", () => render());
+    }
 
     // ========= HELPERS =========
     function safe(v){ return (v === null || v === undefined) ? "" : String(v); }
     function up(v){ return safe(v).trim().toUpperCase(); }
+
+    function escHtml(str){
+      return safe(str).replace(/[&<>"']/g, (c) => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      }[c]));
+    }
+
+    function sanitizeHttpUrl(u){
+      const s = safe(u).trim();
+      if (!s) return "";
+      // autorise http/https uniquement (évite javascript:)
+      if (/^https?:\/\//i.test(s)) return s;
+      return "";
+    }
 
     function pName(p){ return safe(p.nom || p.name || p.title); }
     function pCat(p){ return safe(p.cat || p.category || p.categorie); }
@@ -418,6 +440,8 @@
       const token = getToken_();
       const mode = document.getElementById("priceMode");
 
+      if (!area) return;
+
       area.innerHTML = "";
       area.classList.remove("hidden");
 
@@ -452,10 +476,10 @@
       area.innerHTML = `
         <div class="hidden md:flex items-center gap-2 bg-white border border-gray-200 px-3 py-2 rounded-2xl">
           <div class="w-8 h-8 rounded-xl brand-gradient flex items-center justify-center text-white font-black text-sm">
-            ${display.slice(0,1).toUpperCase()}
+            ${escHtml(display.slice(0,1).toUpperCase())}
           </div>
           <div class="leading-tight">
-            <div class="text-[11px] font-black text-gray-900">Bonjour, ${display}</div>
+            <div class="text-[11px] font-black text-gray-900">Bonjour, ${escHtml(display)}</div>
             <div class="text-[9px] font-black uppercase tracking-widest ${token ? "text-green-400" : "text-gray-300"}">
               ${token ? "TOKEN OK" : "SANS TOKEN"}
             </div>
@@ -464,21 +488,26 @@
         <button id="logoutBtn" class="btn-auth btn-auth-outline">Déconnexion</button>
       `;
 
-      document.getElementById("logoutBtn").addEventListener("click", () => {
-        clearSession_();
-        renderAccountUI_();
-        initProducts(); // recharge => prix client
-      });
+      const logoutBtn = document.getElementById("logoutBtn");
+      if (logoutBtn){
+        logoutBtn.addEventListener("click", () => {
+          clearSession_();
+          renderAccountUI_();
+          initProducts(); // recharge => prix client
+        });
+      }
     }
 
     // ========= LOADER / ERROR =========
     function showLoadError_(msg){
       const box = document.getElementById("loadError");
+      if (!box) return;
       box.textContent = msg;
       box.classList.remove("hidden");
     }
     function hideLoadError_(){
       const box = document.getElementById("loadError");
+      if (!box) return;
       box.classList.add("hidden");
       box.textContent = "";
     }
@@ -546,8 +575,12 @@
         b.classList.remove("text-white","brand-gradient","active");
         b.classList.add("bg-white","text-gray-500");
       });
-      btn.classList.add("text-white","brand-gradient","active");
-      btn.classList.remove("bg-white","text-gray-500");
+
+      if (btn){
+        btn.classList.add("text-white","brand-gradient","active");
+        btn.classList.remove("bg-white","text-gray-500");
+      }
+
       CURRENT_FILTER = cat;
       render();
     }
@@ -555,7 +588,9 @@
     // ========= RENDER =========
     function render(){
       const grid = document.getElementById("product-grid");
-      const query = (input.value || "").toLowerCase().trim();
+      if (!grid) return;
+
+      const query = (input ? (input.value || "") : "").toLowerCase().trim();
 
       const filtered = ALL_PRODUCTS.filter(p=>{
         const catU = up(pCat(p));
@@ -578,7 +613,8 @@
       }
 
       grid.innerHTML = filtered.map(p=>{
-        const img = pImg(p) || "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
+        const imgRaw = sanitizeHttpUrl(pImg(p));
+        const img = imgRaw || FALLBACK_IMG;
 
         const priceRaw = pPrice(p);
         let priceTxt = "—";
@@ -599,13 +635,13 @@
             <div class="aspect-square bg-[#F8FAFC] rounded-[22px] mb-4 flex items-center justify-center p-6 overflow-hidden">
               <img src="${img}"
                 class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
-                onerror="this.src='https://cdn-icons-png.flaticon.com/512/11520/11520110.png'">
+                onerror="this.src='${FALLBACK_IMG}'">
             </div>
             <div class="px-1">
-              <span class="text-[9px] font-black text-[#F07E13] uppercase tracking-tighter mb-1 block">${safe(pCat(p))}</span>
-              <h3 class="text-[13px] font-bold text-gray-900 leading-tight mb-4 h-8 overflow-hidden line-clamp-2">${safe(pName(p))}</h3>
+              <span class="text-[9px] font-black text-[#F07E13] uppercase tracking-tighter mb-1 block">${escHtml(pCat(p))}</span>
+              <h3 class="text-[13px] font-bold text-gray-900 leading-tight mb-4 h-8 overflow-hidden line-clamp-2">${escHtml(pName(p))}</h3>
               <div class="flex items-center justify-between">
-                <span class="text-gray-900 font-black text-lg tracking-tighter">${priceTxt} $</span>
+                <span class="text-gray-900 font-black text-lg tracking-tighter">${escHtml(priceTxt)} $</span>
                 <div class="bg-gray-900 text-white p-1.5 rounded-lg group-hover:brand-gradient transition-all">
                   <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                     <path d="M12 4v16m8-8H4"></path>
@@ -615,7 +651,7 @@
 
               ${(min || max) ? `
                 <div class="mt-3 text-[9px] font-black uppercase tracking-widest text-gray-300">
-                  Min ${safe(min) || "-"} • Max ${safe(max) || "-"}
+                  Min ${escHtml(safe(min) || "-")} • Max ${escHtml(safe(max) || "-")}
                 </div>` : ``}
             </div>
           </div>
