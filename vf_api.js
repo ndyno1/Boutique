@@ -1,19 +1,21 @@
 /** ===========================
- *  VF API CLIENT (NO CORS) — UPDATED (KEEP LOGIC)
- *  - GET  => JSONP (script tag)
- *  - POST => hidden iframe form + postMessage
- *  - Robust: body-ready, per-request iframe, timeouts
- *  - FIX: DO NOT check event.source === iframe.contentWindow (Apps Script wrapper breaks it)
- *  - ADD: shared cookie token for www/non-www + vfStorage helpers
+ *  VF API CLIENT — ADAPTÉ V18.4 (Apps Script)
+ *  - GET  => JSONP (OK sans CORS)
+ *  - POST => login/register : iframe + postMessage (OK)
+ *        => autres actions : fetch via proxy same-origin (sinon impossible sans CORS)
+ *  - + cookie token partagé www/non-www + vfStorage
  * =========================== */
 
 (function initVfBridge(){
   if (window.__vfBridgeReady) return;
   window.__vfBridgeReady = true;
 
-  // --- Config
+  // --------------------------
+  // Config
+  // --------------------------
   const CFG = (window.VF_CONFIG && typeof window.VF_CONFIG === "object") ? window.VF_CONFIG : {};
-  let VF_SCRIPT_URL = String(
+
+  const VF_SCRIPT_URL = String(
     CFG.scriptUrl ||
     CFG.apiBase ||
     "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec"
@@ -22,7 +24,19 @@
   const DEFAULT_TIMEOUT = Number(CFG.timeoutMs || 20000);
   const DEBUG = !!CFG.debug;
 
-  // --- Helpers
+  // ✅ postMode:
+  // - "auto"  : login/register = iframe, le reste = proxy si fourni sinon erreur claire
+  // - "proxy" : force proxy pour les POST JSON
+  // - "iframe": force iframe (⚠️ ne marche QUE si Apps Script renvoie postMessage pour ces actions)
+  const POST_MODE = String(CFG.postMode || "auto").toLowerCase();
+
+  // ✅ proxyUrl (même origin que ton site), ex:
+  // CFG.proxyUrl = "/vf_proxy"  (Cloudflare Worker / Netlify function)
+  const PROXY_URL = CFG.proxyUrl ? String(CFG.proxyUrl).trim() : "";
+
+  // auto-store token/session sur login/register
+  const AUTO_STORE_AUTH = (CFG.autoStoreAuth !== false);
+
   const nowId_ = () => Date.now() + "-" + Math.floor(Math.random() * 1e6);
 
   const safeJsonParse_ = (x) => {
@@ -30,15 +44,12 @@
     catch (_) { return x; }
   };
 
-  const isAllowedOrigin_ = (origin) => {
-    const o = String(origin || "");
-    if (o === "null" && (location.protocol === "file:" || location.origin === "null")) return true;
-
-    return (
-      o === "https://script.google.com" ||
-      o === "https://script.googleusercontent.com" ||
-      o.endsWith(".googleusercontent.com")
-    );
+  // --------------------------
+  // Panel / origin
+  // --------------------------
+  const isAppsScriptPanel_ = () => {
+    const h = String(location.hostname || "").toLowerCase();
+    return (h === "script.google.com" || h.endsWith(".googleusercontent.com"));
   };
 
   const isTrustedHostForStrictOrigin_ = () => {
@@ -51,13 +62,6 @@
     );
   };
 
-  // ✅ Détecte si on est dans un panel / preview Apps Script (googleusercontent)
-  const isAppsScriptPanel_ = () => {
-    const h = String(location.hostname || "").toLowerCase();
-    return (h === "script.google.com" || h.endsWith(".googleusercontent.com"));
-  };
-
-  // ✅ origin qu'on envoie au serveur (sera utilisé côté serveur comme targetOrigin pour postMessage)
   const pickClientOriginParam_ = () => {
     if (isAppsScriptPanel_()) return "*";
     if (CFG.postMessageTargetOrigin) return String(CFG.postMessageTargetOrigin);
@@ -83,7 +87,7 @@
 
   function setCookie_(name, value, days){
     try{
-      const maxAge = (typeof days === "number") ? (days * 86400) : (7 * 86400);
+      const maxAge = (typeof days === "number") ? (days * 86400) : (14 * 86400);
       const secure = (location.protocol === "https:") ? "; Secure" : "";
       const domain = isViralflowrDomain_() ? ("; Domain=" + COOKIE_DOMAIN) : "";
       document.cookie =
@@ -114,7 +118,10 @@
 
   const vfStorage = {
     getToken(){
-      return localStorage.getItem("vf_token") || getCookie_(COOKIE_TOKEN_KEY) || "";
+      const t = localStorage.getItem("vf_token") || getCookie_(COOKIE_TOKEN_KEY) || "";
+      // sync douce
+      if (t && !localStorage.getItem("vf_token")) localStorage.setItem("vf_token", t);
+      return t;
     },
     setToken(t){
       const v = String(t || "");
@@ -132,6 +139,7 @@
     setSession(s){
       if (s) localStorage.setItem("vf_session", JSON.stringify(s));
       else localStorage.removeItem("vf_session");
+      localStorage.setItem("vf_session_changed", String(Date.now()));
     },
     clear(){
       localStorage.removeItem("vf_token");
@@ -143,33 +151,38 @@
 
   window.vfStorage = vfStorage;
 
-  // Pending requests by request_id
-  // Map<rid, { resolve, reject, timer, iframe, form }>
+  // --------------------------
+  // IFRAME postMessage (uniquement login/register dans ton Apps Script)
+  // --------------------------
   const pending = new Map();
 
   function cleanupReq_(rid){
     const p = pending.get(rid);
     if (!p) return;
-
     if (p.timer) clearTimeout(p.timer);
-
     try { if (p.form && p.form.parentNode) p.form.parentNode.removeChild(p.form); } catch(_) {}
     try { if (p.iframe && p.iframe.parentNode) p.iframe.parentNode.removeChild(p.iframe); } catch(_) {}
-
     pending.delete(rid);
   }
 
   function settle_(rid, kind, data){
     const p = pending.get(rid);
     if (!p) return;
-
     cleanupReq_(rid);
-
     if (kind === "resolve") p.resolve(data);
     else p.reject(data);
   }
 
-  // Listen responses (postMessage from Apps Script HTML bridge)
+  const isAllowedOrigin_ = (origin) => {
+    const o = String(origin || "");
+    if (o === "null" && (location.protocol === "file:" || location.origin === "null")) return true;
+    return (
+      o === "https://script.google.com" ||
+      o === "https://script.googleusercontent.com" ||
+      o.endsWith(".googleusercontent.com")
+    );
+  };
+
   window.addEventListener("message", (event) => {
     if (!isAllowedOrigin_(event.origin)) return;
 
@@ -179,21 +192,73 @@
     const rid = msg.request_id || msg.requestId;
     if (!rid) return;
 
-    if (DEBUG) {
-      console.log("[vfBridge] message origin=", event.origin, "rid=", rid, "pendingHas=", pending.has(rid));
-    }
+    if (DEBUG) console.log("[vfBridge] message origin=", event.origin, "rid=", rid, "pendingHas=", pending.has(rid));
 
     if (!pending.has(rid)) {
       window.__vfLastBridgeMsg = msg;
       return;
     }
 
-    if (DEBUG) console.log("[vfBridge] message ok rid=", rid, msg);
     settle_(rid, "resolve", msg);
   });
 
+  function vfPostIframe(payload = {}, timeoutMs = DEFAULT_TIMEOUT){
+    return new Promise((resolve, reject) => {
+      ensureBody_(() => {
+        if (!VF_SCRIPT_URL) return reject(new Error("SCRIPT_URL_MISSING"));
+
+        const rid = "REQ-" + nowId_();
+
+        const ifr = document.createElement("iframe");
+        ifr.name = "vf_iframe_" + rid;
+        ifr.id   = "vf_iframe_" + rid;
+        ifr.style.display = "none";
+        ifr.src = "about:blank";
+        document.body.appendChild(ifr);
+
+        const timer = setTimeout(() => {
+          if (!pending.has(rid)) return;
+          cleanupReq_(rid);
+          reject(new Error("IFRAME_TIMEOUT_NO_POSTMESSAGE"));
+        }, timeoutMs);
+
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = VF_SCRIPT_URL;
+        form.target = ifr.name;
+        form.acceptCharset = "UTF-8";
+
+        const add = (k, v) => {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = k;
+          input.value = (v === undefined || v === null) ? "" : String(v);
+          form.appendChild(input);
+        };
+
+        // ton Apps Script utilise ces champs
+        add("transport", "iframe");
+        add("origin", pickClientOriginParam_());
+        add("request_id", rid);
+
+        Object.keys(payload || {}).forEach((k) => add(k, payload[k]));
+
+        pending.set(rid, { resolve, reject, timer, iframe: ifr, form });
+
+        document.body.appendChild(form);
+
+        if (DEBUG) console.log("[vfBridge] POST(iframe) rid=", rid, "payload=", payload);
+
+        try { form.submit(); }
+        catch (e) { cleanupReq_(rid); reject(e); return; }
+
+        setTimeout(() => { try { if (form && form.parentNode) form.parentNode.removeChild(form); } catch(_) {} }, 1200);
+      });
+    });
+  }
+
   // --------------------------
-  // JSONP (GET)
+  // JSONP (GET) : pour doGet
   // --------------------------
   function vfJsonp(action, params = {}, timeoutMs = DEFAULT_TIMEOUT){
     return new Promise((resolve, reject) => {
@@ -241,97 +306,125 @@
   }
 
   // --------------------------
-  // POST (iframe + postMessage)
+  // POST JSON via proxy (same-origin)
   // --------------------------
-  function vfPost(payload = {}, timeoutMs = DEFAULT_TIMEOUT){
-    return new Promise((resolve, reject) => {
-      ensureBody_(() => {
-        if (!VF_SCRIPT_URL) return reject(new Error("SCRIPT_URL_MISSING"));
+  async function vfPostViaProxy(payload = {}, timeoutMs = DEFAULT_TIMEOUT){
+    if (!PROXY_URL) {
+      throw new Error("PROXY_URL_MISSING_FOR_JSON_POST");
+    }
 
-        const rid = "REQ-" + nowId_();
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), timeoutMs);
 
-        const ifr = document.createElement("iframe");
-        ifr.name = "vf_iframe_" + rid;
-        ifr.id   = "vf_iframe_" + rid;
-        ifr.style.display = "none";
-        ifr.src = "about:blank";
-        document.body.appendChild(ifr);
-
-        const timer = setTimeout(() => {
-          if (!pending.has(rid)) return;
-          cleanupReq_(rid);
-          reject(new Error("IFRAME_TIMEOUT"));
-        }, timeoutMs);
-
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = VF_SCRIPT_URL;
-        form.target = ifr.name;
-        form.acceptCharset = "UTF-8";
-
-        const add = (k, v) => {
-          const input = document.createElement("input");
-          input.type = "hidden";
-          input.name = k;
-          input.value = (v === undefined || v === null) ? "" : String(v);
-          form.appendChild(input);
-        };
-
-        add("transport", "iframe");
-
-        const originParam = pickClientOriginParam_();
-        if (DEBUG) console.log("[vfBridge] originParam =", originParam, "pageOrigin =", location.origin);
-
-        add("origin", originParam);
-        add("request_id", rid);
-
-        Object.keys(payload || {}).forEach((k) => add(k, payload[k]));
-
-        pending.set(rid, { resolve, reject, timer, iframe: ifr, form });
-
-        document.body.appendChild(form);
-
-        if (DEBUG) console.log("[vfBridge] POST rid=", rid, "payload=", payload);
-
-        try {
-          form.submit();
-        } catch (e) {
-          cleanupReq_(rid);
-          reject(e);
-          return;
-        }
-
-        setTimeout(() => { try { if (form && form.parentNode) form.parentNode.removeChild(form); } catch(_) {} }, 1500);
+    try{
+      // Le proxy doit forward vers VF_SCRIPT_URL (et renvoyer JSON)
+      const res = await fetch(PROXY_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+        body: JSON.stringify({ scriptUrl: VF_SCRIPT_URL, payload }),
+        signal: ctrl.signal
       });
-    });
+
+      const txt = await res.text();
+      let js = null;
+      try { js = JSON.parse(txt); } catch(_){}
+
+      if (!res.ok) {
+        const err = js && (js.error || js.message) ? (js.error || js.message) : ("HTTP_" + res.status);
+        throw new Error("PROXY_HTTP_ERROR:" + err);
+      }
+
+      return (js !== null) ? js : { ok:true, raw: txt };
+    } finally {
+      clearTimeout(t);
+    }
   }
 
-  // Expose helpers
-  window.vfJsonp = vfJsonp;
-  window.vfPost  = vfPost;
+  // --------------------------
+  // Router POST (ADAPTÉ À TON Apps Script)
+  // --------------------------
+  function isAuthAction_(payload){
+    const a = String((payload && payload.action) || "").trim().toLowerCase();
+    return a === "login" || a === "register";
+  }
 
-  // High-level API (même interface)
-  window.vfApi = {
-    getProducts: ({ cat="all", token="" } = {}) => vfJsonp("get_products", { cat, token }),
+  async function vfPost(payload = {}, timeoutMs = DEFAULT_TIMEOUT){
+    // login/register => iframe + postMessage (conforme Apps Script)
+    if (isAuthAction_(payload)) return vfPostIframe(payload, timeoutMs);
+
+    // autres POST => JSON pur côté Apps Script => il faut proxy (ou patch Apps Script)
+    if (POST_MODE === "iframe") {
+      // ⚠️ ne marche QUE si tu patches Apps Script pour répondre postMessage aussi ici
+      return vfPostIframe(payload, timeoutMs);
+    }
+
+    if (POST_MODE === "proxy" || POST_MODE === "auto") {
+      return vfPostViaProxy(payload, timeoutMs);
+    }
+
+    // fallback
+    return vfPostViaProxy(payload, timeoutMs);
+  }
+
+  // --------------------------
+  // API publique (même interface + orderRecharge)
+  // --------------------------
+  const api = {
+    // doGet JSONP
+    getProducts: ({ cat="all", token } = {}) => {
+      const t = (token !== undefined) ? String(token || "") : vfStorage.getToken();
+      return vfJsonp("get_products", { cat, token: t });
+    },
     orderHistory: ({ email, limit=80 } = {}) => vfJsonp("order_history", { email, limit }),
+    orderRecharge: ({ email, orderId } = {}) => vfJsonp("order_recharge", { email, orderId }),
 
-    register: ({ username, email, password }) => vfPost({ action:"register", username, email, password }),
-    login:    ({ email, password }) => vfPost({ action:"login", email, password }),
+    // Auth (iframe)
+    register: async ({ username, email, password }) => {
+      const res = await vfPost({ action:"register", username, email, password });
+      if (AUTO_STORE_AUTH && res && res.ok && res.token) {
+        vfStorage.setToken(res.token);
+        vfStorage.setSession(res.user || res.session || null);
+      }
+      return res;
+    },
 
-    walletBalance:     ({ token, currency="USD" }) => vfPost({ action:"db_wallet_balance", token, currency }),
-    walletTopupCreate: (data) => vfPost({ action:"db_wallet_topup_create", ...(data||{}) }),
+    login: async ({ email, password }) => {
+      const res = await vfPost({ action:"login", email, password });
+      if (AUTO_STORE_AUTH && res && res.ok && res.token) {
+        vfStorage.setToken(res.token);
+        vfStorage.setSession(res.user || res.session || null);
+      }
+      return res;
+    },
 
-    walletPay:   (data) => vfPost({ action:"wallet_pay", ...(data||{}) }),
-    resellerPay: (data) => vfPost({ action:"reseller_pay", ...(data||{}) }),
+    // POST JSON (proxy)
+    walletBalance: ({ token, currency="USD" } = {}) => {
+      const t = (token !== undefined) ? String(token || "") : vfStorage.getToken();
+      return vfPost({ action:"db_wallet_balance", token: t, currency });
+    },
 
-    createOrder: (data) => vfPost({ ...(data||{}) }),
-    chatSupport: ({ chat, orderId, email }) => vfPost({ chat, orderId, email }),
+    walletTopupCreate: (data = {}) => {
+      const t = (data.token !== undefined) ? String(data.token || "") : vfStorage.getToken();
+      return vfPost({ action:"db_wallet_topup_create", ...data, token: t });
+    },
 
-    // + helpers pratiques
+    walletPay: (data = {}) => vfPost({ action:"wallet_pay", ...(data||{}) }),
+    resellerPay: (data = {}) => {
+      const t = (data.token !== undefined) ? String(data.token || "") : vfStorage.getToken();
+      return vfPost({ action:"reseller_pay", ...data, token: t });
+    },
+
+    createOrder: (data = {}) => vfPost({ ...(data||{}) }),
+
+    chatSupport: ({ chat, orderId, email } = {}) => vfPost({ chat, orderId, email }),
+
     storage: vfStorage,
 
-    setScriptUrl: (u) => { VF_SCRIPT_URL = String(u || "").trim(); },
     getScriptUrl: () => VF_SCRIPT_URL
   };
+
+  window.vfJsonp = vfJsonp;
+  window.vfPost  = vfPost;
+  window.vfApi   = api;
 
 })();
