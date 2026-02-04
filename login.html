@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <!-- ✅ Force domaine principal (évite localStorage séparé www vs non-www) -->
+  <script>
+    if (location.hostname === "www.viralflowr.com") {
+      location.replace("https://viralflowr.com" + location.pathname + location.search + location.hash);
+    }
+  </script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ViralFlowr | Connexion</title>
@@ -19,7 +26,7 @@
     };
   </script>
 
-  <!-- ✅ Script global commun (NE PAS METTRE INLINE ICI) -->
+  <!-- ✅ Script global commun -->
   <script src="/vf_api.js?v=102" defer></script>
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -75,10 +82,8 @@
       const box = $("msg");
       box.classList.remove("hidden");
       box.className = "mt-4 rounded-2xl border p-3 text-sm font-semibold";
-
       if (type === "ok") box.classList.add("border-green-200","bg-green-50","text-green-900");
       else box.classList.add("border-red-200","bg-red-50","text-red-900");
-
       box.textContent = text;
     }
 
@@ -90,7 +95,8 @@
     // ✅ Si déjà connecté => redirect
     try{
       const s = JSON.parse(localStorage.getItem("vf_session") || "null");
-      if (s && (s.email || s.username)) location.href = getNext();
+      const t = localStorage.getItem("vf_token");
+      if (t && s && (s.email || s.username)) location.href = getNext();
     }catch(_){}
 
     window.addEventListener("DOMContentLoaded", () => {
@@ -124,13 +130,17 @@
             return;
           }
 
-          // ✅ Sauvegarde session + token (si présent)
-          if (res.session) localStorage.setItem("vf_session", JSON.stringify(res.session));
+          // ✅ Token
           if (res.token) localStorage.setItem("vf_token", String(res.token));
+
+          // ✅ Session (fallback: res.session OU res.user)
+          const session = res.session || res.user || null;
+          if (session) localStorage.setItem("vf_session", JSON.stringify(session));
+
           localStorage.setItem("vf_session_changed", String(Date.now()));
 
           showMsg("ok", "Connecté. Redirection...");
-          setTimeout(() => location.href = getNext(), 400);
+          setTimeout(() => location.href = getNext(), 350);
 
         }catch(err){
           showMsg("err", "Erreur connexion (transport): " + (err && err.message ? err.message : String(err)));
