@@ -1,576 +1,153 @@
 <!DOCTYPE html>
-<html lang="fr" class="font-inter">
+<html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>ViralFlowr | Boutique</title>
+  <!-- ✅ Force domaine principal (évite localStorage séparé www vs non-www) -->
+  <script>
+    if (location.hostname === "www.viralflowr.com") {
+      location.replace("https://viralflowr.com" + location.pathname + location.search + location.hash);
+    }
+  </script>
 
-  <meta name="theme-color" content="#111827" />
-  <link rel="icon" href="favicon.png" />
-  <link rel="apple-touch-icon" href="favicon.png" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ViralFlowr | Connexion</title>
+
+  <!-- ✅ CONFIG AVANT /vf_api.js (garde ta logique + style) -->
+  <script>
+    const inAppsScriptPanel =
+      /script\.googleusercontent\.com|script\.google\.com/i.test(document.referrer || "");
+
+    window.VF_CONFIG = {
+      scriptUrl: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec",
+      timeoutMs: 20000,
+      debug: true,
+      // ✅ si la page est "embed" dans userCodeAppPanel => "*" ; sinon strict
+      postMessageTargetOrigin: inAppsScriptPanel ? "*" : location.origin
+    };
+  </script>
+
+  <!-- ✅ Script global commun -->
+  <script src="/vf_api.js?v=102" defer></script>
 
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
 
   <style>
-    html, body { width:100%; max-width:100%; overflow-x:hidden; }
-    body{
-      font-family:'Inter',sans-serif;
-      background:#F8FAFC;
-      min-height:100svh;
-      padding-bottom: env(safe-area-inset-bottom);
-    }
+    body{ font-family:Inter,system-ui,sans-serif; background:#F8FAFC; }
     .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
-    .icon-btn{
-      display:flex; align-items:center; justify-content:center;
-      width:40px; height:40px; border-radius:14px;
-      background:#fff; border:1px solid #E5E7EB; color:#374151;
-      transition:.2s; -webkit-tap-highlight-color: transparent;
-    }
-    .icon-btn:hover{ border-color:#F07E13; color:#F07E13; transform:translateY(-1px); }
-    .btn-auth{
-      padding: 9px 14px; border-radius: 14px; font-weight: 900; font-size: 11px;
-      text-transform: uppercase; letter-spacing: .12em; transition: .25s;
-      display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .btn-auth-outline{ background:white; border:1px solid #E5E7EB; color:#111827; }
-    .btn-auth-outline:hover{ border-color:#F07E13; color:#F07E13; }
-    .btn-auth-solid{ color:white; }
-    .badge-soft{
-      display:inline-flex; align-items:center; gap:6px;
-      font-size:10px; font-weight:900; letter-spacing:.16em;
-      text-transform:uppercase;
-      padding:7px 10px; border-radius:999px;
-      border:1px solid #E5E7EB;
-      background:#fff;
-      color:#111827;
-    }
-    .price{
-      font-weight:900; letter-spacing:-.02em;
-    }
-    .card-hover{ transition: .2s; }
-    .card-hover:hover{
-      transform: translateY(-2px);
-      box-shadow: 0 12px 30px rgba(17,24,39,.08);
-      border-color:#F07E13;
-    }
-    .line-clamp-3{
-      display:-webkit-box;
-      -webkit-line-clamp:3;
-      -webkit-box-orient: vertical;
-      overflow:hidden;
-    }
   </style>
 </head>
 
-<body>
-
-  <div class="bg-gray-900 text-white py-2 text-[10px] font-black uppercase tracking-[0.2em] text-center">
-    BOUTIQUE • SERVICES & ABONNEMENTS
-  </div>
-
-  <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-100 shadow-sm">
-    <div class="max-w-[1280px] mx-auto px-4 h-16 flex items-center justify-between gap-2 sm:gap-4">
-      <a href="index.html" class="flex items-center gap-2 shrink-0" aria-label="ViralFlowr">
-        <div class="text-2xl font-black tracking-tighter text-gray-900">
-          Viral<span class="text-[#F07E13]">Flowr</span>
-        </div>
-      </a>
-
-      <div class="flex items-center gap-2 sm:gap-3">
-        <div id="authGuest" class="flex items-center gap-2 sm:gap-3">
-          <a href="login.html?next=index.html" class="btn-auth btn-auth-outline">Connexion</a>
-          <a href="register.html?next=index.html" class="btn-auth brand-gradient btn-auth-solid">Inscription</a>
-        </div>
-
-        <div id="authUser" class="hidden items-center gap-2 sm:gap-3">
-          <button id="accountBtn" class="btn-auth btn-auth-outline" type="button" title="Compte">
-            <span class="hidden sm:inline">Compte</span>
-            <span id="userTag" class="text-gray-400 font-black tracking-widest text-[10px] hidden md:inline">—</span>
-          </button>
-          <button id="logoutBtn" class="btn-auth btn-auth-outline" type="button" title="Déconnexion">
-            Déconnexion
-          </button>
-        </div>
-
-        <button id="cartBtn" class="icon-btn" title="Panier" aria-label="Panier">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="9" cy="21" r="1"></circle>
-            <circle cx="20" cy="21" r="1"></circle>
-            <path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"></path>
-          </svg>
-        </button>
-      </div>
+<body class="min-h-screen flex items-center justify-center px-4">
+  <div class="w-full max-w-md bg-white border border-gray-100 shadow-sm rounded-3xl p-6">
+    <div class="text-2xl font-black tracking-tight text-gray-900">
+      Viral<span class="text-[#F07E13]">Flowr</span>
     </div>
-  </header>
-
-  <main class="max-w-[1280px] mx-auto px-4 py-8">
-    <div id="statusBar" class="hidden mb-6 rounded-[22px] border border-gray-100 bg-white p-4 md:p-5 shadow-sm">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div class="flex items-start gap-3">
-          <div class="w-10 h-10 rounded-2xl brand-gradient flex items-center justify-center text-white font-black">VF</div>
-          <div>
-            <div class="text-sm font-black text-gray-900" id="statusTitle">Statut</div>
-            <div class="text-xs font-bold text-gray-400" id="statusSubtitle">—</div>
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <span id="priceModeBadge" class="badge-soft">PRIX PUBLIC</span>
-          <a id="goLoginCta" href="login.html?next=index.html" class="btn-auth brand-gradient btn-auth-solid hidden">
-            Activer prix revendeur
-          </a>
-        </div>
-      </div>
+    <div class="mt-1 text-sm font-semibold text-gray-400">
+      Connexion à ton compte
     </div>
 
-    <section class="bg-white rounded-[28px] border border-gray-100 shadow-sm p-6 md:p-10">
-      <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-        <div>
-          <h1 class="text-3xl md:text-4xl font-black tracking-tighter text-gray-900">
-            Boutique <span class="text-[#F07E13]">ViralFlowr</span>
-          </h1>
-          <p class="text-sm md:text-base font-semibold text-gray-400 mt-3 max-w-[720px] leading-relaxed">
-            Achète tes services en quelques clics. Connecte-toi si tu as un accès revendeur pour afficher les prix adaptés.
-          </p>
+    <div id="msg" class="mt-4 hidden rounded-2xl border p-3 text-sm font-semibold"></div>
 
-          <div class="mt-5 flex flex-wrap items-center gap-2">
-            <span class="badge-soft">PAYMENTS</span>
-            <span class="badge-soft">AUTO-DELIVERY</span>
-            <span class="badge-soft">SUPPORT</span>
-          </div>
-        </div>
-
-        <div class="bg-gray-50 border border-gray-100 rounded-[24px] p-4 md:p-5 min-w-[280px]">
-          <div class="text-[11px] font-black uppercase tracking-widest text-gray-400">Session</div>
-          <div class="mt-2 text-sm font-black text-gray-900" id="sessionLine">—</div>
-          <div class="mt-1 text-xs font-bold text-gray-400" id="tokenLine">Token: —</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="mt-8">
-      <div class="flex items-end justify-between gap-4">
-        <h2 class="text-xl md:text-2xl font-black tracking-tighter text-gray-900">Services</h2>
-
-        <div class="flex items-center gap-2">
-          <input id="searchInput" type="text"
-            class="h-11 w-[220px] md:w-[320px] px-4 rounded-2xl bg-white border border-gray-100 shadow-sm text-sm font-semibold outline-none focus:ring-2 focus:ring-[#F07E13]"
-            placeholder="Rechercher un service..." />
-        </div>
+    <form id="loginForm" class="mt-5 space-y-3">
+      <div>
+        <label class="text-xs font-black uppercase tracking-widest text-gray-400">Email</label>
+        <input id="email" type="email" required
+          class="mt-1 h-11 w-full px-4 rounded-2xl bg-white border border-gray-200 shadow-sm text-sm font-semibold outline-none focus:ring-2 focus:ring-[#F07E13]"
+          placeholder="ex: test@gmail.com" />
       </div>
 
-      <div id="productsGrid" class="mt-5 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
-    </section>
-  </main>
-
-  <div id="modal" class="hidden fixed inset-0 z-[999] bg-black/40 p-4">
-    <div class="max-w-[560px] mx-auto mt-10 bg-white rounded-[26px] border border-gray-100 shadow-xl overflow-hidden">
-      <div class="p-5 border-b border-gray-100 flex items-center justify-between">
-        <div>
-          <div class="text-lg font-black tracking-tighter text-gray-900" id="modalTitle">—</div>
-          <div class="text-xs font-bold text-gray-400" id="modalSubtitle">—</div>
-        </div>
-        <button id="closeModal" class="icon-btn" aria-label="Fermer">✕</button>
+      <div>
+        <label class="text-xs font-black uppercase tracking-widest text-gray-400">Mot de passe</label>
+        <input id="password" type="password" required
+          class="mt-1 h-11 w-full px-4 rounded-2xl bg-white border border-gray-200 shadow-sm text-sm font-semibold outline-none focus:ring-2 focus:ring-[#F07E13]"
+          placeholder="••••••••" />
       </div>
-      <div class="p-5">
-        <div class="text-sm font-semibold text-gray-600 leading-relaxed" id="modalDesc">—</div>
 
-        <div class="mt-5 flex items-center justify-between gap-3 bg-gray-50 border border-gray-100 rounded-2xl p-4">
-          <div>
-            <div class="text-[11px] font-black uppercase tracking-widest text-gray-400">Prix</div>
-            <div class="mt-1 text-2xl font-black text-gray-900 price" id="modalPrice">—</div>
-          </div>
-          <button id="buyBtn" class="h-11 px-5 rounded-2xl brand-gradient text-white font-black uppercase tracking-widest text-[12px] shadow-md hover:opacity-95 transition">
-            Commander
-          </button>
-        </div>
+      <button id="btn" type="submit"
+        class="w-full h-11 rounded-2xl brand-gradient text-white font-black uppercase tracking-widest text-[12px] shadow-md hover:opacity-95 transition">
+        Se connecter
+      </button>
+    </form>
 
-        <div class="mt-4 text-[11px] font-bold text-gray-400" id="modalMeta">—</div>
-      </div>
+    <div class="mt-4 text-xs font-bold text-gray-400">
+      Pas de compte ? <a class="text-gray-900 hover:underline" href="register.html">Créer un compte</a>
     </div>
   </div>
-
-  <script src="/vf_api.js?v=18.4"></script>
 
   <script>
-    const VF_API_BASE = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
-
     const $ = (id) => document.getElementById(id);
 
-    let PRODUCTS = [];
-    let SERVER_AUTH = { token_valid: false, is_reseller: false, reseller_email_used: "" };
-
-    function safeJsonParse_(s){ try { return JSON.parse(s); } catch(_) { return null; } }
-
-    function escapeHtml_(str){
-      return String(str ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+    function showMsg(type, text){
+      const box = $("msg");
+      box.classList.remove("hidden");
+      box.className = "mt-4 rounded-2xl border p-3 text-sm font-semibold";
+      if (type === "ok") box.classList.add("border-green-200","bg-green-50","text-green-900");
+      else box.classList.add("border-red-200","bg-red-50","text-red-900");
+      box.textContent = text;
     }
 
-    function formatPrice_(n){
-      const v = Number(n || 0);
-      if (!isFinite(v)) return "—";
-      if (v <= 0) return "Sur devis";
-      return (v % 1 === 0 ? v.toFixed(0) : v.toFixed(2)) + " $";
+    function getNext(){
+      const u = new URL(location.href);
+      return u.searchParams.get("next") || "index.html";
     }
 
-    function getSession_(){
-      const raw = localStorage.getItem("vf_session");
-      const obj = raw ? safeJsonParse_(raw) : null;
-      if (!obj || typeof obj !== "object") return null;
-      return obj;
-    }
+    // ✅ Si déjà connecté => redirect
+    try{
+      const s = JSON.parse(localStorage.getItem("vf_session") || "null");
+      const t = localStorage.getItem("vf_token");
+      if (t && s && (s.email || s.username)) location.href = getNext();
+    }catch(_){}
 
-    function getToken_(){
-      const t = String(localStorage.getItem("vf_token") || "").trim();
-      if (t) return t;
-      const s = getSession_();
-      const st = s && s.token ? String(s.token).trim() : "";
-      if (st) return st;
-      return "";
-    }
+    window.addEventListener("DOMContentLoaded", () => {
+      const api = window.vfApi;
 
-    function ensureTokenFromSession_(){
-      const s = getSession_();
-      if (s && s.token && !localStorage.getItem("vf_token")) {
-        localStorage.setItem("vf_token", String(s.token));
-      }
-    }
-
-    function jsonp_(url, timeoutMs){
-      timeoutMs = timeoutMs || 15000;
-      return new Promise((resolve, reject) => {
-        const cb = "vfcb_" + Math.random().toString(36).slice(2) + "_" + Date.now();
-
-        let done = false;
-        const timer = setTimeout(() => {
-          if (done) return;
-          done = true;
-          try { delete window[cb]; } catch(_) {}
-          if (script && script.parentNode) script.parentNode.removeChild(script);
-          reject(new Error("TIMEOUT_JSONP"));
-        }, timeoutMs);
-
-        window[cb] = (data) => {
-          if (done) return;
-          done = true;
-          clearTimeout(timer);
-          try { delete window[cb]; } catch(_) {}
-          if (script && script.parentNode) script.parentNode.removeChild(script);
-          resolve(data);
-        };
-
-        const u = url + (url.includes("?") ? "&" : "?") + "callback=" + encodeURIComponent(cb);
-        const script = document.createElement("script");
-        script.src = u;
-        script.async = true;
-        script.onerror = () => {
-          if (done) return;
-          done = true;
-          clearTimeout(timer);
-          try { delete window[cb]; } catch(_) {}
-          if (script && script.parentNode) script.parentNode.removeChild(script);
-          reject(new Error("JSONP_LOAD_ERROR"));
-        };
-        document.head.appendChild(script);
-      });
-    }
-
-    async function fetchProducts_(cat){
-      const token = getToken_();
-      const base = VF_API_BASE;
-
-      if (window.VF_API && typeof window.VF_API.getProducts === "function") {
-        return await window.VF_API.getProducts({ token, cat: cat || "" });
-      }
-
-      const url =
-        base +
-        "?action=get_products" +
-        "&token=" + encodeURIComponent(token || "") +
-        "&cat=" + encodeURIComponent(cat || "");
-
-      return await jsonp_(url, 15000);
-    }
-
-    function normalizeProducts_(serverProducts){
-      const arr = Array.isArray(serverProducts) ? serverProducts : [];
-      return arr.map(p => {
-        const name = String(p.nom || "").trim();
-        const id = String(p.id || "").trim();
-        const cat = String(p.cat || "").trim();
-        const desc = String(p.desc || p.long_desc || "").trim();
-        const img = String(p.img || "").trim();
-        const pay_link = String(p.pay_link || "").trim();
-
-        const public_price = Number(p.prix_client || 0);
-        const reseller_price =
-          (p.reseller_prix !== undefined && p.reseller_prix !== null && String(p.reseller_prix).trim() !== "")
-            ? Number(p.reseller_prix || 0)
-            : Number(p.prix_affiche || public_price || 0);
-
-        const min = String(p.min ?? "").trim();
-        const max = String(p.max ?? "").trim();
-
-        return { id, name, cat, desc, img, pay_link, public_price, reseller_price, min, max };
-      });
-    }
-
-    function renderLoading_(){
-      const grid = $("productsGrid");
-      grid.innerHTML = `
-        <div class="bg-white rounded-[26px] border border-gray-100 shadow-sm p-6 col-span-full">
-          <div class="text-sm font-black text-gray-900">Chargement des produits…</div>
-          <div class="mt-1 text-xs font-bold text-gray-400">Connexion au serveur ViralFlowr</div>
-        </div>
-      `;
-    }
-
-    function renderError_(msg){
-      const grid = $("productsGrid");
-      grid.innerHTML = `
-        <div class="bg-white rounded-[26px] border border-red-100 shadow-sm p-6 col-span-full">
-          <div class="text-sm font-black text-gray-900">Impossible de charger la boutique</div>
-          <div class="mt-1 text-xs font-bold text-gray-400">${escapeHtml_(String(msg || "Erreur inconnue"))}</div>
-          <button id="retryBtn" class="mt-4 h-11 px-5 rounded-2xl brand-gradient text-white font-black uppercase tracking-widest text-[12px] shadow-md hover:opacity-95 transition">
-            Réessayer
-          </button>
-        </div>
-      `;
-      const btn = document.getElementById("retryBtn");
-      if (btn) btn.onclick = () => init_();
-    }
-
-    function currentIsReseller_(){
-      return !!(SERVER_AUTH && SERVER_AUTH.is_reseller);
-    }
-
-    function renderAuthUI_(){
-      const session = getSession_();
-      const token = getToken_();
-      const reseller = currentIsReseller_();
-
-      if (session) {
-        $("authGuest").classList.add("hidden");
-        $("authUser").classList.remove("hidden");
-        $("authUser").classList.add("flex");
-        $("userTag").textContent = (session.username || session.email || "Utilisateur");
-      } else {
-        $("authUser").classList.add("hidden");
-        $("authUser").classList.remove("flex");
-        $("authGuest").classList.remove("hidden");
-      }
-
-      $("sessionLine").textContent = session ? ("Connecté : " + (session.email || "—")) : "Non connecté";
-      $("tokenLine").textContent = "Token: " + (token ? (token.slice(0, 6) + "…" + token.slice(-4)) : "—");
-
-      $("statusBar").classList.remove("hidden");
-
-      if (token && !SERVER_AUTH.token_valid) {
-        $("statusTitle").textContent = session ? "Token expiré / invalide" : "Token invalide";
-        $("statusSubtitle").textContent = "Reconnecte-toi pour récupérer un token valide.";
-        $("priceModeBadge").textContent = "PRIX PUBLIC";
-        $("goLoginCta").classList.remove("hidden");
-      } else if (reseller) {
-        $("statusTitle").textContent = "Prix revendeur activés";
-        $("statusSubtitle").textContent = "Le serveur a validé ton accès revendeur.";
-        $("priceModeBadge").textContent = "PRIX REVENDEUR";
-        $("goLoginCta").classList.add("hidden");
-      } else if (session) {
-        $("statusTitle").textContent = "Connecté (prix public)";
-        $("statusSubtitle").textContent = "Compte connecté. Accès revendeur non détecté.";
-        $("priceModeBadge").textContent = "PRIX PUBLIC";
-        $("goLoginCta").classList.add("hidden");
-      } else {
-        $("statusTitle").textContent = "Mode invité";
-        $("statusSubtitle").textContent = "Connecte-toi pour activer ton accès si disponible.";
-        $("priceModeBadge").textContent = "PRIX PUBLIC";
-        $("goLoginCta").classList.remove("hidden");
-      }
-
-      applyPricing_(reseller);
-    }
-
-    function applyPricing_(useReseller){
-      document.querySelectorAll("[data-product-card='1']").forEach(card => {
-        const pubEl = card.querySelector("[data-price-public='1']");
-        const resEl = card.querySelector("[data-price-reseller='1']");
-        if (!pubEl || !resEl) return;
-
-        if (useReseller) {
-          pubEl.classList.add("hidden");
-          resEl.classList.remove("hidden");
-        } else {
-          resEl.classList.add("hidden");
-          pubEl.classList.remove("hidden");
-        }
-      });
-    }
-
-    function renderProducts_(list){
-      const grid = $("productsGrid");
-      grid.innerHTML = "";
-
-      if (!list || !list.length) {
-        grid.innerHTML = `
-          <div class="bg-white rounded-[26px] border border-gray-100 shadow-sm p-6 col-span-full">
-            <div class="text-sm font-black text-gray-900">Aucun produit trouvé</div>
-            <div class="mt-1 text-xs font-bold text-gray-400">Essaye une autre recherche.</div>
-          </div>
-        `;
+      // ✅ Si vf_api.js pas chargé (ou mauvais chemin)
+      if (!api || typeof api.login !== "function") {
+        showMsg("err", "Erreur: /vf_api.js n'est pas chargé. Vérifie le chemin et recharge (Ctrl+F5).");
         return;
       }
 
-      list.forEach(p => {
-        const card = document.createElement("div");
-        card.className = "bg-white rounded-[26px] border border-gray-100 shadow-sm p-5 card-hover cursor-pointer";
-        card.setAttribute("data-product-card", "1");
+      $("loginForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-        card.innerHTML = `
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <div class="text-[11px] font-black uppercase tracking-widest text-gray-400">${escapeHtml_(p.cat)}</div>
-              <div class="mt-1 text-lg font-black tracking-tighter text-gray-900">${escapeHtml_(p.name)}</div>
-              <div class="mt-1 text-xs font-bold text-gray-400">${escapeHtml_(p.id)}</div>
-            </div>
-            <span class="badge-soft">OK</span>
-          </div>
+        const email = $("email").value.trim();
+        const password = $("password").value;
 
-          <div class="mt-4 text-sm font-semibold text-gray-600 leading-relaxed line-clamp-3">
-            ${escapeHtml_(p.desc || "")}
-          </div>
+        $("btn").disabled = true;
+        $("btn").classList.add("opacity-70");
+        showMsg("ok", "Connexion en cours...");
 
-          <div class="mt-5 flex items-end justify-between gap-3 bg-gray-50 border border-gray-100 rounded-2xl p-4">
-            <div>
-              <div class="text-[11px] font-black uppercase tracking-widest text-gray-400">Prix</div>
+        try{
+          const res = await api.login({ email, password });
 
-              <div class="mt-1 text-2xl font-black text-gray-900 price" data-price-public="1">
-                ${formatPrice_(p.public_price)}
-              </div>
+          if (!res || res.ok !== true){
+            const err = (res && (res.error || res.message)) ? (res.error || res.message) : "LOGIN_FAILED";
+            const det = (res && (res.details || res.message)) ? (" - " + (res.details || res.message)) : "";
+            showMsg("err", "Erreur connexion: " + err + det);
+            $("btn").disabled = false;
+            $("btn").classList.remove("opacity-70");
+            return;
+          }
 
-              <div class="mt-1 text-2xl font-black text-gray-900 price hidden" data-price-reseller="1">
-                ${formatPrice_(p.reseller_price)}
-              </div>
-            </div>
+          // ✅ Sauvegarde token + session (fallback user si session absent)
+          if (res.token) localStorage.setItem("vf_token", String(res.token));
 
-            <div class="flex items-center gap-2">
-              <span class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">VOIR</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 18l6-6-6-6"></path>
-              </svg>
-            </div>
-          </div>
-        `;
+          const session = res.session || res.user || null;
+          if (session) localStorage.setItem("vf_session", JSON.stringify(session));
 
-        card.addEventListener("click", () => openModal_(p));
-        grid.appendChild(card);
+          localStorage.setItem("vf_session_changed", String(Date.now()));
+
+          showMsg("ok", "Connecté. Redirection...");
+          setTimeout(() => location.href = getNext(), 400);
+
+        }catch(err){
+          showMsg("err", "Erreur connexion (transport): " + (err && err.message ? err.message : String(err)));
+          $("btn").disabled = false;
+          $("btn").classList.remove("opacity-70");
+        }
       });
-
-      applyPricing_(currentIsReseller_());
-    }
-
-    function openModal_(p){
-      const useReseller = currentIsReseller_();
-      const price = useReseller ? p.reseller_price : p.public_price;
-
-      $("modalTitle").textContent = p.name || "—";
-      $("modalSubtitle").textContent = (p.id || "—") + " • " + (p.cat || "—");
-      $("modalDesc").textContent = p.desc || "—";
-      $("modalPrice").textContent = formatPrice_(price);
-
-      const metaParts = [];
-      if (p.min || p.max) metaParts.push("Min: " + (p.min || "—") + " • Max: " + (p.max || "—"));
-      if (p.pay_link) metaParts.push("Lien: disponible");
-      $("modalMeta").textContent = metaParts.length ? metaParts.join(" — ") : "";
-
-      $("modal").classList.remove("hidden");
-      document.body.style.overflow = "hidden";
-
-      $("buyBtn").onclick = () => {
-        if (p.pay_link && /^https?:\/\//i.test(p.pay_link)) {
-          window.location.href = p.pay_link;
-          return;
-        }
-        const url = "checkout.html?pid=" + encodeURIComponent(p.id || "");
-        window.location.href = url;
-      };
-    }
-
-    function closeModal_(){
-      $("modal").classList.add("hidden");
-      document.body.style.overflow = "";
-    }
-
-    $("closeModal").addEventListener("click", closeModal_);
-    $("modal").addEventListener("click", (e) => { if (e.target === $("modal")) closeModal_(); });
-
-    $("logoutBtn").addEventListener("click", () => {
-      localStorage.removeItem("vf_session");
-      localStorage.removeItem("vf_token");
-      localStorage.setItem("vf_session_changed", String(Date.now()));
-      SERVER_AUTH = { token_valid:false, is_reseller:false, reseller_email_used:"" };
-      renderAuthUI_();
-      init_();
     });
-
-    $("searchInput").addEventListener("input", () => {
-      const q = String($("searchInput").value || "").trim().toLowerCase();
-      const filtered = PRODUCTS.filter(p =>
-        (p.name || "").toLowerCase().includes(q) ||
-        (p.id || "").toLowerCase().includes(q) ||
-        (p.cat || "").toLowerCase().includes(q)
-      );
-      renderProducts_(filtered);
-    });
-
-    window.addEventListener("storage", (e) => {
-      if (e.key === "vf_session_changed" || e.key === "vf_session" || e.key === "vf_token") {
-        ensureTokenFromSession_();
-        init_();
-      }
-    });
-
-    $("cartBtn").addEventListener("click", () => alert("Panier (à brancher)"));
-    $("accountBtn").addEventListener("click", () => {
-      const s = getSession_();
-      alert(s ? ("Compte: " + (s.email || "—")) : "Non connecté");
-    });
-
-    async function init_(){
-      ensureTokenFromSession_();
-      renderAuthUI_();
-      renderLoading_();
-
-      try {
-        const res = await fetchProducts_("");
-        if (!res || res.ok !== true) {
-          throw new Error((res && (res.error || res.details)) ? (res.error + " " + (res.details || "")) : "GET_PRODUCTS_FAILED");
-        }
-
-        SERVER_AUTH = {
-          token_valid: !!res.token_valid,
-          is_reseller: !!res.is_reseller,
-          reseller_email_used: String(res.reseller_email_used || "")
-        };
-
-        PRODUCTS = normalizeProducts_(res.products || []);
-        renderProducts_(PRODUCTS);
-        renderAuthUI_();
-
-      } catch (err) {
-        SERVER_AUTH = { token_valid:false, is_reseller:false, reseller_email_used:"" };
-        renderAuthUI_();
-        renderError_(err && err.message ? err.message : String(err));
-      }
-    }
-
-    init_();
   </script>
-
 </body>
 </html>
