@@ -7,20 +7,20 @@
 
   <!-- ✅ CONFIG AVANT /vf_api.js -->
   <script>
-  const inAppsScriptPanel = /script\.googleusercontent\.com|script\.google\.com/i.test(document.referrer || "");
-  window.VF_CONFIG = {
-    scriptUrl: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec",
-    timeoutMs: 20000,
-    debug: true,
-    // ✅ si la page est "embed" dans userCodeAppPanel => "*" ; sinon strict
-    postMessageTargetOrigin: inAppsScriptPanel ? "*" : location.origin
-  };
-</script>
+    const inAppsScriptPanel =
+      /script\.googleusercontent\.com|script\.google\.com/i.test(document.referrer || "");
 
+    window.VF_CONFIG = {
+      scriptUrl: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec",
+      timeoutMs: 20000,
+      debug: true,
+      // ✅ si la page est "embed" dans userCodeAppPanel => "*" ; sinon strict
+      postMessageTargetOrigin: inAppsScriptPanel ? "*" : location.origin
+    };
+  </script>
 
   <!-- ✅ Script global commun (NE PAS METTRE INLINE ICI) -->
- <script src="<script src="/vf_api.js?v=102" defer></script>
-" defer></script>
+  <script src="/vf_api.js?v=102" defer></script>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
