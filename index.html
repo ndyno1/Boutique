@@ -134,17 +134,61 @@
       box.textContent = text;
     }
 
+    // ✅ On s'appuie sur /vf_api.js si possible (vfApi.storage / vfStorage), sinon fallback localStorage
+    function getStore(){
+      return (window.vfApi && window.vfApi.storage) ? window.vfApi.storage
+           : (window.vfStorage ? window.vfStorage : null);
+    }
+
     function clearSession(){
+      const st = getStore();
+      if (st && typeof st.clear === "function") return st.clear();
+
       localStorage.removeItem("vf_token");
       localStorage.removeItem("vf_session");
       localStorage.removeItem("vf_session_changed");
     }
 
     function readSession(){
-      let s = null;
-      try { s = JSON.parse(localStorage.getItem("vf_session") || "null"); } catch(_){}
-      const t = localStorage.getItem("vf_token");
-      return { token: t, session: s };
+      const st = getStore();
+
+      let session = null;
+      try {
+        session = (st && typeof st.getSession === "function")
+          ? st.getSession()
+          : JSON.parse(localStorage.getItem("vf_session") || "null");
+      } catch(_) {
+        session = null;
+      }
+
+      let token = "";
+      try {
+        token = (st && typeof st.getToken === "function")
+          ? (st.getToken() || "")
+          : (localStorage.getItem("vf_token") || "");
+      } catch(_) {
+        token = localStorage.getItem("vf_token") || "";
+      }
+
+      // ✅ petit sync: si token vient d'ailleurs (cookie) mais pas encore en localStorage
+      // (ça aide les pages legacy qui lisent seulement localStorage)
+      if (token && !localStorage.getItem("vf_token")) {
+        try { localStorage.setItem("vf_token", token); } catch(_){}
+      }
+
+      return { token, session };
+    }
+
+    function writeSession(sess){
+      const st = getStore();
+      if (st && typeof st.setSession === "function") {
+        st.setSession(sess);
+        if (typeof st.touch === "function") st.touch();
+        else localStorage.setItem("vf_session_changed", String(Date.now()));
+        return;
+      }
+      localStorage.setItem("vf_session", JSON.stringify(sess));
+      localStorage.setItem("vf_session_changed", String(Date.now()));
     }
 
     function redirectToLogin(){
@@ -192,7 +236,6 @@
       if (!token) {
         const n = guardRedirectLoop("no_token");
         if (n >= 2) {
-          // On évite de spam redirect si quelque chose force retour
           clearSession();
           showMsg("err", "Impossible de garder la session (boucle détectée). Vérifie www/non-www et réessaie.");
           $("statusLine").textContent = "Boucle détectée (no_token).";
@@ -207,7 +250,6 @@
       $("statusLine").textContent = "Session détectée. Vérification…";
 
       // ✅ Si pas de session stockée, on tente de récupérer un profil SI l’API le permet
-      // (on ne casse pas si la méthode n'existe pas)
       try{
         if (!session) {
           // conventions possibles: me(), profile(), whoami()
@@ -216,17 +258,14 @@
           if (typeof fn === "function") {
             const res = await fn.call(api);
 
-            // format attendu: { ok:true, user/session: {...} }
             const ok = res && res.ok === true;
             const sess = (res && (res.session || res.user)) ? (res.session || res.user) : null;
 
             if (ok && sess) {
-              localStorage.setItem("vf_session", JSON.stringify(sess));
-              localStorage.setItem("vf_session_changed", String(Date.now()));
+              writeSession(sess);
               fillUI(sess, token);
               $("statusLine").textContent = "Vérifié ✅";
             } else {
-              // token potentiellement invalide => casse loop proprement
               const n = guardRedirectLoop("bad_token");
               clearSession();
               if (n >= 2) {
@@ -238,7 +277,6 @@
               return;
             }
           } else {
-            // pas de méthode pour vérifier, on laisse passer
             $("statusLine").textContent = "Token présent. (Aucune méthode API de vérification trouvée)";
           }
         } else {
