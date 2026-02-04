@@ -7,18 +7,16 @@
 
   <!-- ✅ CONFIG AVANT /vf_api.js -->
   <script>
-    window.VF_CONFIG = {
-      scriptUrl: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec",
-      timeoutMs: 20000,
-      debug: true,
+  const inAppsScriptPanel = /script\.googleusercontent\.com|script\.google\.com/i.test(document.referrer || "");
+  window.VF_CONFIG = {
+    scriptUrl: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec",
+    timeoutMs: 20000,
+    debug: true,
+    // ✅ si la page est "embed" dans userCodeAppPanel => "*" ; sinon strict
+    postMessageTargetOrigin: inAppsScriptPanel ? "*" : location.origin
+  };
+</script>
 
-      // ✅ Prod: strict (viralflowr.com) ; Test (panels/preview): "*"
-      postMessageTargetOrigin:
-        (location.hostname === "viralflowr.com" || location.hostname.endsWith(".viralflowr.com"))
-          ? location.origin
-          : "*"
-    };
-  </script>
 
   <!-- ✅ Script global commun (NE PAS METTRE INLINE ICI) -->
  <script src="https://viralflowr.com/vf_api.js?v=101" defer></script>
