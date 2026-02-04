@@ -5,21 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ViralFlowr | Connexion</title>
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
-
-  <style>
-    body{ font-family:Inter,system-ui,sans-serif; background:#F8FAFC; }
-    .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
-  </style>
-
-  <!-- ✅ VF CONFIG DOIT ÊTRE AVANT vf_api.js -->
+  <!-- ✅ CONFIG AVANT /vf_api.js -->
   <script>
     window.VF_CONFIG = {
       scriptUrl: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec",
       timeoutMs: 20000,
-      debug: false,
-      // En prod -> strict / en test (preview/panels) -> "*"
+      debug: true,
+
+      // ✅ Prod: strict (viralflowr.com) ; Test (panels/preview): "*"
       postMessageTargetOrigin:
         (location.hostname === "viralflowr.com" || location.hostname.endsWith(".viralflowr.com"))
           ? location.origin
@@ -27,8 +20,16 @@
     };
   </script>
 
-  <!-- ✅ Charge ton script global (sans inline) -->
-  <script src="/vf_api.js?v=3" defer></script>
+  <!-- ✅ Script global commun (NE PAS METTRE INLINE ICI) -->
+  <script src="/vf_api.js?v=99" defer></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    body{ font-family:Inter,system-ui,sans-serif; background:#F8FAFC; }
+    .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
+  </style>
 </head>
 
 <body class="min-h-screen flex items-center justify-center px-4">
@@ -75,8 +76,10 @@
       const box = $("msg");
       box.classList.remove("hidden");
       box.className = "mt-4 rounded-2xl border p-3 text-sm font-semibold";
+
       if (type === "ok") box.classList.add("border-green-200","bg-green-50","text-green-900");
       else box.classList.add("border-red-200","bg-red-50","text-red-900");
+
       box.textContent = text;
     }
 
@@ -85,18 +88,18 @@
       return u.searchParams.get("next") || "index.html";
     }
 
-    // Si déjà connecté
+    // ✅ Si déjà connecté => redirect
     try{
       const s = JSON.parse(localStorage.getItem("vf_session") || "null");
       if (s && (s.email || s.username)) location.href = getNext();
     }catch(_){}
 
-    // ✅ Attendre que vf_api.js soit chargé (defer => après parsing HTML)
     window.addEventListener("DOMContentLoaded", () => {
-      const api = window.vfApi; // <-- ton /vf_api.js expose ça
+      const api = window.vfApi;
 
+      // ✅ Si vf_api.js pas chargé (ou mauvais chemin)
       if (!api || typeof api.login !== "function") {
-        showMsg("err", "Erreur: vf_api.js n'est pas chargé (vfApi introuvable). Vérifie /vf_api.js et le chemin.");
+        showMsg("err", "Erreur: /vf_api.js n'est pas chargé. Vérifie le chemin /vf_api.js et recharge (Ctrl+F5).");
         return;
       }
 
@@ -122,7 +125,7 @@
             return;
           }
 
-          // Sauvegarde session + token (si présent)
+          // ✅ Sauvegarde session + token (si présent)
           if (res.session) localStorage.setItem("vf_session", JSON.stringify(res.session));
           if (res.token) localStorage.setItem("vf_token", String(res.token));
           localStorage.setItem("vf_session_changed", String(Date.now()));
