@@ -1,10 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr" class="font-inter">
 <head>
-  <!-- Canonical domaine (www -> non-www) sans boucle
-       - une seule tentative par onglet (sessionStorage guard)
-       - désactivé dans le panel Apps Script (embed)
-  -->
+  <!-- Canonical domaine (www -> non-www) sans boucle -->
   <script>
     (function () {
       const ref = document.referrer || "";
@@ -47,7 +44,7 @@
   <meta property="og:image" content="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png" />
   <meta property="og:type" content="website" />
 
-  <!-- Config avant /vf_api.js (optionnel) -->
+  <!-- Config avant /vf_api.js -->
   <script>
     const inAppsScriptPanel =
       !!window.__VF_IN_APPS_SCRIPT_PANEL ||
@@ -69,7 +66,6 @@
   </script>
 
   <script src="/vf_api.js?v=200" defer></script>
-
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
@@ -86,7 +82,9 @@
       padding-bottom: env(safe-area-inset-bottom);
       background:#F8FAFC;
     }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
+
+    .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
+    .no-scrollbar::-webkit-scrollbar{ display:none; }
 
     @keyframes placeholderAnimate {
       0% { opacity: 0; transform: translateY(8px); }
@@ -172,11 +170,9 @@
       <div class="relative flex-1 max-w-[600px] hidden md:flex items-center">
         <input type="text" id="searchInput"
           class="w-full h-11 pl-5 pr-12 rounded-xl bg-[#F1F5F9] text-sm font-semibold focus:ring-2 focus:ring-[#F07E13] focus:bg-white outline-none transition-all border-none">
-
         <div id="placeholder-box" class="absolute left-5 pointer-events-none text-gray-400 text-sm font-semibold">
           <span id="animated-placeholder" class="inline-block animate-text">Que cherchez-vous ? (SMM, iPhone, IMEI, Netflix...)</span>
         </div>
-
         <button type="button" class="absolute right-1.5 top-1.5 brand-gradient p-2 rounded-lg text-white shadow-md" aria-label="Rechercher">
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
             <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -184,17 +180,14 @@
         </button>
       </div>
 
-      <div class="flex items-center gap-2 sm:gap-3">
+      <!-- ✅ actions : scroll horizontal sur mobile -->
+      <div class="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar max-w-full">
         <div id="accountArea" class="hidden sm:flex items-center gap-2"></div>
 
         <a href="commandes.html" class="icon-btn" title="Mes commandes" aria-label="Mes commandes">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 6h11"></path>
-            <path d="M9 12h11"></path>
-            <path d="M9 18h11"></path>
-            <path d="M4 6h.01"></path>
-            <path d="M4 12h.01"></path>
-            <path d="M4 18h.01"></path>
+            <path d="M9 6h11"></path><path d="M9 12h11"></path><path d="M9 18h11"></path>
+            <path d="M4 6h.01"></path><path d="M4 12h.01"></path><path d="M4 18h.01"></path>
           </svg>
         </a>
 
@@ -225,7 +218,7 @@
 
         <a href="https://wa.me/243850373991" target="_blank" rel="noopener noreferrer" class="btn-support">
           <svg width="18" height="18" fill="white" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
           </svg>
           <span class="btn-support-text">Aide</span>
         </a>
@@ -234,7 +227,6 @@
   </header>
 
   <main class="max-w-[1280px] mx-auto px-4 py-8">
-
     <section class="mb-10">
       <article class="relative w-full h-[250px] md:h-[400px] rounded-[32px] overflow-hidden shadow-2xl group border-4 border-white">
         <img src="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png"
@@ -275,7 +267,6 @@
       <div class="h-64 bg-white rounded-3xl animate-pulse shadow-sm"></div>
       <div class="h-64 bg-white rounded-3xl animate-pulse shadow-sm"></div>
     </div>
-
   </main>
 
   <footer class="bg-white border-t border-gray-100 py-12">
@@ -342,7 +333,6 @@
     function sanitizeHttpUrl(u){
       const s = safe(u).trim();
       if (!s) return "";
-      // autorise http/https uniquement (évite javascript:)
       if (/^https?:\/\//i.test(s)) return s;
       return "";
     }
@@ -350,8 +340,6 @@
     function pName(p){ return safe(p.nom || p.name || p.title); }
     function pCat(p){ return safe(p.cat || p.category || p.categorie); }
 
-    // ✅ IMPORTANT: prix revendeur si API le renvoie (prix_affiche / prix_revendeur),
-    // sinon retombe sur prix client.
     function pPrice(p){
       return safe(
         (p && (
@@ -379,9 +367,7 @@
 
     function getSession_(){
       const st = getStore();
-      try{
-        if (st && typeof st.getSession === "function") return st.getSession();
-      }catch(_){}
+      try{ if (st && typeof st.getSession === "function") return st.getSession(); }catch(_){}
       try{
         const raw = localStorage.getItem("vf_session");
         if (!raw) return null;
@@ -401,7 +387,6 @@
     function getToken_(){
       const st = getStore();
 
-      // 1) vf_api.js
       try{
         if (st && typeof st.getToken === "function"){
           const t = st.getToken();
@@ -409,13 +394,11 @@
         }
       }catch(_){}
 
-      // 2) localStorage
       try{
         const t2 = localStorage.getItem("vf_token");
         if (t2) return String(t2).trim();
       }catch(_){}
 
-      // 3) cookie (si ton login le met)
       const ck = getCookie_("vf_token");
       if (ck) {
         try { localStorage.setItem("vf_token", ck); } catch(_){}
@@ -493,7 +476,7 @@
         logoutBtn.addEventListener("click", () => {
           clearSession_();
           renderAccountUI_();
-          initProducts(); // recharge => prix client
+          initProducts();
         });
       }
     }
@@ -624,7 +607,9 @@
         }
 
         const id = encodeURIComponent(safe(p.id).trim());
-        const productUrl = `p/${id}/`;
+
+        // ✅ IMPORTANT: lien absolu (évite les chemins qui “partent ailleurs”)
+        const productUrl = `/p/${id}/`;
 
         const min = pMin(p);
         const max = pMax(p);
@@ -663,13 +648,21 @@
     window.addEventListener("storage", (e)=>{
       if (e.key === "vf_session" || e.key === "vf_token" || e.key === "vf_session_changed"){
         renderAccountUI_();
-        initProducts(); // recharge => prix revendeur si token
+        initProducts();
       }
     });
 
-    // ========= START =========
-    renderAccountUI_();
-    initProducts();
+    function start_(){
+      renderAccountUI_();
+      initProducts();
+    }
+
+    // ✅ Attend que vf_api.js (defer) ait pu s’exécuter => token mieux détecté
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", start_);
+    } else {
+      start_();
+    }
   </script>
 </body>
 </html>
