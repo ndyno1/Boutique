@@ -218,9 +218,8 @@
             <div class="p-4 text-sm font-bold text-gray-400">Chargement…</div>
           </div>
 
-          <div class="mt-2 text-[11px] font-extrabold text-gray-400">
-            Affichage direct depuis WALLET_TX (lecture seule).
-          </div>
+          <!-- Debug invisible, activable via ?debug=1 -->
+          <pre id="debugBox" class="hidden mt-3 p-3 rounded-2xl bg-black text-white text-[11px] overflow-auto"></pre>
         </div>
 
       </section>
@@ -248,6 +247,7 @@
     const userLabel = document.getElementById("userLabel");
     const topupNoteEl = document.getElementById("topupNote");
     const txBox = document.getElementById("txBox");
+    const debugBox = document.getElementById("debugBox");
 
     const balanceCurrencyLabel = document.getElementById("balanceCurrencyLabel");
     const balanceCurrencySym = document.getElementById("balanceCurrencySym");
@@ -266,6 +266,21 @@
     const openWaBtn = document.getElementById("openWaBtn");
     const copyManualBtn = document.getElementById("copyManualBtn");
     const hideManualBtn = document.getElementById("hideManualBtn");
+
+    // =========================
+    // Debug
+    // =========================
+    const DEBUG = new URLSearchParams(location.search).has("debug");
+    function dbg(title, obj){
+      if(!DEBUG) return;
+      try{
+        console.log(title, obj);
+        debugBox.classList.remove("hidden");
+        debugBox.textContent += "\n" + title + ":\n" + JSON.stringify(obj, null, 2) + "\n";
+      }catch(e){
+        console.log(title, obj);
+      }
+    }
 
     // =========================
     // Helpers UI
@@ -293,24 +308,54 @@
       return c ? c : "$";
     }
 
+    // =========================
+    // Session (très compatible)
+    // =========================
+    function tryParse_(raw){
+      try { return JSON.parse(raw); } catch { return null; }
+    }
+
     function getSession_(){
-      try{
-        const raw = localStorage.getItem("vf_session");
-        if(!raw) return null;
-        const s = JSON.parse(raw);
-        // on accepte email OU token (selon ton login)
-        if(!s) return null;
-        const hasEmail = !!String(s.email||"").trim();
-        const hasToken = !!String(s.token||s.sessionToken||s.access_token||"").trim();
-        if(!hasEmail && !hasToken) return null;
-        return s;
-      }catch{ return null; }
+      const keys = [
+        "vf_session", "VF_SESSION",
+        "vfSession", "VFSession",
+        "session", "auth", "vf_auth"
+      ];
+      for(const k of keys){
+        const raw = localStorage.getItem(k);
+        if(!raw) continue;
+        const s = tryParse_(raw);
+        if(s && typeof s === "object") return s;
+      }
+      return null;
+    }
+
+    function pickStr_(v){
+      const s = String(v||"").trim();
+      return s ? s : "";
     }
 
     function getAuth_(s){
-      const email = String((s && s.email) || "").trim().toLowerCase();
-      const token = String((s && (s.token || s.sessionToken || s.access_token)) || "").trim();
-      return { email, token };
+      // email possibles
+      const email =
+        pickStr_(s?.email) ||
+        pickStr_(s?.userEmail) ||
+        pickStr_(s?.mail) ||
+        pickStr_(s?.username) ||
+        pickStr_(s?.user?.email) ||
+        "";
+
+      // token possibles
+      const token =
+        pickStr_(s?.token) ||
+        pickStr_(s?.sessionToken) ||
+        pickStr_(s?.access_token) ||
+        pickStr_(s?.accessToken) ||
+        pickStr_(s?.jwt) ||
+        pickStr_(s?.user?.token) ||
+        "";
+
+      return { email: email.toLowerCase(), token };
     }
 
     function applyAuthUI_(){
@@ -329,26 +374,29 @@
       btn.disabled = false;
       btn.onclick = () => {
         localStorage.removeItem("vf_session");
+        localStorage.removeItem("VF_SESSION");
+        localStorage.removeItem("vf_auth");
         showAlert("Déconnecté.", "success");
         setTimeout(() => { window.location.href = "login.html"; }, 350);
       };
     }
 
     window.addEventListener("storage", (e) => {
-      if(e.key === "vf_session") applyAuthUI_();
+      if(["vf_session","VF_SESSION","vf_auth"].includes(e.key)) applyAuthUI_();
     });
 
-    function setTopupNote_(email, note){
-      const keyBase = String(email||"user").toLowerCase();
-      const k = "vf_topup_note_" + keyBase;
+    // =========================
+    // Topup note
+    // =========================
+    function setTopupNote_(identityKey, note){
+      const k = "vf_topup_note_" + String(identityKey||"user").toLowerCase();
       localStorage.setItem(k, note);
       topupNoteEl.textContent = note;
       return note;
     }
 
-    function ensureTopupNote_(email){
-      const keyBase = String(email||"user").toLowerCase();
-      const k = "vf_topup_note_" + keyBase;
+    function ensureTopupNote_(identityKey){
+      const k = "vf_topup_note_" + String(identityKey||"user").toLowerCase();
       let note = localStorage.getItem(k);
       if(!note){
         note = "TOPUP-" + Date.now() + "-" + Math.floor(1000 + Math.random()*9000);
@@ -412,12 +460,6 @@
       s.onload = () => setTimeout(() => { try { s.remove(); } catch(_){ } }, 0);
     }
 
-    function jsonpP_(params, timeoutMs){
-      return new Promise((resolve, reject) => {
-        jsonp_(params, resolve, reject, timeoutMs);
-      });
-    }
-
     function fmt2(n){
       const x = Number(n||0);
       if(!isFinite(x)) return "0.00";
@@ -433,42 +475,29 @@
     }
 
     // =========================
-    // IMPORTANT :
-    // On ne change pas l'Apps Script.
-    // Donc ici on gère 2 noms d'actions possibles (compat) :
-    // - balance: db_wallet_balance OU wallet_balance
-    // - tx:      db_wallet_tx_list OU wallet_tx
+    // Params compat (ne casse pas Apps Script)
     // =========================
-    async function callWithFallback_(actions, params, timeoutMs=12000){
-      const tries = Array.isArray(actions) ? actions : [actions];
-      let last = null;
+    function buildAuthParams_(auth){
+      const email = String(auth?.email||"").trim().toLowerCase();
+      const token = String(auth?.token||"").trim();
 
-      for(const action of tries){
-        try{
-          const res = await jsonpP_({ ...params, action }, timeoutMs);
-          // si ok => on prend
-          if(res && res.ok) return { actionUsed: action, res };
+      // On envoie plusieurs noms. Apps Script ignore ce qu'il ne connaît pas.
+      return {
+        email,
+        user_email: email,
+        user: email,
+        login: email,
 
-          // si l'action n'existe pas => tenter la suivante
-          const err = String((res && res.error) || "").toUpperCase();
-          if(err.includes("UNKNOWN") || err.includes("INVALID_ACTION") || err.includes("NOT_FOUND") || err.includes("ACTION")){
-            last = res;
-            continue;
-          }
-
-          // autre erreur => on stop (auth, etc.)
-          return { actionUsed: action, res };
-        }catch(e){
-          last = { ok:false, error:String(e||"NETWORK") };
-          // on tente action suivante si possible
-        }
-      }
-
-      return { actionUsed: tries[tries.length-1], res: (last || { ok:false, error:"NETWORK" }) };
+        token,
+        session: token,
+        session_token: token,
+        access_token: token,
+        auth: token
+      };
     }
 
     // =========================
-    // Wallet data
+    // Wallet render
     // =========================
     function normalizeTxList_(res){
       const list =
@@ -527,64 +556,71 @@
       `;
     }
 
-    async function loadWallet_(auth){
+    // =========================
+    // Lecture solde + tx
+    // IMPORTANT: on garde TES actions existantes: wallet_balance + wallet_tx
+    // =========================
+    function loadWallet_(auth){
       balanceValue.textContent = "—";
       balanceCurrencyLabel.textContent = "USD";
       balanceCurrencySym.textContent = "$";
 
-      const params = {
-        currency: "USD",
-        // compat: on envoie les deux, sans casser l'Apps Script
-        email: auth.email || "",
-        token: auth.token || ""
-      };
+      const p = buildAuthParams_(auth);
 
-      const { res } = await callWithFallback_(
-        ["db_wallet_balance", "wallet_balance"],
-        params,
-        12000
+      // Si l'Apps Script utilise token seulement, on le passe.
+      // Si il utilise email, on le passe aussi.
+      jsonp_(
+        { action:"wallet_balance", currency:"USD", ...p },
+        (res) => {
+          dbg("wallet_balance response", res);
+
+          if(res && res.ok){
+            const cur = String(res.currency || "USD").toUpperCase();
+            balanceCurrencyLabel.textContent = cur;
+            balanceCurrencySym.textContent = currencySymbol_(cur);
+            balanceValue.textContent = fmt2(res.balance);
+            hideAlert();
+            return;
+          }
+
+          const err = res?.error || "ERREUR";
+          showAlert("Solde non chargé (" + err + "). Active ?debug=1 pour voir la réponse.", "error");
+          balanceValue.textContent = "0.00";
+        },
+        (why) => {
+          dbg("wallet_balance error", why);
+          showAlert("Solde non chargé (réseau: " + why + ").", "error");
+          balanceValue.textContent = "0.00";
+        }
       );
-
-      if(res && res.ok){
-        const cur = String(res.currency || "USD").toUpperCase();
-        balanceCurrencyLabel.textContent = cur;
-        balanceCurrencySym.textContent = currencySymbol_(cur);
-        balanceValue.textContent = fmt2(res.balance);
-        hideAlert();
-        return;
-      }
-
-      showAlert("Impossible de charger le solde. (" + (res?.error || "ERREUR") + ")", "error");
-      balanceValue.textContent = "0.00";
     }
 
-    async function loadTx_(auth){
+    function loadTx_(auth){
       txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Chargement…</div>`;
 
-      const params = {
-        currency: "USD",
-        limit: "50",
-        email: auth.email || "",
-        token: auth.token || ""
-      };
+      const p = buildAuthParams_(auth);
 
-      const { res } = await callWithFallback_(
-        ["db_wallet_tx_list", "wallet_tx"],
-        params,
-        12000
+      jsonp_(
+        { action:"wallet_tx", currency:"USD", limit:"50", ...p },
+        (res) => {
+          dbg("wallet_tx response", res);
+
+          if(res && res.ok){
+            renderTx_(normalizeTxList_(res));
+            return;
+          }
+
+          txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Historique indisponible (${res?.error || "ERREUR"}).</div>`;
+        },
+        (why) => {
+          dbg("wallet_tx error", why);
+          txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Erreur réseau (${why}).</div>`;
+        }
       );
-
-      if(res && res.ok){
-        const list = normalizeTxList_(res);
-        renderTx_(list);
-        return;
-      }
-
-      txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Historique indisponible (${res?.error || "ERREUR"}).</div>`;
     }
 
     // =========================
-    // DEPOT MANUEL WHATSAPP
+    // Depot manuel WhatsApp
     // =========================
     function buildWhatsappMessage_({ email, amount, method, note, phone, txid }){
       const lines = [];
@@ -622,10 +658,6 @@
       hideManualBtn.onclick = () => manualBox.classList.add("hidden");
     }
 
-    // =========================
-    // UI selon méthode
-    // - BINANCE: champ supprimé
-    // =========================
     function applyMethodUI_(){
       const method = String(methodSel.value || "MONEROO_MOMO").toUpperCase();
 
@@ -639,7 +671,6 @@
         field2Wrap.classList.remove("hidden");
         field2Label.textContent = "Téléphone (Mobile Money)";
         field2Inp.placeholder = "Ex: +243...";
-        field2Inp.dataset.required = "1";
         field2Help.textContent = "Obligatoire. Exemple: +243850000000";
         methodHint.textContent = "Moneroo: redirection + retour automatique + confirmation serveur.";
         return;
@@ -647,27 +678,16 @@
 
       if(method === "BINANCE_PAY"){
         field2Wrap.classList.add("hidden");
-        methodHint.textContent = "Dépôt manuel (Binance): WhatsApp avec un message pré-rempli.";
+        methodHint.textContent = "Dépôt manuel (Binance): WhatsApp pré-rempli.";
         return;
       }
 
-      if(method === "USDT_TRC20"){
+      if(method === "USDT_TRC20" || method === "USDT_BEP20"){
         field2Wrap.classList.remove("hidden");
         field2Label.textContent = "TxID / Hash (optionnel)";
         field2Inp.placeholder = "Colle le hash après paiement (optionnel)";
-        field2Inp.dataset.required = "0";
         field2Help.textContent = "Optionnel. Tu peux envoyer le TXID sur WhatsApp.";
-        methodHint.textContent = "Dépôt manuel USDT TRC-20: WhatsApp pré-rempli + validation support.";
-        return;
-      }
-
-      if(method === "USDT_BEP20"){
-        field2Wrap.classList.remove("hidden");
-        field2Label.textContent = "TxID / Hash (optionnel)";
-        field2Inp.placeholder = "Colle le hash après paiement (optionnel)";
-        field2Inp.dataset.required = "0";
-        field2Help.textContent = "Optionnel. Tu peux envoyer le TXID sur WhatsApp.";
-        methodHint.textContent = "Dépôt manuel USDT BEP-20: WhatsApp pré-rempli + validation support.";
+        methodHint.textContent = "Dépôt manuel: WhatsApp pré-rempli + validation support.";
         return;
       }
 
@@ -675,11 +695,6 @@
       methodHint.textContent = "Choisis une méthode.";
     }
 
-    // =========================
-    // Création dépôt
-    // - Moneroo => API => redirect
-    // - Binance/USDT => WhatsApp (manuel)
-    // =========================
     function createTopup_(auth, note){
       const amount = Number(document.getElementById("amountInp").value || 0);
       const method = String(methodSel.value || "MONEROO_MOMO").toUpperCase();
@@ -694,7 +709,8 @@
       btn.disabled = true;
       btn.textContent = "Traitement...";
 
-      // MONEROO
+      const p = buildAuthParams_(auth);
+
       if(method === "MONEROO_MOMO"){
         const phone = field2;
         if(!isPhoneLike_(phone)){
@@ -709,8 +725,7 @@
         jsonp_(
           {
             action: "wallet_topup_create",
-            email: auth.email || "",
-            token: auth.token || "",
+            ...p,
             note,
             amount: String(amount),
             method,
@@ -719,11 +734,13 @@
             return_url: returnUrl
           },
           (res) => {
+            dbg("wallet_topup_create response", res);
+
             btn.disabled = false;
             btn.textContent = "Continuer";
 
             if(res && res.ok && res.mode === "redirect" && res.checkout_url){
-              showAlert("Redirection vers Moneroo…", "success");
+              showAlert("Redirection…", "success");
               setTimeout(() => { window.location.href = res.checkout_url; }, 300);
               return;
             }
@@ -734,21 +751,20 @@
               return;
             }
 
-            showAlert("Impossible d’enregistrer. (" + (res?.error || "ERREUR") + ")", "error");
+            showAlert("Impossible d’enregistrer (" + (res?.error || "ERREUR") + ").", "error");
           },
           (why) => {
+            dbg("wallet_topup_create error", why);
             btn.disabled = false;
             btn.textContent = "Continuer";
-            showAlert("Erreur réseau/API: dépôt non enregistré. (" + why + ")", "error");
+            showAlert("Erreur réseau (" + why + ").", "error");
           }
         );
 
         return;
       }
 
-      // DEPOT MANUEL (BINANCE/USDT)
       const txid = (method === "USDT_TRC20" || method === "USDT_BEP20") ? field2 : "";
-
       const waMessage = buildWhatsappMessage_({
         email: auth.email || "",
         amount,
@@ -761,8 +777,7 @@
       jsonp_(
         {
           action: "wallet_topup_create",
-          email: auth.email || "",
-          token: auth.token || "",
+          ...p,
           note,
           amount: String(amount),
           method,
@@ -771,11 +786,13 @@
           return_url: window.location.origin + window.location.pathname
         },
         (res) => {
+          dbg("wallet_topup_create(manual) response", res);
+
           btn.disabled = false;
           btn.textContent = "Continuer";
 
           if(res && res.ok){
-            showAlert("Dépôt manuel: message WhatsApp prêt.", "success");
+            showAlert("Dépôt manuel: WhatsApp prêt.", "success");
             setTimeout(() => { loadTx_(auth); }, 600);
           } else {
             showAlert("Dépôt manuel: WhatsApp prêt (API: " + (res?.error || "ERREUR") + ")", "info");
@@ -811,9 +828,15 @@
       }
 
       const auth = getAuth_(s);
+      dbg("session raw", s);
+      dbg("auth picked", auth);
+
+      // Si ton Apps Script exige email, on le verra dans ?debug=1 (erreur).
       userLabel.textContent = auth.email || "Utilisateur";
 
-      let note = ensureTopupNote_(auth.email || "user");
+      // Note liée à l'identité (email si dispo sinon token)
+      const identityKey = auth.email || auth.token || "user";
+      let note = ensureTopupNote_(identityKey);
 
       applyMethodUI_();
       methodSel.addEventListener("change", applyMethodUI_);
@@ -829,7 +852,7 @@
 
       document.getElementById("copyNoteBtn").addEventListener("click", () => copyText_(note));
       document.getElementById("newNoteBtn").addEventListener("click", () => {
-        note = setTopupNote_(auth.email || "user", "TOPUP-" + Date.now() + "-" + Math.floor(1000 + Math.random()*9000));
+        note = setTopupNote_(identityKey, "TOPUP-" + Date.now() + "-" + Math.floor(1000 + Math.random()*9000));
         showAlert("Nouvelle note générée.", "success");
         setTimeout(hideAlert, 900);
       });
