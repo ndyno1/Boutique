@@ -72,6 +72,7 @@
 
   <script>
     const $ = (id) => document.getElementById(id);
+    const REDIRECT_GUARD_KEY = "vf_login_redirect_guard";
 
     function showMsg(type, text){
       const box = $("msg");
@@ -84,15 +85,67 @@
 
     function getNext(){
       const u = new URL(location.href);
-      return u.searchParams.get("next") || "index.html";
+      const raw = u.searchParams.get("next") || "index.html";
+
+      try{
+        const n = new URL(raw, location.href);
+
+        // ✅ anti open-redirect : on reste sur le même domaine
+        if (n.origin !== location.origin) return "index.html";
+
+        // ✅ évite de rediriger vers la page login/register (source classique de loop)
+        const p = (n.pathname || "").toLowerCase();
+        if (p.endsWith("/login.html") || p.endsWith("/register.html") || p === "/") {
+          return "index.html";
+        }
+
+        // ✅ renvoie un chemin local propre
+        return n.pathname + n.search + n.hash;
+      }catch(_){
+        return "index.html";
+      }
     }
 
-    // ✅ Si déjà connecté => redirect (même logique qu'avant)
-    try{
-      const s = JSON.parse(localStorage.getItem("vf_session") || "null");
+    function clearSession(){
+      localStorage.removeItem("vf_token");
+      localStorage.removeItem("vf_session");
+      localStorage.removeItem("vf_session_changed");
+    }
+
+    // ✅ Anti-loop: si on a un token mais il est invalide (index renvoie vers login),
+    // on casse la boucle en détectant un aller-retour rapide puis on force reconnexion.
+    function redirectIfAlreadyLogged(){
+      let s = null;
+      try { s = JSON.parse(localStorage.getItem("vf_session") || "null"); } catch(_){}
+
       const t = localStorage.getItem("vf_token");
-      if (t && s && (s.email || s.username)) location.href = getNext();
-    }catch(_){}
+      const next = getNext();
+
+      if (!(t && s && (s.email || s.username))) return;
+
+      try{
+        const now = Date.now();
+        const guard = JSON.parse(localStorage.getItem(REDIRECT_GUARD_KEY) || "null");
+
+        // si on a tenté la même redirection il y a moins de 8s => boucle probable
+        if (guard && guard.next === next && (now - guard.ts) < 8000){
+          localStorage.removeItem(REDIRECT_GUARD_KEY);
+          clearSession();
+          showMsg("err", "Ta session a expiré. Reconnecte-toi.");
+          return;
+        }
+
+        localStorage.setItem(REDIRECT_GUARD_KEY, JSON.stringify({ ts: now, next }));
+        // replace = évite d'empiler l'historique (réduit les loops/retours)
+        location.replace(next);
+      }catch(_){
+        // fallback simple
+        location.replace(next);
+      }
+    }
+
+    // ✅ Si déjà connecté => redirect (même logique qu'avant, mais sans boucle)
+    redirectIfAlreadyLogged();
 
     window.addEventListener("DOMContentLoaded", () => {
       const api = window.vfApi;
@@ -132,9 +185,10 @@
           if (session) localStorage.setItem("vf_session", JSON.stringify(session));
 
           localStorage.setItem("vf_session_changed", String(Date.now()));
+          localStorage.removeItem(REDIRECT_GUARD_KEY); // ✅ reset anti-loop après login OK
 
           showMsg("ok", "Connecté. Redirection...");
-          setTimeout(() => location.href = getNext(), 400);
+          setTimeout(() => location.replace(getNext()), 400);
 
         }catch(err){
           showMsg("err", "Erreur connexion (transport): " + (err && err.message ? err.message : String(err)));
