@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <!-- ✅ Force domaine principal (évite localStorage séparé www vs non-www) -->
- 
-
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ViralFlowr | Connexion</title>
 
-  <!-- ✅ CONFIG AVANT /vf_api.js (garde ta logique + style) -->
+  <!-- ✅ CONFIG AVANT /vf_api.js (garde ta logique + style)
+       ⚠️ IMPORTANT: on ne force PLUS www/non-www ici (sinon loop si le serveur force l’inverse)
+  -->
   <script>
     const inAppsScriptPanel =
       /script\.googleusercontent\.com|script\.google\.com/i.test(document.referrer || "");
@@ -88,7 +87,7 @@
       return u.searchParams.get("next") || "index.html";
     }
 
-    // ✅ Si déjà connecté => redirect
+    // ✅ Si déjà connecté => redirect (même logique qu'avant)
     try{
       const s = JSON.parse(localStorage.getItem("vf_session") || "null");
       const t = localStorage.getItem("vf_token");
