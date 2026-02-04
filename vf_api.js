@@ -204,25 +204,26 @@
 
         // mandatory bridge fields
         add("transport", "iframe");
-        add("origin", pickClientOriginParam_()); // <-- MAJ: évite targetOrigin mismatch en preview
-        add("request_id", rid);
+        const isAppsScriptPanel_ = () => {
+  const h = String(location.hostname || "").toLowerCase();
+  return (h === "script.google.com" || h.endsWith(".googleusercontent.com"));
+};
 
-        // payload fields
-        Object.keys(payload || {}).forEach((k) => add(k, payload[k]));
+// origin qu'on envoie au serveur
+const pickClientOriginParam_ = () => {
+  // ✅ si on est dans userCodeAppPanel / googleusercontent => toujours "*"
+  if (isAppsScriptPanel_()) return "*";
 
-        pending.set(rid, { resolve, reject, timer, iframe: ifr, form });
+  // Si tu forces VF_CONFIG.postMessageTargetOrigin, on respecte
+  if (CFG.postMessageTargetOrigin) return String(CFG.postMessageTargetOrigin);
 
-        document.body.appendChild(form);
+  // Sur viralflowr/localhost => strict
+  if (isTrustedHostForStrictOrigin_()) return String(location.origin);
 
-        if (DEBUG) console.log("[vfBridge] POST rid=", rid, "payload=", payload);
+  // fallback
+  return "*";
+};
 
-        try {
-          form.submit();
-        } catch (e) {
-          cleanupReq_(rid);
-          reject(e);
-          return;
-        }
 
         // nettoyage form (l'iframe reste jusqu'à la réponse ou timeout)
         setTimeout(() => { try { if (form && form.parentNode) form.parentNode.removeChild(form); } catch(_) {} }, 1500);
