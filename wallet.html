@@ -104,6 +104,7 @@
             <div class="mt-2 small font-bold">
               <span class="muted">Compte:</span> <span id="userLabel">—</span>
             </div>
+            <div id="authModeLine" class="mt-1 text-[11px] font-extrabold text-gray-400 hidden"></div>
           </div>
 
           <div class="flex items-center gap-2">
@@ -245,6 +246,7 @@
     const alertBox = document.getElementById("alertBox");
     const balanceValue = document.getElementById("balanceValue");
     const userLabel = document.getElementById("userLabel");
+    const authModeLine = document.getElementById("authModeLine");
     const topupNoteEl = document.getElementById("topupNote");
     const txBox = document.getElementById("txBox");
     const debugBox = document.getElementById("debugBox");
@@ -281,6 +283,12 @@
         console.log(title, obj);
       }
     }
+    function maskToken_(t){
+      t = String(t||"");
+      if(!t) return "";
+      if(t.length <= 10) return t.slice(0,3) + "...";
+      return t.slice(0,6) + "..." + t.slice(-4);
+    }
 
     // =========================
     // Helpers UI
@@ -309,7 +317,7 @@
     }
 
     // =========================
-    // Session (très compatible)
+    // Session
     // =========================
     function tryParse_(raw){
       try { return JSON.parse(raw); } catch { return null; }
@@ -336,7 +344,6 @@
     }
 
     function getAuth_(s){
-      // email possibles
       const email =
         pickStr_(s?.email) ||
         pickStr_(s?.userEmail) ||
@@ -345,7 +352,6 @@
         pickStr_(s?.user?.email) ||
         "";
 
-      // token possibles
       const token =
         pickStr_(s?.token) ||
         pickStr_(s?.sessionToken) ||
@@ -373,16 +379,20 @@
       btn.textContent = "Déconnexion";
       btn.disabled = false;
       btn.onclick = () => {
-        localStorage.removeItem("vf_session");
-        localStorage.removeItem("VF_SESSION");
-        localStorage.removeItem("vf_auth");
+        // supprime plusieurs clés possibles
+        [
+          "vf_session","VF_SESSION","vfSession","VFSession",
+          "session","auth","vf_auth"
+        ].forEach(k => { try { localStorage.removeItem(k); } catch(_){} });
+
         showAlert("Déconnecté.", "success");
         setTimeout(() => { window.location.href = "login.html"; }, 350);
       };
     }
 
     window.addEventListener("storage", (e) => {
-      if(["vf_session","VF_SESSION","vf_auth"].includes(e.key)) applyAuthUI_();
+      const keys = ["vf_session","VF_SESSION","vfSession","VFSession","session","auth","vf_auth"];
+      if(keys.includes(e.key)) applyAuthUI_();
     });
 
     // =========================
@@ -475,25 +485,17 @@
     }
 
     // =========================
-    // Params compat (ne casse pas Apps Script)
+    // IMPORTANT: identité API
+    // - si token existe => on envoie SEULEMENT token
+    // - sinon => email
+    // (ça évite que l’Apps Script prenne l’email et tombe sur un autre user_id/wallet_id)
     // =========================
-    function buildAuthParams_(auth){
-      const email = String(auth?.email||"").trim().toLowerCase();
-      const token = String(auth?.token||"").trim();
-
-      // On envoie plusieurs noms. Apps Script ignore ce qu'il ne connaît pas.
-      return {
-        email,
-        user_email: email,
-        user: email,
-        login: email,
-
-        token,
-        session: token,
-        session_token: token,
-        access_token: token,
-        auth: token
-      };
+    function identityParams_(auth){
+      const token = String(auth?.token || "").trim();
+      const email = String(auth?.email || "").trim().toLowerCase();
+      if(token) return { token };
+      if(email) return { email };
+      return {};
     }
 
     // =========================
@@ -557,20 +559,27 @@
     }
 
     // =========================
-    // Lecture solde + tx
-    // IMPORTANT: on garde TES actions existantes: wallet_balance + wallet_tx
+    // Lecture solde + tx (TES actions existantes)
     // =========================
     function loadWallet_(auth){
       balanceValue.textContent = "—";
       balanceCurrencyLabel.textContent = "USD";
       balanceCurrencySym.textContent = "$";
 
-      const p = buildAuthParams_(auth);
+      const idp = identityParams_(auth);
 
-      // Si l'Apps Script utilise token seulement, on le passe.
-      // Si il utilise email, on le passe aussi.
+      // ligne mode auth (visible seulement en debug)
+      if(DEBUG){
+        authModeLine.classList.remove("hidden");
+        if(idp.token) authModeLine.textContent = "Auth: token = " + maskToken_(idp.token);
+        else if(idp.email) authModeLine.textContent = "Auth: email = " + idp.email;
+        else authModeLine.textContent = "Auth: manquant (email/token requis)";
+      }
+
+      dbg("wallet_balance request", { action:"wallet_balance", currency:"USD", ...idp });
+
       jsonp_(
-        { action:"wallet_balance", currency:"USD", ...p },
+        { action:"wallet_balance", currency:"USD", ...idp },
         (res) => {
           dbg("wallet_balance response", res);
 
@@ -584,7 +593,7 @@
           }
 
           const err = res?.error || "ERREUR";
-          showAlert("Solde non chargé (" + err + "). Active ?debug=1 pour voir la réponse.", "error");
+          showAlert("Solde non chargé (" + err + ").", "error");
           balanceValue.textContent = "0.00";
         },
         (why) => {
@@ -598,10 +607,12 @@
     function loadTx_(auth){
       txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Chargement…</div>`;
 
-      const p = buildAuthParams_(auth);
+      const idp = identityParams_(auth);
+
+      dbg("wallet_tx request", { action:"wallet_tx", currency:"USD", limit:"50", ...idp });
 
       jsonp_(
-        { action:"wallet_tx", currency:"USD", limit:"50", ...p },
+        { action:"wallet_tx", currency:"USD", limit:"50", ...idp },
         (res) => {
           dbg("wallet_tx response", res);
 
@@ -709,7 +720,14 @@
       btn.disabled = true;
       btn.textContent = "Traitement...";
 
-      const p = buildAuthParams_(auth);
+      const idp = identityParams_(auth);
+
+      if(!idp.token && !idp.email){
+        btn.disabled = false;
+        btn.textContent = "Continuer";
+        showAlert("email/token requis. Reconnecte-toi.", "error");
+        return;
+      }
 
       if(method === "MONEROO_MOMO"){
         const phone = field2;
@@ -722,10 +740,17 @@
 
         const returnUrl = window.location.origin + window.location.pathname;
 
+        dbg("wallet_topup_create request", {
+          action:"wallet_topup_create",
+          ...idp,
+          note, amount:String(amount), method, phone,
+          currency:"USD", return_url:returnUrl
+        });
+
         jsonp_(
           {
             action: "wallet_topup_create",
-            ...p,
+            ...idp,
             note,
             amount: String(amount),
             method,
@@ -777,7 +802,7 @@
       jsonp_(
         {
           action: "wallet_topup_create",
-          ...p,
+          ...idp,
           note,
           amount: String(amount),
           method,
@@ -813,6 +838,44 @@
     }
 
     // =========================
+    // Retour Moneroo (si ton Apps Script gère moneroo_confirm)
+    // =========================
+    function maybeHandleMonerooReturn_(auth){
+      const idp = identityParams_(auth);
+      if(!idp.token && !idp.email) return;
+
+      const u = new URL(window.location.href);
+      const paymentId = u.searchParams.get("monerooPaymentId");
+      const status = u.searchParams.get("monerooPaymentStatus") || u.searchParams.get("status");
+      if(!paymentId) return;
+
+      showAlert("Paiement détecté… confirmation en cours", "info");
+
+      jsonp_(
+        { action:"moneroo_confirm", paymentId, ...idp },
+        (res) => {
+          dbg("moneroo_confirm response", res);
+
+          if(res && res.ok && res.credited){
+            showAlert("Crédit ajouté.", "success");
+            loadWallet_(auth);
+            loadTx_(auth);
+          }else{
+            showAlert("Paiement non confirmé (" + (res?.error || status || "ERREUR") + ").", "error");
+          }
+
+          // nettoyer l'URL
+          u.searchParams.delete("monerooPaymentId");
+          u.searchParams.delete("monerooPaymentStatus");
+          u.searchParams.delete("status");
+          window.history.replaceState({}, document.title, u.pathname + u.search);
+        },
+        (why) => showAlert("Confirmation échouée (" + why + ").", "error"),
+        20000
+      );
+    }
+
+    // =========================
     // INIT
     // =========================
     (function(){
@@ -829,9 +892,9 @@
 
       const auth = getAuth_(s);
       dbg("session raw", s);
-      dbg("auth picked", auth);
+      dbg("auth picked", { email: auth.email, token: maskToken_(auth.token) });
 
-      // Si ton Apps Script exige email, on le verra dans ?debug=1 (erreur).
+      // Affichage compte (email si dispo)
       userLabel.textContent = auth.email || "Utilisateur";
 
       // Note liée à l'identité (email si dispo sinon token)
@@ -841,8 +904,12 @@
       applyMethodUI_();
       methodSel.addEventListener("change", applyMethodUI_);
 
+      // Charge solde + historique (utilise token si présent)
       loadWallet_(auth);
       loadTx_(auth);
+
+      // Confirme retour Moneroo si présent
+      maybeHandleMonerooReturn_(auth);
 
       document.getElementById("refreshBtn").addEventListener("click", () => {
         loadWallet_(auth);
