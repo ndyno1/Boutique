@@ -1,778 +1,695 @@
-// scripts/generate-pages.mjs
-import fs from "fs";
-import path from "path";
-
-const SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
-
-const SOCIAL = {
-  instagram: "https://www.instagram.com/di_corporation_1/",
-  tiktok: "https://www.tiktok.com/@dicorporation",
-  telegram: "https://t.me/Viralflowr",
-  waba: "https://wa.me/243850373991",
-};
-
-// ---------- helpers ----------
-const safe = (v) => (v === null || v === undefined ? "" : String(v));
-
-const escHtml = (s) =>
-  safe(s)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-
-function ensureDir(dir) {
-  fs.mkdirSync(dir, { recursive: true });
-}
-
-function rmDir(dir) {
-  if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true });
-}
-
-function toDirectOGImage(url) {
-  const u = safe(url).trim();
-  if (!u) return "";
-
-  if (u.includes("lh3.googleusercontent.com/d/")) {
-    return u.includes("=") ? u : `${u}=w1200`;
-  }
-
-  const m1 = u.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
-  if (m1?.[1]) return `https://lh3.googleusercontent.com/d/${m1[1]}=w1200`;
-
-  const m2 = u.match(/drive\.google\.com\/open\?id=([^&]+)/i);
-  if (m2?.[1]) return `https://lh3.googleusercontent.com/d/${m2[1]}=w1200`;
-
-  if (/\.(png|jpg|jpeg|webp|gif)(\?.*)?$/i.test(u)) return u;
-
-  return u;
-}
-
-function ogFallback() {
-  return "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
-}
-
-// Paiement: utilise desc (paiement.html)
-function buildPayUrl(p, prixOverride = null) {
-  const qp = new URLSearchParams();
-  qp.set("nom", safe(p.nom));
-  qp.set("prix", safe(prixOverride !== null ? prixOverride : p.prix));
-  qp.set("cat", safe(p.cat));
-  qp.set("id", safe(p.id));
-  qp.set("min", safe(p.min));
-  qp.set("max", safe(p.max));
-  qp.set("img", safe(p.img || ""));
-  qp.set("desc", safe(p.desc || "").trim());
-  return `/paiement.html?${qp.toString()}`;
-}
-
-/**
- * FETCH PRODUCTS (JSONP)
- */
-async function fetchProducts() {
-  const cb = "cb";
-  const url = `${SCRIPT_URL}?action=get_products&callback=${cb}&t=${Date.now()}`;
-
-  const res = await fetch(url, {
-    method: "GET",
-    headers: { Accept: "application/json,text/javascript,*/*" },
-  });
-
-  const txt = await res.text();
-
-  const preview = (s, n = 240) => {
-    const v = safe(s);
-    return v.length > n ? v.slice(0, n) + "…" : v;
-  };
-
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status} ${res.statusText} • Aperçu: ${preview(txt)}`);
-  }
-
-  const re = new RegExp(`${cb}\\((.*)\\)\\s*;?\\s*$`, "s");
-  const m = txt.match(re);
-
-  let jsonText = "";
-  if (m && m[1]) {
-    jsonText = m[1].trim();
-  } else {
-    const trimmed = txt.trim();
-    const looksLikeJson =
-      (trimmed.startsWith("{") && trimmed.endsWith("}")) ||
-      (trimmed.startsWith("[") && trimmed.endsWith("]"));
-
-    if (!looksLikeJson) {
-      throw new Error(`Réponse JSONP invalide. Aperçu: ${preview(txt)}`);
-    }
-    jsonText = trimmed;
-  }
-
-  let payload;
-  try {
-    payload = JSON.parse(jsonText);
-  } catch (e) {
-    throw new Error(`JSON invalide. Aperçu: ${preview(jsonText)}`);
-  }
-
-  const list =
-    Array.isArray(payload)
-      ? payload
-      : payload && Array.isArray(payload.products)
-      ? payload.products
-      : payload && Array.isArray(payload.items)
-      ? payload.items
-      : payload && Array.isArray(payload.data)
-      ? payload.data
-      : payload?.data && Array.isArray(payload.data.products)
-      ? payload.data.products
-      : payload?.data && Array.isArray(payload.data.items)
-      ? payload.data.items
-      : payload?.result && Array.isArray(payload.result)
-      ? payload.result
-      : payload?.results && Array.isArray(payload.results)
-      ? payload.results
-      : null;
-
-  if (!list) {
-    const keys = payload && typeof payload === "object" ? Object.keys(payload) : [];
-    const msg = safe(payload?.message) || safe(payload?.error) || safe(payload?.status) || "";
-    throw new Error(`Le endpoint ne renvoie pas une liste. Keys=${keys.length ? keys.join(", ") : "N/A"}${msg ? " • " + msg : ""}`);
-  }
-
-  return list;
-}
-
-// ---------- SVG snippets ----------
-const SVG = {
-  home: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <path d="M3 11l9-8 9 8"></path>
-    <path d="M9 22V12h6v10"></path>
-  </svg>`,
-  orders: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <path d="M9 6h11"></path>
-    <path d="M9 12h11"></path>
-    <path d="M9 18h11"></path>
-    <path d="M4 6h.01"></path>
-    <path d="M4 12h.01"></path>
-    <path d="M4 18h.01"></path>
-  </svg>`,
-  wallet: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
-    <path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/>
-    <path d="M20 12h-4a2 2 0 0 0 0 4h4"/>
-    <circle cx="16" cy="14" r="0.5" />
-  </svg>`,
-  login: `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-    <path d="M10 17l5-5-5-5"></path>
-    <path d="M15 12H3"></path>
-  </svg>`,
-  register: `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-    <circle cx="8.5" cy="7" r="4"></circle>
-    <path d="M20 8v6"></path>
-    <path d="M23 11h-6"></path>
-  </svg>`,
-  instagram: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-    <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
-    <path d="M16 11.37a4 4 0 1 1-7.87 1.26 4 4 0 0 1 7.87-1.26z"></path>
-    <path d="M17.5 6.5h.01"></path>
-  </svg>`,
-  tiktok: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d="M16.7 7.4c-1-1-1.6-2.3-1.7-3.7h-3v12c0 1.3-1 2.3-2.3 2.3-1.2 0-2.2-1-2.2-2.2 0-1.3 1-2.3 2.2-2.3.3 0 .6.1.9.2V9.3c-.3-.1-.6-.1-.9-.1C6.6 9.2 4 11.8 4 15c0 3.2 2.6 5.8 5.8 5.8 3.2 0 5.8-2.6 5.8-5.8V11c1.1.8 2.4 1.2 3.8 1.2V9.3c-1.1 0-2.2-.4-3-.9z"/>
-  </svg>`,
-  telegram: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d="M9.9 15.6 9.7 19c.4 0 .6-.2.8-.4l1.9-1.8 4 2.9c.7.4 1.2.2 1.4-.7l2.6-12.1c.3-1.2-.4-1.7-1.2-1.4L3.6 10.3c-1.1.4-1.1 1.1-.2 1.4l4 1.2 9.2-5.8c.4-.3.8-.1.5.2z"/>
-  </svg>`,
-  whatsapp: `<svg width="16" height="16" viewBox="0 0 24 24" fill="white" aria-hidden="true">
-    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
-  </svg>`,
-};
-
-function numOrInfinity(v) {
-  const s = safe(v).trim();
-  if (!s) return "";
-  return s;
-}
-
-// ---------- templates ----------
-function templateProductPage(p) {
-  const id = safe(p.id).trim();
-  const nom = safe(p.nom).trim() || `Produit ${id}`;
-  const cat = safe(p.cat).trim() || "Catalogue";
-
-  // prix statique (client) -> sera remplacé dynamiquement si token
-  const prixClient = safe(p.prix).trim() || "0";
-
-  const imgRaw = safe(p.img).trim();
-  const ogImg = toDirectOGImage(imgRaw) || ogFallback();
-
-  const longDesc = safe(p.long_desc).trim();
-  const payUrlClient = buildPayUrl(p, prixClient);
-
-  const ogDesc = `${prixClient} $ • ${cat}${longDesc ? " • " + longDesc.replace(/\s+/g, " ").slice(0, 120) : ""}`.slice(0, 200);
-
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: nom,
-    image: [ogImg],
-    description: longDesc || `${cat} • ${prixClient}$`,
-    brand: { "@type": "Brand", name: "ViralFlowr" },
-    offers: {
-      "@type": "Offer",
-      priceCurrency: "USD",
-      price: String(prixClient).replace(",", "."),
-      availability: "https://schema.org/InStock",
-      url: `https://viralflowr.com/p/${encodeURIComponent(id)}/`,
-    },
-  };
-
-  const minTxt = numOrInfinity(p.min) || "1";
-  const maxTxt = numOrInfinity(p.max) || "∞";
-
-  const JS_SVG_LOGIN = JSON.stringify(SVG.login);
-  const JS_SVG_REGISTER = JSON.stringify(SVG.register);
-
-  return `<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr" class="font-inter">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-  <title>${escHtml(nom)} | ViralFlowr</title>
-  <meta name="description" content="${escHtml(ogDesc)}">
-  <link rel="canonical" href="https://viralflowr.com/p/${encodeURIComponent(id)}/">
+  <!-- Canonical domaine (www -> non-www) sans boucle
+       - une seule tentative par onglet (sessionStorage guard)
+       - désactivé dans le panel Apps Script (embed)
+  -->
+  <script>
+    (function () {
+      const ref = document.referrer || "";
+      const inAppsScriptPanel = /script\.googleusercontent\.com|script\.google\.com/i.test(ref);
+      window.__VF_IN_APPS_SCRIPT_PANEL = inAppsScriptPanel;
+      if (inAppsScriptPanel) return;
 
-  <meta property="og:type" content="product">
-  <meta property="og:site_name" content="ViralFlowr">
-  <meta property="og:title" content="${escHtml(nom)}">
-  <meta property="og:description" content="${escHtml(ogDesc)}">
-  <meta property="og:image" content="${escHtml(ogImg)}">
-  <meta property="og:url" content="https://viralflowr.com/p/${encodeURIComponent(id)}/">
+      const host = (location.hostname || "").toLowerCase();
+      const isWWW = host === "www.viralflowr.com";
+      const isApex = host === "viralflowr.com";
+      const isTarget = isWWW || isApex;
+      if (!isTarget) return;
 
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="${escHtml(ogImg)}">
+      const CANON_HOST = "viralflowr.com";
+      if (host === CANON_HOST) return;
 
-  <script type="application/ld+json">${escHtml(JSON.stringify(jsonLd))}</script>
+      const GUARD_KEY = "vf_canon_redirect_guard";
+      const now = Date.now();
+
+      try {
+        const guard = JSON.parse(sessionStorage.getItem(GUARD_KEY) || "null");
+        if (guard && (now - guard.ts) < 15000) return;
+        sessionStorage.setItem(GUARD_KEY, JSON.stringify({ ts: now, from: host, to: CANON_HOST }));
+      } catch (_) {}
+
+      location.replace("https://" + CANON_HOST + location.pathname + location.search + location.hash);
+    })();
+  </script>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>ViralFlowr | Boutique Officielle</title>
+
+  <meta name="theme-color" content="#111827" />
+  <link rel="icon" href="favicon.png" />
+  <link rel="apple-touch-icon" href="favicon.png" />
+
+  <meta property="og:title" content="ViralFlowr | Boutique Officielle" />
+  <meta property="og:description" content="Services Elite, Déblocage IMEI et Matériel High-Tech garantis." />
+  <meta property="og:image" content="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png" />
+  <meta property="og:type" content="website" />
+
+  <!-- Config avant /vf_api.js (optionnel) -->
+  <script>
+    const inAppsScriptPanel =
+      !!window.__VF_IN_APPS_SCRIPT_PANEL ||
+      /script\.googleusercontent\.com|script\.google\.com/i.test(document.referrer || "");
+
+    window.VF_CONFIG = {
+      scriptUrl: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec",
+      timeoutMs: 20000,
+      debug: false,
+
+      postMode: "auto",
+      proxyUrl: "/vf_proxy",
+
+      postMessageTargetOrigin: inAppsScriptPanel ? "*" : location.origin,
+
+      cookieDomain: ".viralflowr.com",
+      cookieTokenKey: "vf_token"
+    };
+  </script>
+
+  <script src="/vf_api.js?v=200" defer></script>
 
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
-    html, body { width:100%; max-width:100%; overflow-x:hidden; }
-    *{ box-sizing:border-box; }
+    html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
     body {
       font-family: 'Inter', sans-serif;
-      background-color: #F3F3F3;
-      color: #201B16;
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+      min-height: 100svh;
+      overscroll-behavior-x: none;
+      touch-action: pan-y;
       -webkit-text-size-adjust: 100%;
       padding-bottom: env(safe-area-inset-bottom);
-      overscroll-behavior-x: none;
+      background:#F8FAFC;
     }
-    .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
-    .no-scrollbar::-webkit-scrollbar{ display:none; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
 
-    .text-orange-bsv { color: #F07E13; }
-    .btn-gradient { background: linear-gradient(90deg, #F07E13 0%, #FFB26B 100%); }
-    .shadow-card { box-shadow: 0 0 7px 0 rgba(0,0,0,.15); }
+    @keyframes placeholderAnimate {
+      0% { opacity: 0; transform: translateY(8px); }
+      15% { opacity: 1; transform: translateY(0); }
+      85% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-8px); }
+    }
+    .animate-text { animation: placeholderAnimate 4s infinite; }
 
-    .btn-mini{
-      height:40px; padding:0 14px; border-radius:999px;
-      font-weight:900; font-size:11px; letter-spacing:.10em;
-      text-transform:uppercase;
-      display:inline-flex; align-items:center; justify-content:center; gap:8px;
-      border:1px solid #E5E7EB; background:#fff; color:#111827;
-      transition:.2s; white-space:nowrap; flex:0 0 auto;
-      max-width:100%;
-    }
-    .btn-mini:hover{ transform: translateY(-1px); border-color:#F07E13; color:#F07E13; }
+    .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
+    .hover-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .hover-card:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); border-color: #F07E13; }
 
-    .btn-waba{
-      height:40px; padding:0 14px; border-radius:999px;
-      font-weight:900; font-size:11px; letter-spacing:.10em;
-      text-transform:uppercase;
-      display:inline-flex; align-items:center; justify-content:center; gap:8px;
-      border:1px solid rgba(37,211,102,.25);
-      background:#25D366; color:#fff;
-      transition:.2s; white-space:nowrap; flex:0 0 auto;
-      max-width:100%;
+    .btn-support{
+      background:#25D366;color:#fff;padding:8px 16px;border-radius:12px;font-weight:800;
+      font-size:12px;display:inline-flex;align-items:center;justify-content:center;gap:8px;line-height:1;
+      transition:.3s;-webkit-tap-highlight-color:transparent;flex-shrink:0;white-space:nowrap;max-width:100%;
     }
-    .icon-btn{
-      width:40px; height:40px; border-radius:999px;
-      border:1px solid #E5E7EB; background:#fff; color:#374151;
-      display:flex; align-items:center; justify-content:center;
-      transition:.2s; flex:0 0 auto;
+    .btn-support:hover{ transform:scale(1.05); box-shadow:0 10px 15px -3px rgba(37,211,102,.3); }
+
+    .btn-auth{
+      padding:9px 14px;border-radius:14px;font-weight:900;font-size:11px;text-transform:uppercase;
+      letter-spacing:.12em;transition:.25s;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;
+      -webkit-tap-highlight-color:transparent;flex-shrink:0;
     }
+    .btn-auth:hover{ transform:translateY(-1px); }
+    .btn-auth-outline{ background:#fff;border:1px solid #E5E7EB;color:#111827; }
+    .btn-auth-outline:hover{ border-color:#F07E13;color:#F07E13; }
+    .btn-auth-primary{ color:#fff; }
+
+    .line-clamp-2{
+      display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+    }
+
     .vf-brand-wrap{ min-width:0; overflow:hidden; }
     .vf-brand-text{
-      display:block; max-width:100%;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-      line-height:1;
+      display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1;
     }
 
+    .icon-btn{
+      display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:14px;
+      background:#fff;border:1px solid #E5E7EB;color:#374151;transition:.2s;-webkit-tap-highlight-color:transparent;
+      flex-shrink:0;
+    }
+    .icon-btn:hover{ border-color:#F07E13;color:#F07E13;transform:translateY(-1px); }
+
+    #catNav{ touch-action: pan-x; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+
+    header{ transform: translateZ(0); -webkit-transform: translateZ(0); }
+    @media (max-width: 768px){
+      header{ backdrop-filter:none !important; -webkit-backdrop-filter:none !important; }
+    }
     @media (max-width: 420px){
-      .btn-mini, .btn-waba{ padding:0 10px; font-size:10px; letter-spacing:.08em; }
-      .btn-mini .txt, .btn-waba .txt{ display:none; }
-      .icon-btn{ width:36px; height:36px; }
+      .icon-btn{ width:36px;height:36px;border-radius:12px; }
+      .btn-support{ padding:8px 10px;border-radius:12px;font-size:11px;gap:6px; }
+      .btn-support .btn-support-text{ display:none; }
+      .btn-auth{ padding:8px 10px;border-radius:12px;font-size:10px;letter-spacing:.10em;gap:6px; }
+      .vf-brand-text{ font-size:22px; }
     }
   </style>
 </head>
 
-<body class="flex flex-col min-h-screen">
+<body>
 
-  <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-200 shadow-sm">
-    <div class="max-w-[1240px] mx-auto h-16 px-4 flex items-center justify-between gap-3">
-      <a class="flex items-center gap-2 shrink-0 vf-brand-wrap" href="/index.html" aria-label="Boutique ViralFlowr">
-        <div class="text-2xl font-black tracking-tighter vf-brand-text">
-          Viral<span class="text-orange-bsv">Flowr</span>
+  <div class="bg-gray-900 text-white py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-center">
+    MARKETPLACE PROFESSIONNELLE • LIVRAISON INTERNATIONALE • PAIEMENT SÉCURISÉ
+  </div>
+
+  <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-100 shadow-sm backdrop-blur-md bg-white/95">
+    <div class="max-w-[1280px] mx-auto px-4 h-16 flex items-center justify-between gap-2 sm:gap-4">
+
+      <a href="/index.html" class="flex items-center gap-2 shrink-0 vf-brand-wrap" aria-label="ViralFlowr">
+        <div class="text-2xl font-black tracking-tighter text-gray-900 vf-brand-text">
+          Viral<span class="text-[#F07E13]">Flowr</span>
         </div>
       </a>
 
-      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar max-w-full">
+      <div class="hidden lg:flex items-center gap-6 text-[11px] font-black uppercase tracking-widest text-gray-400">
+        <a href="/index.html" class="hover:text-gray-900 transition-colors">Boutique</a>
+        <a href="/about.html" class="hover:text-gray-900 transition-colors">À Propos</a>
+      </div>
+
+      <div class="relative flex-1 max-w-[600px] hidden md:flex items-center">
+        <input type="text" id="searchInput"
+          class="w-full h-11 pl-5 pr-12 rounded-xl bg-[#F1F5F9] text-sm font-semibold focus:ring-2 focus:ring-[#F07E13] focus:bg-white outline-none transition-all border-none">
+
+        <div id="placeholder-box" class="absolute left-5 pointer-events-none text-gray-400 text-sm font-semibold">
+          <span id="animated-placeholder" class="inline-block animate-text">Que cherchez-vous ? (SMM, iPhone, IMEI, Netflix...)</span>
+        </div>
+
+        <button type="button" class="absolute right-1.5 top-1.5 brand-gradient p-2 rounded-lg text-white shadow-md" aria-label="Rechercher">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3">
         <div id="accountArea" class="hidden sm:flex items-center gap-2"></div>
 
-        <a class="icon-btn" href="/commandes.html" title="Mes commandes" aria-label="Mes commandes">${SVG.orders}</a>
-        <a class="icon-btn" href="/wallet.html" title="Portefeuille" aria-label="Portefeuille">${SVG.wallet}</a>
-
-        <a class="hidden sm:flex icon-btn" href="${escHtml(SOCIAL.instagram)}" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-          ${SVG.instagram}
-        </a>
-        <a class="hidden sm:flex icon-btn" href="${escHtml(SOCIAL.tiktok)}" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
-          ${SVG.tiktok}
-        </a>
-        <a class="hidden sm:flex icon-btn" href="${escHtml(SOCIAL.telegram)}" target="_blank" rel="noopener noreferrer" aria-label="Telegram">
-          ${SVG.telegram}
+        <a href="/commandes.html" class="icon-btn" title="Mes commandes" aria-label="Mes commandes">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 6h11"></path>
+            <path d="M9 12h11"></path>
+            <path d="M9 18h11"></path>
+            <path d="M4 6h.01"></path>
+            <path d="M4 12h.01"></path>
+            <path d="M4 18h.01"></path>
+          </svg>
         </a>
 
-        <a href="/index.html" class="btn-mini" aria-label="Boutique">
-          ${SVG.home}
-          <span class="txt">Boutique</span>
+        <a href="/wallet.html" class="icon-btn" title="Portefeuille" aria-label="Portefeuille">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
+            <path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/>
+            <path d="M20 12h-4a2 2 0 0 0 0 4h4"/>
+            <circle cx="16" cy="14" r="0.5" />
+          </svg>
         </a>
 
-        <a href="${escHtml(SOCIAL.waba)}" target="_blank" rel="noopener noreferrer" class="btn-waba" aria-label="WABA WhatsApp">
-          ${SVG.whatsapp}
-          <span class="txt">WABA</span>
+        <a href="https://www.instagram.com/di_corporation_1/" target="_blank" rel="noopener noreferrer"
+          class="hidden sm:flex icon-btn" aria-label="Instagram">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
+            <path d="M16 11.37a4 4 0 1 1-7.87 1.26 4 4 0 0 1 7.87-1.26z"></path>
+            <path d="M17.5 6.5h.01"></path>
+          </svg>
+        </a>
+
+        <a href="https://www.tiktok.com/@dicorporation" target="_blank" rel="noopener noreferrer"
+          class="hidden sm:flex icon-btn" aria-label="TikTok">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16.7 7.4c-1-1-1.6-2.3-1.7-3.7h-3v12c0 1.3-1 2.3-2.3 2.3-1.2 0-2.2-1-2.2-2.2 0-1.3 1-2.3 2.2-2.3.3 0 .6.1.9.2V9.3c-.3-.1-.6-.1-.9-.1C6.6 9.2 4 11.8 4 15c0 3.2 2.6 5.8 5.8 5.8 3.2 0 5.8-2.6 5.8-5.8V11c1.1.8 2.4 1.2 3.8 1.2V9.3c-1.1 0-2.2-.4-3-.9z"/>
+          </svg>
+        </a>
+
+        <a href="https://wa.me/243850373991" target="_blank" rel="noopener noreferrer" class="btn-support">
+          <svg width="18" height="18" fill="white" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+          </svg>
+          <span class="btn-support-text">Aide</span>
         </a>
       </div>
     </div>
   </header>
 
-  <main class="flex-1 mt-6 lg:mt-10 mb-20">
-    <div class="max-w-[1240px] mx-auto px-3 md:px-4 flex flex-col gap-6">
+  <main class="max-w-[1280px] mx-auto px-4 py-8">
 
-      <div class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
-
-        <div class="flex flex-col gap-6">
-          <div class="bg-white border border-gray-100 shadow-card rounded-xl p-6 md:p-8">
-            <h1 class="text-[#18181B] font-bold text-2xl md:text-3xl leading-tight mb-6">${escHtml(nom)}</h1>
-
-            <div class="flex flex-col sm:flex-row gap-6">
-              <div class="shrink-0">
-                <div class="w-[140px] h-[140px] bg-[#F8FAFC] rounded-2xl border border-gray-100 flex items-center justify-center p-4">
-                  <img src="${escHtml(imgRaw || ogImg)}" class="w-full h-full object-contain"
-                       onerror="this.src='${escHtml(ogFallback())}'"
-                       alt="${escHtml(nom)}">
-                </div>
-              </div>
-
-              <div class="flex-1 min-w-0">
-                <span class="text-[#767676] text-xs font-bold uppercase tracking-wider mb-2 block">Description :</span>
-                <div class="text-sm text-[#515052] leading-relaxed whitespace-pre-line font-medium break-words">
-                  ${escHtml(longDesc || "Aucune description.")}
-                </div>
-              </div>
-            </div>
+    <section class="mb-10">
+      <article class="relative w-full h-[250px] md:h-[400px] rounded-[32px] overflow-hidden shadow-2xl group border-4 border-white">
+        <img src="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png"
+             class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
+             alt="ViralFlowr">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"></div>
+        <div class="relative z-10 p-8 md:p-16 flex flex-col justify-end h-full text-white">
+          <h1 class="text-3xl md:text-6xl font-black max-w-2xl leading-[0.95] mb-4 tracking-tighter uppercase italic">
+            L'Univers Digital <br>& Matériel.
+          </h1>
+          <p class="text-xs md:text-lg font-medium opacity-90 max-w-md">
+            Services Elite, Déblocage IMEI et Matériel High-Tech garantis.
+          </p>
+          <div id="priceMode" class="mt-4 text-[10px] font-black uppercase tracking-[0.18em] opacity-90">
+            Mode: ...
           </div>
         </div>
+      </article>
+    </section>
 
-        <aside class="flex flex-col gap-4">
-          <div class="bg-white border border-gray-100 shadow-card rounded-xl p-6 flex flex-col gap-6">
-            <div class="grid grid-cols-2 gap-4 items-end">
-              <div>
-                <span class="text-gray-500 text-xs font-medium block mb-1">Prix Total:</span>
-                <span id="priceValue" class="text-3xl font-black text-[#201B16] tracking-tighter">${escHtml(prixClient)} $</span>
-              </div>
-              <div class="flex flex-col text-right text-[11px] text-gray-400 font-medium">
-                <span>Min : <strong class="text-gray-700">${escHtml(minTxt)}</strong></span>
-                <span>Max : <strong class="text-gray-700">${escHtml(maxTxt)}</strong></span>
-              </div>
-            </div>
-
-            <a id="buyBtn" href="${escHtml(payUrlClient)}"
-               class="w-full h-12 rounded-full btn-gradient text-white font-bold text-[15px] uppercase tracking-wide shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center">
-              Acheter maintenant
-            </a>
-
-            <a href="${escHtml(SOCIAL.waba)}" target="_blank" rel="noopener noreferrer"
-               class="w-full h-12 rounded-full bg-[#25D366] text-white font-black text-[13px] uppercase tracking-wide shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
-              ${SVG.whatsapp}
-              Contacter WABA
-            </a>
-
-            <a href="/share/${encodeURIComponent(id)}/"
-               class="flex items-center justify-center gap-2 text-gray-400 text-xs font-bold hover:text-orange-500 transition-colors">
-              Partager ce produit
-            </a>
-          </div>
-
-          <a href="/index.html"
-             class="bg-white border border-gray-200 shadow-card rounded-xl p-4 flex items-center justify-center gap-2 text-gray-600 font-black uppercase text-[12px] hover:text-orange-600 hover:border-orange-200 transition">
-            ${SVG.home}
-            Retour Boutique
-          </a>
-        </aside>
-
-      </div>
+    <div class="flex items-center gap-3 overflow-x-auto no-scrollbar pb-6 mb-10 border-b border-gray-100" id="catNav">
+      <button onclick="filterCat('all', this)" class="cat-btn active bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Tous</button>
+      <button onclick="filterCat('Materiel', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Matériel & Gadgets</button>
+      <button onclick="filterCat('Abonnement', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Abonnements</button>
+      <button onclick="filterCat('Carte2', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Cartes cadeaux</button>
+      <button onclick="filterCat('IMEI', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">IMEI & Réseau</button>
+      <button onclick="filterCat('Boost', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Boost SMM</button>
+      <button onclick="filterCat('Jeux', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Jeux</button>
     </div>
+
+    <div id="loadError" class="hidden mb-6 bg-red-50 border border-red-200 text-red-700 font-bold text-xs rounded-2xl px-4 py-3"></div>
+
+    <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 mb-24">
+      <div class="h-64 bg-white rounded-3xl animate-pulse shadow-sm"></div>
+      <div class="h-64 bg-white rounded-3xl animate-pulse shadow-sm"></div>
+      <div class="h-64 bg-white rounded-3xl animate-pulse shadow-sm"></div>
+      <div class="h-64 bg-white rounded-3xl animate-pulse shadow-sm"></div>
+      <div class="h-64 bg-white rounded-3xl animate-pulse shadow-sm"></div>
+      <div class="h-64 bg-white rounded-3xl animate-pulse shadow-sm"></div>
+    </div>
+
   </main>
 
-  <footer class="mt-auto bg-white border-t border-gray-200">
-    <div class="max-w-[1240px] mx-auto px-4 py-10">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-        <div class="text-xl font-black tracking-tighter">
-          Viral<span class="text-orange-bsv">Flowr</span>
-        </div>
+  <footer class="bg-white border-t border-gray-100 py-12">
+    <div class="max-w-[1280px] mx-auto px-4 flex flex-col items-center">
+      <div class="text-2xl font-black tracking-tighter mb-6">
+        Viral<span class="text-[#F07E13]">Flowr</span>
       </div>
 
-      <div class="mt-6 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-        © 2026 ViralFlowr • Paiement sécurisé • Livraison digitale
+      <div class="flex flex-wrap justify-center gap-8 mb-8 text-[11px] font-black uppercase text-gray-400 tracking-widest">
+        <a href="/about.html" class="hover:text-gray-900">À Propos</a>
+        <a href="https://wa.me/243850373991" target="_blank" rel="noopener noreferrer" class="hover:text-green-500">Contact Support</a>
+        <a href="https://t.me/Viralflow" target="_blank" rel="noopener noreferrer" class="hover:text-blue-500">Telegram Community</a>
+        <a href="https://www.instagram.com/di_corporation_1/" target="_blank" rel="noopener noreferrer" class="hover:text-pink-500">Instagram</a>
+        <a href="https://www.tiktok.com/@dicorporation" target="_blank" rel="noopener noreferrer" class="hover:text-gray-900">TikTok</a>
       </div>
+
+      <p class="text-[9px] text-gray-300 text-center max-w-lg leading-relaxed uppercase">
+        © 2026 ViralFlowr Enterprise. Livraison garantie. Les marques citées appartiennent à leurs propriétaires.
+      </p>
     </div>
   </footer>
 
-  <!-- Account UI -->
   <script>
-    const _VF_SVG_LOGIN = ${JS_SVG_LOGIN};
-    const _VF_SVG_REGISTER = ${JS_SVG_REGISTER};
+    // ========= CONFIG =========
+    const SCRIPT_URL =
+      (window.VF_CONFIG && window.VF_CONFIG.scriptUrl)
+      ? String(window.VF_CONFIG.scriptUrl)
+      : "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
 
-    function _vfSafe(v){ return (v === null || v === undefined) ? "" : String(v); }
+    const FALLBACK_IMG = "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
 
-    function getSession_(){
-      try{
-        const raw = localStorage.getItem("vf_session");
-        if(!raw) return null;
-        const s = JSON.parse(raw);
-        if(!s || (!s.email && !s.username)) return null;
-        return s;
-      }catch(e){ return null; }
+    let ALL_PRODUCTS = [];
+    let CURRENT_FILTER = "all";
+
+    const FILTER_MAP = {
+      "Abonnement": ["ABONNEMENT","CARTE"],
+      "Carte2":     ["CARTE2"],
+      "Boost":      ["BOOST","BOOST2","SMM1","SMM2","SMM3","PEAKERR","PEAK"],
+      "Materiel":   ["MATERIEL","GADGET","PHONE"],
+      "IMEI":       ["IMEI"],
+      "Jeux":       ["JEUX","JEU","GAME","GAMING","PSN","PLAYSTATION","XBOX","STEAM","NINTENDO"]
+    };
+
+    // ========= UI SEARCH PLACEHOLDER =========
+    const input = document.getElementById("searchInput");
+    const placeholderBox = document.getElementById("placeholder-box");
+
+    if (input && placeholderBox) {
+      input.addEventListener("focus", () => placeholderBox.style.display = "none");
+      input.addEventListener("blur", () => { if (input.value === "") placeholderBox.style.display = "block"; });
+      input.addEventListener("input", () => render());
     }
 
-    window.addEventListener("storage", (e) => {
-      if (e.key === "vf_session") renderAccountUI_();
-    });
+    // ========= HELPERS =========
+    function safe(v){ return (v === null || v === undefined) ? "" : String(v); }
+    function up(v){ return safe(v).trim().toUpperCase(); }
 
-    function renderAccountUI_(){
-      const area = document.getElementById("accountArea");
-      if(!area) return;
-
-      const s = getSession_();
-      area.innerHTML = "";
-      area.classList.remove("hidden");
-
-      if(!s){
-        area.innerHTML =
-          '<a href="/login.html" class="btn-mini" aria-label="Connexion">' +
-            _VF_SVG_LOGIN +
-            '<span class="txt">Connexion</span>' +
-          '</a>' +
-          '<a href="/register.html" class="btn-mini" style="border-color:transparent;color:white;" aria-label="Inscription">' +
-            '<span style="display:inline-flex;align-items:center;gap:8px;" class="txt-wrap">' +
-              _VF_SVG_REGISTER +
-              '<span class="txt">Inscription</span>' +
-            '</span>' +
-          '</a>';
-
-        const links = area.querySelectorAll("a");
-        if(links && links[1]){
-          links[1].style.background = "linear-gradient(90deg, #F07E13 0%, #FFB26B 100%)";
-        }
-        return;
-      }
-
-      const display = _vfSafe(s.username || s.email || "Compte");
-      const first = display.slice(0,1).toUpperCase();
-
-      area.innerHTML =
-        '<div class="hidden md:flex items-center gap-2 bg-white border border-gray-200 px-3 py-2 rounded-2xl">' +
-          '<div class="w-8 h-8 rounded-xl" style="background:linear-gradient(90deg,#F07E13 0%,#FFB26B 100%);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:12px;">' +
-            first +
-          '</div>' +
-          '<div class="leading-tight">' +
-            '<div class="text-[11px] font-black text-gray-900">Bonjour, ' + display + '</div>' +
-            '<div class="text-[9px] font-black uppercase tracking-widest text-gray-300">Connecté</div>' +
-          '</div>' +
-        '</div>' +
-        '<button id="logoutBtn" class="btn-mini" type="button">Déconnexion</button>';
-
-      const btn = document.getElementById("logoutBtn");
-      if(btn){
-        btn.addEventListener("click", () => {
-          localStorage.removeItem("vf_session");
-          localStorage.setItem("vf_session_changed", String(Date.now()));
-          renderAccountUI_();
-        });
-      }
+    function escHtml(str){
+      return safe(str).replace(/[&<>"']/g, (c) => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      }[c]));
     }
 
-    renderAccountUI_();
-  </script>
+    function sanitizeHttpUrl(u){
+      const s = safe(u).trim();
+      if (!s) return "";
+      if (/^https?:\/\//i.test(s)) return s;
+      return "";
+    }
 
-  <!-- Prix revendeur dynamique + lien paiement cohérent -->
-  <script>
-    const VF_SCRIPT_URL = "${escHtml(SCRIPT_URL)}";
-    const VF_PRODUCT_ID = "${escHtml(id)}";
+    function pName(p){ return safe(p.nom || p.name || p.title); }
+    function pCat(p){ return safe(p.cat || p.category || p.categorie); }
 
-    function _vfSafe2(v){ return (v === null || v === undefined) ? "" : String(v); }
+    // ✅ prix revendeur prioritaire si API le renvoie
+    function pPrice(p){
+      return safe(
+        (p && (
+          p.prix_affiche ??
+          p.prix_revendeur ??
+          p.RESELLER ?? p.reseller ??
+          p.prix ??
+          p.price ??
+          p.amount ??
+          p.PV ?? p.pv ??
+          p.prix_client
+        ))
+      );
+    }
 
-    function _vfGetStore(){
+    function pImg(p){ return safe(p.img || p.image || p.photo); }
+    function pMin(p){ return safe(p.min || p.minqnt || p.minQty || p.min_qty); }
+    function pMax(p){ return safe(p.max || p.maxqnt || p.maxQty || p.max_qty); }
+
+    // ========= STORAGE / TOKEN =========
+    function getStore(){
       return (window.vfApi && window.vfApi.storage) ? window.vfApi.storage
            : (window.vfStorage ? window.vfStorage : null);
     }
 
-    function _vfGetCookie(name){
+    function getSession_(){
+      const st = getStore();
       try{
-        const m = document.cookie.match(new RegExp("(^|;)\\\\s*" + name + "\\\\s*=\\\\s*([^;]+)"));
-        return m ? decodeURIComponent(m[2]) : "";
-      }catch(e){ return ""; }
-    }
-
-    function _vfGetSession(){
+        if (st && typeof st.getSession === "function") return st.getSession();
+      }catch(_){}
       try{
         const raw = localStorage.getItem("vf_session");
-        if(!raw) return null;
+        if (!raw) return null;
         const s = JSON.parse(raw);
-        if(!s || (!s.email && !s.username)) return null;
+        if (!s || (!s.email && !s.username)) return null;
         return s;
-      }catch(e){ return null; }
+      }catch(_){ return null; }
     }
 
-    function _vfGetToken(){
-      // 0) session fields
+    function getCookie_(name){
       try{
-        const s = _vfGetSession();
-        const t = s && (s.token || s.vf_token || s.reseller_token || s.access_token || s.session_token);
-        if (t) return String(t).trim();
-      }catch(e){}
+        const m = document.cookie.match(new RegExp("(^|;)\\s*" + name + "\\s*=\\s*([^;]+)"));
+        return m ? decodeURIComponent(m[2]) : "";
+      }catch(_){ return ""; }
+    }
 
-      // 1) vf_api.js storage
+    function getToken_(){
+      const st = getStore();
+
       try{
-        const st = _vfGetStore();
         if (st && typeof st.getToken === "function"){
           const t = st.getToken();
           if (t) return String(t).trim();
         }
-      }catch(e){}
+      }catch(_){}
 
-      // 2) localStorage
       try{
         const t2 = localStorage.getItem("vf_token");
         if (t2) return String(t2).trim();
-      }catch(e){}
+      }catch(_){}
 
-      // 3) cookie
-      const ck = _vfGetCookie("vf_token");
-      if (ck){
-        try{ localStorage.setItem("vf_token", ck); }catch(e){}
+      const ck = getCookie_("vf_token");
+      if (ck) {
+        try { localStorage.setItem("vf_token", ck); } catch(_){}
         return String(ck).trim();
       }
 
       return "";
     }
 
-    function _vfPickPrice(prod){
-      // IMPORTANT: revendeur en priorité
-      const v = prod && (
-        prod.prix_affiche ??
-        prod.prix_revendeur ??
-        prod.RESELLER ?? prod.reseller ??
-        prod.prix ??
-        prod.price ??
-        prod.amount ??
-        prod.PV ?? prod.pv ??
-        prod.prix_client
-      );
-      return _vfSafe2(v).trim();
+    function clearSession_(){
+      const st = getStore();
+      try{ if (st && typeof st.clear === "function") st.clear(); }catch(_){}
+      try{ localStorage.removeItem("vf_token"); }catch(_){}
+      try{ localStorage.removeItem("vf_session"); }catch(_){}
+      try{ localStorage.setItem("vf_session_changed", String(Date.now())); }catch(_){}
     }
 
-    function _vfBuildPayUrl(prod, priceOverride){
-      const qp = new URLSearchParams();
-      qp.set("nom", _vfSafe2(prod.nom));
-      qp.set("prix", _vfSafe2(priceOverride));
-      qp.set("cat", _vfSafe2(prod.cat));
-      qp.set("id", _vfSafe2(prod.id));
-      qp.set("min", _vfSafe2(prod.min));
-      qp.set("max", _vfSafe2(prod.max));
-      qp.set("img", _vfSafe2(prod.img || ""));
-      qp.set("desc", _vfSafe2(prod.desc || "").trim());
-      return "/paiement.html?" + qp.toString();
+    // ========= ACCOUNT UI =========
+    function renderAccountUI_(){
+      const area = document.getElementById("accountArea");
+      const s = getSession_();
+      const token = getToken_();
+      const mode = document.getElementById("priceMode");
+
+      if (!area) return;
+
+      area.innerHTML = "";
+      area.classList.remove("hidden");
+
+      if (mode){
+        mode.textContent = token ? "Mode: REVENDEUR (token détecté)" : "Mode: CLIENT (pas de token)";
+      }
+
+      if (!s){
+        area.innerHTML = `
+          <a href="/login.html" class="btn-auth btn-auth-outline">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+              <path d="M10 17l5-5-5-5"></path>
+              <path d="M15 12H3"></path>
+            </svg>
+            Connexion
+          </a>
+          <a href="/register.html" class="btn-auth btn-auth-primary brand-gradient text-white shadow-md">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="8.5" cy="7" r="4"></circle>
+              <path d="M20 8v6"></path>
+              <path d="M23 11h-6"></path>
+            </svg>
+            Inscription
+          </a>
+        `;
+        return;
+      }
+
+      const display = safe(s.username || s.email || "Compte");
+      area.innerHTML = `
+        <div class="hidden md:flex items-center gap-2 bg-white border border-gray-200 px-3 py-2 rounded-2xl">
+          <div class="w-8 h-8 rounded-xl brand-gradient flex items-center justify-center text-white font-black text-sm">
+            ${escHtml(display.slice(0,1).toUpperCase())}
+          </div>
+          <div class="leading-tight">
+            <div class="text-[11px] font-black text-gray-900">Bonjour, ${escHtml(display)}</div>
+            <div class="text-[9px] font-black uppercase tracking-widest ${token ? "text-green-400" : "text-gray-300"}">
+              ${token ? "TOKEN OK" : "SANS TOKEN"}
+            </div>
+          </div>
+        </div>
+        <button id="logoutBtn" class="btn-auth btn-auth-outline">Déconnexion</button>
+      `;
+
+      const logoutBtn = document.getElementById("logoutBtn");
+      if (logoutBtn){
+        logoutBtn.addEventListener("click", () => {
+          clearSession_();
+          renderAccountUI_();
+          start_(); // relance propre
+        });
+      }
     }
 
-    function _vfExtractList(payload){
-      if (Array.isArray(payload)) return payload;
-      if (payload && Array.isArray(payload.products)) return payload.products;
-      if (payload && Array.isArray(payload.items)) return payload.items;
-      if (payload && Array.isArray(payload.data)) return payload.data;
-      if (payload && payload.data && Array.isArray(payload.data.products)) return payload.data.products;
-      if (payload && payload.data && Array.isArray(payload.data.items)) return payload.data.items;
-      return [];
+    // ========= LOADER / ERROR =========
+    function showLoadError_(msg){
+      const box = document.getElementById("loadError");
+      if (!box) return;
+      box.textContent = msg;
+      box.classList.remove("hidden");
+    }
+    function hideLoadError_(){
+      const box = document.getElementById("loadError");
+      if (!box) return;
+      box.classList.add("hidden");
+      box.textContent = "";
     }
 
-    function _vfJsonpGetProducts(token){
-      return new Promise((resolve, reject) => {
-        const cb = "vf_cb_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
-        window[cb] = (payload) => {
-          try{
-            resolve(_vfExtractList(payload));
-          }finally{
-            try{ delete window[cb]; }catch(e){}
+    // ========= PRODUCTS LOAD (JSONP) =========
+    function initProducts(forcedToken){
+      hideLoadError_();
+
+      const old = document.getElementById("vf_products_loader");
+      if (old) old.remove();
+
+      const cbName = "vf_cb_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
+      window[cbName] = function(payload){
+        try{
+          if (payload && payload.error){
+            showLoadError_("Erreur API produits: " + safe(payload.error));
+            ALL_PRODUCTS = [];
+          } else {
+            ALL_PRODUCTS = Array.isArray(payload) ? payload : (Array.isArray(payload.products) ? payload.products : []);
           }
-        };
+          render();
+        } finally {
+          try { delete window[cbName]; } catch(_){}
+        }
+      };
 
-        const tokenParam = token ? ("&token=" + encodeURIComponent(token)) : "";
-        const s = document.createElement("script");
-        s.src = VF_SCRIPT_URL + "?action=get_products" + tokenParam + "&callback=" + cb + "&t=" + Date.now();
-        s.onerror = () => {
-          try{ delete window[cb]; }catch(e){}
-          reject(new Error("JSONP error"));
-        };
-        document.body.appendChild(s);
+      const token = (typeof forcedToken === "string") ? forcedToken : getToken_();
+      const tokenParam = token ? ("&token=" + encodeURIComponent(token)) : "";
+
+      const s = document.createElement("script");
+      s.id = "vf_products_loader";
+      s.src = SCRIPT_URL + "?action=get_products" + tokenParam + "&callback=" + cbName + "&t=" + Date.now();
+      s.onerror = () => {
+        showLoadError_("Impossible de charger les produits (API). Vérifie ton déploiement Apps Script / doGet JSONP.");
+        ALL_PRODUCTS = [];
+        render();
+        try { delete window[cbName]; } catch(_){}
+      };
+      document.body.appendChild(s);
+    }
+
+    // ========= FILTER =========
+    function matchCatByFilter(productCatUpper, filterKey){
+      if (filterKey === "all") return true;
+
+      const allowed = FILTER_MAP[filterKey];
+      if (!allowed) return (productCatUpper === up(filterKey));
+
+      for (const a of allowed){
+        const A = up(a);
+
+        if (productCatUpper === A) return true;
+
+        if (A === "IMEI" && productCatUpper.includes("IMEI")) return true;
+        if ((A === "PEAKERR" || A === "PEAK") && (productCatUpper.includes("PEAK") || productCatUpper.includes("PEAKERR"))) return true;
+        if (A.startsWith("SMM") && productCatUpper.includes("SMM")) return true;
+
+        if (filterKey === "Jeux" && productCatUpper.includes(A)) return true;
+      }
+      return false;
+    }
+
+    function filterCat(cat, btn){
+      document.querySelectorAll(".cat-btn").forEach(b=>{
+        b.classList.remove("text-white","brand-gradient","active");
+        b.classList.add("bg-white","text-gray-500");
       });
-    }
 
-    async function _vfRefreshPrice(){
-      const token = _vfGetToken();
-      if(!token) return;
-
-      // UI: loading (évite que l’utilisateur pense que c’est le prix client)
-      const priceEl = document.getElementById("priceValue");
-      const buyBtn = document.getElementById("buyBtn");
-      if (priceEl) priceEl.textContent = "... $";
-      if (buyBtn){
-        buyBtn.classList.add("opacity-60");
-        buyBtn.style.pointerEvents = "none";
+      if (btn){
+        btn.classList.add("text-white","brand-gradient","active");
+        btn.classList.remove("bg-white","text-gray-500");
       }
 
-      try{
-        const list = await _vfJsonpGetProducts(token);
-        const prod = list.find(x => _vfSafe2(x && x.id).trim() === VF_PRODUCT_ID);
-        if(!prod) return;
+      CURRENT_FILTER = cat;
+      render();
+    }
 
-        const raw = _vfPickPrice(prod);
-        if(!raw) return;
+    // ========= RENDER =========
+    function render(){
+      const grid = document.getElementById("product-grid");
+      if (!grid) return;
 
-        const num = parseFloat(String(raw).replace(",", "."));
-        const txt = Number.isFinite(num) ? num.toFixed(2) : raw;
+      const query = (input ? (input.value || "") : "").toLowerCase().trim();
 
-        if(priceEl) priceEl.textContent = txt + " $";
-        if(buyBtn){
-          buyBtn.href = _vfBuildPayUrl(prod, txt);
-          buyBtn.classList.remove("opacity-60");
-          buyBtn.style.pointerEvents = "auto";
-        }
-      }catch(e){
-        // si erreur: on laisse le prix client
-        if (priceEl) priceEl.textContent = "${escHtml(prixClient)} $";
-        if (buyBtn){
-          buyBtn.classList.remove("opacity-60");
-          buyBtn.style.pointerEvents = "auto";
-        }
+      const filtered = ALL_PRODUCTS.filter(p=>{
+        const catU = up(pCat(p));
+        const nameL = pName(p).toLowerCase();
+        const catL  = pCat(p).toLowerCase();
+
+        const matchCat = matchCatByFilter(catU, CURRENT_FILTER);
+        const matchSearch =
+          !query ||
+          nameL.includes(query) ||
+          catL.includes(query) ||
+          safe(p.id).toLowerCase().includes(query);
+
+        return matchCat && matchSearch;
+      });
+
+      if (filtered.length === 0){
+        grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-300 font-bold uppercase">Aucun article trouvé</div>';
+        return;
       }
+
+      grid.innerHTML = filtered.map(p=>{
+        const imgRaw = sanitizeHttpUrl(pImg(p));
+        const img = imgRaw || FALLBACK_IMG;
+
+        const priceRaw = pPrice(p);
+        let priceTxt = "—";
+        if (safe(priceRaw).trim() !== ""){
+          const priceNum = parseFloat(String(priceRaw).replace(",", "."));
+          priceTxt = Number.isFinite(priceNum) ? priceNum.toFixed(2) : safe(priceRaw);
+        }
+
+        const id = encodeURIComponent(safe(p.id).trim());
+        const productUrl = `/p/${id}/`; // ✅ absolu (pas de lien cassé)
+
+        const min = pMin(p);
+        const max = pMax(p);
+
+        return `
+          <div onclick="location.href='${productUrl}'"
+            class="hover-card group bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col cursor-pointer shadow-sm">
+            <div class="aspect-square bg-[#F8FAFC] rounded-[22px] mb-4 flex items-center justify-center p-6 overflow-hidden">
+              <img src="${img}"
+                class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
+                onerror="this.src='${FALLBACK_IMG}'">
+            </div>
+            <div class="px-1">
+              <span class="text-[9px] font-black text-[#F07E13] uppercase tracking-tighter mb-1 block">${escHtml(pCat(p))}</span>
+              <h3 class="text-[13px] font-bold text-gray-900 leading-tight mb-4 h-8 overflow-hidden line-clamp-2">${escHtml(pName(p))}</h3>
+              <div class="flex items-center justify-between">
+                <span class="text-gray-900 font-black text-lg tracking-tighter">${escHtml(priceTxt)} $</span>
+                <div class="bg-gray-900 text-white p-1.5 rounded-lg group-hover:brand-gradient transition-all">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                    <path d="M12 4v16m8-8H4"></path>
+                  </svg>
+                </div>
+              </div>
+
+              ${(min || max) ? `
+                <div class="mt-3 text-[9px] font-black uppercase tracking-widest text-gray-300">
+                  Min ${escHtml(safe(min) || "-")} • Max ${escHtml(safe(max) || "-")}
+                </div>` : ``}
+            </div>
+          </div>
+        `;
+      }).join("");
     }
 
-    function _vfStartPrice(){
-      _vfRefreshPrice();
+    // ========= ANTI-FLASH PRIX (attendre token si session) =========
+    function _sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
 
-      // petit retry si token apparaît après coup
-      setTimeout(() => { _vfRefreshPrice(); }, 700);
+    async function waitForTokenOrTimeout_(timeoutMs){
+      const start = Date.now();
+      let t = getToken_();
+      while(!t && (Date.now() - start) < timeoutMs){
+        await _sleep(120);
+        t = getToken_();
+      }
+      return t;
     }
 
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", _vfStartPrice);
-    } else {
-      _vfStartPrice();
+    async function start_(){
+      renderAccountUI_();
+
+      const hasSession = !!getSession_();
+      const token = await waitForTokenOrTimeout_(hasSession ? 1200 : 0);
+
+      initProducts(token);
+
+      setTimeout(() => {
+        const t2 = getToken_();
+        if (t2 && t2 !== token) initProducts(t2);
+      }, 900);
     }
 
-    window.addEventListener("storage", (e) => {
-      if (e.key === "vf_session" || e.key === "vf_token" || e.key === "vf_session_changed") {
-        _vfRefreshPrice();
+    // ========= SYNC ONGLET =========
+    window.addEventListener("storage", (e)=>{
+      if (e.key === "vf_session" || e.key === "vf_token" || e.key === "vf_session_changed"){
+        start_();
       }
     });
+
+    // ========= START =========
+    start_();
   </script>
-
 </body>
-</html>`;
-}
-
-function templateSharePage(p) {
-  const id = safe(p.id).trim();
-  const nom = safe(p.nom).trim() || `Produit ${id}`;
-  const cat = safe(p.cat).trim() || "Service";
-  const prix = safe(p.prix).trim() || "0";
-
-  const imgRaw = safe(p.img).trim();
-  const ogImg = toDirectOGImage(imgRaw) || ogFallback();
-
-  const productUrl = `/p/${encodeURIComponent(id)}/`;
-  const ogDesc = `${prix} $ • ${cat}`.slice(0, 200);
-
-  return `<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>${escHtml(nom)} | ViralFlowr</title>
-  <meta name="description" content="${escHtml(ogDesc)}">
-
-  <meta property="og:type" content="product">
-  <meta property="og:site_name" content="ViralFlowr">
-  <meta property="og:title" content="${escHtml(nom)}">
-  <meta property="og:description" content="${escHtml(ogDesc)}">
-  <meta property="og:image" content="${escHtml(ogImg)}">
-  <meta property="og:url" content="https://viralflowr.com/share/${encodeURIComponent(id)}/">
-
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="${escHtml(ogImg)}">
-
-  <meta http-equiv="refresh" content="0;url=${escHtml(productUrl)}">
-</head>
-<body style="font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial; padding:20px;">
-  <a href="${escHtml(productUrl)}">Ouvrir le produit</a>
-</body>
-</html>`;
-}
-
-// ---------- main ----------
-async function main() {
-  const products = await fetchProducts();
-
-  rmDir("p");
-  rmDir("share");
-  ensureDir("p");
-  ensureDir("share");
-
-  let count = 0;
-
-  for (const p of products) {
-    const id = safe(p.id).trim();
-    if (!id) continue;
-
-    const pDir = path.join("p", id);
-    ensureDir(pDir);
-    fs.writeFileSync(path.join(pDir, "index.html"), templateProductPage(p), "utf-8");
-
-    const sDir = path.join("share", id);
-    ensureDir(sDir);
-    fs.writeFileSync(path.join(sDir, "index.html"), templateSharePage(p), "utf-8");
-
-    count++;
-  }
-
-  console.log(`Pages générées: ${count} produits (p/* + share/*).`);
-}
-
-main().catch((e) => {
-  console.error("Erreur:", e);
-  process.exit(1);
-});
+</html>
