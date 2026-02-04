@@ -3,7 +3,7 @@
  *  - GET  => JSONP (script tag)
  *  - POST => hidden iframe form + postMessage
  *  - Robust: body-ready, per-request iframe, timeouts
- *  - FIX: remove strict event.source check (Apps Script wrappers break it)
+ *  - FIX: DO NOT check event.source === iframe.contentWindow (Apps Script wrapper breaks it)
  * =========================== */
 
 (function initVfBridge(){
@@ -31,7 +31,6 @@
 
   const isAllowedOrigin_ = (origin) => {
     const o = String(origin || "");
-    // file:// => origin "null"
     if (o === "null" && (location.protocol === "file:" || location.origin === "null")) return true;
 
     return (
@@ -59,16 +58,9 @@
 
   // ✅ origin qu'on envoie au serveur (sera utilisé côté serveur comme targetOrigin pour postMessage)
   const pickClientOriginParam_ = () => {
-    // 1) Panel/preview => toujours "*"
     if (isAppsScriptPanel_()) return "*";
-
-    // 2) Si forcé explicitement dans VF_CONFIG
     if (CFG.postMessageTargetOrigin) return String(CFG.postMessageTargetOrigin);
-
-    // 3) Sur viralflowr/localhost => strict
     if (isTrustedHostForStrictOrigin_()) return String(location.origin);
-
-    // 4) fallback
     return "*";
   };
 
@@ -111,14 +103,21 @@
     if (!msg || typeof msg !== "object") return;
 
     const rid = msg.request_id || msg.requestId;
-    if (!rid || !pending.has(rid)) return;
+    if (!rid) return;
+
+    // Debug brut (très utile)
+    if (DEBUG) {
+      console.log("[vfBridge] message event origin=", event.origin, "rid=", rid, "pendingHas=", pending.has(rid));
+    }
+
+    if (!pending.has(rid)) {
+      // on garde la dernière réponse reçue pour debug
+      window.__vfLastBridgeMsg = msg;
+      return;
+    }
 
     // ✅ FIX: on NE vérifie PAS event.source vs iframe.contentWindow
-    // car Apps Script wrap (userCodeAppPanel) peut casser cette égalité.
-    // La sécurité est assurée par:
-    // - origin allowlist
-    // - rid imprévisible + pending.has(rid)
-
+    // (Apps Script wrapper userCodeAppPanel peut casser cette égalité)
     if (DEBUG) console.log("[vfBridge] message ok rid=", rid, msg);
     if (DEBUG) console.log("[vfBridge] settling rid=", rid);
 
@@ -134,7 +133,6 @@
 
       const cb = "__vf_cb_" + nowId_().replace(/[^a-zA-Z0-9_]/g, "_");
       let done = false;
-
       let script = null;
 
       const cleanup = () => {
@@ -184,7 +182,6 @@
 
         const rid = "REQ-" + nowId_();
 
-        // 1 iframe par request => pas de collision
         const ifr = document.createElement("iframe");
         ifr.name = "vf_iframe_" + rid;
         ifr.id   = "vf_iframe_" + rid;
@@ -211,7 +208,6 @@
           form.appendChild(input);
         };
 
-        // mandatory bridge fields
         add("transport", "iframe");
 
         const originParam = pickClientOriginParam_();
@@ -220,7 +216,6 @@
         add("origin", originParam);
         add("request_id", rid);
 
-        // payload fields
         Object.keys(payload || {}).forEach((k) => add(k, payload[k]));
 
         pending.set(rid, { resolve, reject, timer, iframe: ifr, form });
@@ -237,7 +232,6 @@
           return;
         }
 
-        // nettoyage du form (l'iframe reste jusqu'à la réponse ou timeout)
         setTimeout(() => { try { if (form && form.parentNode) form.parentNode.removeChild(form); } catch(_) {} }, 1500);
       });
     });
@@ -249,11 +243,9 @@
 
   // High-level API (inchangé)
   window.vfApi = {
-    // GET (JSONP)
     getProducts: ({ cat="all", token="" } = {}) => vfJsonp("get_products", { cat, token }),
     orderHistory: ({ email, limit=80 } = {}) => vfJsonp("order_history", { email, limit }),
 
-    // POST (iframe)
     register: ({ username, email, password }) => vfPost({ action:"register", username, email, password }),
     login:    ({ email, password }) => vfPost({ action:"login", email, password }),
 
@@ -266,7 +258,6 @@
     createOrder: (data) => vfPost({ ...(data||{}) }),
     chatSupport: ({ chat, orderId, email }) => vfPost({ chat, orderId, email }),
 
-    // Utils
     setScriptUrl: (u) => { VF_SCRIPT_URL = String(u || "").trim(); },
     getScriptUrl: () => VF_SCRIPT_URL
   };
