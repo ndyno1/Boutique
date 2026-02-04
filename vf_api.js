@@ -2,7 +2,8 @@
  *  VF API CLIENT (NO CORS) — UPDATED (KEEP LOGIC)
  *  - GET  => JSONP (script tag)
  *  - POST => hidden iframe form + postMessage
- *  - Robust: body-ready, per-request iframe, timeouts, strict source check
+ *  - Robust: body-ready, per-request iframe, timeouts
+ *  - FIX: remove strict event.source check (Apps Script wrappers break it)
  * =========================== */
 
 (function initVfBridge(){
@@ -112,13 +113,14 @@
     const rid = msg.request_id || msg.requestId;
     if (!rid || !pending.has(rid)) return;
 
-    // Vérifie que ça vient du BON iframe lié à ce rid
-    const p = pending.get(rid);
-    if (p && p.iframe && event.source && p.iframe.contentWindow && event.source !== p.iframe.contentWindow) {
-      return;
-    }
+    // ✅ FIX: on NE vérifie PAS event.source vs iframe.contentWindow
+    // car Apps Script wrap (userCodeAppPanel) peut casser cette égalité.
+    // La sécurité est assurée par:
+    // - origin allowlist
+    // - rid imprévisible + pending.has(rid)
 
     if (DEBUG) console.log("[vfBridge] message ok rid=", rid, msg);
+    if (DEBUG) console.log("[vfBridge] settling rid=", rid);
 
     settle_(rid, "resolve", msg);
   });
