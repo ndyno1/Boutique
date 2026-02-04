@@ -49,16 +49,18 @@
       background:#fff;
       color:#111827;
     }
-    .price{
-      font-weight:900; letter-spacing:-.02em;
-    }
-    .card-hover{
-      transition: .2s;
-    }
+    .price{ font-weight:900; letter-spacing:-.02em; }
+    .card-hover{ transition: .2s; }
     .card-hover:hover{
       transform: translateY(-2px);
       box-shadow: 0 12px 30px rgba(17,24,39,.08);
       border-color:#F07E13;
+    }
+    .clamp3{
+      display:-webkit-box;
+      -webkit-line-clamp:3;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
     }
   </style>
 </head>
@@ -145,7 +147,7 @@
 
         <div class="bg-gray-50 border border-gray-100 rounded-[24px] p-4 md:p-5 min-w-[280px]">
           <div class="text-[11px] font-black uppercase tracking-widest text-gray-400">Session</div>
-          <div class="mt-2 text-sm font-black text-gray-900" id="sessionLine">Non connecté</div>
+          <div class="mt-2 text-sm font-black text-gray-900" id="sessionLine">Chargement…</div>
           <div class="mt-1 text-xs font-bold text-gray-400" id="tokenLine">Token: —</div>
         </div>
       </div>
@@ -167,7 +169,7 @@
     </section>
   </main>
 
-  <!-- Modal simple (démo) -->
+  <!-- Modal -->
   <div id="modal" class="hidden fixed inset-0 z-[999] bg-black/40 p-4">
     <div class="max-w-[560px] mx-auto mt-10 bg-white rounded-[26px] border border-gray-100 shadow-xl overflow-hidden">
       <div class="p-5 border-b border-gray-100 flex items-center justify-between">
@@ -175,10 +177,9 @@
           <div class="text-lg font-black tracking-tighter text-gray-900" id="modalTitle">—</div>
           <div class="text-xs font-bold text-gray-400" id="modalSubtitle">—</div>
         </div>
-        <button id="closeModal" class="icon-btn" aria-label="Fermer">
-          ✕
-        </button>
+        <button id="closeModal" class="icon-btn" aria-label="Fermer">✕</button>
       </div>
+
       <div class="p-5">
         <div class="text-sm font-semibold text-gray-600 leading-relaxed" id="modalDesc">—</div>
 
@@ -186,42 +187,55 @@
           <div>
             <div class="text-[11px] font-black uppercase tracking-widest text-gray-400">Prix</div>
             <div class="mt-1 text-2xl font-black text-gray-900 price" id="modalPrice">—</div>
+            <div class="mt-1 text-[11px] font-black text-gray-400 hidden" id="modalPublicLine">—</div>
           </div>
-          <button id="buyBtn" class="h-11 px-5 rounded-2xl brand-gradient text-white font-black uppercase tracking-widest text-[12px] shadow-md hover:opacity-95 transition">
+
+          <button id="buyBtn"
+            class="h-11 px-5 rounded-2xl brand-gradient text-white font-black uppercase tracking-widest text-[12px] shadow-md hover:opacity-95 transition">
             Commander
           </button>
         </div>
 
-        <div class="mt-4 text-[11px] font-bold text-gray-400">
-          Démo : le paiement/commande sera branché plus tard sur ton système.
+        <div class="mt-4 text-[11px] font-bold text-gray-400" id="modalHint">
+          Le bouton “Commander” ouvre le lien de paiement du produit (si défini dans Produits).
         </div>
       </div>
     </div>
   </div>
 
-  <script>
-    // --------------------------
-    // Données démo (remplace par tes produits réels)
-    // public_price / reseller_price peuvent venir d'une DB plus tard
-    // --------------------------
-    const PRODUCTS = [
-      { id:"SMM-IG-1000", name:"Instagram Followers 1K", cat:"SMM", public_price: 8, reseller_price: 5, unit:"/ 1000", desc:"Ajout progressif. Délai variable selon charge." },
-      { id:"SMM-TT-1000", name:"TikTok Likes 1K", cat:"SMM", public_price: 6, reseller_price: 4, unit:"/ 1000", desc:"Likes rapides, idéal pour booster un post." },
-      { id:"SMM-YT-1000", name:"YouTube Views 1K", cat:"SMM", public_price: 7, reseller_price: 4.5, unit:"/ 1000", desc:"Vues stables, livraison selon disponibilité." },
-      { id:"IMEI-CHK", name:"IMEI Check Basic", cat:"IMEI", public_price: 3, reseller_price: 2, unit:"", desc:"Vérification modèle / statut (selon fournisseur)." },
-      { id:"SUB-SNAP-1M", name:"Snapchat+ 1 Mois", cat:"ABO", public_price: 6, reseller_price: 4, unit:"", desc:"Activation selon compte et région supportée." },
-      { id:"SUB-SNAP-3M", name:"Snapchat+ 3 Mois", cat:"ABO", public_price: 12, reseller_price: 9, unit:"", desc:"Meilleure valeur. Nécessite compte compatible." },
-      { id:"WALLET-TOPUP", name:"Rechargement Portefeuille", cat:"WALLET", public_price: 0, reseller_price: 0, unit:"", desc:"Utilise la page portefeuille (bientôt intégrée ici)." },
-      { id:"VIP-SUPPORT", name:"Support VIP", cat:"SUPPORT", public_price: 5, reseller_price: 3, unit:"", desc:"Priorité sur les tickets + suivi." },
-    ];
+  <!-- ✅ Ton fichier API à la racine -->
+  <script src="/vf_api.js?v=18.4"></script>
 
-    // --------------------------
+  <script>
+    // =========================================================
+    // CONFIG
+    // =========================================================
+    // Option A (recommandé) : dans /vf_api.js tu mets :
+    // window.VF_API_URL = "https://script.google.com/macros/s/XXXX/exec";
+    //
+    // Option B : sinon colle ton URL ici :
+    const VF_API_URL = (window.VF_API_URL || "").trim() || "PASTE_YOUR_WEBAPP_EXEC_URL_HERE";
+
+    // =========================================================
     // Helpers
-    // --------------------------
+    // =========================================================
     const $ = (id) => document.getElementById(id);
 
-    function safeJsonParse_(s){
-      try { return JSON.parse(s); } catch(_) { return null; }
+    function safeJsonParse_(s){ try { return JSON.parse(s); } catch(_) { return null; } }
+
+    function escapeHtml_(str){
+      return String(str ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function formatPrice_(n){
+      const v = Number(n || 0);
+      if (!isFinite(v) || v <= 0) return "Sur devis";
+      return (v % 1 === 0 ? v.toFixed(0) : v.toFixed(2)) + " $";
     }
 
     function getSession_(){
@@ -231,25 +245,105 @@
       return obj;
     }
 
-    function isReseller_(session){
-      // Revendeur si token existe OU flag is_reseller true
-      const token = String(localStorage.getItem("vf_token") || "");
-      return !!(token && token.length > 10) || !!(session && session.is_reseller);
+    function getToken_(){
+      return String(localStorage.getItem("vf_token") || "").trim();
     }
 
-    function formatPrice_(n){
-      const v = Number(n || 0);
-      // format simple
-      return v === 0 ? "Sur devis" : (v % 1 === 0 ? v.toFixed(0) : v.toFixed(2)) + " $";
+    // =========================================================
+    // JSONP (pour éviter CORS) -> compatible doGet() Apps Script
+    // =========================================================
+    function jsonp_(url){
+      return new Promise((resolve, reject) => {
+        const cb = "vfcb_" + Math.random().toString(36).slice(2) + "_" + Date.now();
+        const s = document.createElement("script");
+        let done = false;
+
+        window[cb] = (data) => {
+          done = true;
+          try { resolve(data); } finally {
+            try { delete window[cb]; } catch(_) {}
+            try { s.remove(); } catch(_) {}
+          }
+        };
+
+        s.src = url + (url.includes("?") ? "&" : "?") + "callback=" + encodeURIComponent(cb);
+        s.async = true;
+        s.onerror = () => {
+          if (done) return;
+          try { delete window[cb]; } catch(_) {}
+          try { s.remove(); } catch(_) {}
+          reject(new Error("JSONP_LOAD_FAIL"));
+        };
+
+        document.head.appendChild(s);
+
+        setTimeout(() => {
+          if (done) return;
+          try { delete window[cb]; } catch(_) {}
+          try { s.remove(); } catch(_) {}
+          reject(new Error("JSONP_TIMEOUT"));
+        }, 15000);
+      });
     }
 
-    // --------------------------
-    // UI Auth + Pricing mode
-    // --------------------------
+    function buildUrl_(base, params){
+      const u = new URL(base);
+      Object.keys(params || {}).forEach(k => {
+        const v = params[k];
+        if (v === null || v === undefined || String(v).trim() === "") return;
+        u.searchParams.set(k, String(v));
+      });
+      return u.toString();
+    }
+
+    async function apiGetProducts_(token){
+      if (!VF_API_URL || VF_API_URL.includes("PASTE_YOUR_WEBAPP_EXEC_URL_HERE")) {
+        throw new Error("VF_API_URL_NOT_SET");
+      }
+      const url = buildUrl_(VF_API_URL, {
+        action: "get_products",
+        cat: "all",
+        token: token || ""
+      });
+      return await jsonp_(url);
+    }
+
+    // =========================================================
+    // State
+    // =========================================================
+    const state = {
+      products: [],
+      lastApi: null,          // dernière réponse get_products
+      loading: true,
+      error: ""
+    };
+
+    function normalizeProduct_(p){
+      // Réponse serveur (doGet get_products) -> item
+      return {
+        id: String(p.id || "").trim(),
+        name: String(p.nom || "").trim(),
+        desc: String(p.desc || "").trim(),
+        long_desc: String(p.long_desc || "").trim(),
+        cat: String(p.cat || "").trim(),
+        img: String(p.img || "").trim(),
+        pay_link: String(p.pay_link || "").trim(),
+        min: String(p.min ?? "").trim(),
+        max: String(p.max ?? "").trim(),
+
+        // Prix (serveur)
+        prix_affiche: Number(p.prix_affiche || p.prix || 0),
+        prix_client: Number(p.prix_client || 0),
+        reseller_prix: Number(p.reseller_prix || 0)
+      };
+    }
+
+    // =========================================================
+    // UI Auth + Status
+    // =========================================================
     function renderAuthUI_(){
       const session = getSession_();
-      const token = String(localStorage.getItem("vf_token") || "");
-      const reseller = isReseller_(session);
+      const token = getToken_();
 
       // Auth UI
       if (session) {
@@ -270,84 +364,88 @@
       // Status bar
       $("statusBar").classList.remove("hidden");
 
+      // Données serveur
+      const api = state.lastApi || {};
+      const tokenValid = !!api.token_valid;
+      const isReseller = !!api.is_reseller;
+
       if (!session) {
         $("statusTitle").textContent = "Mode invité";
         $("statusSubtitle").textContent = "Connecte-toi pour afficher les prix revendeur (si autorisé).";
         $("priceModeBadge").textContent = "PRIX PUBLIC";
         $("goLoginCta").classList.remove("hidden");
-      } else if (reseller) {
+      } else if (token && tokenValid && isReseller) {
         $("statusTitle").textContent = "Prix revendeur activés";
-        $("statusSubtitle").textContent = "Ton token est détecté. Les prix revendeur sont affichés.";
+        $("statusSubtitle").textContent = "Ton token est valide. Prix revendeur affichés.";
         $("priceModeBadge").textContent = "PRIX REVENDEUR";
         $("goLoginCta").classList.add("hidden");
+      } else if (token && !tokenValid) {
+        $("statusTitle").textContent = "Token expiré / invalide";
+        $("statusSubtitle").textContent = "Reconnecte-toi pour régénérer un token valide.";
+        $("priceModeBadge").textContent = "PRIX PUBLIC";
+        $("goLoginCta").classList.remove("hidden");
       } else {
         $("statusTitle").textContent = "Connecté (prix public)";
-        $("statusSubtitle").textContent = "Ton compte est connecté, mais aucun token revendeur n’est détecté.";
+        $("statusSubtitle").textContent = "Ton compte est connecté, mais pas en mode revendeur.";
         $("priceModeBadge").textContent = "PRIX PUBLIC";
         $("goLoginCta").classList.add("hidden");
       }
-
-      // Appliquer prix
-      applyPricing_(reseller);
     }
 
-    function applyPricing_(useReseller){
-      // Basculer chaque card
-      document.querySelectorAll("[data-product-card='1']").forEach(card => {
-        const pubEl = card.querySelector("[data-price-public='1']");
-        const resEl = card.querySelector("[data-price-reseller='1']");
-        if (!pubEl || !resEl) return;
-
-        if (useReseller) {
-          pubEl.classList.add("hidden");
-          resEl.classList.remove("hidden");
-        } else {
-          resEl.classList.add("hidden");
-          pubEl.classList.remove("hidden");
-        }
-      });
-    }
-
-    // --------------------------
+    // =========================================================
     // Render products
-    // --------------------------
+    // =========================================================
     function renderProducts_(list){
       const grid = $("productsGrid");
       grid.innerHTML = "";
 
+      if (!list || !list.length) {
+        grid.innerHTML = `
+          <div class="col-span-full bg-white rounded-[26px] border border-gray-100 shadow-sm p-6">
+            <div class="text-lg font-black text-gray-900">Aucun service trouvé</div>
+            <div class="mt-2 text-sm font-semibold text-gray-400">Essaie une autre recherche.</div>
+          </div>
+        `;
+        return;
+      }
+
+      const api = state.lastApi || {};
+      const isReseller = !!api.is_reseller;
+
       list.forEach(p => {
         const card = document.createElement("div");
         card.className = "bg-white rounded-[26px] border border-gray-100 shadow-sm p-5 card-hover cursor-pointer";
-        card.setAttribute("data-product-card", "1");
+
+        const showClientLine = isReseller && p.prix_client > 0 && p.prix_affiche > 0 && p.prix_affiche !== p.prix_client;
 
         card.innerHTML = `
           <div class="flex items-start justify-between gap-3">
-            <div>
-              <div class="text-[11px] font-black uppercase tracking-widest text-gray-400">${p.cat}</div>
-              <div class="mt-1 text-lg font-black tracking-tighter text-gray-900">${escapeHtml_(p.name)}</div>
-              <div class="mt-1 text-xs font-bold text-gray-400">${escapeHtml_(p.id)}</div>
+            <div class="min-w-0">
+              <div class="text-[11px] font-black uppercase tracking-widest text-gray-400">${escapeHtml_(p.cat || "—")}</div>
+              <div class="mt-1 text-lg font-black tracking-tighter text-gray-900 truncate">${escapeHtml_(p.name || "—")}</div>
+              <div class="mt-1 text-xs font-bold text-gray-400 truncate">${escapeHtml_(p.id || "—")}</div>
             </div>
-            <span class="badge-soft">FAST</span>
+            <span class="badge-soft">VF</span>
           </div>
 
-          <div class="mt-4 text-sm font-semibold text-gray-600 leading-relaxed line-clamp-3">
-            ${escapeHtml_(p.desc || "")}
+          <div class="mt-4 text-sm font-semibold text-gray-600 leading-relaxed clamp3">
+            ${escapeHtml_(p.desc || p.long_desc || "")}
           </div>
 
           <div class="mt-5 flex items-end justify-between gap-3 bg-gray-50 border border-gray-100 rounded-2xl p-4">
-            <div>
+            <div class="min-w-0">
               <div class="text-[11px] font-black uppercase tracking-widest text-gray-400">Prix</div>
 
-              <div class="mt-1 text-2xl font-black text-gray-900 price" data-price-public="1">
-                ${formatPrice_(p.public_price)} <span class="text-xs font-black text-gray-400">${escapeHtml_(p.unit || "")}</span>
+              <div class="mt-1 text-2xl font-black text-gray-900 price">
+                ${formatPrice_(p.prix_affiche)}
               </div>
 
-              <div class="mt-1 text-2xl font-black text-gray-900 price hidden" data-price-reseller="1">
-                ${formatPrice_(p.reseller_price)} <span class="text-xs font-black text-gray-400">${escapeHtml_(p.unit || "")}</span>
+              <div class="mt-1 text-[11px] font-black text-gray-400 ${showClientLine ? "" : "hidden"}">
+                Public: <span class="line-through">${formatPrice_(p.prix_client)}</span>
               </div>
             </div>
 
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 shrink-0">
               <span class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">VOIR</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M9 18l6-6-6-6"></path>
@@ -359,40 +457,34 @@
         card.addEventListener("click", () => openModal_(p));
         grid.appendChild(card);
       });
-
-      // Applique pricing après render
-      const session = getSession_();
-      applyPricing_(isReseller_(session));
     }
 
-    function escapeHtml_(str){
-      return String(str ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    // --------------------------
+    // =========================================================
     // Modal
-    // --------------------------
+    // =========================================================
     function openModal_(p){
-      const session = getSession_();
-      const useReseller = isReseller_(session);
-      const price = useReseller ? p.reseller_price : p.public_price;
+      const api = state.lastApi || {};
+      const isReseller = !!api.is_reseller;
 
-      $("modalTitle").textContent = p.name;
-      $("modalSubtitle").textContent = p.id + " • " + p.cat;
-      $("modalDesc").textContent = p.desc || "";
-      $("modalPrice").textContent = formatPrice_(price) + (p.unit ? (" " + p.unit) : "");
+      $("modalTitle").textContent = p.name || "—";
+      $("modalSubtitle").textContent = (p.id || "—") + (p.cat ? (" • " + p.cat) : "");
+      $("modalDesc").textContent = (p.long_desc || p.desc || "").trim() || "—";
+
+      $("modalPrice").textContent = formatPrice_(p.prix_affiche);
+
+      const showClientLine = isReseller && p.prix_client > 0 && p.prix_affiche > 0 && p.prix_affiche !== p.prix_client;
+      $("modalPublicLine").classList.toggle("hidden", !showClientLine);
+      $("modalPublicLine").textContent = showClientLine ? ("Prix public: " + formatPrice_(p.prix_client)) : "";
 
       $("modal").classList.remove("hidden");
       document.body.style.overflow = "hidden";
 
       $("buyBtn").onclick = () => {
-        // Démo : ici tu brancheras ton flow commande/paiement
-        alert("Commande (démo) : " + p.id + "\\nPrix: " + formatPrice_(price));
+        if (p.pay_link && /^https?:\/\//i.test(p.pay_link)) {
+          window.open(p.pay_link, "_blank", "noopener,noreferrer");
+          return;
+        }
+        alert("Lien de paiement non défini pour ce produit (colonne pay_link dans Produits).");
       };
     }
 
@@ -402,26 +494,31 @@
     }
 
     $("closeModal").addEventListener("click", closeModal_);
-    $("modal").addEventListener("click", (e) => {
-      if (e.target === $("modal")) closeModal_();
-    });
+    $("modal").addEventListener("click", (e) => { if (e.target === $("modal")) closeModal_(); });
 
-    // --------------------------
-    // Logout
-    // --------------------------
+    // =========================================================
+    // Logout / UI buttons
+    // =========================================================
     $("logoutBtn").addEventListener("click", () => {
       localStorage.removeItem("vf_session");
       localStorage.removeItem("vf_token");
       localStorage.setItem("vf_session_changed", String(Date.now()));
-      renderAuthUI_();
+      // refresh
+      boot_();
     });
 
-    // --------------------------
+    $("cartBtn").addEventListener("click", () => alert("Panier (démo)."));
+    $("accountBtn").addEventListener("click", () => {
+      const s = getSession_();
+      alert(s ? ("Compte: " + (s.email || "—")) : "Non connecté");
+    });
+
+    // =========================================================
     // Search
-    // --------------------------
+    // =========================================================
     $("searchInput").addEventListener("input", () => {
       const q = String($("searchInput").value || "").trim().toLowerCase();
-      const filtered = PRODUCTS.filter(p =>
+      const filtered = state.products.filter(p =>
         (p.name || "").toLowerCase().includes(q) ||
         (p.id || "").toLowerCase().includes(q) ||
         (p.cat || "").toLowerCase().includes(q)
@@ -429,27 +526,77 @@
       renderProducts_(filtered);
     });
 
-    // --------------------------
     // Sync onglets
-    // --------------------------
     window.addEventListener("storage", (e) => {
       if (e.key === "vf_session_changed" || e.key === "vf_session" || e.key === "vf_token") {
-        renderAuthUI_();
+        boot_();
       }
     });
 
-    // --------------------------
-    // Init
-    // --------------------------
-    renderProducts_(PRODUCTS);
-    renderAuthUI_();
+    // =========================================================
+    // Boot
+    // =========================================================
+    async function boot_(){
+      state.loading = true;
+      state.error = "";
 
-    // Bouton panier (démo)
-    $("cartBtn").addEventListener("click", () => alert("Panier (démo)."));
-    $("accountBtn").addEventListener("click", () => {
-      const s = getSession_();
-      alert(s ? ("Compte: " + (s.email || "—")) : "Non connecté");
-    });
+      // Affichage rapide
+      renderAuthUI_();
+      $("productsGrid").innerHTML = `
+        <div class="col-span-full bg-white rounded-[26px] border border-gray-100 shadow-sm p-6">
+          <div class="text-lg font-black text-gray-900">Chargement des services…</div>
+          <div class="mt-2 text-sm font-semibold text-gray-400">Connexion au serveur…</div>
+        </div>
+      `;
+
+      const token = getToken_();
+
+      try {
+        const res = await apiGetProducts_(token);
+        state.lastApi = res || null;
+
+        if (!res || !res.ok) {
+          const d = res ? (res.details || res.error || "Erreur inconnue") : "Réponse vide";
+          throw new Error("GET_PRODUCTS_FAIL: " + d);
+        }
+
+        const products = (res.products || []).map(normalizeProduct_).filter(x => x.id && x.name);
+        state.products = products;
+
+        // Render
+        renderProducts_(state.products);
+        renderAuthUI_();
+
+      } catch (err) {
+        state.error = String(err && err.message ? err.message : err);
+
+        $("productsGrid").innerHTML = `
+          <div class="col-span-full bg-white rounded-[26px] border border-red-100 shadow-sm p-6">
+            <div class="text-lg font-black text-gray-900">Impossible de charger les services</div>
+            <div class="mt-2 text-sm font-semibold text-gray-400 break-words">
+              ${escapeHtml_(state.error)}
+            </div>
+            <div class="mt-4 text-xs font-bold text-gray-400">
+              Vérifie VF_API_URL (WebApp) et que l’action get_products fonctionne.
+            </div>
+          </div>
+        `;
+
+        // Status bar
+        $("statusBar").classList.remove("hidden");
+        $("statusTitle").textContent = "Serveur non joignable";
+        $("statusSubtitle").textContent = "Erreur de chargement des produits.";
+        $("priceModeBadge").textContent = "PRIX PUBLIC";
+        $("goLoginCta").classList.add("hidden");
+
+        renderAuthUI_();
+      } finally {
+        state.loading = false;
+      }
+    }
+
+    // INIT
+    boot_();
   </script>
 
 </body>
