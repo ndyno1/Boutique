@@ -1,4 +1,4 @@
-<script>
+
 /** ===========================
  *  VF API CLIENT (NO CORS) — UPDATED (KEEP LOGIC)
  *  - GET  => JSONP (script tag)
@@ -259,4 +259,4 @@
   };
 
 })();
-</script>
+
