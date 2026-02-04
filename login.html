@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>ViralFlowr | Boutique</title>
+  <title>ViralFlowr | Connexion</title>
 
   <meta name="theme-color" content="#111827" />
   <link rel="icon" href="favicon.png" />
@@ -32,7 +32,7 @@
     }
     .icon-btn:hover{ border-color:#F07E13; color:#F07E13; transform:translateY(-1px); }
     .btn-auth{
-      padding: 9px 14px; border-radius: 14px; font-weight: 900; font-size: 11px;
+      padding: 10px 14px; border-radius: 14px; font-weight: 900; font-size: 11px;
       text-transform: uppercase; letter-spacing: .12em; transition: .25s;
       display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
       -webkit-tap-highlight-color: transparent;
@@ -49,30 +49,35 @@
       background:#fff;
       color:#111827;
     }
-    .price{ font-weight:900; letter-spacing:-.02em; }
-    .card-hover{ transition: .2s; }
-    .card-hover:hover{
-      transform: translateY(-2px);
-      box-shadow: 0 12px 30px rgba(17,24,39,.08);
-      border-color:#F07E13;
+    .field{
+      height: 48px;
+      border-radius: 18px;
+      border: 1px solid #E5E7EB;
+      background: #fff;
+      padding: 0 14px;
+      font-weight: 700;
+      outline: none;
+      width: 100%;
+      transition: .2s;
     }
-    .clamp3{
-      display:-webkit-box;
-      -webkit-line-clamp:3;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
+    .field:focus{
+      border-color:#F07E13;
+      box-shadow: 0 0 0 3px rgba(240,126,19,.15);
     }
   </style>
+
+  <!-- (Optionnel) Ton fichier API global : /vf_api.js -->
+  <script src="/vf_api.js"></script>
 </head>
 
 <body>
 
   <div class="bg-gray-900 text-white py-2 text-[10px] font-black uppercase tracking-[0.2em] text-center">
-    BOUTIQUE • SERVICES & ABONNEMENTS
+    CONNEXION • COMPTE CLIENT
   </div>
 
   <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-100 shadow-sm">
-    <div class="max-w-[1280px] mx-auto px-4 h-16 flex items-center justify-between gap-2 sm:gap-4">
+    <div class="max-w-[1080px] mx-auto px-4 h-16 flex items-center justify-between gap-2 sm:gap-4">
       <a href="index.html" class="flex items-center gap-2 shrink-0" aria-label="ViralFlowr">
         <div class="text-2xl font-black tracking-tighter text-gray-900">
           Viral<span class="text-[#F07E13]">Flowr</span>
@@ -80,162 +85,85 @@
       </a>
 
       <div class="flex items-center gap-2 sm:gap-3">
-        <!-- Etat connexion -->
-        <div id="authGuest" class="flex items-center gap-2 sm:gap-3">
-          <a href="login.html?next=index.html" class="btn-auth btn-auth-outline">Connexion</a>
-          <a href="register.html?next=index.html" class="btn-auth brand-gradient btn-auth-solid">Inscription</a>
-        </div>
-
-        <div id="authUser" class="hidden items-center gap-2 sm:gap-3">
-          <button id="accountBtn" class="btn-auth btn-auth-outline" type="button" title="Compte">
-            <span class="hidden sm:inline">Compte</span>
-            <span id="userTag" class="text-gray-400 font-black tracking-widest text-[10px] hidden md:inline">—</span>
-          </button>
-          <button id="logoutBtn" class="btn-auth btn-auth-outline" type="button" title="Déconnexion">
-            Déconnexion
-          </button>
-        </div>
-
-        <button id="cartBtn" class="icon-btn" title="Panier (démo)" aria-label="Panier">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="9" cy="21" r="1"></circle>
-            <circle cx="20" cy="21" r="1"></circle>
-            <path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"></path>
-          </svg>
-        </button>
+        <a href="register.html" class="btn-auth btn-auth-outline">Inscription</a>
+        <a id="backBtn" href="index.html" class="icon-btn" title="Retour">
+          ←
+        </a>
       </div>
     </div>
   </header>
 
-  <main class="max-w-[1280px] mx-auto px-4 py-8">
-    <!-- Bandeau statut -->
-    <div id="statusBar" class="hidden mb-6 rounded-[22px] border border-gray-100 bg-white p-4 md:p-5 shadow-sm">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div class="flex items-start gap-3">
-          <div class="w-10 h-10 rounded-2xl brand-gradient flex items-center justify-center text-white font-black">VF</div>
-          <div>
-            <div class="text-sm font-black text-gray-900" id="statusTitle">Statut</div>
-            <div class="text-xs font-bold text-gray-400" id="statusSubtitle">—</div>
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <span id="priceModeBadge" class="badge-soft">PRIX PUBLIC</span>
-          <a id="goLoginCta" href="login.html?next=index.html" class="btn-auth brand-gradient btn-auth-solid hidden">
-            Activer prix revendeur
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Hero -->
+  <main class="max-w-[1080px] mx-auto px-4 py-8">
     <section class="bg-white rounded-[28px] border border-gray-100 shadow-sm p-6 md:p-10">
-      <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-        <div>
+      <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+        <div class="max-w-[520px]">
           <h1 class="text-3xl md:text-4xl font-black tracking-tighter text-gray-900">
-            Boutique <span class="text-[#F07E13]">ViralFlowr</span>
+            Connexion <span class="text-[#F07E13]">ViralFlowr</span>
           </h1>
-          <p class="text-sm md:text-base font-semibold text-gray-400 mt-3 max-w-[720px] leading-relaxed">
-            Achète tes services en quelques clics. Si tu es revendeur, connecte-toi pour afficher les <span class="text-gray-900">prix revendeur</span>.
+          <p class="text-sm md:text-base font-semibold text-gray-400 mt-3 leading-relaxed">
+            Connecte-toi pour accéder à ton compte et à ton portefeuille.
           </p>
 
           <div class="mt-5 flex flex-wrap items-center gap-2">
-            <span class="badge-soft">PAYMENTS</span>
-            <span class="badge-soft">AUTO-DELIVERY</span>
-            <span class="badge-soft">SUPPORT</span>
+            <span class="badge-soft">LOGIN</span>
+            <span class="badge-soft">WALLET</span>
+            <span class="badge-soft">ORDERS</span>
+          </div>
+
+          <div id="alertBox" class="hidden mt-6 rounded-[18px] border p-4 text-sm font-bold"></div>
+        </div>
+
+        <div class="w-full max-w-[440px] bg-gray-50 border border-gray-100 rounded-[24px] p-5 md:p-6">
+          <div class="text-[11px] font-black uppercase tracking-widest text-gray-400">Connexion</div>
+
+          <form id="loginForm" class="mt-4 space-y-3">
+            <div>
+              <label class="text-xs font-black text-gray-500 uppercase tracking-widest">Email</label>
+              <input id="email" type="email" class="field mt-2" placeholder="ex: client@email.com" autocomplete="email" required />
+            </div>
+
+            <div>
+              <label class="text-xs font-black text-gray-500 uppercase tracking-widest">Mot de passe</label>
+              <input id="password" type="password" class="field mt-2" placeholder="••••••••" autocomplete="current-password" required />
+            </div>
+
+            <button id="submitBtn" type="submit"
+              class="w-full h-12 rounded-[18px] brand-gradient text-white font-black uppercase tracking-widest text-[12px] shadow-md hover:opacity-95 transition disabled:opacity-60 disabled:cursor-not-allowed">
+              Se connecter
+            </button>
+
+            <div class="text-[12px] font-bold text-gray-400">
+              Pas encore de compte ?
+              <a id="registerLink" href="register.html" class="text-gray-900 font-black hover:text-[#F07E13]">Créer un compte</a>
+            </div>
+          </form>
+
+          <div class="mt-5 text-[11px] font-bold text-gray-400">
+            Conseil: utilise la même adresse email que dans la feuille <b>USERS</b>.
           </div>
         </div>
-
-        <div class="bg-gray-50 border border-gray-100 rounded-[24px] p-4 md:p-5 min-w-[280px]">
-          <div class="text-[11px] font-black uppercase tracking-widest text-gray-400">Session</div>
-          <div class="mt-2 text-sm font-black text-gray-900" id="sessionLine">Chargement…</div>
-          <div class="mt-1 text-xs font-bold text-gray-400" id="tokenLine">Token: —</div>
-        </div>
       </div>
-    </section>
-
-    <!-- Produits -->
-    <section class="mt-8">
-      <div class="flex items-end justify-between gap-4">
-        <h2 class="text-xl md:text-2xl font-black tracking-tighter text-gray-900">Services</h2>
-
-        <div class="flex items-center gap-2">
-          <input id="searchInput" type="text"
-            class="h-11 w-[220px] md:w-[320px] px-4 rounded-2xl bg-white border border-gray-100 shadow-sm text-sm font-semibold outline-none focus:ring-2 focus:ring-[#F07E13]"
-            placeholder="Rechercher un service..." />
-        </div>
-      </div>
-
-      <div id="productsGrid" class="mt-5 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
     </section>
   </main>
 
-  <!-- Modal -->
-  <div id="modal" class="hidden fixed inset-0 z-[999] bg-black/40 p-4">
-    <div class="max-w-[560px] mx-auto mt-10 bg-white rounded-[26px] border border-gray-100 shadow-xl overflow-hidden">
-      <div class="p-5 border-b border-gray-100 flex items-center justify-between">
-        <div>
-          <div class="text-lg font-black tracking-tighter text-gray-900" id="modalTitle">—</div>
-          <div class="text-xs font-bold text-gray-400" id="modalSubtitle">—</div>
-        </div>
-        <button id="closeModal" class="icon-btn" aria-label="Fermer">✕</button>
-      </div>
-
-      <div class="p-5">
-        <div class="text-sm font-semibold text-gray-600 leading-relaxed" id="modalDesc">—</div>
-
-        <div class="mt-5 flex items-center justify-between gap-3 bg-gray-50 border border-gray-100 rounded-2xl p-4">
-          <div>
-            <div class="text-[11px] font-black uppercase tracking-widest text-gray-400">Prix</div>
-            <div class="mt-1 text-2xl font-black text-gray-900 price" id="modalPrice">—</div>
-            <div class="mt-1 text-[11px] font-black text-gray-400 hidden" id="modalPublicLine">—</div>
-          </div>
-
-          <button id="buyBtn"
-            class="h-11 px-5 rounded-2xl brand-gradient text-white font-black uppercase tracking-widest text-[12px] shadow-md hover:opacity-95 transition">
-            Commander
-          </button>
-        </div>
-
-        <div class="mt-4 text-[11px] font-bold text-gray-400" id="modalHint">
-          Le bouton “Commander” ouvre le lien de paiement du produit (si défini dans Produits).
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ✅ Ton fichier API à la racine -->
-  <script src="/vf_api.js?v=18.4"></script>
+  <!-- iframe caché pour transport login/register -->
+  <iframe id="vfTransportFrame" name="vf_transport_iframe" style="display:none; width:0; height:0; border:0;"></iframe>
 
   <script>
-    // =========================================================
+    // =========================
     // CONFIG
-    // =========================================================
-    // Option A (recommandé) : dans /vf_api.js tu mets :
-    // window.VF_API_URL = "https://script.google.com/macros/s/XXXX/exec";
-    //
-    // Option B : sinon colle ton URL ici :
-    const VF_API_URL = (window.VF_API_URL || "").trim() || "PASTE_YOUR_WEBAPP_EXEC_URL_HERE";
+    // =========================
+    // Si vf_api.js définit déjà VF_WEBAPP_URL, on le garde.
+    // Sinon, mets ici ton URL WebApp Apps Script (/exec).
+    const VF_WEBAPP_URL = window.VF_WEBAPP_URL || "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
 
-    // =========================================================
+    // =========================
     // Helpers
-    // =========================================================
+    // =========================
     const $ = (id) => document.getElementById(id);
 
-    function safeJsonParse_(s){ try { return JSON.parse(s); } catch(_) { return null; } }
-
-    function escapeHtml_(str){
-      return String(str ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    function formatPrice_(n){
-      const v = Number(n || 0);
-      if (!isFinite(v) || v <= 0) return "Sur devis";
-      return (v % 1 === 0 ? v.toFixed(0) : v.toFixed(2)) + " $";
+    function safeJsonParse_(s){
+      try { return JSON.parse(s); } catch(_) { return null; }
     }
 
     function getSession_(){
@@ -245,358 +173,268 @@
       return obj;
     }
 
-    function getToken_(){
-      return String(localStorage.getItem("vf_token") || "").trim();
+    function setAlert_(type, msg){
+      const box = $("alertBox");
+      if (!msg) { box.classList.add("hidden"); box.textContent = ""; return; }
+      box.classList.remove("hidden");
+
+      // styles
+      box.className = "mt-6 rounded-[18px] border p-4 text-sm font-bold";
+      if (type === "success") {
+        box.classList.add("bg-emerald-50","border-emerald-200","text-emerald-900");
+      } else if (type === "warn") {
+        box.classList.add("bg-amber-50","border-amber-200","text-amber-900");
+      } else {
+        box.classList.add("bg-rose-50","border-rose-200","text-rose-900");
+      }
+      box.textContent = msg;
     }
 
-    // =========================================================
-    // JSONP (pour éviter CORS) -> compatible doGet() Apps Script
-    // =========================================================
-    function jsonp_(url){
+    function setLoading_(isLoading){
+      $("submitBtn").disabled = !!isLoading;
+      $("submitBtn").textContent = isLoading ? "Connexion..." : "Se connecter";
+    }
+
+    function getNext_(){
+      const u = new URL(window.location.href);
+      const next = String(u.searchParams.get("next") || "index.html").trim();
+
+      // Anti open-redirect : on accepte seulement un chemin local .html
+      const bad = next.includes("://") || next.startsWith("//") || next.startsWith("javascript:");
+      if (bad) return "index.html";
+      if (!next.endsWith(".html")) return "index.html";
+      return next;
+    }
+
+    function syncLinks_(){
+      const next = getNext_();
+      $("backBtn").href = next;
+      $("registerLink").href = "register.html?next=" + encodeURIComponent(next);
+    }
+
+    // =========================
+    // TRANSPORT IFRAME (Apps Script doPost + postMessage)
+    // =========================
+    function isAllowedSenderOrigin_(origin){
+      // L'iframe Apps Script répond depuis un domaine googleusercontent.com (souvent un sous-domaine long)
+      try {
+        const host = new URL(origin).hostname;
+        return host.endsWith("googleusercontent.com") || host.endsWith("google.com");
+      } catch(_) {
+        return false;
+      }
+    }
+
+    function postIframe_(payload, timeoutMs = 20000){
       return new Promise((resolve, reject) => {
-        const cb = "vfcb_" + Math.random().toString(36).slice(2) + "_" + Date.now();
-        const s = document.createElement("script");
+        const requestId = payload.request_id || ("req_" + Date.now() + "_" + Math.random().toString(16).slice(2));
+        payload.request_id = requestId;
+
+        let done = false;
+        const timer = setTimeout(() => {
+          if (done) return;
+          done = true;
+          window.removeEventListener("message", onMsg);
+          reject(new Error("TIMEOUT"));
+        }, timeoutMs);
+
+        function finish_(obj){
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          window.removeEventListener("message", onMsg);
+          resolve(obj);
+        }
+
+        function onMsg(ev){
+          if (!isAllowedSenderOrigin_(ev.origin)) return;
+
+          let data = ev.data;
+          if (typeof data === "string") data = safeJsonParse_(data) || data;
+
+          if (!data || typeof data !== "object") return;
+          if (String(data.request_id || "") !== String(requestId)) return;
+
+          finish_(data);
+        }
+
+        window.addEventListener("message", onMsg);
+
+        // construire un form invisible -> iframe
+        const f = document.createElement("form");
+        f.method = "POST";
+        f.action = VF_WEBAPP_URL;
+        f.target = "vf_transport_iframe";
+        f.style.display = "none";
+
+        // Important pour ton script: transport=iframe + origin
+        const merged = Object.assign({}, payload, {
+          transport: "iframe",
+          origin: window.location.origin,
+          request_id: requestId
+        });
+
+        Object.keys(merged).forEach(k => {
+          const inp = document.createElement("input");
+          inp.type = "hidden";
+          inp.name = k;
+          inp.value = String(merged[k] ?? "");
+          f.appendChild(inp);
+        });
+
+        document.body.appendChild(f);
+        try { f.submit(); } catch(e) {}
+        try { f.remove(); } catch(e) {}
+      });
+    }
+
+    // =========================
+    // JSONP (doGet get_products) -> pour savoir si revendeur
+    // =========================
+    function jsonpGet_(url, timeoutMs = 15000){
+      return new Promise((resolve, reject) => {
+        const cb = "vf_cb_" + Date.now() + "_" + Math.random().toString(16).slice(2);
         let done = false;
 
-        window[cb] = (data) => {
+        const timer = setTimeout(() => {
+          if (done) return;
           done = true;
-          try { resolve(data); } finally {
-            try { delete window[cb]; } catch(_) {}
-            try { s.remove(); } catch(_) {}
-          }
+          try { delete window[cb]; } catch(_) {}
+          reject(new Error("JSONP_TIMEOUT"));
+        }, timeoutMs);
+
+        window[cb] = (data) => {
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          try { delete window[cb]; } catch(_) {}
+          resolve(data);
         };
 
+        const s = document.createElement("script");
         s.src = url + (url.includes("?") ? "&" : "?") + "callback=" + encodeURIComponent(cb);
-        s.async = true;
         s.onerror = () => {
           if (done) return;
+          done = true;
+          clearTimeout(timer);
           try { delete window[cb]; } catch(_) {}
-          try { s.remove(); } catch(_) {}
-          reject(new Error("JSONP_LOAD_FAIL"));
+          reject(new Error("JSONP_ERROR"));
         };
-
         document.head.appendChild(s);
-
-        setTimeout(() => {
-          if (done) return;
-          try { delete window[cb]; } catch(_) {}
-          try { s.remove(); } catch(_) {}
-          reject(new Error("JSONP_TIMEOUT"));
-        }, 15000);
       });
     }
 
-    function buildUrl_(base, params){
-      const u = new URL(base);
-      Object.keys(params || {}).forEach(k => {
-        const v = params[k];
-        if (v === null || v === undefined || String(v).trim() === "") return;
-        u.searchParams.set(k, String(v));
-      });
-      return u.toString();
-    }
+    async function checkReseller_(token){
+      // get_products renvoie ok/token_valid/is_reseller/products
+      const url =
+        VF_WEBAPP_URL +
+        "?action=get_products" +
+        "&cat=all" +
+        "&token=" + encodeURIComponent(String(token || "").trim());
 
-    async function apiGetProducts_(token){
-      if (!VF_API_URL || VF_API_URL.includes("PASTE_YOUR_WEBAPP_EXEC_URL_HERE")) {
-        throw new Error("VF_API_URL_NOT_SET");
-      }
-      const url = buildUrl_(VF_API_URL, {
-        action: "get_products",
-        cat: "all",
-        token: token || ""
-      });
-      return await jsonp_(url);
-    }
-
-    // =========================================================
-    // State
-    // =========================================================
-    const state = {
-      products: [],
-      lastApi: null,          // dernière réponse get_products
-      loading: true,
-      error: ""
-    };
-
-    function normalizeProduct_(p){
-      // Réponse serveur (doGet get_products) -> item
+      const out = await jsonpGet_(url);
       return {
-        id: String(p.id || "").trim(),
-        name: String(p.nom || "").trim(),
-        desc: String(p.desc || "").trim(),
-        long_desc: String(p.long_desc || "").trim(),
-        cat: String(p.cat || "").trim(),
-        img: String(p.img || "").trim(),
-        pay_link: String(p.pay_link || "").trim(),
-        min: String(p.min ?? "").trim(),
-        max: String(p.max ?? "").trim(),
-
-        // Prix (serveur)
-        prix_affiche: Number(p.prix_affiche || p.prix || 0),
-        prix_client: Number(p.prix_client || 0),
-        reseller_prix: Number(p.reseller_prix || 0)
+        token_valid: !!(out && out.token_valid),
+        is_reseller: !!(out && out.is_reseller),
+        reseller_email_used: String(out && out.reseller_email_used || "")
       };
     }
 
-    // =========================================================
-    // UI Auth + Status
-    // =========================================================
-    function renderAuthUI_(){
-      const session = getSession_();
-      const token = getToken_();
+    // =========================
+    // Submit login
+    // =========================
+    $("loginForm").addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      setAlert_("", "");
+      setLoading_(true);
 
-      // Auth UI
-      if (session) {
-        $("authGuest").classList.add("hidden");
-        $("authUser").classList.remove("hidden");
-        $("authUser").classList.add("flex");
-        $("userTag").textContent = (session.username || session.email || "Utilisateur");
-      } else {
-        $("authUser").classList.add("hidden");
-        $("authUser").classList.remove("flex");
-        $("authGuest").classList.remove("hidden");
+      const email = String($("email").value || "").trim().toLowerCase();
+      const password = String($("password").value || "");
+
+      if (!email || email.indexOf("@") < 1) {
+        setLoading_(false);
+        setAlert_("error", "Email invalide.");
+        return;
       }
-
-      // Session box
-      $("sessionLine").textContent = session ? ("Connecté : " + (session.email || "—")) : "Non connecté";
-      $("tokenLine").textContent = "Token: " + (token ? (token.slice(0, 6) + "…" + token.slice(-4)) : "—");
-
-      // Status bar
-      $("statusBar").classList.remove("hidden");
-
-      // Données serveur
-      const api = state.lastApi || {};
-      const tokenValid = !!api.token_valid;
-      const isReseller = !!api.is_reseller;
-
-      if (!session) {
-        $("statusTitle").textContent = "Mode invité";
-        $("statusSubtitle").textContent = "Connecte-toi pour afficher les prix revendeur (si autorisé).";
-        $("priceModeBadge").textContent = "PRIX PUBLIC";
-        $("goLoginCta").classList.remove("hidden");
-      } else if (token && tokenValid && isReseller) {
-        $("statusTitle").textContent = "Prix revendeur activés";
-        $("statusSubtitle").textContent = "Ton token est valide. Prix revendeur affichés.";
-        $("priceModeBadge").textContent = "PRIX REVENDEUR";
-        $("goLoginCta").classList.add("hidden");
-      } else if (token && !tokenValid) {
-        $("statusTitle").textContent = "Token expiré / invalide";
-        $("statusSubtitle").textContent = "Reconnecte-toi pour régénérer un token valide.";
-        $("priceModeBadge").textContent = "PRIX PUBLIC";
-        $("goLoginCta").classList.remove("hidden");
-      } else {
-        $("statusTitle").textContent = "Connecté (prix public)";
-        $("statusSubtitle").textContent = "Ton compte est connecté, mais pas en mode revendeur.";
-        $("priceModeBadge").textContent = "PRIX PUBLIC";
-        $("goLoginCta").classList.add("hidden");
-      }
-    }
-
-    // =========================================================
-    // Render products
-    // =========================================================
-    function renderProducts_(list){
-      const grid = $("productsGrid");
-      grid.innerHTML = "";
-
-      if (!list || !list.length) {
-        grid.innerHTML = `
-          <div class="col-span-full bg-white rounded-[26px] border border-gray-100 shadow-sm p-6">
-            <div class="text-lg font-black text-gray-900">Aucun service trouvé</div>
-            <div class="mt-2 text-sm font-semibold text-gray-400">Essaie une autre recherche.</div>
-          </div>
-        `;
+      if (!password || password.length < 6) {
+        setLoading_(false);
+        setAlert_("error", "Mot de passe trop court.");
         return;
       }
 
-      const api = state.lastApi || {};
-      const isReseller = !!api.is_reseller;
-
-      list.forEach(p => {
-        const card = document.createElement("div");
-        card.className = "bg-white rounded-[26px] border border-gray-100 shadow-sm p-5 card-hover cursor-pointer";
-
-        const showClientLine = isReseller && p.prix_client > 0 && p.prix_affiche > 0 && p.prix_affiche !== p.prix_client;
-
-        card.innerHTML = `
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <div class="text-[11px] font-black uppercase tracking-widest text-gray-400">${escapeHtml_(p.cat || "—")}</div>
-              <div class="mt-1 text-lg font-black tracking-tighter text-gray-900 truncate">${escapeHtml_(p.name || "—")}</div>
-              <div class="mt-1 text-xs font-bold text-gray-400 truncate">${escapeHtml_(p.id || "—")}</div>
-            </div>
-            <span class="badge-soft">VF</span>
-          </div>
-
-          <div class="mt-4 text-sm font-semibold text-gray-600 leading-relaxed clamp3">
-            ${escapeHtml_(p.desc || p.long_desc || "")}
-          </div>
-
-          <div class="mt-5 flex items-end justify-between gap-3 bg-gray-50 border border-gray-100 rounded-2xl p-4">
-            <div class="min-w-0">
-              <div class="text-[11px] font-black uppercase tracking-widest text-gray-400">Prix</div>
-
-              <div class="mt-1 text-2xl font-black text-gray-900 price">
-                ${formatPrice_(p.prix_affiche)}
-              </div>
-
-              <div class="mt-1 text-[11px] font-black text-gray-400 ${showClientLine ? "" : "hidden"}">
-                Public: <span class="line-through">${formatPrice_(p.prix_client)}</span>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-2 shrink-0">
-              <span class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">VOIR</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 18l6-6-6-6"></path>
-              </svg>
-            </div>
-          </div>
-        `;
-
-        card.addEventListener("click", () => openModal_(p));
-        grid.appendChild(card);
-      });
-    }
-
-    // =========================================================
-    // Modal
-    // =========================================================
-    function openModal_(p){
-      const api = state.lastApi || {};
-      const isReseller = !!api.is_reseller;
-
-      $("modalTitle").textContent = p.name || "—";
-      $("modalSubtitle").textContent = (p.id || "—") + (p.cat ? (" • " + p.cat) : "");
-      $("modalDesc").textContent = (p.long_desc || p.desc || "").trim() || "—";
-
-      $("modalPrice").textContent = formatPrice_(p.prix_affiche);
-
-      const showClientLine = isReseller && p.prix_client > 0 && p.prix_affiche > 0 && p.prix_affiche !== p.prix_client;
-      $("modalPublicLine").classList.toggle("hidden", !showClientLine);
-      $("modalPublicLine").textContent = showClientLine ? ("Prix public: " + formatPrice_(p.prix_client)) : "";
-
-      $("modal").classList.remove("hidden");
-      document.body.style.overflow = "hidden";
-
-      $("buyBtn").onclick = () => {
-        if (p.pay_link && /^https?:\/\//i.test(p.pay_link)) {
-          window.open(p.pay_link, "_blank", "noopener,noreferrer");
-          return;
-        }
-        alert("Lien de paiement non défini pour ce produit (colonne pay_link dans Produits).");
-      };
-    }
-
-    function closeModal_(){
-      $("modal").classList.add("hidden");
-      document.body.style.overflow = "";
-    }
-
-    $("closeModal").addEventListener("click", closeModal_);
-    $("modal").addEventListener("click", (e) => { if (e.target === $("modal")) closeModal_(); });
-
-    // =========================================================
-    // Logout / UI buttons
-    // =========================================================
-    $("logoutBtn").addEventListener("click", () => {
-      localStorage.removeItem("vf_session");
-      localStorage.removeItem("vf_token");
-      localStorage.setItem("vf_session_changed", String(Date.now()));
-      // refresh
-      boot_();
-    });
-
-    $("cartBtn").addEventListener("click", () => alert("Panier (démo)."));
-    $("accountBtn").addEventListener("click", () => {
-      const s = getSession_();
-      alert(s ? ("Compte: " + (s.email || "—")) : "Non connecté");
-    });
-
-    // =========================================================
-    // Search
-    // =========================================================
-    $("searchInput").addEventListener("input", () => {
-      const q = String($("searchInput").value || "").trim().toLowerCase();
-      const filtered = state.products.filter(p =>
-        (p.name || "").toLowerCase().includes(q) ||
-        (p.id || "").toLowerCase().includes(q) ||
-        (p.cat || "").toLowerCase().includes(q)
-      );
-      renderProducts_(filtered);
-    });
-
-    // Sync onglets
-    window.addEventListener("storage", (e) => {
-      if (e.key === "vf_session_changed" || e.key === "vf_session" || e.key === "vf_token") {
-        boot_();
-      }
-    });
-
-    // =========================================================
-    // Boot
-    // =========================================================
-    async function boot_(){
-      state.loading = true;
-      state.error = "";
-
-      // Affichage rapide
-      renderAuthUI_();
-      $("productsGrid").innerHTML = `
-        <div class="col-span-full bg-white rounded-[26px] border border-gray-100 shadow-sm p-6">
-          <div class="text-lg font-black text-gray-900">Chargement des services…</div>
-          <div class="mt-2 text-sm font-semibold text-gray-400">Connexion au serveur…</div>
-        </div>
-      `;
-
-      const token = getToken_();
-
       try {
-        const res = await apiGetProducts_(token);
-        state.lastApi = res || null;
+        const res = await postIframe_({
+          action: "login",
+          email,
+          password
+        });
 
         if (!res || !res.ok) {
-          const d = res ? (res.details || res.error || "Erreur inconnue") : "Réponse vide";
-          throw new Error("GET_PRODUCTS_FAIL: " + d);
+          const msg = (res && res.message) ? String(res.message) : "Connexion échouée.";
+          setAlert_("error", msg);
+          setLoading_(false);
+          return;
         }
 
-        const products = (res.products || []).map(normalizeProduct_).filter(x => x.id && x.name);
-        state.products = products;
+        const token = String(res.token || "").trim();
+        const username = String(res.user && res.user.username || "").trim();
+        const emailBack = String(res.user && res.user.email || email).trim().toLowerCase();
 
-        // Render
-        renderProducts_(state.products);
-        renderAuthUI_();
+        // Enregistrer session
+        const session = {
+          email: emailBack,
+          username,
+          token,
+          is_reseller: false,
+          token_valid: true,
+          created_at: Date.now()
+        };
+
+        // Vérifier revendeur via doGet (jsonp) -> évite “token => revendeur”
+        try {
+          if (token) {
+            const st = await checkReseller_(token);
+            session.is_reseller = !!st.is_reseller;
+            session.token_valid = !!st.token_valid;
+
+            // vf_token UNIQUEMENT SI revendeur
+            if (session.is_reseller) localStorage.setItem("vf_token", token);
+            else localStorage.removeItem("vf_token");
+          } else {
+            localStorage.removeItem("vf_token");
+          }
+        } catch(_) {
+          // si check échoue, on reste en prix public (sécurisé)
+          localStorage.removeItem("vf_token");
+        }
+
+        localStorage.setItem("vf_session", JSON.stringify(session));
+        localStorage.setItem("vf_session_changed", String(Date.now()));
+
+        setAlert_("success", "Connexion réussie ✅ Redirection...");
+        const next = getNext_();
+        setTimeout(() => { window.location.href = next; }, 350);
 
       } catch (err) {
-        state.error = String(err && err.message ? err.message : err);
-
-        $("productsGrid").innerHTML = `
-          <div class="col-span-full bg-white rounded-[26px] border border-red-100 shadow-sm p-6">
-            <div class="text-lg font-black text-gray-900">Impossible de charger les services</div>
-            <div class="mt-2 text-sm font-semibold text-gray-400 break-words">
-              ${escapeHtml_(state.error)}
-            </div>
-            <div class="mt-4 text-xs font-bold text-gray-400">
-              Vérifie VF_API_URL (WebApp) et que l’action get_products fonctionne.
-            </div>
-          </div>
-        `;
-
-        // Status bar
-        $("statusBar").classList.remove("hidden");
-        $("statusTitle").textContent = "Serveur non joignable";
-        $("statusSubtitle").textContent = "Erreur de chargement des produits.";
-        $("priceModeBadge").textContent = "PRIX PUBLIC";
-        $("goLoginCta").classList.add("hidden");
-
-        renderAuthUI_();
-      } finally {
-        state.loading = false;
+        setAlert_("error", "Erreur connexion (transport). Vérifie l’URL WebApp et le déploiement.");
+        setLoading_(false);
       }
-    }
+    });
 
-    // INIT
-    boot_();
+    // =========================
+    // Init
+    // =========================
+    syncLinks_();
+
+    // Si déjà connecté -> redirection directe
+    (function(){
+      const s = getSession_();
+      if (s && s.token) {
+        const next = getNext_();
+        // option: si tu veux forcer rester sur login, commente la ligne suivante
+        window.location.href = next;
+      }
+    })();
   </script>
 
 </body>
