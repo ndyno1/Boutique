@@ -4,6 +4,7 @@
  *  - POST => hidden iframe form + postMessage
  *  - Robust: body-ready, per-request iframe, timeouts
  *  - FIX: DO NOT check event.source === iframe.contentWindow (Apps Script wrapper breaks it)
+ *  - ADD: shared cookie token for www/non-www + vfStorage helpers
  * =========================== */
 
 (function initVfBridge(){
@@ -69,6 +70,79 @@
     document.addEventListener("DOMContentLoaded", fn, { once:true });
   }
 
+  // --------------------------
+  // Storage helpers (cookie partagé www/non-www)
+  // --------------------------
+  const isViralflowrDomain_ = () => {
+    const h = String(location.hostname || "").toLowerCase();
+    return h === "viralflowr.com" || h.endsWith(".viralflowr.com");
+  };
+
+  const COOKIE_DOMAIN = String(CFG.cookieDomain || ".viralflowr.com");
+  const COOKIE_TOKEN_KEY = String(CFG.cookieTokenKey || "vf_token");
+
+  function setCookie_(name, value, days){
+    try{
+      const maxAge = (typeof days === "number") ? (days * 86400) : (7 * 86400);
+      const secure = (location.protocol === "https:") ? "; Secure" : "";
+      const domain = isViralflowrDomain_() ? ("; Domain=" + COOKIE_DOMAIN) : "";
+      document.cookie =
+        encodeURIComponent(name) + "=" + encodeURIComponent(String(value || "")) +
+        "; Path=/" + domain + "; Max-Age=" + String(maxAge) + "; SameSite=Lax" + secure;
+    }catch(_){}
+  }
+
+  function getCookie_(name){
+    try{
+      const n = encodeURIComponent(name) + "=";
+      const parts = String(document.cookie || "").split(";").map(s => s.trim());
+      for (const p of parts){
+        if (p.startsWith(n)) return decodeURIComponent(p.slice(n.length));
+      }
+    }catch(_){}
+    return "";
+  }
+
+  function delCookie_(name){
+    try{
+      const secure = (location.protocol === "https:") ? "; Secure" : "";
+      const domain = isViralflowrDomain_() ? ("; Domain=" + COOKIE_DOMAIN) : "";
+      document.cookie =
+        encodeURIComponent(name) + "=; Path=/" + domain + "; Max-Age=0; SameSite=Lax" + secure;
+    }catch(_){}
+  }
+
+  const vfStorage = {
+    getToken(){
+      return localStorage.getItem("vf_token") || getCookie_(COOKIE_TOKEN_KEY) || "";
+    },
+    setToken(t){
+      const v = String(t || "");
+      if (v) {
+        localStorage.setItem("vf_token", v);
+        setCookie_(COOKIE_TOKEN_KEY, v, 14);
+      } else {
+        localStorage.removeItem("vf_token");
+        delCookie_(COOKIE_TOKEN_KEY);
+      }
+    },
+    getSession(){
+      try { return JSON.parse(localStorage.getItem("vf_session") || "null"); } catch(_){ return null; }
+    },
+    setSession(s){
+      if (s) localStorage.setItem("vf_session", JSON.stringify(s));
+      else localStorage.removeItem("vf_session");
+    },
+    clear(){
+      localStorage.removeItem("vf_token");
+      localStorage.removeItem("vf_session");
+      localStorage.removeItem("vf_session_changed");
+      delCookie_(COOKIE_TOKEN_KEY);
+    }
+  };
+
+  window.vfStorage = vfStorage;
+
   // Pending requests by request_id
   // Map<rid, { resolve, reject, timer, iframe, form }>
   const pending = new Map();
@@ -105,22 +179,16 @@
     const rid = msg.request_id || msg.requestId;
     if (!rid) return;
 
-    // Debug brut (très utile)
     if (DEBUG) {
-      console.log("[vfBridge] message event origin=", event.origin, "rid=", rid, "pendingHas=", pending.has(rid));
+      console.log("[vfBridge] message origin=", event.origin, "rid=", rid, "pendingHas=", pending.has(rid));
     }
 
     if (!pending.has(rid)) {
-      // on garde la dernière réponse reçue pour debug
       window.__vfLastBridgeMsg = msg;
       return;
     }
 
-    // ✅ FIX: on NE vérifie PAS event.source vs iframe.contentWindow
-    // (Apps Script wrapper userCodeAppPanel peut casser cette égalité)
     if (DEBUG) console.log("[vfBridge] message ok rid=", rid, msg);
-    if (DEBUG) console.log("[vfBridge] settling rid=", rid);
-
     settle_(rid, "resolve", msg);
   });
 
@@ -199,6 +267,7 @@
         form.method = "POST";
         form.action = VF_SCRIPT_URL;
         form.target = ifr.name;
+        form.acceptCharset = "UTF-8";
 
         const add = (k, v) => {
           const input = document.createElement("input");
@@ -241,7 +310,7 @@
   window.vfJsonp = vfJsonp;
   window.vfPost  = vfPost;
 
-  // High-level API (inchangé)
+  // High-level API (même interface)
   window.vfApi = {
     getProducts: ({ cat="all", token="" } = {}) => vfJsonp("get_products", { cat, token }),
     orderHistory: ({ email, limit=80 } = {}) => vfJsonp("order_history", { email, limit }),
@@ -257,6 +326,9 @@
 
     createOrder: (data) => vfPost({ ...(data||{}) }),
     chatSupport: ({ chat, orderId, email }) => vfPost({ chat, orderId, email }),
+
+    // + helpers pratiques
+    storage: vfStorage,
 
     setScriptUrl: (u) => { VF_SCRIPT_URL = String(u || "").trim(); },
     getScriptUrl: () => VF_SCRIPT_URL
