@@ -95,9 +95,11 @@
 
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-300">Solde (USD)</div>
+            <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-300">
+              Solde (<span id="balanceCurrencyLabel">USD</span>)
+            </div>
             <div class="text-4xl font-black tracking-tighter mt-1">
-              <span id="balanceValue">—</span><span class="text-gray-300 ml-1">$</span>
+              <span id="balanceValue">—</span><span id="balanceCurrencySym" class="text-gray-300 ml-1">$</span>
             </div>
             <div class="mt-2 small font-bold">
               <span class="muted">Compte:</span> <span id="userLabel">—</span>
@@ -121,7 +123,7 @@
             <li>Tu ajoutes du <b>crédit</b> dans ton wallet.</li>
             <li>Après ça, tu peux payer les commandes <b>instantanément</b> sans refaire de paiement.</li>
             <li><b>Moneroo</b> = paiement Mobile Money + redirection automatique vers la page de paiement.</li>
-            <li><b>Dépôt manuel</b> (Binance/USDT) = on t’ouvre WhatsApp avec un message déjà rempli.</li>
+            <li><b>Dépôt manuel</b> (Binance/USDT) = WhatsApp avec un message déjà rempli.</li>
           </ul>
         </div>
 
@@ -135,7 +137,7 @@
           </div>
 
           <div class="mt-3 text-center text-[12px] font-bold text-gray-500">
-            ⚠️ Ta NOTE sert de référence interne (wallet).
+            Ta NOTE sert de référence interne (wallet).
           </div>
         </div>
 
@@ -150,7 +152,7 @@
           </div>
 
           <div id="methodHint" class="mt-3 text-[12px] font-bold text-gray-500">
-            ✅ Moneroo: redirection + retour automatique + confirmation serveur.
+            Moneroo: redirection + retour automatique + confirmation serveur.
           </div>
 
           <div class="grid md:grid-cols-4 gap-3 mt-4">
@@ -159,7 +161,6 @@
               <input id="amountInp" type="number" min="1" step="0.01" class="input" placeholder="Ex: 10">
             </div>
 
-            <!-- ✅ Champ 2 dynamique (SUPPRIMÉ pour BINANCE) -->
             <div id="field2Wrap">
               <label id="field2Label" class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">
                 Téléphone (Mobile Money)
@@ -186,7 +187,6 @@
             </div>
           </div>
 
-          <!-- ✅ zone “manuel” -->
           <div id="manualBox" class="hidden mt-4 p-4 rounded-2xl bg-gray-50 border border-gray-200">
             <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-400">Dépôt manuel</div>
             <div id="manualText" class="mt-2 text-[13px] font-semibold text-gray-700 leading-relaxed"></div>
@@ -217,6 +217,10 @@
           <div id="txBox" class="mt-3 rounded-2xl border border-gray-200 bg-white overflow-hidden">
             <div class="p-4 text-sm font-bold text-gray-400">Chargement…</div>
           </div>
+
+          <div class="mt-2 text-[11px] font-extrabold text-gray-400">
+            Affichage direct depuis WALLET_TX (lecture seule).
+          </div>
         </div>
 
       </section>
@@ -231,14 +235,9 @@
 
   <script>
     // =========================
-    // ✅ CONFIG
+    // CONFIG
     // =========================
-
-    // ✅ TON DEPLOIEMENT (celui que tu as donné)
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
-
-    // ✅ WhatsApp du support (sans + ni espace). Modifie si besoin.
-    // Ex: RDC: 243850000000
     const WHATSAPP_SUPPORT = "2438503737991";
 
     // =========================
@@ -249,6 +248,9 @@
     const userLabel = document.getElementById("userLabel");
     const topupNoteEl = document.getElementById("topupNote");
     const txBox = document.getElementById("txBox");
+
+    const balanceCurrencyLabel = document.getElementById("balanceCurrencyLabel");
+    const balanceCurrencySym = document.getElementById("balanceCurrencySym");
 
     const methodSel = document.getElementById("methodSel");
     const methodHint = document.getElementById("methodHint");
@@ -282,14 +284,33 @@
     }
     function hideAlert(){ alertBox.classList.add("hidden"); alertBox.textContent=""; }
 
+    function currencySymbol_(cur){
+      const c = String(cur||"").toUpperCase();
+      if(c==="USD") return "$";
+      if(c==="EUR") return "€";
+      if(c==="GBP") return "£";
+      if(c==="CDF") return "FC";
+      return c ? c : "$";
+    }
+
     function getSession_(){
       try{
         const raw = localStorage.getItem("vf_session");
         if(!raw) return null;
         const s = JSON.parse(raw);
-        if(!s || !s.email) return null;
+        // on accepte email OU token (selon ton login)
+        if(!s) return null;
+        const hasEmail = !!String(s.email||"").trim();
+        const hasToken = !!String(s.token||s.sessionToken||s.access_token||"").trim();
+        if(!hasEmail && !hasToken) return null;
         return s;
       }catch{ return null; }
+    }
+
+    function getAuth_(s){
+      const email = String((s && s.email) || "").trim().toLowerCase();
+      const token = String((s && (s.token || s.sessionToken || s.access_token)) || "").trim();
+      return { email, token };
     }
 
     function applyAuthUI_(){
@@ -308,7 +329,7 @@
       btn.disabled = false;
       btn.onclick = () => {
         localStorage.removeItem("vf_session");
-        showAlert("Déconnecté ✅", "success");
+        showAlert("Déconnecté.", "success");
         setTimeout(() => { window.location.href = "login.html"; }, 350);
       };
     }
@@ -318,14 +339,16 @@
     });
 
     function setTopupNote_(email, note){
-      const k = "vf_topup_note_" + String(email||"").toLowerCase();
+      const keyBase = String(email||"user").toLowerCase();
+      const k = "vf_topup_note_" + keyBase;
       localStorage.setItem(k, note);
       topupNoteEl.textContent = note;
       return note;
     }
 
     function ensureTopupNote_(email){
-      const k = "vf_topup_note_" + String(email||"").toLowerCase();
+      const keyBase = String(email||"user").toLowerCase();
+      const k = "vf_topup_note_" + keyBase;
       let note = localStorage.getItem(k);
       if(!note){
         note = "TOPUP-" + Date.now() + "-" + Math.floor(1000 + Math.random()*9000);
@@ -339,7 +362,7 @@
       const t = String(text||"").trim();
       if(!t) return;
       navigator.clipboard?.writeText(t).then(()=> {
-        showAlert("Copié ✅", "success");
+        showAlert("Copié.", "success");
         setTimeout(hideAlert, 900);
       }).catch(()=>{
         const ta = document.createElement("textarea");
@@ -348,7 +371,7 @@
         ta.select();
         document.execCommand("copy");
         ta.remove();
-        showAlert("Copié ✅", "success");
+        showAlert("Copié.", "success");
         setTimeout(hideAlert, 900);
       });
     }
@@ -389,6 +412,12 @@
       s.onload = () => setTimeout(() => { try { s.remove(); } catch(_){ } }, 0);
     }
 
+    function jsonpP_(params, timeoutMs){
+      return new Promise((resolve, reject) => {
+        jsonp_(params, resolve, reject, timeoutMs);
+      });
+    }
+
     function fmt2(n){
       const x = Number(n||0);
       if(!isFinite(x)) return "0.00";
@@ -404,8 +433,61 @@
     }
 
     // =========================
+    // IMPORTANT :
+    // On ne change pas l'Apps Script.
+    // Donc ici on gère 2 noms d'actions possibles (compat) :
+    // - balance: db_wallet_balance OU wallet_balance
+    // - tx:      db_wallet_tx_list OU wallet_tx
+    // =========================
+    async function callWithFallback_(actions, params, timeoutMs=12000){
+      const tries = Array.isArray(actions) ? actions : [actions];
+      let last = null;
+
+      for(const action of tries){
+        try{
+          const res = await jsonpP_({ ...params, action }, timeoutMs);
+          // si ok => on prend
+          if(res && res.ok) return { actionUsed: action, res };
+
+          // si l'action n'existe pas => tenter la suivante
+          const err = String((res && res.error) || "").toUpperCase();
+          if(err.includes("UNKNOWN") || err.includes("INVALID_ACTION") || err.includes("NOT_FOUND") || err.includes("ACTION")){
+            last = res;
+            continue;
+          }
+
+          // autre erreur => on stop (auth, etc.)
+          return { actionUsed: action, res };
+        }catch(e){
+          last = { ok:false, error:String(e||"NETWORK") };
+          // on tente action suivante si possible
+        }
+      }
+
+      return { actionUsed: tries[tries.length-1], res: (last || { ok:false, error:"NETWORK" }) };
+    }
+
+    // =========================
     // Wallet data
     // =========================
+    function normalizeTxList_(res){
+      const list =
+        (res && Array.isArray(res.txs) && res.txs) ||
+        (res && Array.isArray(res.items) && res.items) ||
+        (res && Array.isArray(res.list) && res.list) ||
+        (res && Array.isArray(res.data) && res.data) ||
+        [];
+
+      return list.map(tx => ({
+        created_at: tx.created_at || tx.date || tx.createdAt || tx.ts || "-",
+        type: tx.type || tx.kind || "-",
+        amount: (tx.amount ?? tx.value ?? 0),
+        ref: tx.ref || tx.note || tx.reference || tx.tx_id || tx.id || "",
+        status: tx.status || "",
+        currency: tx.currency || res.currency || "USD"
+      }));
+    }
+
     function renderTx_(list){
       if(!Array.isArray(list) || list.length===0){
         txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Aucune transaction.</div>`;
@@ -421,75 +503,101 @@
                 <th class="p-3">Type</th>
                 <th class="p-3">Montant</th>
                 <th class="p-3">Ref</th>
+                <th class="p-3">Statut</th>
               </tr>
             </thead>
             <tbody>
-              ${list.map(tx => `
-                <tr class="border-t">
-                  <td class="p-3 font-bold text-gray-500">${tx.created_at || "-"}</td>
-                  <td class="p-3 font-black ${String(tx.type||"").toUpperCase()==="CREDIT" ? "text-green-700" : "text-orange-700"}">${tx.type || "-"}</td>
-                  <td class="p-3 font-black text-gray-900">${fmt2(tx.amount)} $</td>
-                  <td class="p-3 font-semibold text-gray-400">${tx.ref || ""}</td>
-                </tr>
-              `).join("")}
+              ${list.map(tx => {
+                const t = String(tx.type||"").toUpperCase();
+                const cls = (t==="CREDIT") ? "text-green-700" : "text-orange-700";
+                const cur = String(tx.currency||"USD").toUpperCase();
+                return `
+                  <tr class="border-t">
+                    <td class="p-3 font-bold text-gray-500">${tx.created_at || "-"}</td>
+                    <td class="p-3 font-black ${cls}">${tx.type || "-"}</td>
+                    <td class="p-3 font-black text-gray-900">${fmt2(tx.amount)} ${currencySymbol_(cur)}</td>
+                    <td class="p-3 font-semibold text-gray-400">${tx.ref || ""}</td>
+                    <td class="p-3 font-extrabold text-gray-500">${tx.status || ""}</td>
+                  </tr>
+                `;
+              }).join("")}
             </tbody>
           </table>
         </div>
       `;
     }
 
-    function loadWallet_(email){
+    async function loadWallet_(auth){
       balanceValue.textContent = "—";
-      jsonp_(
-        { action:"wallet_balance", email: email, currency:"USD" },
-        (res) => {
-          if(res && res.ok){
-            balanceValue.textContent = fmt2(res.balance);
-            hideAlert();
-          }else{
-            showAlert("Impossible de charger le solde. (" + (res?.error || "ERREUR") + ")", "error");
-            balanceValue.textContent = "0.00";
-          }
-        },
-        (why) => {
-          showAlert("Erreur réseau/API: solde non chargé. (" + why + ")", "error");
-          balanceValue.textContent = "0.00";
-        }
+      balanceCurrencyLabel.textContent = "USD";
+      balanceCurrencySym.textContent = "$";
+
+      const params = {
+        currency: "USD",
+        // compat: on envoie les deux, sans casser l'Apps Script
+        email: auth.email || "",
+        token: auth.token || ""
+      };
+
+      const { res } = await callWithFallback_(
+        ["db_wallet_balance", "wallet_balance"],
+        params,
+        12000
       );
+
+      if(res && res.ok){
+        const cur = String(res.currency || "USD").toUpperCase();
+        balanceCurrencyLabel.textContent = cur;
+        balanceCurrencySym.textContent = currencySymbol_(cur);
+        balanceValue.textContent = fmt2(res.balance);
+        hideAlert();
+        return;
+      }
+
+      showAlert("Impossible de charger le solde. (" + (res?.error || "ERREUR") + ")", "error");
+      balanceValue.textContent = "0.00";
     }
 
-    function loadTx_(email){
+    async function loadTx_(auth){
       txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Chargement…</div>`;
-      jsonp_(
-        { action:"wallet_tx", email: email, currency:"USD", limit:"50" },
-        (res) => {
-          if(res && res.ok){
-            renderTx_(res.items || []);
-          }else{
-            txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Historique indisponible (${res?.error || "ERREUR"}).</div>`;
-          }
-        },
-        (why) => {
-          txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Erreur réseau/API: historique non chargé. (${why})</div>`;
-        }
+
+      const params = {
+        currency: "USD",
+        limit: "50",
+        email: auth.email || "",
+        token: auth.token || ""
+      };
+
+      const { res } = await callWithFallback_(
+        ["db_wallet_tx_list", "wallet_tx"],
+        params,
+        12000
       );
+
+      if(res && res.ok){
+        const list = normalizeTxList_(res);
+        renderTx_(list);
+        return;
+      }
+
+      txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Historique indisponible (${res?.error || "ERREUR"}).</div>`;
     }
 
     // =========================
-    // ✅ DEPOT MANUEL WHATSAPP
+    // DEPOT MANUEL WHATSAPP
     // =========================
     function buildWhatsappMessage_({ email, amount, method, note, phone, txid }){
       const lines = [];
-      lines.push("Bonjour 👋, je veux recharger mon wallet ViralFlowr.");
+      lines.push("Bonjour, je veux recharger mon wallet ViralFlowr.");
       lines.push("");
-      lines.push("📌 Email: " + email);
-      lines.push("💵 Montant: " + fmt2(amount) + " USD");
-      lines.push("💳 Méthode: " + method);
-      lines.push("🧾 Note: " + note);
-      if(phone) lines.push("📱 Téléphone: " + phone);
-      if(txid) lines.push("🔗 TXID: " + txid);
+      if(email) lines.push("Email: " + email);
+      lines.push("Montant: " + fmt2(amount) + " USD");
+      lines.push("Méthode: " + method);
+      lines.push("Note: " + note);
+      if(phone) lines.push("Téléphone: " + phone);
+      if(txid) lines.push("TXID: " + txid);
       lines.push("");
-      lines.push("Merci ✅");
+      lines.push("Merci.");
       return lines.join("\n");
     }
 
@@ -515,13 +623,12 @@
     }
 
     // =========================
-    // ✅ UI selon méthode
+    // UI selon méthode
     // - BINANCE: champ supprimé
     // =========================
     function applyMethodUI_(){
       const method = String(methodSel.value || "MONEROO_MOMO").toUpperCase();
 
-      // reset
       field2Inp.value = "";
       field2Help.textContent = "";
       manualBox.classList.add("hidden");
@@ -534,14 +641,13 @@
         field2Inp.placeholder = "Ex: +243...";
         field2Inp.dataset.required = "1";
         field2Help.textContent = "Obligatoire. Exemple: +243850000000";
-        methodHint.textContent = "✅ Moneroo: redirection + retour automatique + confirmation serveur.";
+        methodHint.textContent = "Moneroo: redirection + retour automatique + confirmation serveur.";
         return;
       }
 
       if(method === "BINANCE_PAY"){
-        // ✅ ENLEVER LE CHAMP POUR BINANCE
         field2Wrap.classList.add("hidden");
-        methodHint.textContent = "✅ Dépôt manuel (Binance): on ouvre WhatsApp avec un message pré-rempli.";
+        methodHint.textContent = "Dépôt manuel (Binance): WhatsApp avec un message pré-rempli.";
         return;
       }
 
@@ -551,7 +657,7 @@
         field2Inp.placeholder = "Colle le hash après paiement (optionnel)";
         field2Inp.dataset.required = "0";
         field2Help.textContent = "Optionnel. Tu peux envoyer le TXID sur WhatsApp.";
-        methodHint.textContent = "✅ Dépôt manuel USDT TRC-20: WhatsApp pré-rempli + validation support.";
+        methodHint.textContent = "Dépôt manuel USDT TRC-20: WhatsApp pré-rempli + validation support.";
         return;
       }
 
@@ -561,21 +667,20 @@
         field2Inp.placeholder = "Colle le hash après paiement (optionnel)";
         field2Inp.dataset.required = "0";
         field2Help.textContent = "Optionnel. Tu peux envoyer le TXID sur WhatsApp.";
-        methodHint.textContent = "✅ Dépôt manuel USDT BEP-20: WhatsApp pré-rempli + validation support.";
+        methodHint.textContent = "Dépôt manuel USDT BEP-20: WhatsApp pré-rempli + validation support.";
         return;
       }
 
-      // fallback
       field2Wrap.classList.add("hidden");
-      methodHint.textContent = "✅ Choisis une méthode.";
+      methodHint.textContent = "Choisis une méthode.";
     }
 
     // =========================
     // Création dépôt
     // - Moneroo => API => redirect
-    // - Binance/USDT => WhatsApp pré-rempli (manuel)
+    // - Binance/USDT => WhatsApp (manuel)
     // =========================
-    function createTopup_(email, note){
+    function createTopup_(auth, note){
       const amount = Number(document.getElementById("amountInp").value || 0);
       const method = String(methodSel.value || "MONEROO_MOMO").toUpperCase();
       const field2 = String(field2Inp.value || "").trim();
@@ -604,7 +709,8 @@
         jsonp_(
           {
             action: "wallet_topup_create",
-            email,
+            email: auth.email || "",
+            token: auth.token || "",
             note,
             amount: String(amount),
             method,
@@ -623,8 +729,8 @@
             }
 
             if(res && res.ok){
-              showAlert("Demande enregistrée ✅.", "success");
-              setTimeout(() => { loadWallet_(email); loadTx_(email); }, 800);
+              showAlert("Demande enregistrée.", "success");
+              setTimeout(() => { loadWallet_(auth); loadTx_(auth); }, 800);
               return;
             }
 
@@ -640,11 +746,11 @@
         return;
       }
 
-      // ✅ DEPOT MANUEL (BINANCE/USDT) => WhatsApp pré-rempli
+      // DEPOT MANUEL (BINANCE/USDT)
       const txid = (method === "USDT_TRC20" || method === "USDT_BEP20") ? field2 : "";
 
       const waMessage = buildWhatsappMessage_({
-        email,
+        email: auth.email || "",
         amount,
         method,
         note,
@@ -652,11 +758,11 @@
         txid
       });
 
-      // Optionnel: essayer d'enregistrer un "pending" côté API, mais quoi qu'il arrive => WhatsApp.
       jsonp_(
         {
           action: "wallet_topup_create",
-          email,
+          email: auth.email || "",
+          token: auth.token || "",
           note,
           amount: String(amount),
           method,
@@ -667,9 +773,10 @@
         (res) => {
           btn.disabled = false;
           btn.textContent = "Continuer";
+
           if(res && res.ok){
-            showAlert("Dépôt manuel: message WhatsApp prêt ✅", "success");
-            setTimeout(() => { loadTx_(email); }, 600);
+            showAlert("Dépôt manuel: message WhatsApp prêt.", "success");
+            setTimeout(() => { loadTx_(auth); }, 600);
           } else {
             showAlert("Dépôt manuel: WhatsApp prêt (API: " + (res?.error || "ERREUR") + ")", "info");
           }
@@ -680,42 +787,11 @@
         (_why) => {
           btn.disabled = false;
           btn.textContent = "Continuer";
-
-          // même si API down => WhatsApp
-          showAlert("Dépôt manuel: WhatsApp prêt ✅", "success");
+          showAlert("Dépôt manuel: WhatsApp prêt.", "success");
           showManual_(waMessage, { amount: fmt2(amount) + " USD", method, note });
           openWhatsApp_(WHATSAPP_SUPPORT, waMessage);
         },
         8000
-      );
-    }
-
-    function maybeHandleMonerooReturn_(email){
-      const u = new URL(window.location.href);
-      const paymentId = u.searchParams.get("monerooPaymentId");
-      const status = u.searchParams.get("monerooPaymentStatus") || u.searchParams.get("status");
-      if(!paymentId) return;
-
-      showAlert("Paiement détecté… confirmation en cours", "info");
-
-      jsonp_(
-        { action:"moneroo_confirm", email, paymentId },
-        (res) => {
-          if(res && res.ok && res.credited){
-            showAlert("Crédit ajouté ✅ (" + (res.amount||"") + " " + (res.currency||"") + ")", "success");
-            loadWallet_(email);
-            loadTx_(email);
-          }else{
-            showAlert("Paiement non confirmé. (" + (res?.error || status || "ERREUR") + ")", "error");
-          }
-
-          u.searchParams.delete("monerooPaymentId");
-          u.searchParams.delete("monerooPaymentStatus");
-          u.searchParams.delete("status");
-          window.history.replaceState({}, document.title, u.pathname + u.search);
-        },
-        (why) => showAlert("Confirmation échouée (" + why + ")", "error"),
-        20000
       );
     }
 
@@ -734,30 +810,31 @@
         return;
       }
 
-      const email = String(s.email || "").trim().toLowerCase();
-      userLabel.textContent = email;
+      const auth = getAuth_(s);
+      userLabel.textContent = auth.email || "Utilisateur";
 
-      let note = ensureTopupNote_(email);
+      let note = ensureTopupNote_(auth.email || "user");
 
       applyMethodUI_();
       methodSel.addEventListener("change", applyMethodUI_);
 
-      loadWallet_(email);
-      loadTx_(email);
+      loadWallet_(auth);
+      loadTx_(auth);
 
-      maybeHandleMonerooReturn_(email);
-
-      document.getElementById("refreshBtn").addEventListener("click", () => loadWallet_(email));
-      document.getElementById("refreshTxBtn").addEventListener("click", () => loadTx_(email));
+      document.getElementById("refreshBtn").addEventListener("click", () => {
+        loadWallet_(auth);
+        loadTx_(auth);
+      });
+      document.getElementById("refreshTxBtn").addEventListener("click", () => loadTx_(auth));
 
       document.getElementById("copyNoteBtn").addEventListener("click", () => copyText_(note));
       document.getElementById("newNoteBtn").addEventListener("click", () => {
-        note = setTopupNote_(email, "TOPUP-" + Date.now() + "-" + Math.floor(1000 + Math.random()*9000));
-        showAlert("Nouvelle note générée ✅", "success");
+        note = setTopupNote_(auth.email || "user", "TOPUP-" + Date.now() + "-" + Math.floor(1000 + Math.random()*9000));
+        showAlert("Nouvelle note générée.", "success");
         setTimeout(hideAlert, 900);
       });
 
-      document.getElementById("paidBtn").addEventListener("click", () => createTopup_(email, note));
+      document.getElementById("paidBtn").addEventListener("click", () => createTopup_(auth, note));
     })();
   </script>
 
