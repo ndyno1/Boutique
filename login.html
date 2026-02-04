@@ -1,11 +1,45 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <!-- ✅ Force domaine principal (évite localStorage séparé www vs non-www) -->
+  <!-- ✅ Canonical domaine (sans boucle) + évite le ping-pong si le serveur force l’inverse
+       - 1 seule tentative par onglet (sessionStorage guard)
+       - pas de redirect si embed Apps Script panel
+  -->
   <script>
-    if (location.hostname === "www.viralflowr.com") {
-      location.replace("https://viralflowr.com" + location.pathname + location.search + location.hash);
-    }
+    (function () {
+      const ref = document.referrer || "";
+      const inAppsScriptPanel = /script\.googleusercontent\.com|script\.google\.com/i.test(ref);
+      window.__VF_IN_APPS_SCRIPT_PANEL = inAppsScriptPanel;
+
+      // Ne pas canonicaliser dans le panel Apps Script (souvent embed / contraintes)
+      if (inAppsScriptPanel) return;
+
+      const host = (location.hostname || "").toLowerCase();
+      const isWWW = host === "www.viralflowr.com";
+      const isApex = host === "viralflowr.com";
+      const isTarget = isWWW || isApex;
+
+      // Ne touche pas aux autres domaines (localhost, IP, etc.)
+      if (!isTarget) return;
+
+      const CANON_HOST = "viralflowr.com"; // ✅ ton domaine principal
+      if (host === CANON_HOST) return;
+
+      // ✅ Anti-boucle: une seule tentative / onglet (si le serveur renvoie vers www, on stoppe)
+      const GUARD_KEY = "vf_canon_redirect_guard";
+      const now = Date.now();
+
+      try {
+        const guard = JSON.parse(sessionStorage.getItem(GUARD_KEY) || "null");
+        if (guard && (now - guard.ts) < 15000) return;
+
+        sessionStorage.setItem(GUARD_KEY, JSON.stringify({ ts: now, from: host, to: CANON_HOST }));
+      } catch (_) {}
+
+      location.replace(
+        "https://" + CANON_HOST + location.pathname + location.search + location.hash
+      );
+    })();
   </script>
 
   <meta charset="UTF-8" />
@@ -15,13 +49,13 @@
   <!-- ✅ CONFIG AVANT /vf_api.js -->
   <script>
     const inAppsScriptPanel =
+      window.__VF_IN_APPS_SCRIPT_PANEL ||
       /script\.googleusercontent\.com|script\.google\.com/i.test(document.referrer || "");
 
     window.VF_CONFIG = {
       scriptUrl: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec",
       timeoutMs: 20000,
       debug: true,
-      // ✅ si la page est "embed" dans userCodeAppPanel => "*" ; sinon strict
       postMessageTargetOrigin: inAppsScriptPanel ? "*" : location.origin
     };
   </script>
@@ -77,6 +111,7 @@
 
   <script>
     const $ = (id) => document.getElementById(id);
+    const REDIRECT_GUARD_KEY = "vf_login_redirect_guard";
 
     function showMsg(type, text){
       const box = $("msg");
@@ -89,20 +124,64 @@
 
     function getNext(){
       const u = new URL(location.href);
-      return u.searchParams.get("next") || "index.html";
+      const raw = u.searchParams.get("next") || "index.html";
+
+      try{
+        const n = new URL(raw, location.href);
+
+        // ✅ Anti open-redirect: même origin uniquement
+        if (n.origin !== location.origin) return "index.html";
+
+        // ✅ Evite loop si next pointe vers login/register
+        const p = (n.pathname || "").toLowerCase();
+        if (p.endsWith("/login.html") || p.endsWith("/register.html")) return "index.html";
+
+        return n.pathname + n.search + n.hash;
+      }catch(_){
+        return "index.html";
+      }
     }
 
-    // ✅ Si déjà connecté => redirect
-    try{
-      const s = JSON.parse(localStorage.getItem("vf_session") || "null");
+    function clearSession(){
+      localStorage.removeItem("vf_token");
+      localStorage.removeItem("vf_session");
+      localStorage.removeItem("vf_session_changed");
+    }
+
+    function redirectIfAlreadyLogged(){
+      let s = null;
+      try { s = JSON.parse(localStorage.getItem("vf_session") || "null"); } catch(_){}
+
       const t = localStorage.getItem("vf_token");
-      if (t && s && (s.email || s.username)) location.href = getNext();
-    }catch(_){}
+      const next = getNext();
+
+      if (!(t && s && (s.email || s.username))) return;
+
+      try{
+        const now = Date.now();
+        const guard = JSON.parse(localStorage.getItem(REDIRECT_GUARD_KEY) || "null");
+
+        // ✅ Si on tente la même redirection en boucle (ex: session invalide), on casse
+        if (guard && guard.next === next && (now - guard.ts) < 8000){
+          localStorage.removeItem(REDIRECT_GUARD_KEY);
+          clearSession();
+          showMsg("err", "Ta session a expiré. Reconnecte-toi.");
+          return;
+        }
+
+        localStorage.setItem(REDIRECT_GUARD_KEY, JSON.stringify({ ts: now, next }));
+        location.replace(next);
+      }catch(_){
+        location.replace(next);
+      }
+    }
+
+    // ✅ Si déjà connecté => redirect (sans boucle)
+    redirectIfAlreadyLogged();
 
     window.addEventListener("DOMContentLoaded", () => {
       const api = window.vfApi;
 
-      // ✅ Si vf_api.js pas chargé (ou mauvais chemin)
       if (!api || typeof api.login !== "function") {
         showMsg("err", "Erreur: /vf_api.js n'est pas chargé. Vérifie le chemin /vf_api.js et recharge (Ctrl+F5).");
         return;
@@ -130,17 +209,16 @@
             return;
           }
 
-          // ✅ Token
           if (res.token) localStorage.setItem("vf_token", String(res.token));
 
-          // ✅ Session (fallback: res.session OU res.user)
           const session = res.session || res.user || null;
           if (session) localStorage.setItem("vf_session", JSON.stringify(session));
 
           localStorage.setItem("vf_session_changed", String(Date.now()));
+          localStorage.removeItem(REDIRECT_GUARD_KEY); // ✅ reset anti-loop après login OK
 
           showMsg("ok", "Connecté. Redirection...");
-          setTimeout(() => location.href = getNext(), 350);
+          setTimeout(() => location.replace(getNext()), 350);
 
         }catch(err){
           showMsg("err", "Erreur connexion (transport): " + (err && err.message ? err.message : String(err)));
