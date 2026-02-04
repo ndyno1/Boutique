@@ -69,12 +69,7 @@ function buildPayUrl(p, prixOverride = null) {
 }
 
 /**
- * ✅ FETCH PRODUCTS (MIS À JOUR)
- * - Ne change pas la logique: on veut toujours récupérer la liste des produits via JSONP.
- * - Mais accepte aussi les formats API fréquents: {products:[]}, {data:[]}, etc.
- * - Ajoute un diagnostic clair si l’endpoint renvoie une erreur (401/403/404) ou un objet.
- *
- * Option debug: mets DEBUG_FETCH_PRODUCTS=1 dans ton runner pour voir un aperçu de la réponse.
+ * FETCH PRODUCTS (JSONP)
  */
 async function fetchProducts() {
   const cb = "cb";
@@ -86,33 +81,16 @@ async function fetchProducts() {
   });
 
   const txt = await res.text();
-  const DEBUG_FETCH_PRODUCTS =
-    process.env.DEBUG_FETCH_PRODUCTS === "1" ||
-    process.env.DEBUG_PRODUCTS === "1" ||
-    process.env.DEBUG === "1";
 
   const preview = (s, n = 240) => {
     const v = safe(s);
     return v.length > n ? v.slice(0, n) + "…" : v;
   };
 
-  if (DEBUG_FETCH_PRODUCTS) {
-    console.log("[fetchProducts] URL:", url);
-    console.log("[fetchProducts] HTTP:", res.status, res.statusText);
-    console.log(
-      "[fetchProducts] content-type:",
-      res.headers.get("content-type") || ""
-    );
-    console.log("[fetchProducts] body preview:", preview(txt));
-  }
-
   if (!res.ok) {
-    throw new Error(
-      `HTTP ${res.status} ${res.statusText} • Aperçu: ${preview(txt)}`
-    );
+    throw new Error(`HTTP ${res.status} ${res.statusText} • Aperçu: ${preview(txt)}`);
   }
 
-  // JSONP: cb(<json>);
   const re = new RegExp(`${cb}\\((.*)\\)\\s*;?\\s*$`, "s");
   const m = txt.match(re);
 
@@ -120,18 +98,13 @@ async function fetchProducts() {
   if (m && m[1]) {
     jsonText = m[1].trim();
   } else {
-    // Fallback si jamais le endpoint renvoie du JSON pur (sans callback)
     const trimmed = txt.trim();
     const looksLikeJson =
       (trimmed.startsWith("{") && trimmed.endsWith("}")) ||
       (trimmed.startsWith("[") && trimmed.endsWith("]"));
 
     if (!looksLikeJson) {
-      throw new Error(
-        `Réponse JSONP invalide. Vérifie action=get_products. Aperçu: ${preview(
-          txt
-        )}`
-      );
+      throw new Error(`Réponse JSONP invalide. Aperçu: ${preview(txt)}`);
     }
     jsonText = trimmed;
   }
@@ -140,12 +113,9 @@ async function fetchProducts() {
   try {
     payload = JSON.parse(jsonText);
   } catch (e) {
-    throw new Error(
-      `JSON invalide dans la réponse. Aperçu: ${preview(jsonText)}`
-    );
+    throw new Error(`JSON invalide. Aperçu: ${preview(jsonText)}`);
   }
 
-  // ✅ Extraction robuste d'une "liste" sans changer le reste du script
   const list =
     Array.isArray(payload)
       ? payload
@@ -166,18 +136,9 @@ async function fetchProducts() {
       : null;
 
   if (!list) {
-    const keys =
-      payload && typeof payload === "object" ? Object.keys(payload) : [];
-    const msg =
-      safe(payload?.message) ||
-      safe(payload?.error) ||
-      safe(payload?.status) ||
-      "";
-    throw new Error(
-      `Le endpoint ne renvoie pas une liste. Keys=${
-        keys.length ? keys.join(", ") : "N/A"
-      }${msg ? " • " + msg : ""}`
-    );
+    const keys = payload && typeof payload === "object" ? Object.keys(payload) : [];
+    const msg = safe(payload?.message) || safe(payload?.error) || safe(payload?.status) || "";
+    throw new Error(`Le endpoint ne renvoie pas une liste. Keys=${keys.length ? keys.join(", ") : "N/A"}${msg ? " • " + msg : ""}`);
   }
 
   return list;
@@ -241,29 +202,29 @@ function templateProductPage(p) {
   const id = safe(p.id).trim();
   const nom = safe(p.nom).trim() || `Produit ${id}`;
   const cat = safe(p.cat).trim() || "Catalogue";
-  const prix = safe(p.prix).trim() || "0";
+
+  // prix statique (client) -> sera remplacé dynamiquement si token
+  const prixClient = safe(p.prix).trim() || "0";
 
   const imgRaw = safe(p.img).trim();
   const ogImg = toDirectOGImage(imgRaw) || ogFallback();
 
   const longDesc = safe(p.long_desc).trim();
-  const payUrl = buildPayUrl(p);
+  const payUrlClient = buildPayUrl(p, prixClient);
 
-  const ogDesc = `${prix} $ • ${cat}${
-    longDesc ? " • " + longDesc.replace(/\s+/g, " ").slice(0, 120) : ""
-  }`.slice(0, 200);
+  const ogDesc = `${prixClient} $ • ${cat}${longDesc ? " • " + longDesc.replace(/\s+/g, " ").slice(0, 120) : ""}`.slice(0, 200);
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: nom,
     image: [ogImg],
-    description: longDesc || `${cat} • ${prix}$`,
+    description: longDesc || `${cat} • ${prixClient}$`,
     brand: { "@type": "Brand", name: "ViralFlowr" },
     offers: {
       "@type": "Offer",
       priceCurrency: "USD",
-      price: String(prix).replace(",", "."),
+      price: String(prixClient).replace(",", "."),
       availability: "https://schema.org/InStock",
       url: `https://viralflowr.com/p/${encodeURIComponent(id)}/`,
     },
@@ -272,7 +233,6 @@ function templateProductPage(p) {
   const minTxt = numOrInfinity(p.min) || "1";
   const maxTxt = numOrInfinity(p.max) || "∞";
 
-  // ✅ inject SVG dans JS sans casser la string principale
   const JS_SVG_LOGIN = JSON.stringify(SVG.login);
   const JS_SVG_REGISTER = JSON.stringify(SVG.register);
 
@@ -311,9 +271,13 @@ function templateProductPage(p) {
       padding-bottom: env(safe-area-inset-bottom);
       overscroll-behavior-x: none;
     }
+    .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
+    .no-scrollbar::-webkit-scrollbar{ display:none; }
+
     .text-orange-bsv { color: #F07E13; }
     .btn-gradient { background: linear-gradient(90deg, #F07E13 0%, #FFB26B 100%); }
     .shadow-card { box-shadow: 0 0 7px 0 rgba(0,0,0,.15); }
+
     .btn-mini{
       height:40px; padding:0 14px; border-radius:999px;
       font-weight:900; font-size:11px; letter-spacing:.10em;
@@ -324,6 +288,7 @@ function templateProductPage(p) {
       max-width:100%;
     }
     .btn-mini:hover{ transform: translateY(-1px); border-color:#F07E13; color:#F07E13; }
+
     .btn-waba{
       height:40px; padding:0 14px; border-radius:999px;
       font-weight:900; font-size:11px; letter-spacing:.10em;
@@ -346,6 +311,7 @@ function templateProductPage(p) {
       white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
       line-height:1;
     }
+
     @media (max-width: 420px){
       .btn-mini, .btn-waba{ padding:0 10px; font-size:10px; letter-spacing:.08em; }
       .btn-mini .txt, .btn-waba .txt{ display:none; }
@@ -364,7 +330,7 @@ function templateProductPage(p) {
         </div>
       </a>
 
-      <div class="flex items-center gap-2 flex-wrap justify-end">
+      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar max-w-full">
         <div id="accountArea" class="hidden sm:flex items-center gap-2"></div>
 
         <a class="icon-btn" href="/commandes.html" title="Mes commandes" aria-label="Mes commandes">${SVG.orders}</a>
@@ -426,7 +392,7 @@ function templateProductPage(p) {
             <div class="grid grid-cols-2 gap-4 items-end">
               <div>
                 <span class="text-gray-500 text-xs font-medium block mb-1">Prix Total:</span>
-                <span id="priceValue" class="text-3xl font-black text-[#201B16] tracking-tighter">${escHtml(prix)} $</span>
+                <span id="priceValue" class="text-3xl font-black text-[#201B16] tracking-tighter">${escHtml(prixClient)} $</span>
               </div>
               <div class="flex flex-col text-right text-[11px] text-gray-400 font-medium">
                 <span>Min : <strong class="text-gray-700">${escHtml(minTxt)}</strong></span>
@@ -434,7 +400,7 @@ function templateProductPage(p) {
               </div>
             </div>
 
-            <a id="buyBtn" href="${escHtml(payUrl)}"
+            <a id="buyBtn" href="${escHtml(payUrlClient)}"
                class="w-full h-12 rounded-full btn-gradient text-white font-bold text-[15px] uppercase tracking-wide shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center">
               Acheter maintenant
             </a>
@@ -476,7 +442,7 @@ function templateProductPage(p) {
     </div>
   </footer>
 
-  <!-- ✅ Account UI (sans backticks) -->
+  <!-- Account UI -->
   <script>
     const _VF_SVG_LOGIN = ${JS_SVG_LOGIN};
     const _VF_SVG_REGISTER = ${JS_SVG_REGISTER};
@@ -490,7 +456,7 @@ function templateProductPage(p) {
         const s = JSON.parse(raw);
         if(!s || (!s.email && !s.username)) return null;
         return s;
-      }catch{ return null; }
+      }catch(e){ return null; }
     }
 
     window.addEventListener("storage", (e) => {
@@ -553,12 +519,24 @@ function templateProductPage(p) {
     renderAccountUI_();
   </script>
 
-  <!-- ✅ prix revendeur dynamique -->
+  <!-- Prix revendeur dynamique + lien paiement cohérent -->
   <script>
     const VF_SCRIPT_URL = "${escHtml(SCRIPT_URL)}";
     const VF_PRODUCT_ID = "${escHtml(id)}";
 
     function _vfSafe2(v){ return (v === null || v === undefined) ? "" : String(v); }
+
+    function _vfGetStore(){
+      return (window.vfApi && window.vfApi.storage) ? window.vfApi.storage
+           : (window.vfStorage ? window.vfStorage : null);
+    }
+
+    function _vfGetCookie(name){
+      try{
+        const m = document.cookie.match(new RegExp("(^|;)\\\\s*" + name + "\\\\s*=\\\\s*([^;]+)"));
+        return m ? decodeURIComponent(m[2]) : "";
+      }catch(e){ return ""; }
+    }
 
     function _vfGetSession(){
       try{
@@ -567,29 +545,53 @@ function templateProductPage(p) {
         const s = JSON.parse(raw);
         if(!s || (!s.email && !s.username)) return null;
         return s;
-      }catch{ return null; }
+      }catch(e){ return null; }
     }
 
     function _vfGetToken(){
+      // 0) session fields
       try{
         const s = _vfGetSession();
-        const t =
-          (s && (s.token || s.vf_token || s.session_token || s.access_token || s.reseller_token)) ||
-          localStorage.getItem("vf_token") ||
-          "";
-        return String(t || "").trim();
-      }catch{ return ""; }
+        const t = s && (s.token || s.vf_token || s.reseller_token || s.access_token || s.session_token);
+        if (t) return String(t).trim();
+      }catch(e){}
+
+      // 1) vf_api.js storage
+      try{
+        const st = _vfGetStore();
+        if (st && typeof st.getToken === "function"){
+          const t = st.getToken();
+          if (t) return String(t).trim();
+        }
+      }catch(e){}
+
+      // 2) localStorage
+      try{
+        const t2 = localStorage.getItem("vf_token");
+        if (t2) return String(t2).trim();
+      }catch(e){}
+
+      // 3) cookie
+      const ck = _vfGetCookie("vf_token");
+      if (ck){
+        try{ localStorage.setItem("vf_token", ck); }catch(e){}
+        return String(ck).trim();
+      }
+
+      return "";
     }
 
     function _vfPickPrice(prod){
+      // IMPORTANT: revendeur en priorité
       const v = prod && (
         prod.prix_affiche ??
+        prod.prix_revendeur ??
+        prod.RESELLER ?? prod.reseller ??
         prod.prix ??
         prod.price ??
         prod.amount ??
         prod.PV ?? prod.pv ??
-        prod.RESELLER ?? prod.reseller ??
-        prod.prix_revendeur
+        prod.prix_client
       );
       return _vfSafe2(v).trim();
     }
@@ -607,13 +609,22 @@ function templateProductPage(p) {
       return "/paiement.html?" + qp.toString();
     }
 
+    function _vfExtractList(payload){
+      if (Array.isArray(payload)) return payload;
+      if (payload && Array.isArray(payload.products)) return payload.products;
+      if (payload && Array.isArray(payload.items)) return payload.items;
+      if (payload && Array.isArray(payload.data)) return payload.data;
+      if (payload && payload.data && Array.isArray(payload.data.products)) return payload.data.products;
+      if (payload && payload.data && Array.isArray(payload.data.items)) return payload.data.items;
+      return [];
+    }
+
     function _vfJsonpGetProducts(token){
       return new Promise((resolve, reject) => {
         const cb = "vf_cb_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
         window[cb] = (payload) => {
           try{
-            const list = Array.isArray(payload) ? payload : (Array.isArray(payload && payload.products) ? payload.products : []);
-            resolve(list);
+            resolve(_vfExtractList(payload));
           }finally{
             try{ delete window[cb]; }catch(e){}
           }
@@ -634,6 +645,15 @@ function templateProductPage(p) {
       const token = _vfGetToken();
       if(!token) return;
 
+      // UI: loading (évite que l’utilisateur pense que c’est le prix client)
+      const priceEl = document.getElementById("priceValue");
+      const buyBtn = document.getElementById("buyBtn");
+      if (priceEl) priceEl.textContent = "... $";
+      if (buyBtn){
+        buyBtn.classList.add("opacity-60");
+        buyBtn.style.pointerEvents = "none";
+      }
+
       try{
         const list = await _vfJsonpGetProducts(token);
         const prod = list.find(x => _vfSafe2(x && x.id).trim() === VF_PRODUCT_ID);
@@ -645,18 +665,35 @@ function templateProductPage(p) {
         const num = parseFloat(String(raw).replace(",", "."));
         const txt = Number.isFinite(num) ? num.toFixed(2) : raw;
 
-        const priceEl = document.getElementById("priceValue");
         if(priceEl) priceEl.textContent = txt + " $";
-
-        const buyBtn = document.getElementById("buyBtn");
-        if(buyBtn) buyBtn.href = _vfBuildPayUrl(prod, txt);
-
+        if(buyBtn){
+          buyBtn.href = _vfBuildPayUrl(prod, txt);
+          buyBtn.classList.remove("opacity-60");
+          buyBtn.style.pointerEvents = "auto";
+        }
       }catch(e){
-        // silencieux
+        // si erreur: on laisse le prix client
+        if (priceEl) priceEl.textContent = "${escHtml(prixClient)} $";
+        if (buyBtn){
+          buyBtn.classList.remove("opacity-60");
+          buyBtn.style.pointerEvents = "auto";
+        }
       }
     }
 
-    _vfRefreshPrice();
+    function _vfStartPrice(){
+      _vfRefreshPrice();
+
+      // petit retry si token apparaît après coup
+      setTimeout(() => { _vfRefreshPrice(); }, 700);
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", _vfStartPrice);
+    } else {
+      _vfStartPrice();
+    }
+
     window.addEventListener("storage", (e) => {
       if (e.key === "vf_session" || e.key === "vf_token" || e.key === "vf_session_changed") {
         _vfRefreshPrice();
@@ -677,7 +714,6 @@ function templateSharePage(p) {
   const imgRaw = safe(p.img).trim();
   const ogImg = toDirectOGImage(imgRaw) || ogFallback();
 
-  // ✅ redirige vers page produit (prix dynamique possible)
   const productUrl = `/p/${encodeURIComponent(id)}/`;
   const ogDesc = `${prix} $ • ${cat}`.slice(0, 200);
 
@@ -733,10 +769,10 @@ async function main() {
     count++;
   }
 
-  console.log(`✅ Pages générées: ${count} produits (p/* + share/*).`);
+  console.log(`Pages générées: ${count} produits (p/* + share/*).`);
 }
 
 main().catch((e) => {
-  console.error("❌ Erreur:", e);
+  console.error("Erreur:", e);
   process.exit(1);
 });
