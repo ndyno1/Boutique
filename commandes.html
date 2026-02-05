@@ -51,7 +51,10 @@
       max-width:100%;
       white-space:nowrap;
       flex:0 0 auto;
+      -webkit-tap-highlight-color:transparent;
+      transition:.2s;
     }
+    .btn:disabled{ opacity:.6; cursor:not-allowed; }
     .btn-outline{ border:1px solid #E5E7EB; background:#fff; color:#111827; }
     .btn-outline:hover{ border-color:#F07E13; color:#F07E13; }
     .btn-primary{ color:#fff; }
@@ -109,6 +112,10 @@
       padding:6px 10px;
       border-radius:999px;
       max-width:100%;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      white-space:nowrap;
     }
   </style>
 </head>
@@ -117,7 +124,7 @@
   <div class="page">
 
     <div class="topbar">
-      <a href="/index.html" class="inline-flex items-center gap-2">
+      <a href="/index.html" class="inline-flex items-center gap-2" aria-label="ViralFlowr">
         <span class="text-2xl font-black tracking-tighter safe-text">
           Viral<span class="text-orange-bsv">Flowr</span>
         </span>
@@ -126,7 +133,7 @@
       <div class="top-actions">
         <a href="/index.html" class="btn btn-outline">Boutique</a>
         <a href="/wallet.html" class="btn btn-outline">Wallet</a>
-        <button id="logoutBtn" class="btn btn-outline">Déconnexion</button>
+        <button id="logoutBtn" class="btn btn-outline" type="button">Déconnexion</button>
       </div>
     </div>
 
@@ -140,7 +147,7 @@
           </div>
         </div>
         <div class="flex gap-2 w-full md:w-auto">
-          <button id="refreshBtn" class="btn brand-gradient btn-primary w-full md:w-auto">Actualiser</button>
+          <button id="refreshBtn" class="btn brand-gradient btn-primary w-full md:w-auto" type="button">Actualiser</button>
         </div>
       </div>
     </div>
@@ -167,7 +174,7 @@
       <div class="card p-5">
         <div class="flex items-center justify-between gap-3">
           <div class="font-black text-sm uppercase tracking-widest text-gray-400">Réponse</div>
-          <button id="closeRespBtn" class="btn btn-outline" style="height:34px;padding:0 10px;font-size:10px;">
+          <button id="closeRespBtn" class="btn btn-outline" type="button" style="height:34px;padding:0 10px;font-size:10px;">
             Fermer
           </button>
         </div>
@@ -175,7 +182,7 @@
              class="mt-3 p-3 rounded-2xl bg-gray-50 border border-gray-200 text-[12px] font-semibold text-gray-800 overflow-auto mono"
              style="white-space:pre-wrap;"></pre>
         <div class="mt-3 flex flex-wrap gap-2">
-          <button id="copyRespBtn" class="btn btn-outline" style="height:38px;padding:0 12px;font-size:11px;">Copier</button>
+          <button id="copyRespBtn" class="btn btn-outline" type="button" style="height:38px;padding:0 12px;font-size:11px;">Copier</button>
         </div>
       </div>
     </div>
@@ -218,10 +225,19 @@
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
       }[c]));
     }
+
     function fmt2(n){
       const x = Number(n||0);
       if(!isFinite(x)) return "0.00";
       return x.toFixed(2);
+    }
+
+    function toNumber_(v){
+      if (v === null || v === undefined) return 0;
+      if (typeof v === "number") return isFinite(v) ? v : 0;
+      const s = String(v).trim().replace(/\s+/g,"").replace(",",".");
+      const x = parseFloat(s);
+      return isFinite(x) ? x : 0;
     }
 
     function badgeForStatus_(st){
@@ -270,6 +286,35 @@
         pickStr_(s?.user?.token) || "";
 
       return { email: email.toLowerCase(), token };
+    }
+
+    // =========================
+    // Clipboard (robuste)
+    // =========================
+    async function copy_(text){
+      const t = String(text || "");
+      try{
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === "function"){
+          await navigator.clipboard.writeText(t);
+          return true;
+        }
+      }catch(_){}
+
+      // fallback
+      try{
+        const ta = document.createElement("textarea");
+        ta.value = t;
+        ta.setAttribute("readonly","true");
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        ta.style.top = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand("copy");
+        ta.remove();
+        return !!ok;
+      }catch(_){}
+      return false;
     }
 
     // =========================
@@ -331,9 +376,10 @@
     }
     closeRespBtn?.addEventListener("click", closeResp_);
     respOverlay?.addEventListener("click", closeResp_);
-    copyRespBtn?.addEventListener("click", () => {
+    copyRespBtn?.addEventListener("click", async () => {
       const t = respText.textContent || "";
-      navigator.clipboard?.writeText(t).then(()=>toast("✅ Copié")).catch(()=>toast("❌ Copie impossible"));
+      const ok = await copy_(t);
+      toast(ok ? "Copié." : "Copie impossible.");
     });
 
     // =========================
@@ -375,15 +421,25 @@
         return;
       }
 
+      // Tri léger: si "ts" est dispo, on met les plus récentes en haut
+      const sorted = [...list].sort((a,b)=>{
+        const ta = toNumber_(a?.ts || a?.timestamp || 0);
+        const tb = toNumber_(b?.ts || b?.timestamp || 0);
+        return tb - ta;
+      });
+
       stateBox.classList.add("hidden");
       wrap.classList.remove("hidden");
 
-      const rows = list.map((o) => {
+      const rows = sorted.map((o) => {
         const orderId = String(o.orderId || o.id || o.order_id || "").trim();
         const created = String(o.createdAt || o.date || o.created_at || o.ts || "").trim() || "—";
         const product = String(o.produit || o.product || o.nom || o.title || "—");
         const qty = Number(o.quantite || o.qty || o.quantity || 1) || 1;
-        const amount = pickAmount_(o);
+
+        const amountRaw = pickAmount_(o);
+        const amount = toNumber_(amountRaw);
+
         const status = String(o.status || o.statut || "");
         const [badgeCls, badgeTxt] = badgeForStatus_(status);
 
@@ -400,8 +456,9 @@
             <td class="p-3 font-black text-gray-900">${esc_(fmt2(amount))} $</td>
             <td class="p-3"><span class="badge ${badgeCls}">${esc_(badgeTxt)}</span></td>
             <td class="p-3">
-              ${hasResp ? `<button class="btn btn-outline seeBtn" style="height:32px;padding:0 10px;font-size:10px;" data-resp="${respEnc}">Voir</button>`
-                        : `<span class="text-[11px] font-black text-gray-300 uppercase tracking-widest">—</span>`}
+              ${hasResp
+                ? `<button class="btn btn-outline seeBtn" type="button" style="height:32px;padding:0 10px;font-size:10px;" data-resp="${respEnc}">Voir</button>`
+                : `<span class="text-[11px] font-black text-gray-300 uppercase tracking-widest">—</span>`}
             </td>
           </tr>
         `;
@@ -411,7 +468,7 @@
         <div class="p-5 md:p-6 border-b border-gray-100">
           <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">${esc_(title)}</div>
           <div class="text-[12px] font-bold text-gray-500 mt-1">
-            Total: <span class="font-black text-gray-900">${list.length}</span>
+            Total: <span class="font-black text-gray-900">${sorted.length}</span>
           </div>
         </div>
         <div class="overflow-x-auto">
@@ -494,6 +551,7 @@
       const wrap = document.getElementById("txWrap");
       const userEmail = document.getElementById("userEmail");
       const modeLine = document.getElementById("modeLine");
+      const refreshBtn = document.getElementById("refreshBtn");
 
       wrap.classList.add("hidden");
       stateBox.classList.remove("hidden");
@@ -501,16 +559,25 @@
 
       applyAuthUI_();
 
+      if (refreshBtn){
+        refreshBtn.disabled = true;
+        refreshBtn.textContent = "Actualisation…";
+      }
+
       if(!s){
         userEmail.textContent = "—";
-        modeLine.textContent = "Connecte-toi pour voir tes transactions.";
+        modeLine.textContent = "Connectez-vous pour voir vos transactions.";
         stateBox.innerHTML = `
-          <div class="text-gray-900 font-black text-lg">Tu n’es pas connecté.</div>
-          <div class="text-gray-500 font-bold mt-2">Connecte-toi pour voir tes transactions.</div>
+          <div class="text-gray-900 font-black text-lg">Vous n’êtes pas connecté.</div>
+          <div class="text-gray-500 font-bold mt-2">Connectez-vous pour voir vos transactions.</div>
           <div class="mt-4">
             <a class="btn brand-gradient btn-primary w-full sm:w-auto" href="/login.html">Connexion</a>
           </div>
         `;
+        if (refreshBtn){
+          refreshBtn.disabled = false;
+          refreshBtn.textContent = "Actualiser";
+        }
         return;
       }
 
@@ -530,10 +597,14 @@
           if(ok || list.length){
             modeLine.textContent = "Source: order_history";
             renderTable_(list, "Transactions d’achat (order_history)");
+            if (refreshBtn){
+              refreshBtn.disabled = false;
+              refreshBtn.textContent = "Actualiser";
+            }
             return;
           }
 
-          // fallback si action pas supportée / ok false
+          // fallback
           modeLine.textContent = "order_history indisponible → fallback purchase_tx…";
 
           jsonp_(
@@ -547,46 +618,66 @@
               if(ok2 || list2.length){
                 modeLine.textContent = "Source: purchase_tx";
                 renderTable_(list2, "Transactions d’achat (purchase_tx)");
+                if (refreshBtn){
+                  refreshBtn.disabled = false;
+                  refreshBtn.textContent = "Actualiser";
+                }
                 return;
               }
 
               const err = (res2 && (res2.error || res2.message)) || (res && (res.error || res.message)) || "Aucune donnée";
               stateBox.innerHTML = "Erreur: " + esc_(err);
               modeLine.textContent = "Aucune transaction chargée.";
+              if (refreshBtn){
+                refreshBtn.disabled = false;
+                refreshBtn.textContent = "Actualiser";
+              }
             },
             (why2) => {
               stateBox.innerHTML = "Erreur réseau (purchase_tx): " + esc_(why2);
               modeLine.textContent = "Erreur réseau.";
+              if (refreshBtn){
+                refreshBtn.disabled = false;
+                refreshBtn.textContent = "Actualiser";
+              }
             }
           );
         },
         (why) => {
           dbg("order_history error", why);
 
-          // si order_history réseau KO, on tente quand même purchase_tx
           modeLine.textContent = "order_history réseau KO → fallback purchase_tx…";
 
-          const auth = getAuth_(getSession_() || {});
+          const auth2 = getAuth_(getSession_() || {});
           jsonp_(
-            { action:"purchase_tx", email: auth.email, token: auth.token, limit:"200" },
+            { action:"purchase_tx", email: auth2.email, token: auth2.token, limit:"200" },
             (res2) => {
               dbg("purchase_tx response", res2);
+
               const list2 = extractListFromRes_(res2);
               const ok2 = (res2 && res2.ok === true);
 
               if(ok2 || list2.length){
                 modeLine.textContent = "Source: purchase_tx";
                 renderTable_(list2, "Transactions d’achat (purchase_tx)");
-                return;
+              } else {
+                const err = (res2 && (res2.error || res2.message)) || "Impossible de charger";
+                stateBox.innerHTML = "Erreur: " + esc_(err);
+                modeLine.textContent = "Aucune transaction chargée.";
               }
 
-              const err = (res2 && (res2.error || res2.message)) || "Impossible de charger";
-              stateBox.innerHTML = "Erreur: " + esc_(err);
-              modeLine.textContent = "Aucune transaction chargée.";
+              if (refreshBtn){
+                refreshBtn.disabled = false;
+                refreshBtn.textContent = "Actualiser";
+              }
             },
             (why2) => {
               stateBox.innerHTML = "Erreur réseau: " + esc_(why) + " / " + esc_(why2);
               modeLine.textContent = "Erreur réseau.";
+              if (refreshBtn){
+                refreshBtn.disabled = false;
+                refreshBtn.textContent = "Actualiser";
+              }
             }
           );
         }
