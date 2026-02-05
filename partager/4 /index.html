@@ -1,29 +1,73 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
+  <!-- ====== CONFIG (générée) ====== -->
+  <meta name="vf:id" content="1234" />
   <title>Produit 1234 | ViralFlowr</title>
-  <meta name="description" content="Paiement sécurisé • Livraison rapide • Support WhatsApp">
+  <meta name="description" content="Paiement sécurisé • Livraison rapide • Support WhatsApp" />
 
-  <meta property="og:type" content="product">
-  <meta property="og:site_name" content="ViralFlowr">
-  <meta property="og:title" content="Produit 1234 | ViralFlowr">
-  <meta property="og:description" content="Paiement sécurisé • Livraison rapide • Support WhatsApp">
+  <!-- (optionnel) évite d’indexer les pages share si tu veux garder le SEO sur la page produit -->
+  <meta name="robots" content="noindex,follow" />
 
-  <!-- ✅ METS UNE VRAIE URL D'IMAGE ICI -->
-  <meta property="og:image" content="https://viralflowr.com/assets/og/1234.jpg">
+  <!-- ====== Open Graph ====== -->
+  <meta property="og:type" content="product" />
+  <meta property="og:site_name" content="ViralFlowr" />
+  <meta property="og:title" content="Produit 1234 | ViralFlowr" />
+  <meta property="og:description" content="Paiement sécurisé • Livraison rapide • Support WhatsApp" />
+  <meta property="og:image" content="https://viralflowr.com/assets/og/1234.jpg" />
+  <meta property="og:image:secure_url" content="https://viralflowr.com/assets/og/1234.jpg" />
+  <meta property="og:url" content="https://viralflowr.com/share/1234" />
 
-  <meta property="og:url" content="https://viralflowr.com/share/1234">
+  <!-- ====== Twitter ====== -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Produit 1234 | ViralFlowr" />
+  <meta name="twitter:description" content="Paiement sécurisé • Livraison rapide • Support WhatsApp" />
+  <meta name="twitter:image" content="https://viralflowr.com/assets/og/1234.jpg" />
 
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="https://viralflowr.com/assets/og/1234.jpg">
+  <!-- ====== Canonical (optionnel) ====== -->
+  <link rel="canonical" href="https://viralflowr.com/share/1234" />
 
-  <!-- ✅ Redirection vers paiement avec ID -->
-  <meta http-equiv="refresh" content="0;url=/paiement.html?id=1234">
+  <!-- ====== Redirect (garde la logique) ====== -->
+  <!-- JS rapide + meta refresh fallback pour anciens navigateurs -->
+  <script>
+    (function () {
+      var target = "/paiement.html?id=1234";
+      try { window.location.replace(target); }
+      catch (e) { window.location.href = target; }
+    })();
+  </script>
+
+  <meta http-equiv="refresh" content="0;url=/paiement.html?id=1234" />
+
+  <style>
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:#f3f3f3;color:#111827}
+    .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:20px}
+    .card{max-width:520px;width:100%;background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:18px;box-shadow:0 10px 25px rgba(0,0,0,.06)}
+    .t{font-weight:900;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:#6b7280}
+    .p{margin-top:8px;font-weight:800}
+    a{color:#f07e13;font-weight:900;text-decoration:none}
+    a:hover{text-decoration:underline}
+  </style>
 </head>
+
 <body>
-  <a href="/paiement.html?id=1234">Ouvrir le produit</a>
+  <div class="wrap">
+    <div class="card">
+      <div class="t">Redirection</div>
+      <div class="p">
+        Si rien ne se passe, ouvre le produit :
+        <a href="/paiement.html?id=1234">paiement.html?id=1234</a>
+      </div>
+
+      <noscript>
+        <div class="p" style="margin-top:12px;color:#6b7280">
+          JavaScript est désactivé. Clique sur le lien ci-dessus.
+        </div>
+      </noscript>
+    </div>
+  </div>
 </body>
 </html>
