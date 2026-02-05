@@ -2,44 +2,86 @@
 <html lang="fr" class="font-inter">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
   <title>Portefeuille | ViralFlowr</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
-    body { font-family: 'Inter', sans-serif; background-color: #F3F3F3; color: #201B16; overflow-x:hidden; }
-    .text-orange-bsv { color: #F07E13; }
-    .brand-gradient { background: linear-gradient(90deg, #F07E13 0%, #FFB26B 100%); }
-    .brand-gradient:hover { background: linear-gradient(90deg, #d96d0c 0%, #F07E13 100%); }
-    .card { background:#fff; border:1px solid #eee; border-radius:24px; box-shadow: 0 12px 25px rgba(0,0,0,.06); }
-    .icon-btn{
-      display:flex; align-items:center; justify-content:center;
-      width:40px; height:40px; border-radius:14px;
-      background:#fff; border:1px solid #E5E7EB; color:#374151;
-      transition:.2s;
+    :root{ color-scheme: light; }
+    html, body{ width:100%; max-width:100%; overflow-x:hidden; overscroll-behavior-x:none; }
+    *{ box-sizing:border-box; }
+
+    body{
+      font-family:'Inter',sans-serif;
+      background:#F3F3F3;
+      color:#201B16;
+      -webkit-text-size-adjust:100%;
+      text-rendering:optimizeLegibility;
     }
-    .icon-btn:hover{ border-color:#F07E13; color:#F07E13; transform:translateY(-1px); }
+
+    .text-orange-bsv{ color:#F07E13; }
+    .brand-gradient{ background: linear-gradient(90deg, #F07E13 0%, #FFB26B 100%); }
+    .brand-gradient:hover{ filter: brightness(.98); }
+
+    .card{
+      background:#fff;
+      border:1px solid #eee;
+      border-radius:24px;
+      box-shadow: 0 12px 25px rgba(0,0,0,.06);
+      overflow:hidden;
+    }
+
     .vf-brand-wrap{ min-width:0; overflow:hidden; }
     .vf-brand-text{
       display:block; max-width:100%;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      line-height:1;
     }
-    .muted { color:#8A8A8A; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-    .btn {
-      height: 44px; padding: 0 16px; border-radius: 14px;
-      font-weight: 900; font-size: 12px; letter-spacing:.08em;
-      text-transform: uppercase; transition: .2s; display:inline-flex; align-items:center; justify-content:center; gap:10px;
-      white-space: nowrap;
+
+    .muted{ color:#8A8A8A; }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+    /* Buttons */
+    .btn{
+      height:44px;
+      padding:0 16px;
+      border-radius:14px;
+      font-weight:900;
+      font-size:12px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      transition:.2s;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      white-space:nowrap;
+      -webkit-tap-highlight-color:transparent;
+      flex:0 0 auto;
+      max-width:100%;
     }
-    .btn:hover { transform: translateY(-1px); }
-    .btn-outline { background:#fff; border:1px solid #E5E7EB; color:#111827; }
-    .btn-outline:hover { border-color:#F07E13; color:#F07E13; }
-    .btn-primary { color:#fff; }
-    .box-note { border:2px dashed #E5E7EB; border-radius: 22px; background: #FBFBFB; }
-    .small { font-size: 12px; }
+    .btn:hover{ transform: translateY(-1px); }
+    .btn:disabled{ opacity:.6; cursor:not-allowed; transform:none; }
+    .btn-outline{ background:#fff; border:1px solid #E5E7EB; color:#111827; }
+    .btn-outline:hover{ border-color:#F07E13; color:#F07E13; }
+    .btn-primary{ color:#fff; }
+
+    .icon-btn{
+      display:flex; align-items:center; justify-content:center;
+      width:44px; height:44px; border-radius:14px;
+      background:#fff; border:1px solid #E5E7EB; color:#374151;
+      transition:.2s;
+      -webkit-tap-highlight-color:transparent;
+      flex:0 0 auto;
+    }
+    .icon-btn:hover{ border-color:#F07E13; color:#F07E13; transform:translateY(-1px); }
+    .icon-btn:disabled{ opacity:.6; cursor:not-allowed; transform:none; }
+
+    .box-note{ border:2px dashed #E5E7EB; border-radius: 22px; background: #FBFBFB; }
+    .small{ font-size: 12px; }
+
     .input{
       width:100%;
       height:44px;
@@ -53,23 +95,137 @@
       transition:.2s;
     }
     .input:focus{ border-color:#F07E13; box-shadow:0 6px 16px rgba(240,126,19,.10); }
+
     .select{ appearance:none; }
+
+    /* Sticky header */
+    header{
+      background:#fff;
+      position:sticky;
+      top:0;
+      z-index:50;
+      border-bottom:1px solid #E5E7EB;
+      box-shadow:0 6px 14px rgba(0,0,0,.04);
+    }
+
+    .topbar{
+      max-width:1240px;
+      margin:0 auto;
+      height:64px;
+      padding:0 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width:0;
+    }
+
+    /* On very small screens: allow actions to scroll instead of overflow */
+    @media (max-width: 420px){
+      .top-actions{
+        max-width: 62vw;
+        overflow-x:auto;
+        -webkit-overflow-scrolling:touch;
+        padding-bottom:2px;
+      }
+      .top-actions::-webkit-scrollbar{ display:none; }
+    }
+
+    /* Toast */
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:20px;
+      transform:translateX(-50%);
+      background: rgba(17,24,39,.95);
+      color:#fff;
+      padding:12px 14px;
+      border-radius:16px;
+      font-weight:900;
+      font-size:12px;
+      letter-spacing:.04em;
+      box-shadow:0 10px 25px rgba(0,0,0,.18);
+      z-index:9999;
+      max-width:min(92vw, 520px);
+      display:none;
+    }
+    .toast.show{ display:block; animation: pop .18s ease-out; }
+    @keyframes pop{
+      from{ transform: translateX(-50%) translateY(8px); opacity:0 }
+      to{ transform: translateX(-50%) translateY(0); opacity:1 }
+    }
+
+    /* Skeleton (faster perceived load) */
+    .skeleton{
+      position:relative;
+      overflow:hidden;
+      background:#f3f4f6;
+      border-radius:12px;
+    }
+    .skeleton::after{
+      content:"";
+      position:absolute;
+      top:0; left:-60%;
+      width:60%;
+      height:100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+      animation: shimmer 1.1s infinite;
+    }
+    @keyframes shimmer{
+      0%{ left:-60%; }
+      100%{ left:120%; }
+    }
+
+    .kpi-line{
+      display:flex;
+      align-items:baseline;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .mono-box{
+      white-space:pre-wrap;
+      word-break:break-word;
+      overflow-wrap:anywhere;
+    }
   </style>
 </head>
 
 <body class="min-h-screen flex flex-col">
 
-  <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-200 shadow-sm">
-    <div class="max-w-[1240px] mx-auto h-16 px-4 flex items-center justify-between gap-4">
+  <header>
+    <div class="topbar">
       <a class="flex items-center gap-2 shrink-0 vf-brand-wrap" href="index.html" aria-label="ViralFlowr">
         <div class="text-2xl font-black tracking-tighter vf-brand-text">
           Viral<span class="text-orange-bsv">Flowr</span>
         </div>
       </a>
 
-      <div class="flex items-center gap-2">
-        <a href="index.html" class="btn btn-outline hidden sm:inline-flex">Boutique</a>
-        <a href="wallet.html" class="icon-btn" title="Portefeuille" aria-label="Portefeuille">
+      <div class="top-actions">
+        <!-- Mobile icons -->
+        <a href="index.html" class="icon-btn sm:hidden" title="Boutique" aria-label="Boutique">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 11l9-8 9 8"></path>
+            <path d="M9 22V12h6v10"></path>
+          </svg>
+        </a>
+
+        <a href="transactions.html" class="icon-btn sm:hidden" title="Transactions" aria-label="Transactions">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 3v6h6"></path>
+            <path d="M21 21v-6h-6"></path>
+            <path d="M21 9a9 9 0 0 0-15.3-6.3L3 9"></path>
+            <path d="M3 15a9 9 0 0 0 15.3 6.3L21 15"></path>
+          </svg>
+        </a>
+
+        <a href="wallet.html" class="icon-btn sm:hidden" title="Portefeuille" aria-label="Portefeuille">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
             <path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/>
@@ -77,6 +233,20 @@
             <circle cx="16" cy="14" r="0.5" />
           </svg>
         </a>
+
+        <button id="logoutBtnIcon" class="icon-btn sm:hidden" type="button" title="Déconnexion" aria-label="Déconnexion">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+            <path d="M10 17l5-5-5-5"></path>
+            <path d="M15 12H3"></path>
+          </svg>
+        </button>
+
+        <!-- Desktop text -->
+        <a href="index.html" class="btn btn-outline hidden sm:inline-flex">Boutique</a>
+        <a href="transactions.html" class="btn btn-outline hidden sm:inline-flex">Transactions</a>
+        <a href="wallet.html" class="btn btn-outline hidden sm:inline-flex">Wallet</a>
+        <button id="logoutBtn" class="btn btn-outline hidden sm:inline-flex" type="button">Déconnexion</button>
       </div>
     </div>
   </header>
@@ -98,33 +268,40 @@
             <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-300">
               Solde (<span id="balanceCurrencyLabel">USD</span>)
             </div>
-            <div class="text-4xl font-black tracking-tighter mt-1">
-              <span id="balanceValue">—</span><span id="balanceCurrencySym" class="text-gray-300 ml-1">$</span>
+
+            <div class="kpi-line mt-1">
+              <div class="text-4xl font-black tracking-tighter">
+                <span id="balanceValue" class="inline-block">—</span><span id="balanceCurrencySym" class="text-gray-300 ml-1">$</span>
+              </div>
+              <div class="text-[11px] font-extrabold text-gray-400">
+                <span id="lastUpdated">—</span>
+              </div>
             </div>
+
             <div class="mt-2 small font-bold">
               <span class="muted">Compte:</span> <span id="userLabel">—</span>
             </div>
             <div id="authModeLine" class="mt-1 text-[11px] font-extrabold text-gray-400 hidden"></div>
           </div>
 
-          <div class="flex items-center gap-2">
-            <button id="refreshBtn" class="btn btn-outline">
+          <div class="flex items-center gap-2 flex-wrap">
+            <button id="refreshBtn" class="btn btn-outline" type="button">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v7h-7"/>
               </svg>
               Actualiser
             </button>
-            <button id="logoutBtn" class="btn btn-outline">Déconnexion</button>
+            <button id="logoutBtnInline" class="btn btn-outline sm:hidden" type="button">Déconnexion</button>
           </div>
         </div>
 
         <div class="mt-6 p-4 rounded-2xl bg-[#FFF7EE] border border-[#FFD7B0]">
           <div class="font-black text-[12px] uppercase tracking-[.18em] text-[#B65E0B]">Pourquoi déposer de l’argent ?</div>
           <ul class="mt-2 text-[13px] font-semibold text-[#3B2A16] leading-relaxed list-disc pl-5">
-            <li>Tu ajoutes du <b>crédit</b> dans ton wallet.</li>
-            <li>Après ça, tu peux payer les commandes <b>instantanément</b> sans refaire de paiement.</li>
-            <li><b>Moneroo</b> = paiement Mobile Money + redirection automatique vers la page de paiement.</li>
-            <li><b>Dépôt manuel</b> (Binance/USDT) = WhatsApp avec un message déjà rempli.</li>
+            <li>Tu ajoutes du crédit dans ton wallet.</li>
+            <li>Après ça, tu peux payer les commandes instantanément sans refaire de paiement.</li>
+            <li>Moneroo = paiement Mobile Money + redirection automatique vers la page de paiement.</li>
+            <li>Dépôt manuel (Binance/USDT) = WhatsApp avec un message déjà rempli.</li>
           </ul>
         </div>
 
@@ -133,12 +310,12 @@
           <div class="text-center text-2xl md:text-3xl font-black tracking-tight mt-2 mono" id="topupNote">TOPUP-—</div>
 
           <div class="flex flex-wrap items-center justify-center gap-2 mt-3">
-            <button id="copyNoteBtn" class="btn btn-outline">Copier la note</button>
-            <button id="newNoteBtn" class="btn btn-outline">Nouvelle note</button>
+            <button id="copyNoteBtn" class="btn btn-outline" type="button">Copier la note</button>
+            <button id="newNoteBtn" class="btn btn-outline" type="button">Nouvelle note</button>
           </div>
 
           <div class="mt-3 text-center text-[12px] font-bold text-gray-500">
-            Ta NOTE sert de référence interne (wallet).
+            Ta note sert de référence interne (wallet).
           </div>
         </div>
 
@@ -184,42 +361,47 @@
             </div>
 
             <div class="flex items-end">
-              <button id="paidBtn" class="btn brand-gradient btn-primary w-full">Continuer</button>
+              <button id="paidBtn" class="btn brand-gradient btn-primary w-full" type="button">Continuer</button>
             </div>
           </div>
 
           <div id="manualBox" class="hidden mt-4 p-4 rounded-2xl bg-gray-50 border border-gray-200">
             <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-400">Dépôt manuel</div>
-            <div id="manualText" class="mt-2 text-[13px] font-semibold text-gray-700 leading-relaxed"></div>
+            <div class="mt-2 text-[13px] font-semibold text-gray-700 leading-relaxed">
+              WhatsApp est prêt. Tu peux copier le message ou l’envoyer directement.
+            </div>
             <div id="manualMeta" class="mt-3 text-[12px] font-bold text-gray-500"></div>
 
+            <pre id="manualMsgPreview" class="mt-3 p-3 rounded-2xl bg-white border border-gray-200 text-[12px] font-semibold text-gray-800 mono mono-box"></pre>
+
             <div class="flex flex-wrap gap-2 mt-3">
-              <button id="openWaBtn" class="btn brand-gradient btn-primary" style="height:38px;padding:0 12px;font-size:11px;">
+              <button id="openWaBtn" class="btn brand-gradient btn-primary" type="button" style="height:38px;padding:0 12px;font-size:11px;">
                 Ouvrir WhatsApp
               </button>
-              <button id="copyManualBtn" class="btn btn-outline" style="height:38px;padding:0 12px;font-size:11px;">
+              <button id="copyManualBtn" class="btn btn-outline" type="button" style="height:38px;padding:0 12px;font-size:11px;">
                 Copier le message
               </button>
-              <button id="hideManualBtn" class="btn btn-outline" style="height:38px;padding:0 12px;font-size:11px;">
+              <button id="hideManualBtn" class="btn btn-outline" type="button" style="height:38px;padding:0 12px;font-size:11px;">
                 Fermer
               </button>
             </div>
           </div>
         </div>
 
-        <!-- =========================
-             HISTORIQUE WALLET_TX (SEULEMENT)
-             ========================= -->
+        <!-- HISTORIQUE WALLET_TX (SEULEMENT) -->
         <div class="mt-7">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between gap-2 flex-wrap">
             <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-300">Historique</div>
-            <button id="refreshTxBtn" class="btn btn-outline" style="height:38px;padding:0 12px;font-size:11px;">
+            <button id="refreshTxBtn" class="btn btn-outline" type="button" style="height:38px;padding:0 12px;font-size:11px;">
               Rafraîchir
             </button>
           </div>
 
           <div id="txBox" class="mt-3 rounded-2xl border border-gray-200 bg-white overflow-hidden">
-            <div class="p-4 text-sm font-bold text-gray-400">Chargement…</div>
+            <div class="p-4 text-sm font-bold text-gray-400">
+              <div class="h-4 w-44 skeleton"></div>
+              <div class="mt-2 h-4 w-64 skeleton"></div>
+            </div>
           </div>
 
           <pre id="debugBox" class="hidden mt-3 p-3 rounded-2xl bg-black text-white text-[11px] overflow-auto"></pre>
@@ -234,6 +416,8 @@
       <p class="text-[11px] text-[#767676]">© 2026 ViralFlowr. Tous droits réservés.</p>
     </div>
   </footer>
+
+  <div id="toast" class="toast"></div>
 
   <script>
     // =========================
@@ -255,6 +439,7 @@
 
     const balanceCurrencyLabel = document.getElementById("balanceCurrencyLabel");
     const balanceCurrencySym = document.getElementById("balanceCurrencySym");
+    const lastUpdatedEl = document.getElementById("lastUpdated");
 
     const methodSel = document.getElementById("methodSel");
     const methodHint = document.getElementById("methodHint");
@@ -265,11 +450,26 @@
     const field2Help = document.getElementById("field2Help");
 
     const manualBox = document.getElementById("manualBox");
-    const manualText = document.getElementById("manualText");
     const manualMeta = document.getElementById("manualMeta");
+    const manualMsgPreview = document.getElementById("manualMsgPreview");
     const openWaBtn = document.getElementById("openWaBtn");
     const copyManualBtn = document.getElementById("copyManualBtn");
     const hideManualBtn = document.getElementById("hideManualBtn");
+
+    const refreshBtn = document.getElementById("refreshBtn");
+    const refreshTxBtn = document.getElementById("refreshTxBtn");
+    const paidBtn = document.getElementById("paidBtn");
+
+    // =========================
+    // Toast
+    // =========================
+    function toast(msg){
+      const el = document.getElementById("toast");
+      el.textContent = String(msg || "");
+      el.classList.add("show");
+      clearTimeout(window.__vf_toast_t);
+      window.__vf_toast_t = setTimeout(()=> el.classList.remove("show"), 2200);
+    }
 
     // =========================
     // Debug
@@ -318,6 +518,20 @@
       return c ? c : "$";
     }
 
+    function setLastUpdated_(ts){
+      if(!ts){ lastUpdatedEl.textContent = "—"; return; }
+      const d = new Date(ts);
+      if(isNaN(d.getTime())) { lastUpdatedEl.textContent = "—"; return; }
+      const hh = String(d.getHours()).padStart(2,"0");
+      const mm = String(d.getMinutes()).padStart(2,"0");
+      lastUpdatedEl.textContent = "Mis à jour: " + hh + ":" + mm;
+    }
+
+    function setBusy_(busy){
+      refreshBtn.disabled = !!busy;
+      refreshTxBtn.disabled = !!busy;
+    }
+
     // =========================
     // Session
     // =========================
@@ -359,26 +573,35 @@
     }
 
     function applyAuthUI_(){
-      const btn = document.getElementById("logoutBtn");
-      if(!btn) return;
+      const btnText = document.getElementById("logoutBtn");
+      const btnIcon = document.getElementById("logoutBtnIcon");
+      const btnInline = document.getElementById("logoutBtnInline");
+
       const s = getSession_();
 
+      function setAll_(label, onClick){
+        if(btnText){ btnText.textContent = label; btnText.disabled = false; btnText.onclick = onClick; }
+        if(btnInline){ btnInline.textContent = label; btnInline.disabled = false; btnInline.onclick = onClick; }
+        if(btnIcon){
+          btnIcon.setAttribute("aria-label", label);
+          btnIcon.setAttribute("title", label);
+          btnIcon.disabled = false;
+          btnIcon.onclick = onClick;
+        }
+      }
+
       if(!s){
-        btn.textContent = "Connexion";
-        btn.disabled = false;
-        btn.onclick = () => { window.location.href = "login.html"; };
+        setAll_("Connexion", () => { window.location.href = "login.html"; });
         return;
       }
 
-      btn.textContent = "Déconnexion";
-      btn.disabled = false;
-      btn.onclick = () => {
+      setAll_("Déconnexion", () => {
         ["vf_session","VF_SESSION","vfSession","VFSession","session","auth","vf_auth"].forEach(k => {
           try { localStorage.removeItem(k); } catch(_){}
         });
         showAlert("Déconnecté.", "success");
         setTimeout(() => { window.location.href = "login.html"; }, 350);
-      };
+      });
     }
 
     window.addEventListener("storage", (e) => {
@@ -407,22 +630,32 @@
       return note;
     }
 
-    function copyText_(text){
+    async function copyText_(text){
       const t = String(text||"").trim();
-      if(!t) return;
-      navigator.clipboard?.writeText(t).then(()=> {
-        showAlert("Copié.", "success");
-        setTimeout(hideAlert, 900);
-      }).catch(()=>{
+      if(!t) return false;
+
+      try{
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === "function"){
+          await navigator.clipboard.writeText(t);
+          return true;
+        }
+      }catch(_){}
+
+      try{
         const ta = document.createElement("textarea");
         ta.value = t;
+        ta.setAttribute("readonly","true");
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        ta.style.top = "-9999px";
         document.body.appendChild(ta);
         ta.select();
-        document.execCommand("copy");
+        const ok = document.execCommand("copy");
         ta.remove();
-        showAlert("Copié.", "success");
-        setTimeout(hideAlert, 900);
-      });
+        return !!ok;
+      }catch(_){}
+
+      return false;
     }
 
     // =========================
@@ -488,6 +721,29 @@
     }
 
     // =========================
+    // Cache rapide (perçu instantané)
+    // =========================
+    function cacheKey_(identityKey, name){
+      return "vf_wallet_cache_" + String(identityKey||"user").toLowerCase() + "_" + name;
+    }
+
+    function saveCache_(key, obj){
+      try{
+        localStorage.setItem(key, JSON.stringify({ t: Date.now(), v: obj }));
+      }catch(_){}
+    }
+
+    function readCache_(key){
+      try{
+        const raw = localStorage.getItem(key);
+        if(!raw) return null;
+        const o = JSON.parse(raw);
+        if(!o || typeof o !== "object") return null;
+        return o;
+      }catch(_){ return null; }
+    }
+
+    // =========================
     // Wallet render
     // =========================
     function normalizeTxList_(res){
@@ -550,10 +806,11 @@
     // =========================
     // Lecture solde + tx (API)
     // =========================
-    function loadWallet_(auth){
+    function loadWallet_(auth, identityKey){
       balanceValue.textContent = "—";
       balanceCurrencyLabel.textContent = "USD";
       balanceCurrencySym.textContent = "$";
+      setLastUpdated_(null);
 
       const idp = identityParams_(auth);
 
@@ -576,6 +833,11 @@
             balanceCurrencyLabel.textContent = cur;
             balanceCurrencySym.textContent = currencySymbol_(cur);
             balanceValue.textContent = fmt2(res.balance);
+            setLastUpdated_(Date.now());
+
+            saveCache_(cacheKey_(identityKey,"balance"), { balance: Number(res.balance||0), currency: cur });
+            saveCache_(cacheKey_(identityKey,"updated"), { t: Date.now() });
+
             hideAlert();
             return;
           }
@@ -583,17 +845,25 @@
           const err = res?.error || "ERREUR";
           showAlert("Solde non chargé (" + err + ").", "error");
           balanceValue.textContent = "0.00";
+          setLastUpdated_(Date.now());
         },
         (why) => {
           dbg("wallet_balance error", why);
           showAlert("Solde non chargé (réseau: " + why + ").", "error");
           balanceValue.textContent = "0.00";
+          setLastUpdated_(Date.now());
         }
       );
     }
 
-    function loadTx_(auth){
-      txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Chargement…</div>`;
+    function loadTx_(auth, identityKey){
+      txBox.innerHTML = `
+        <div class="p-4 text-sm font-bold text-gray-400">
+          <div class="h-4 w-44 skeleton"></div>
+          <div class="mt-2 h-4 w-64 skeleton"></div>
+        </div>
+      `;
+
       const idp = identityParams_(auth);
 
       dbg("wallet_tx request", { action:"wallet_tx", currency:"USD", limit:"50", ...idp });
@@ -604,7 +874,9 @@
           dbg("wallet_tx response", res);
 
           if(res && res.ok){
-            renderTx_(normalizeTxList_(res));
+            const list = normalizeTxList_(res);
+            renderTx_(list);
+            saveCache_(cacheKey_(identityKey,"tx"), list);
             return;
           }
 
@@ -644,14 +916,18 @@
 
     function showManual_(message, meta){
       manualBox.classList.remove("hidden");
-      manualText.textContent = "Clique sur WhatsApp pour envoyer le message pré-rempli au support.";
+      manualMsgPreview.textContent = String(message || "");
+
       const parts = [];
       if(meta?.amount) parts.push("Montant: " + meta.amount);
       if(meta?.method) parts.push("Méthode: " + meta.method);
       if(meta?.note) parts.push("Note: " + meta.note);
       manualMeta.textContent = parts.join(" • ");
 
-      copyManualBtn.onclick = () => copyText_(message);
+      copyManualBtn.onclick = async () => {
+        const ok = await copyText_(message);
+        toast(ok ? "Copié." : "Copie impossible.");
+      };
       openWaBtn.onclick = () => openWhatsApp_(WHATSAPP_SUPPORT, message);
       hideManualBtn.onclick = () => manualBox.classList.add("hidden");
     }
@@ -663,7 +939,7 @@
       field2Help.textContent = "";
       manualBox.classList.add("hidden");
       manualMeta.textContent = "";
-      manualText.textContent = "";
+      manualMsgPreview.textContent = "";
 
       if(method === "MONEROO_MOMO"){
         field2Wrap.classList.remove("hidden");
@@ -703,15 +979,14 @@
         return;
       }
 
-      const btn = document.getElementById("paidBtn");
-      btn.disabled = true;
-      btn.textContent = "Traitement...";
+      paidBtn.disabled = true;
+      paidBtn.textContent = "Traitement...";
 
       const idp = identityParams_(auth);
 
       if(!idp.token && !idp.email){
-        btn.disabled = false;
-        btn.textContent = "Continuer";
+        paidBtn.disabled = false;
+        paidBtn.textContent = "Continuer";
         showAlert("email/token requis. Reconnecte-toi.", "error");
         return;
       }
@@ -719,8 +994,8 @@
       if(method === "MONEROO_MOMO"){
         const phone = field2;
         if(!isPhoneLike_(phone)){
-          btn.disabled = false;
-          btn.textContent = "Continuer";
+          paidBtn.disabled = false;
+          paidBtn.textContent = "Continuer";
           showAlert("Téléphone Mobile Money invalide. Exemple: +243850000000", "error");
           return;
         }
@@ -739,18 +1014,18 @@
           (res) => {
             dbg("wallet_topup_create response", res);
 
-            btn.disabled = false;
-            btn.textContent = "Continuer";
+            paidBtn.disabled = false;
+            paidBtn.textContent = "Continuer";
 
             if(res && res.ok && res.mode === "redirect" && res.checkout_url){
               showAlert("Redirection…", "success");
-              setTimeout(() => { window.location.href = res.checkout_url; }, 300);
+              setTimeout(() => { window.location.href = res.checkout_url; }, 250);
               return;
             }
 
             if(res && res.ok){
               showAlert("Demande enregistrée.", "success");
-              setTimeout(() => { loadWallet_(auth); loadTx_(auth); }, 800);
+              setTimeout(() => { loadWallet_(auth, auth.email || auth.token || "user"); loadTx_(auth, auth.email || auth.token || "user"); }, 700);
               return;
             }
 
@@ -758,8 +1033,8 @@
           },
           (why) => {
             dbg("wallet_topup_create error", why);
-            btn.disabled = false;
-            btn.textContent = "Continuer";
+            paidBtn.disabled = false;
+            paidBtn.textContent = "Continuer";
             showAlert("Erreur réseau (" + why + ").", "error");
           }
         );
@@ -775,12 +1050,12 @@
         (res) => {
           dbg("wallet_topup_create(manual) response", res);
 
-          btn.disabled = false;
-          btn.textContent = "Continuer";
+          paidBtn.disabled = false;
+          paidBtn.textContent = "Continuer";
 
           if(res && res.ok){
             showAlert("Dépôt manuel: WhatsApp prêt.", "success");
-            setTimeout(() => { loadTx_(auth); }, 600);
+            setTimeout(() => { loadTx_(auth, auth.email || auth.token || "user"); }, 600);
           } else {
             showAlert("Dépôt manuel: WhatsApp prêt (API: " + (res?.error || "ERREUR") + ")", "info");
           }
@@ -789,8 +1064,8 @@
           openWhatsApp_(WHATSAPP_SUPPORT, waMessage);
         },
         (_why) => {
-          btn.disabled = false;
-          btn.textContent = "Continuer";
+          paidBtn.disabled = false;
+          paidBtn.textContent = "Continuer";
           showAlert("Dépôt manuel: WhatsApp prêt.", "success");
           showManual_(waMessage, { amount: fmt2(amount) + " USD", method, note });
           openWhatsApp_(WHATSAPP_SUPPORT, waMessage);
@@ -811,7 +1086,7 @@
       const status = u.searchParams.get("monerooPaymentStatus") || u.searchParams.get("status");
       if(!paymentId) return;
 
-      showAlert("Paiement détecté… confirmation en cours", "info");
+      showAlert("Paiement détecté, confirmation en cours…", "info");
 
       jsonp_(
         { action:"moneroo_confirm", paymentId, ...idp },
@@ -820,8 +1095,8 @@
 
           if(res && res.ok && res.credited){
             showAlert("Crédit ajouté.", "success");
-            loadWallet_(auth);
-            loadTx_(auth);
+            loadWallet_(auth, auth.email || auth.token || "user");
+            loadTx_(auth, auth.email || auth.token || "user");
           }else{
             showAlert("Paiement non confirmé (" + (res?.error || status || "ERREUR") + ").", "error");
           }
@@ -858,32 +1133,61 @@
       userLabel.textContent = auth.email || "Utilisateur";
 
       const identityKey = auth.email || auth.token || "user";
+
+      // Cache instantané (avant API)
+      const cachedBal = readCache_(cacheKey_(identityKey,"balance"));
+      const cachedUpd = readCache_(cacheKey_(identityKey,"updated"));
+      const cachedTx  = readCache_(cacheKey_(identityKey,"tx"));
+
+      if(cachedBal && cachedBal.v){
+        const cur = String(cachedBal.v.currency || "USD").toUpperCase();
+        balanceCurrencyLabel.textContent = cur;
+        balanceCurrencySym.textContent = currencySymbol_(cur);
+        balanceValue.textContent = fmt2(cachedBal.v.balance);
+      }
+      if(cachedUpd && cachedUpd.v && cachedUpd.v.t){
+        setLastUpdated_(cachedUpd.v.t);
+      }
+      if(cachedTx && Array.isArray(cachedTx.v)){
+        renderTx_(cachedTx.v);
+      }
+
+      // Note
       let note = ensureTopupNote_(identityKey);
 
+      // UI method
       applyMethodUI_();
       methodSel.addEventListener("change", applyMethodUI_);
 
-      // Charge solde + wallet tx
-      loadWallet_(auth);
-      loadTx_(auth);
+      // Load API
+      setBusy_(true);
+      loadWallet_(auth, identityKey);
+      loadTx_(auth, identityKey);
+      setTimeout(()=> setBusy_(false), 450);
 
       // Confirme retour Moneroo si présent
       maybeHandleMonerooReturn_(auth);
 
-      document.getElementById("refreshBtn").addEventListener("click", () => {
-        loadWallet_(auth);
-        loadTx_(auth);
+      refreshBtn.addEventListener("click", () => {
+        setBusy_(true);
+        loadWallet_(auth, identityKey);
+        loadTx_(auth, identityKey);
+        setTimeout(()=> setBusy_(false), 450);
       });
-      document.getElementById("refreshTxBtn").addEventListener("click", () => loadTx_(auth));
 
-      document.getElementById("copyNoteBtn").addEventListener("click", () => copyText_(note));
+      refreshTxBtn.addEventListener("click", () => loadTx_(auth, identityKey));
+
+      document.getElementById("copyNoteBtn").addEventListener("click", async () => {
+        const ok = await copyText_(note);
+        toast(ok ? "Copié." : "Copie impossible.");
+      });
+
       document.getElementById("newNoteBtn").addEventListener("click", () => {
         note = setTopupNote_(identityKey, "TOPUP-" + Date.now() + "-" + Math.floor(1000 + Math.random()*9000));
-        showAlert("Nouvelle note générée.", "success");
-        setTimeout(hideAlert, 900);
+        toast("Nouvelle note générée.");
       });
 
-      document.getElementById("paidBtn").addEventListener("click", () => createTopup_(auth, note));
+      paidBtn.addEventListener("click", () => createTopup_(auth, note));
     })();
   </script>
 
