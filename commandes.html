@@ -37,6 +37,7 @@
       overflow:hidden;
     }
 
+    /* Buttons */
     .btn{
       height:44px;
       border-radius:16px;
@@ -60,22 +61,50 @@
     .btn-primary{ color:#fff; }
     .btn-primary:hover{ filter:brightness(.98); }
 
+    /* Icon buttons (mobile topbar) */
+    .icon-btn{
+      width:44px;
+      height:44px;
+      border-radius:16px;
+      border:1px solid #E5E7EB;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition:.2s;
+      color:#374151;
+      flex:0 0 auto;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .icon-btn:hover{ transform:translateY(-1px); border-color:#F07E13; color:#F07E13; }
+
+    /* Topbar layout (fix buttons above) */
     .topbar{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      flex-wrap:wrap;
       margin-bottom:18px;
     }
+    .brand-link{ flex:0 0 auto; min-width:0; }
     .top-actions{
       display:flex;
+      align-items:center;
       gap:8px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-      width:100%;
+      flex:0 0 auto;
+      min-width:0;
     }
-    @media (min-width: 520px){ .top-actions{ width:auto; } }
+
+    /* On very small screens: if needed, allow horizontal scroll instead of overflow/wrap */
+    @media (max-width: 420px){
+      .top-actions{
+        max-width: 62vw;
+        overflow-x:auto;
+        -webkit-overflow-scrolling:touch;
+        padding-bottom:2px;
+      }
+      .top-actions::-webkit-scrollbar{ display:none; }
+    }
 
     .safe-text{ min-width:0; overflow-wrap:anywhere; word-break:break-word; }
 
@@ -124,16 +153,42 @@
   <div class="page">
 
     <div class="topbar">
-      <a href="/index.html" class="inline-flex items-center gap-2" aria-label="ViralFlowr">
+      <a href="/index.html" class="inline-flex items-center gap-2 brand-link" aria-label="ViralFlowr">
         <span class="text-2xl font-black tracking-tighter safe-text">
           Viral<span class="text-orange-bsv">Flowr</span>
         </span>
       </a>
 
       <div class="top-actions">
-        <a href="/index.html" class="btn btn-outline">Boutique</a>
-        <a href="/wallet.html" class="btn btn-outline">Wallet</a>
-        <button id="logoutBtn" class="btn btn-outline" type="button">Déconnexion</button>
+        <!-- Mobile (icons) -->
+        <a href="/index.html" class="icon-btn sm:hidden" title="Boutique" aria-label="Boutique">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 11l9-8 9 8"></path>
+            <path d="M9 22V12h6v10"></path>
+          </svg>
+        </a>
+
+        <a href="/wallet.html" class="icon-btn sm:hidden" title="Wallet" aria-label="Wallet">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
+            <path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/>
+            <path d="M20 12h-4a2 2 0 0 0 0 4h4"/>
+            <circle cx="16" cy="14" r="0.5" />
+          </svg>
+        </a>
+
+        <button id="logoutBtnIcon" class="icon-btn sm:hidden" type="button" title="Déconnexion" aria-label="Déconnexion">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+            <path d="M10 17l5-5-5-5"></path>
+            <path d="M15 12H3"></path>
+          </svg>
+        </button>
+
+        <!-- Desktop (text buttons) -->
+        <a href="/index.html" class="btn btn-outline hidden sm:inline-flex">Boutique</a>
+        <a href="/wallet.html" class="btn btn-outline hidden sm:inline-flex">Wallet</a>
+        <button id="logoutBtn" class="btn btn-outline hidden sm:inline-flex" type="button">Déconnexion</button>
       </div>
     </div>
 
@@ -300,7 +355,6 @@
         }
       }catch(_){}
 
-      // fallback
       try{
         const ta = document.createElement("textarea");
         ta.value = t;
@@ -499,30 +553,41 @@
     }
 
     // =========================
-    // Auth UI
+    // Auth UI (text + icon)
     // =========================
     function applyAuthUI_(){
-      const btn = document.getElementById("logoutBtn");
-      if(!btn) return;
+      const btnText = document.getElementById("logoutBtn");
+      const btnIcon = document.getElementById("logoutBtnIcon");
 
       const s = getSession_();
+
+      function setBoth_(label, onClick){
+        if (btnText){
+          btnText.textContent = label;
+          btnText.disabled = false;
+          btnText.onclick = onClick;
+        }
+        if (btnIcon){
+          btnIcon.setAttribute("aria-label", label);
+          btnIcon.setAttribute("title", label);
+          btnIcon.disabled = false;
+          btnIcon.onclick = onClick;
+        }
+      }
+
       if(!s){
-        btn.textContent = "Connexion";
-        btn.disabled = false;
-        btn.onclick = () => { window.location.href = "/login.html"; };
+        setBoth_("Connexion", () => { window.location.href = "/login.html"; });
         return;
       }
 
-      btn.textContent = "Déconnexion";
-      btn.disabled = false;
-      btn.onclick = () => {
+      setBoth_("Déconnexion", () => {
         ["vf_session","VF_SESSION","vfSession","VFSession","session","auth","vf_auth"].forEach(k => {
           try { localStorage.removeItem(k); } catch(_){}
         });
         toast("Déconnecté.");
         applyAuthUI_();
         loadTransactions_();
-      };
+      });
     }
 
     window.addEventListener("storage", (e) => {
