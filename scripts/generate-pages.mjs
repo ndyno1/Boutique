@@ -172,7 +172,6 @@
       transform: translateY(-1px);
     }
 
-    /* Cat active (au cas où) */
     .cat-btn.active{
       color:#fff !important;
       background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%) !important;
@@ -411,7 +410,6 @@
     function pName(p){ return safe(p.nom || p.name || p.title); }
     function pCat(p){ return safe(p.cat || p.category || p.categorie); }
 
-    // prix revendeur prioritaire si API le renvoie
     function pPrice(p){
       return safe(
         (p && (
@@ -681,7 +679,12 @@
         }
 
         const id = encodeURIComponent(safe(p.id).trim());
-        const productUrl = `/p/${id}/`;
+
+        /* ✅ CHEMIN CORRIGÉ :
+           Pages générées en /p/<id>/index.html  -> on pointe directement dessus
+           (et ça marche aussi si ton host ne gère pas bien le "trailing slash")
+        */
+        const productUrl = `/p/${id}/index.html`;
 
         const min = pMin(p);
         const max = pMax(p);
