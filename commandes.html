@@ -2,21 +2,15 @@
 <html lang="fr" class="font-inter">
 <head>
   <meta charset="utf-8"/>
-  <!-- ✅ Empêche le “zoom auto” et aide à stabiliser l’affichage -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"/>
-  <title>ViralFlowr | Mes commandes</title>
+  <title>ViralFlowr | Transactions</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
     :root{ color-scheme: light; }
-    html, body{
-      width:100%;
-      max-width:100%;
-      overflow-x:hidden;
-      overscroll-behavior-x:none;
-    }
+    html, body{ width:100%; max-width:100%; overflow-x:hidden; overscroll-behavior-x:none; }
     *{ box-sizing:border-box; }
 
     body{
@@ -27,15 +21,8 @@
       text-rendering:optimizeLegibility;
     }
 
-    .page{
-      width:100%;
-      max-width:980px;
-      margin:0 auto;
-      padding:16px;
-    }
-    @media (min-width: 768px){
-      .page{ padding:32px; }
-    }
+    .page{ width:100%; max-width:980px; margin:0 auto; padding:16px; }
+    @media (min-width: 768px){ .page{ padding:32px; } }
 
     .text-orange-bsv{ color:#F07E13; }
     .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
@@ -48,16 +35,6 @@
       width:100%;
       max-width:100%;
       overflow:hidden;
-    }
-
-    .badge{
-      font-size:10px;
-      font-weight:900;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      padding:6px 10px;
-      border-radius:999px;
-      max-width:100%;
     }
 
     .btn{
@@ -75,12 +52,7 @@
       white-space:nowrap;
       flex:0 0 auto;
     }
-
-    .btn-outline{
-      border:1px solid #E5E7EB;
-      background:#fff;
-      color:#111827;
-    }
+    .btn-outline{ border:1px solid #E5E7EB; background:#fff; color:#111827; }
     .btn-outline:hover{ border-color:#F07E13; color:#F07E13; }
     .btn-primary{ color:#fff; }
     .btn-primary:hover{ filter:brightness(.98); }
@@ -100,15 +72,9 @@
       justify-content:flex-end;
       width:100%;
     }
-    @media (min-width: 520px){
-      .top-actions{ width:auto; }
-    }
+    @media (min-width: 520px){ .top-actions{ width:auto; } }
 
-    .safe-text{
-      min-width:0;
-      overflow-wrap:anywhere;
-      word-break:break-word;
-    }
+    .safe-text{ min-width:0; overflow-wrap:anywhere; word-break:break-word; }
 
     .toast{
       position: fixed;
@@ -133,22 +99,17 @@
       to{ transform: translateX(-50%) translateY(0); opacity:1 }
     }
 
-    .delbox{
-      background:#0b1220;
-      color:#fff;
-      border-radius:16px;
-      padding:12px;
-      font-size:12px;
-      font-weight:800;
-      letter-spacing:.02em;
-      white-space:pre-wrap;
-      overflow-wrap:anywhere;
-      word-break:break-word;
-      line-height:1.45;
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace; }
+
+    .badge{
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      padding:6px 10px;
+      border-radius:999px;
       max-width:100%;
     }
-
-    .fullw{ width:100%; max-width:100%; }
   </style>
 </head>
 
@@ -174,11 +135,11 @@
         <div class="safe-text">
           <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Compte connecté</div>
           <div id="userEmail" class="text-lg font-black text-gray-900 safe-text">—</div>
-          <div class="text-[12px] font-bold text-gray-500 mt-1 safe-text">
-            Historique de tes commandes + bouton Recharger si disponible.
+          <div id="modeLine" class="text-[12px] font-bold text-gray-500 mt-1 safe-text">
+            Chargement des transactions…
           </div>
         </div>
-        <div class="flex gap-2 fullw md:w-auto">
+        <div class="flex gap-2 w-full md:w-auto">
           <button id="refreshBtn" class="btn brand-gradient btn-primary w-full md:w-auto">Actualiser</button>
         </div>
       </div>
@@ -188,28 +149,59 @@
       Chargement…
     </div>
 
-    <div id="ordersWrap" class="hidden space-y-4"></div>
+    <div id="txWrap" class="hidden card overflow-hidden"></div>
+
+    <pre id="debugBox" class="hidden mt-4 p-4 rounded-2xl bg-black text-white text-[11px] overflow-auto mono"></pre>
 
     <div class="mt-8 text-center">
-      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">© 2026 ViralFlowr • Historique commandes</p>
+      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">© 2026 ViralFlowr • Transactions</p>
     </div>
   </div>
 
   <div id="toast" class="toast"></div>
 
-  <script>
-    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
+  <!-- MODAL Voir (colonne M / réponse) -->
+  <div id="respModal" class="hidden fixed inset-0 z-[9999]">
+    <div id="respOverlay" class="absolute inset-0 bg-black/50"></div>
+    <div class="relative max-w-[980px] mx-auto mt-16 p-4">
+      <div class="card p-5">
+        <div class="flex items-center justify-between gap-3">
+          <div class="font-black text-sm uppercase tracking-widest text-gray-400">Réponse</div>
+          <button id="closeRespBtn" class="btn btn-outline" style="height:34px;padding:0 10px;font-size:10px;">
+            Fermer
+          </button>
+        </div>
+        <pre id="respText"
+             class="mt-3 p-3 rounded-2xl bg-gray-50 border border-gray-200 text-[12px] font-semibold text-gray-800 overflow-auto mono"
+             style="white-space:pre-wrap;"></pre>
+        <div class="mt-3 flex flex-wrap gap-2">
+          <button id="copyRespBtn" class="btn btn-outline" style="height:38px;padding:0 12px;font-size:11px;">Copier</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    function getSession_(){
-      try{
-        const raw = localStorage.getItem("vf_session");
-        if(!raw) return null;
-        const s = JSON.parse(raw);
-        if(!s || !s.email) return null;
-        return s;
-      }catch{ return null; }
+  <script>
+    // =========================
+    // CONFIG
+    // =========================
+    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
+    const DEBUG = new URLSearchParams(location.search).has("debug");
+
+    // =========================
+    // Debug helper
+    // =========================
+    const debugBox = document.getElementById("debugBox");
+    function dbg(title, obj){
+      if(!DEBUG) return;
+      debugBox.classList.remove("hidden");
+      debugBox.textContent += "\n" + title + ":\n" + (typeof obj === "string" ? obj : JSON.stringify(obj, null, 2)) + "\n";
+      try { console.log(title, obj); } catch(_){}
     }
 
+    // =========================
+    // Toast
+    // =========================
     function toast(msg){
       const el = document.getElementById("toast");
       el.textContent = String(msg || "");
@@ -218,80 +210,18 @@
       window.__vf_toast_t = setTimeout(()=> el.classList.remove("show"), 2200);
     }
 
-    // ✅ PATCH: met à jour le bouton Connexion / Déconnexion
-    function applyAuthUI_(){
-      const btn = document.getElementById("logoutBtn");
-      if(!btn) return;
-
-      const s = getSession_();
-
-      if(!s){
-        btn.textContent = "Connexion";
-        btn.disabled = false;
-        btn.classList.remove("opacity-50","cursor-not-allowed");
-        // ✅ REDIRECT VERS login.html
-        btn.onclick = () => { window.location.href = "/login.html"; };
-        return;
-      }
-
-      btn.textContent = "Déconnexion";
-      btn.disabled = false;
-      btn.classList.remove("opacity-50","cursor-not-allowed");
-      btn.onclick = () => {
-        localStorage.removeItem("vf_session");
-        toast("Déconnecté.");
-
-        // ✅ update UI direct
-        applyAuthUI_();
-
-        // ✅ refresh contenu page
-        loadOrders_();
-      };
+    // =========================
+    // Helpers
+    // =========================
+    function esc_(s){
+      return String(s||"").replace(/[&<>"']/g, (c)=>({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[c]));
     }
-
-    // ✅ si session change dans un autre onglet
-    window.addEventListener("storage", (e) => {
-      if (e.key === "vf_session") {
-        applyAuthUI_();
-        if (!getSession_()) {
-          // si déconnecté ailleurs, on refresh l’écran ici aussi
-          loadOrders_();
-        }
-      }
-    });
-
-    function jsonp_(params, onOk, onErr){
-      const cb = "VF_CB_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
-
-      let done = false;
-      const timer = setTimeout(() => {
-        if (done) return;
-        done = true;
-        try { delete window[cb]; } catch(_){}
-        onErr && onErr("TIMEOUT");
-      }, 12000);
-
-      window[cb] = function(payload){
-        if (done) return;
-        done = true;
-        clearTimeout(timer);
-        try { onOk(payload); }
-        finally { try { delete window[cb]; } catch(_){} }
-      };
-
-      const s = document.createElement("script");
-      const qs = new URLSearchParams({ ...params, callback: cb, t: String(Date.now()) });
-      s.src = GOOGLE_URL + "?" + qs.toString();
-
-      s.onerror = function(){
-        if (done) return;
-        done = true;
-        clearTimeout(timer);
-        try { delete window[cb]; } catch(_){}
-        onErr && onErr("NETWORK");
-      };
-
-      document.body.appendChild(s);
+    function fmt2(n){
+      const x = Number(n||0);
+      if(!isFinite(x)) return "0.00";
+      return x.toFixed(2);
     }
 
     function badgeForStatus_(st){
@@ -304,218 +234,370 @@
       return ["bg-gray-100 text-gray-700", st || "—"];
     }
 
-    function esc_(s){
-      return String(s||"").replace(/[&<>"']/g, (c)=>({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-      }[c]));
+    function tryParse_(raw){ try { return JSON.parse(raw); } catch { return null; } }
+
+    // =========================
+    // Session robuste (comme wallet)
+    // =========================
+    function getSession_(){
+      const keys = ["vf_session","VF_SESSION","vfSession","VFSession","session","auth","vf_auth"];
+      for(const k of keys){
+        const raw = localStorage.getItem(k);
+        if(!raw) continue;
+        const s = tryParse_(raw);
+        if(s && typeof s === "object") return s;
+      }
+      return null;
+    }
+    function pickStr_(v){
+      const s = String(v||"").trim();
+      return s ? s : "";
+    }
+    function getAuth_(s){
+      const email =
+        pickStr_(s?.email) ||
+        pickStr_(s?.userEmail) ||
+        pickStr_(s?.mail) ||
+        pickStr_(s?.username) ||
+        pickStr_(s?.user?.email) || "";
+
+      const token =
+        pickStr_(s?.token) ||
+        pickStr_(s?.sessionToken) ||
+        pickStr_(s?.access_token) ||
+        pickStr_(s?.accessToken) ||
+        pickStr_(s?.jwt) ||
+        pickStr_(s?.user?.token) || "";
+
+      return { email: email.toLowerCase(), token };
     }
 
-    function reasonRechargeOffClientSafe_(){
-      return "Recharge indisponible pour cette commande.";
+    // =========================
+    // JSONP
+    // =========================
+    function jsonp_(params, onOk, onErr, timeoutMs=12000){
+      const cb = "VF_CB_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
+      let done = false;
+
+      const timer = setTimeout(() => {
+        if(done) return;
+        done = true;
+        try { delete window[cb]; } catch(_){}
+        onErr && onErr("TIMEOUT");
+      }, timeoutMs);
+
+      window[cb] = function(payload){
+        if(done) return;
+        done = true;
+        clearTimeout(timer);
+        try { onOk(payload); }
+        finally { try { delete window[cb]; } catch(_){} }
+      };
+
+      const s = document.createElement("script");
+      const qs = new URLSearchParams({ ...params, callback: cb, t: String(Date.now()) });
+      const url = GOOGLE_URL + "?" + qs.toString();
+      dbg("JSONP URL", url);
+      s.src = url;
+
+      s.onerror = function(){
+        if(done) return;
+        done = true;
+        clearTimeout(timer);
+        try { delete window[cb]; } catch(_){}
+        onErr && onErr("NETWORK");
+      };
+
+      document.body.appendChild(s);
+      s.onload = () => setTimeout(() => { try { s.remove(); } catch(_){ } }, 0);
     }
 
-    function buildReorderLink_(o){
-      const idService = o && o.idService ? String(o.idService) : "";
-      const orderId = o && (o.orderId || o.id) ? String(o.orderId || o.id) : "";
-      const qs = new URLSearchParams({
-        id: idService,
-        reorder: "1",
-        hide_desc: "1",
-        orderId: orderId
-      });
-      return "/paiement.html?" + qs.toString();
+    // =========================
+    // Modal Voir
+    // =========================
+    const respModal = document.getElementById("respModal");
+    const respOverlay = document.getElementById("respOverlay");
+    const respText = document.getElementById("respText");
+    const closeRespBtn = document.getElementById("closeRespBtn");
+    const copyRespBtn = document.getElementById("copyRespBtn");
+
+    function openResp_(text){
+      respText.textContent = String(text || "—");
+      respModal.classList.remove("hidden");
+    }
+    function closeResp_(){
+      respModal.classList.add("hidden");
+      respText.textContent = "";
+    }
+    closeRespBtn?.addEventListener("click", closeResp_);
+    respOverlay?.addEventListener("click", closeResp_);
+    copyRespBtn?.addEventListener("click", () => {
+      const t = respText.textContent || "";
+      navigator.clipboard?.writeText(t).then(()=>toast("✅ Copié")).catch(()=>toast("❌ Copie impossible"));
+    });
+
+    // =========================
+    // Response field (col M) robust
+    // =========================
+    function getResponseText_(o){
+      const cand = [
+        o.colM, o.manualResponse, o.reponse_site, o.reponseSite, o.response_site, o.responseSite,
+        o.reponse, o.response, o.delivery, o.siteResponse, o.site_response,
+        o.rep, o.m, o.M
+      ];
+      for(const v of cand){
+        const t = String(v || "").trim();
+        if(t) return t;
+      }
+      return "";
     }
 
-    async function copyText_(txt){
-      const t = String(txt || "");
-      try{
-        if (navigator.clipboard && navigator.clipboard.writeText){
-          await navigator.clipboard.writeText(t);
-          toast("✅ Copié");
-          return;
-        }
-      }catch(_){}
-      const ta = document.createElement("textarea");
-      ta.value = t;
-      ta.style.position = "fixed";
-      ta.style.left = "-9999px";
-      document.body.appendChild(ta);
-      ta.select();
-      try { document.execCommand("copy"); toast("✅ Copié"); }
-      catch(e){ toast("❌ Copie impossible"); }
-      document.body.removeChild(ta);
+    function pickAmount_(o){
+      const cand = [o.prix_achat, o.prixAchat, o.purchase_price, o.buy_price, o.buyPrice, o.amount, o.montant, o.total];
+      for(const v of cand){
+        if(v === 0) return 0;
+        if(v !== null && v !== undefined && String(v).trim() !== "") return v;
+      }
+      return 0;
     }
 
-    function renderOrders_(orders){
+    // =========================
+    // Render table
+    // =========================
+    function renderTable_(list, title){
       const stateBox = document.getElementById("stateBox");
-      const wrap = document.getElementById("ordersWrap");
+      const wrap = document.getElementById("txWrap");
 
-      if (!orders || !orders.length){
+      if(!Array.isArray(list) || list.length === 0){
         wrap.classList.add("hidden");
         stateBox.classList.remove("hidden");
-        stateBox.innerHTML = "Aucune commande trouvée pour ce compte.";
+        stateBox.innerHTML = "Aucune transaction trouvée.";
         return;
       }
 
       stateBox.classList.add("hidden");
       wrap.classList.remove("hidden");
-      wrap.innerHTML = "";
 
-      orders.forEach((o, idx) => {
-        const orderId = String(o.orderId || o.id || "").trim();
-        const [badgeCls, badgeTxt] = badgeForStatus_(o.status || o.statut);
-        const canRecharge = !!(o.allowRecharge);
-        const created = (o.createdAt || o.date) ? esc_(o.createdAt || o.date) : "—";
+      const rows = list.map((o) => {
+        const orderId = String(o.orderId || o.id || o.order_id || "").trim();
+        const created = String(o.createdAt || o.date || o.created_at || o.ts || "").trim() || "—";
+        const product = String(o.produit || o.product || o.nom || o.title || "—");
+        const qty = Number(o.quantite || o.qty || o.quantity || 1) || 1;
+        const amount = pickAmount_(o);
+        const status = String(o.status || o.statut || "");
+        const [badgeCls, badgeTxt] = badgeForStatus_(status);
 
-        const deliveryRaw = String(o.manualResponse || o.colM || o.delivery || o.reponse || o.response || "");
-        const hasDelivery = deliveryRaw.trim().length > 0;
-        const isManual = (o && o.isManual === true) || (hasDelivery && !(o && o.isSmm === true));
-        const showDelivery = isManual && hasDelivery;
+        const resp = getResponseText_(o);
+        const hasResp = !!String(resp||"").trim();
+        const respEnc = encodeURIComponent(resp || "");
 
-        const deliveryId = "delivery_" + idx;
-        const boxId = "box_" + idx;
-        const btnId = "btn_" + idx;
-
-        const card = document.createElement("div");
-        card.className = "card p-6";
-
-        card.innerHTML = `
-          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-            <div class="min-w-0 safe-text">
-              <div class="flex flex-wrap items-center gap-2 safe-text">
-                <span class="badge ${badgeCls}">${esc_(badgeTxt)}</span>
-                <span class="text-[11px] font-black uppercase tracking-widest text-gray-400">Commande</span>
-                <span class="text-[12px] font-black text-gray-900 safe-text">${esc_(orderId || "—")}</span>
-              </div>
-
-              <div class="mt-3 safe-text">
-                <div class="text-lg font-black text-gray-900 leading-tight safe-text">${esc_(o.produit || "—")}</div>
-
-                <div class="text-[12px] font-bold text-gray-500 mt-1 safe-text">
-                  Cat: <span class="text-gray-700 font-black">${esc_(o.categorie || "—")}</span> •
-                  Service: <span class="text-gray-700 font-black safe-text">${esc_(o.idService || "—")}</span>
-                </div>
-
-                <div class="text-[12px] font-bold text-gray-500 mt-1 safe-text">
-                  Qté: <span class="text-gray-700 font-black">${Number(o.quantite||1)}</span> •
-                  Total: <span class="text-gray-700 font-black">${Number(o.total||0).toFixed(2)} $</span> •
-                  Paiement: <span class="text-gray-700 font-black safe-text">${esc_(o.payMethod || "—")}</span>
-                </div>
-
-                <div class="text-[12px] font-bold text-gray-500 mt-1 safe-text">
-                  Date: <span class="text-gray-700 font-black safe-text">${created}</span>
-                </div>
-
-                ${!canRecharge ? `
-                  <div class="text-[11px] font-black text-gray-400 mt-2 uppercase tracking-widest safe-text">
-                    ${esc_(reasonRechargeOffClientSafe_())}
-                  </div>
-                ` : ""}
-
-                ${showDelivery ? `
-                  <div class="mt-4">
-                    <div class="flex items-center justify-between gap-2 flex-wrap">
-                      <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Livraison (commande manuelle)</div>
-                      <button id="${btnId}" class="btn btn-outline h-[36px] text-[11px] px-3 w-full sm:w-auto">Voir</button>
-                    </div>
-
-                    <div id="${boxId}" class="mt-2 hidden">
-                      <div id="${deliveryId}" class="delbox">${esc_(deliveryRaw)}</div>
-                      <div class="mt-2 flex gap-2 flex-wrap">
-                        <button class="btn btn-outline copyDeliveryBtn w-full sm:w-auto" data-target="${deliveryId}">Copier</button>
-                      </div>
-                    </div>
-                  </div>
-                ` : ""}
-              </div>
-            </div>
-
-            <div class="flex flex-col gap-2 w-full md:w-[220px]">
-              <button class="btn brand-gradient btn-primary rechargeBtn w-full ${canRecharge ? "" : "opacity-50 cursor-not-allowed"}"
-                      data-order="${esc_(orderId)}"
-                      ${canRecharge ? "" : "disabled"}>
-                Recharger
-              </button>
-
-              <a class="btn btn-outline w-full" href="${buildReorderLink_(o)}">Recommander</a>
-            </div>
-          </div>
+        return `
+          <tr class="border-t">
+            <td class="p-3 font-bold text-gray-500">${esc_(created)}</td>
+            <td class="p-3 font-black text-gray-900">${esc_(orderId || "—")}</td>
+            <td class="p-3 font-semibold text-gray-700">${esc_(product)}</td>
+            <td class="p-3 font-black text-gray-900">${esc_(String(qty))}</td>
+            <td class="p-3 font-black text-gray-900">${esc_(fmt2(amount))} $</td>
+            <td class="p-3"><span class="badge ${badgeCls}">${esc_(badgeTxt)}</span></td>
+            <td class="p-3">
+              ${hasResp ? `<button class="btn btn-outline seeBtn" style="height:32px;padding:0 10px;font-size:10px;" data-resp="${respEnc}">Voir</button>`
+                        : `<span class="text-[11px] font-black text-gray-300 uppercase tracking-widest">—</span>`}
+            </td>
+          </tr>
         `;
+      }).join("");
 
-        wrap.appendChild(card);
+      wrap.innerHTML = `
+        <div class="p-5 md:p-6 border-b border-gray-100">
+          <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">${esc_(title)}</div>
+          <div class="text-[12px] font-bold text-gray-500 mt-1">
+            Total: <span class="font-black text-gray-900">${list.length}</span>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50">
+              <tr class="text-left text-[11px] uppercase tracking-widest text-gray-400 font-black">
+                <th class="p-3">Date</th>
+                <th class="p-3">Commande</th>
+                <th class="p-3">Produit</th>
+                <th class="p-3">Qté</th>
+                <th class="p-3">Montant</th>
+                <th class="p-3">Statut</th>
+                <th class="p-3">Voir</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
 
-        if (showDelivery){
-          const btn = card.querySelector("#" + CSS.escape(btnId));
-          const box = card.querySelector("#" + CSS.escape(boxId));
-          if (btn && box){
-            btn.addEventListener("click", () => {
-              const isHidden = box.classList.contains("hidden");
-              box.classList.toggle("hidden");
-              btn.textContent = isHidden ? "Masquer" : "Voir";
-            });
-          }
-        }
-      });
-
-      wrap.querySelectorAll(".copyDeliveryBtn").forEach(btn => {
-        btn.addEventListener("click", async () => {
-          const id = btn.getAttribute("data-target");
-          const el = id ? document.getElementById(id) : null;
-          if (!el) return;
-          await copyText_(el.textContent || "");
+      wrap.querySelectorAll(".seeBtn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const respEnc = btn.getAttribute("data-resp") || "";
+          const text = decodeURIComponent(respEnc || "");
+          openResp_(text || "—");
         });
       });
     }
 
-    function loadOrders_(){
+    // =========================
+    // Auth UI
+    // =========================
+    function applyAuthUI_(){
+      const btn = document.getElementById("logoutBtn");
+      if(!btn) return;
+
+      const s = getSession_();
+      if(!s){
+        btn.textContent = "Connexion";
+        btn.disabled = false;
+        btn.onclick = () => { window.location.href = "/login.html"; };
+        return;
+      }
+
+      btn.textContent = "Déconnexion";
+      btn.disabled = false;
+      btn.onclick = () => {
+        ["vf_session","VF_SESSION","vfSession","VFSession","session","auth","vf_auth"].forEach(k => {
+          try { localStorage.removeItem(k); } catch(_){}
+        });
+        toast("Déconnecté.");
+        applyAuthUI_();
+        loadTransactions_();
+      };
+    }
+
+    window.addEventListener("storage", (e) => {
+      const keys = ["vf_session","VF_SESSION","vfSession","VFSession","session","auth","vf_auth"];
+      if(keys.includes(e.key)) {
+        applyAuthUI_();
+        loadTransactions_();
+      }
+    });
+
+    // =========================
+    // Load transactions: try order_history then fallback purchase_tx
+    // =========================
+    function extractListFromRes_(res){
+      if(Array.isArray(res)) return res;
+      if(res && Array.isArray(res.orders)) return res.orders;
+      if(res && Array.isArray(res.items)) return res.items;
+      if(res && Array.isArray(res.list)) return res.list;
+      if(res && Array.isArray(res.data)) return res.data;
+      return [];
+    }
+
+    function loadTransactions_(){
       const s = getSession_();
       const stateBox = document.getElementById("stateBox");
-      const wrap = document.getElementById("ordersWrap");
+      const wrap = document.getElementById("txWrap");
+      const userEmail = document.getElementById("userEmail");
+      const modeLine = document.getElementById("modeLine");
 
       wrap.classList.add("hidden");
       stateBox.classList.remove("hidden");
       stateBox.innerHTML = "Chargement…";
 
-      // ✅ refresh bouton selon session
       applyAuthUI_();
 
-      if (!s){
-        document.getElementById("userEmail").textContent = "—";
+      if(!s){
+        userEmail.textContent = "—";
+        modeLine.textContent = "Connecte-toi pour voir tes transactions.";
         stateBox.innerHTML = `
           <div class="text-gray-900 font-black text-lg">Tu n’es pas connecté.</div>
-          <div class="text-gray-500 font-bold mt-2">Connecte-toi pour voir tes commandes.</div>
+          <div class="text-gray-500 font-bold mt-2">Connecte-toi pour voir tes transactions.</div>
           <div class="mt-4">
-            <!-- ✅ REDIRECT VERS login.html -->
             <a class="btn brand-gradient btn-primary w-full sm:w-auto" href="/login.html">Connexion</a>
           </div>
         `;
         return;
       }
 
-      const email = String(s.email || "").trim().toLowerCase();
-      const token = s && s.token ? String(s.token) : "";
-      document.getElementById("userEmail").textContent = email;
+      const auth = getAuth_(s);
+      userEmail.textContent = auth.email || "Utilisateur";
+      modeLine.textContent = "API: tentative order_history…";
 
+      // 1) order_history
       jsonp_(
-        { action:"order_history", email, token, limit:"80" },
+        { action:"order_history", email: auth.email, token: auth.token, limit:"200" },
         (res) => {
-          if (!res || !res.ok){
-            stateBox.innerHTML = "Erreur: " + ((res && (res.error || res.message)) || "Impossible de charger l'historique.");
+          dbg("order_history response", res);
+
+          const list = extractListFromRes_(res);
+          const ok = (res && res.ok === true);
+
+          if(ok || list.length){
+            modeLine.textContent = "Source: order_history";
+            renderTable_(list, "Transactions d’achat (order_history)");
             return;
           }
-          renderOrders_(res.orders || []);
+
+          // fallback si action pas supportée / ok false
+          modeLine.textContent = "order_history indisponible → fallback purchase_tx…";
+
+          jsonp_(
+            { action:"purchase_tx", email: auth.email, token: auth.token, limit:"200" },
+            (res2) => {
+              dbg("purchase_tx response", res2);
+
+              const list2 = extractListFromRes_(res2);
+              const ok2 = (res2 && res2.ok === true);
+
+              if(ok2 || list2.length){
+                modeLine.textContent = "Source: purchase_tx";
+                renderTable_(list2, "Transactions d’achat (purchase_tx)");
+                return;
+              }
+
+              const err = (res2 && (res2.error || res2.message)) || (res && (res.error || res.message)) || "Aucune donnée";
+              stateBox.innerHTML = "Erreur: " + esc_(err);
+              modeLine.textContent = "Aucune transaction chargée.";
+            },
+            (why2) => {
+              stateBox.innerHTML = "Erreur réseau (purchase_tx): " + esc_(why2);
+              modeLine.textContent = "Erreur réseau.";
+            }
+          );
         },
-        () => {
-          stateBox.innerHTML = "Erreur réseau: impossible de charger.";
+        (why) => {
+          dbg("order_history error", why);
+
+          // si order_history réseau KO, on tente quand même purchase_tx
+          modeLine.textContent = "order_history réseau KO → fallback purchase_tx…";
+
+          const auth = getAuth_(getSession_() || {});
+          jsonp_(
+            { action:"purchase_tx", email: auth.email, token: auth.token, limit:"200" },
+            (res2) => {
+              dbg("purchase_tx response", res2);
+              const list2 = extractListFromRes_(res2);
+              const ok2 = (res2 && res2.ok === true);
+
+              if(ok2 || list2.length){
+                modeLine.textContent = "Source: purchase_tx";
+                renderTable_(list2, "Transactions d’achat (purchase_tx)");
+                return;
+              }
+
+              const err = (res2 && (res2.error || res2.message)) || "Impossible de charger";
+              stateBox.innerHTML = "Erreur: " + esc_(err);
+              modeLine.textContent = "Aucune transaction chargée.";
+            },
+            (why2) => {
+              stateBox.innerHTML = "Erreur réseau: " + esc_(why) + " / " + esc_(why2);
+              modeLine.textContent = "Erreur réseau.";
+            }
+          );
         }
       );
     }
 
-    document.getElementById("refreshBtn").addEventListener("click", loadOrders_);
+    document.getElementById("refreshBtn").addEventListener("click", loadTransactions_);
 
-    // ✅ init
+    // INIT
     applyAuthUI_();
-    loadOrders_();
+    loadTransactions_();
   </script>
 </body>
 </html>
