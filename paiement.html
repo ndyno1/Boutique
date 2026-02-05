@@ -4,9 +4,15 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>ViralFlowr | Paiement Sécurisé</title>
+  <meta name="description" content="Finalisez votre commande ViralFlowr avec un paiement sécurisé et un suivi rapide." />
+  <meta name="theme-color" content="#111827" />
 
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
@@ -35,7 +41,6 @@
     }
     .copy-badge:hover{ background:#F07E13; color:#fff; }
 
-    /* ✅ Fix logo overflow */
     .brand-wrap{ min-width:0; max-width:100%; }
     .brand-text{
       display:block;
@@ -68,7 +73,6 @@
 
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
 
-    /* ✅ Hard lock UI when order already sent */
     .locked-overlay{
       position:fixed; inset:0; background:rgba(0,0,0,.35);
       display:none; align-items:center; justify-content:center;
@@ -81,16 +85,28 @@
       padding:18px;
       box-shadow:0 20px 60px rgba(0,0,0,.2);
     }
+    .mini-copy{
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 6px 10px;
+      border-radius: 10px;
+      font-weight: 900;
+      font-size: 10px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      transition: .2s;
+      white-space: nowrap;
+    }
+    .mini-copy:hover{ background:#F07E13; border-color:#F07E13; color:#fff; }
   </style>
 </head>
 
 <body class="p-4 md:p-8">
 
-  <!-- ✅ overlay anti double-envoi -->
   <div id="lockedOverlay" class="locked-overlay">
     <div class="locked-card">
       <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Commande déjà validée</div>
-      <div class="mt-2 text-lg font-black text-gray-900">Cette commande a déjà été envoyée ✅</div>
+      <div class="mt-2 text-lg font-black text-gray-900">Cette commande a déjà été envoyée</div>
       <div class="mt-2 text-sm text-gray-600 font-medium">
         ID : <span id="lockedId" class="font-black text-gray-900"></span><br/>
         Pour éviter un double envoi, le formulaire est bloqué.
@@ -106,7 +122,6 @@
 
   <div class="checkout-container">
 
-    <!-- ✅ Header compact + icônes -->
     <div class="flex items-center justify-between gap-3 mb-6">
       <a href="index.html" class="inline-flex items-center gap-2 brand-wrap" aria-label="Aller à la boutique">
         <span class="text-2xl font-black tracking-tighter brand-text">
@@ -115,7 +130,6 @@
       </a>
 
       <div class="flex items-center gap-2">
-        <!-- ✅ NOUVEAU : icône Boutique (Home) - visible partout -->
         <a href="index.html" class="icon-btn" title="Boutique" aria-label="Retour à la boutique">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 11l9-8 9 8"></path>
@@ -123,10 +137,8 @@
           </svg>
         </a>
 
-        <!-- Bouton texte (desktop) -->
         <a href="index.html" class="btn-mini hidden sm:inline-flex">Boutique</a>
 
-        <!-- Wallet icon -->
         <a href="wallet.html" class="icon-btn" title="Portefeuille" aria-label="Portefeuille">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
@@ -147,30 +159,23 @@
 
     <div class="bg-white rounded-[32px] shadow-lg border border-gray-100 p-6 md:p-8">
 
-      <!-- FORM -->
       <div id="form-container">
         <h2 id="service-name" class="text-xl font-extrabold text-center mb-2 leading-tight">Chargement...</h2>
         <div class="text-center mb-6">
           <span id="cat-badge" class="bg-gray-100 text-gray-500 text-[10px] font-bold px-3 py-1 rounded-full uppercase">—</span>
         </div>
 
-        <!-- ✅ DESC/LONG -->
         <div id="description-section" class="hidden mb-6 space-y-3">
           <div id="long-box" class="hidden bg-blue-50 border border-blue-100 rounded-2xl p-4">
-            <h3 class="text-blue-800 text-xs font-black uppercase mb-2 flex items-center gap-2">
-              <span>📝</span> Détails du produit
-            </h3>
+            <h3 class="text-blue-800 text-xs font-black uppercase mb-2">Détails du produit</h3>
             <p id="long-text" class="text-xs text-blue-900 leading-relaxed whitespace-pre-line font-medium"></p>
           </div>
           <div id="desc-box" class="hidden bg-green-50 border border-green-100 rounded-2xl p-4">
-            <h3 class="text-green-800 text-xs font-black uppercase mb-2 flex items-center gap-2">
-              <span>✅</span> Informations à fournir
-            </h3>
+            <h3 class="text-green-800 text-xs font-black uppercase mb-2">Informations à fournir</h3>
             <p id="desc-text" class="text-xs text-green-900 leading-relaxed whitespace-pre-line font-medium"></p>
           </div>
         </div>
 
-        <!-- NOTE / ID -->
         <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-4 text-center mb-8 hover:border-orange-200 transition-all">
           <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">Note de commande (à mettre dans “Note” lors du paiement)</span>
           <span id="live-order-id" class="block text-2xl font-black text-gray-900 tracking-tight cursor-pointer" onclick="copyText(this.innerText)">...</span>
@@ -181,11 +186,10 @@
             </button>
           </div>
           <p class="text-[10px] text-gray-500 font-bold mt-3">
-            📌 Astuce : si tu ne mets pas la note, la vérification peut prendre plus de temps.
+            Astuce : si vous ne mettez pas la note, la vérification peut prendre plus de temps.
           </p>
         </div>
 
-        <!-- ✅ Wallet Pay -->
         <div id="walletBox" class="hidden mb-6 rounded-2xl border border-[#FFD7B0] bg-[#FFF7EE] p-4">
           <div class="flex items-start justify-between gap-3">
             <div>
@@ -214,7 +218,6 @@
 
         <form id="orderForm" class="space-y-5">
 
-          <!-- ✅ SMM/BOOST -->
           <div id="section-smm" class="hidden space-y-4">
             <div>
               <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Lien à booster (obligatoire)</label>
@@ -229,11 +232,8 @@
               <input type="number" id="qty" value="1000" class="w-full bg-white rounded-xl p-3 text-sm font-black">
               <div id="qty-hint" class="text-[11px] text-gray-500 font-bold mt-2 hidden"></div>
             </div>
-
-            <!-- ✅ SUPPRIMÉ: champ contact (numéro/mail) pour SMM -->
           </div>
 
-          <!-- ✅ ABONNEMENT -->
           <div id="section-abonnement" class="hidden space-y-4">
             <div>
               <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Identifiants du compte (obligatoire)</label>
@@ -253,7 +253,6 @@
             </div>
           </div>
 
-          <!-- ✅ CARTE / CARTE2 / JEUX -->
           <div id="section-carte" class="hidden space-y-4">
             <div>
               <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact de livraison (obligatoire)</label>
@@ -265,7 +264,6 @@
             </div>
           </div>
 
-          <!-- ✅ DEFAULT -->
           <div id="section-default" class="hidden space-y-4">
             <div>
               <label id="default-label" class="text-[11px] font-bold text-gray-900 uppercase ml-1">Information requise</label>
@@ -279,7 +277,6 @@
             </div>
           </div>
 
-          <!-- TOTAL -->
           <div class="py-2 text-center">
             <span class="text-[10px] text-gray-400 uppercase font-bold">Total à payer</span>
             <div id="display-price" class="text-4xl font-black text-gray-900 tracking-tighter">0.00 $</div>
@@ -288,11 +285,10 @@
             </p>
           </div>
 
-          <!-- ✅ MOYENS PAIEMENT -->
           <div class="bg-[#121417] rounded-[24px] p-5 text-white shadow-2xl relative overflow-hidden">
             <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Moyens de paiement acceptés</h4>
             <p class="text-[11px] text-gray-300 font-bold mb-4 leading-relaxed">
-              ✅ Après paiement, mets la <span class="text-white">note de commande</span> (ID) dans la case “Note” si disponible.
+              Après paiement, mettez la note de commande (ID) dans la case “Note” si disponible.
             </p>
 
             <div class="payment-row">
@@ -322,44 +318,42 @@
             <div class="grid grid-cols-2 gap-2 mt-2">
               <div class="bg-white/5 p-3 rounded-xl border border-white/10">
                 <span class="block text-[9px] font-bold text-blue-300 uppercase mb-1">Wave (CI)</span>
-                <div class="flex justify-between items-center">
+                <div class="flex justify-between items-center gap-2">
                   <span class="text-[11px] font-bold">0546247885</span>
-                  <button type="button" onclick="copyText('+2250546247885')">📋</button>
+                  <button type="button" class="mini-copy" onclick="copyText('+2250546247885')" aria-label="Copier Wave">Copier</button>
                 </div>
               </div>
 
               <div class="bg-white/5 p-3 rounded-xl border border-white/10">
                 <span class="block text-[9px] font-bold text-red-400 uppercase mb-1">Airtel Money (RDC)</span>
-                <div class="flex justify-between items-center">
+                <div class="flex justify-between items-center gap-2">
                   <span class="text-[11px] font-bold">0971028041</span>
-                  <button type="button" onclick="copyText('0971028041')">📋</button>
+                  <button type="button" class="mini-copy" onclick="copyText('0971028041')" aria-label="Copier Airtel Money">Copier</button>
                 </div>
               </div>
 
-              <!-- ✅ NOUVEAU NUMERO PAIEMENT -->
               <div class="bg-white/5 p-3 rounded-xl border border-white/10">
                 <span class="block text-[9px] font-bold text-green-300 uppercase mb-1">Orange Money (RDC)</span>
-                <div class="flex justify-between items-center">
+                <div class="flex justify-between items-center gap-2">
                   <span class="text-[11px] font-bold">0850373991</span>
-                  <button type="button" onclick="copyText('0850373991')">📋</button>
+                  <button type="button" class="mini-copy" onclick="copyText('0850373991')" aria-label="Copier Orange Money">Copier</button>
                 </div>
               </div>
             </div>
 
             <p class="text-[10px] text-gray-400 font-bold mt-4 leading-relaxed">
-              ⚠️ IMPORTANT : Mets <span class="text-white">la note (ID)</span> dans Binance (case “Note”) si elle est disponible.
+              IMPORTANT : Mettez la note (ID) dans Binance (case “Note”) si elle est disponible.
             </p>
           </div>
 
-          <!-- PREUVE -->
           <div class="pt-2" id="proofSection">
-            <label class="text-[11px] font-bold text-gray-900 uppercase ml-1 block mb-2">📸 Preuve de paiement (obligatoire si paiement classique)</label>
+            <label class="text-[11px] font-bold text-gray-900 uppercase ml-1 block mb-2">Preuve de paiement (obligatoire si paiement classique)</label>
             <input type="file" id="file" accept="image/*"
               class="w-full text-xs bg-white rounded-xl p-3 border border-gray-200
               file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs
               file:font-bold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
             <div class="text-[10px] font-bold text-gray-400 mt-2">
-              Si tu paies avec Wallet, aucune preuve n’est nécessaire.
+              Si vous payez avec Wallet, aucune preuve n’est nécessaire.
             </div>
           </div>
 
@@ -370,19 +364,17 @@
         </form>
       </div>
 
-      <!-- SUCCESS -->
       <div id="success-msg" class="hidden text-center py-12">
         <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
           <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24">
             <path d="M5 13l4 4L19 7"></path>
           </svg>
         </div>
-        <h3 class="text-3xl font-black text-gray-900 mb-2">Paiement reçu ✅</h3>
+        <h3 class="text-3xl font-black text-gray-900 mb-2">Paiement reçu</h3>
         <p class="text-gray-500 text-sm mb-8 font-medium">
           Votre commande <strong id="final-id" class="text-gray-900"></strong> est en cours de traitement.
         </p>
 
-        <!-- ✅ Nouveau : reset pour faire une autre commande -->
         <div class="grid grid-cols-2 gap-2">
           <button onclick="startNewOrder_(true)"
             class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-xs uppercase hover:bg-gray-800 transition-colors">
@@ -446,7 +438,7 @@
 
     function copyText(txt){
       navigator.clipboard.writeText(String(txt || ""));
-      alert("Copié !");
+      alert("Copié.");
     }
 
     function safeDecode(v){
@@ -457,7 +449,6 @@
       return "VF-" + Date.now() + "-" + Math.floor(1000 + Math.random()*9000);
     }
 
-    // ✅ Helper: reset session pour faire une autre commande
     function startNewOrder_(goShop){
       try{
         const old = sessionStorage.getItem('active_order_id');
@@ -466,8 +457,6 @@
           sessionStorage.removeItem("vf_order_inflight_" + old);
         }
         sessionStorage.removeItem('active_order_id');
-        // vf_service_id on peut le garder, ou l'enlever:
-        // sessionStorage.removeItem('vf_service_id');
       }catch(_){}
       if (goShop) location.href = "index.html";
       else location.reload();
@@ -477,14 +466,12 @@
     const params = new URLSearchParams(window.location.search);
     const idS = (params.get('id') || "").trim();
 
-    // ✅ Fix principal : si on change de produit/service -> nouvel orderId (sinon ça reste bloqué)
     (function ensureFreshOrderIdForService_(){
       try{
         const prevServiceId = sessionStorage.getItem("vf_service_id") || "";
         const active = sessionStorage.getItem("active_order_id") || "";
 
         if (idS && prevServiceId && idS !== prevServiceId) {
-          // on purge aussi les locks liés à l'ancien orderId (propre)
           if (active) {
             sessionStorage.removeItem("vf_order_sent_" + active);
             sessionStorage.removeItem("vf_order_inflight_" + active);
@@ -496,7 +483,6 @@
       }catch(_){}
     })();
 
-    // ✅ ID persistant (mais reset quand succès / changement service)
     let orderId = sessionStorage.getItem('active_order_id');
     if (!orderId) {
       orderId = makeOrderId();
@@ -504,9 +490,8 @@
     }
     document.getElementById('live-order-id').innerText = orderId;
 
-    // ✅ Anti double-envoi (idempotence front)
-    const SENT_KEY = "vf_order_sent_" + orderId;      // bloque après succès
-    const INFLIGHT_KEY = "vf_order_inflight_" + orderId; // bloque pendant envoi
+    const SENT_KEY = "vf_order_sent_" + orderId;
+    const INFLIGHT_KEY = "vf_order_inflight_" + orderId;
     let SUBMIT_LOCK = false;
 
     function showLocked_(oid){
@@ -517,14 +502,12 @@
     function hardLockForm_(){
       const btn = document.getElementById('submitBtn');
       btn.disabled = true;
-      btn.innerText = "Commande déjà envoyée ✅";
+      btn.innerText = "Commande déjà envoyée";
       try { btn.style.opacity = ".7"; } catch(_){}
-      // wallet button too
       const wbtn = document.getElementById("walletPayBtn");
       if (wbtn) { wbtn.disabled = true; wbtn.style.opacity = ".6"; wbtn.style.cursor = "not-allowed"; }
     }
 
-    // Si déjà envoyé: bloquer + afficher success direct
     if (sessionStorage.getItem(SENT_KEY) === "1") {
       hardLockForm_();
       document.getElementById('form-container').classList.add('hidden');
@@ -546,7 +529,6 @@
     document.getElementById('service-name').innerText = nom;
     document.getElementById('cat-badge').innerText = cat || "Service";
 
-    // ✅ Afficher desc/long
     const descSection = document.getElementById('description-section');
     const longBox = document.getElementById('long-box');
     const descBox = document.getElementById('desc-box');
@@ -617,7 +599,6 @@
       else proof.classList.remove("hidden");
     }
 
-    // JSONP balance
     function jsonp_(params, onOk, onErr){
       const cb = "VF_CB_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
       window[cb] = function(payload){
@@ -649,17 +630,17 @@
 
       if (sessionStorage.getItem(SENT_KEY) === "1") {
         btn.disabled = true; btn.style.opacity = ".6"; btn.style.cursor = "not-allowed";
-        hint.textContent = "✅ Commande déjà envoyée.";
+        hint.textContent = "Commande déjà envoyée.";
         hint.className = "text-[11px] font-black mt-2 text-green-700";
         return;
       }
 
       if (WALLET_BAL >= need && need > 0) {
-        hint.textContent = "✅ Solde suffisant : paiement possible sans preuve.";
+        hint.textContent = "Solde suffisant : paiement possible sans preuve.";
         hint.className = "text-[11px] font-black mt-2 text-green-700";
         btn.disabled = false; btn.style.opacity = "1"; btn.style.cursor = "pointer";
       } else {
-        hint.textContent = "❌ Solde insuffisant : ajoute du crédit puis reviens payer.";
+        hint.textContent = "Solde insuffisant : ajoutez du crédit puis revenez payer.";
         hint.className = "text-[11px] font-black mt-2 text-red-700";
         btn.disabled = true; btn.style.opacity = ".6"; btn.style.cursor = "not-allowed";
       }
@@ -692,7 +673,6 @@
       refreshWalletBalance_();
 
       document.getElementById("walletPayBtn").addEventListener("click", () => {
-        // ✅ anti double click wallet
         if (SUBMIT_LOCK || sessionStorage.getItem(INFLIGHT_KEY) === "1" || sessionStorage.getItem(SENT_KEY) === "1") {
           showLocked_(orderId);
           return;
@@ -700,9 +680,9 @@
 
         refreshWalletBalance_((ok) => {
           const need = getTotalNumber_();
-          if(!ok){ alert("⚠️ Impossible de charger le solde wallet."); return; }
+          if(!ok){ alert("Impossible de charger le solde wallet."); return; }
           if(WALLET_BAL < need || need <= 0){
-            alert("⚠️ Solde insuffisant. Ajoute du crédit puis réessaie.");
+            alert("Solde insuffisant. Ajoutez du crédit puis réessayez.");
             return;
           }
           setPayMode_("WALLET");
@@ -764,7 +744,6 @@
     document.getElementById('orderForm').onsubmit = async (e) => {
       e.preventDefault();
 
-      // ✅ anti double submit + anti resend after success
       if (sessionStorage.getItem(SENT_KEY) === "1") { showLocked_(orderId); return; }
       if (SUBMIT_LOCK || sessionStorage.getItem(INFLIGHT_KEY) === "1") return;
 
@@ -776,14 +755,14 @@
       btn.innerText = "Validation en cours..." ;
 
       let input1 = "";
-      let emailForSheet = "";   // email/whatsapp pour catégories qui en ont besoin (pas SMM)
-      let contactValue = "";    // contact séparé
+      let emailForSheet = "";
+      let contactValue = "";
       let qtyVal = 1;
 
       const totalNumber = getTotalNumber_();
 
       if (!idS) {
-        alert("⚠️ ID du service manquant (paramètre id).");
+        alert("ID du service manquant (paramètre id).");
         btn.disabled=false; btn.innerText="Confirmer le paiement";
         setPayMode_("CLASSIC");
         SUBMIT_LOCK = false;
@@ -794,7 +773,7 @@
       if (isSMM) {
         const link = document.getElementById('boost-link').value.trim();
         if (!link) {
-          alert("⚠️ Ajoute le lien à booster.");
+          alert("Ajoutez le lien à booster.");
           btn.disabled=false; btn.innerText="Confirmer le paiement";
           setPayMode_("CLASSIC");
           SUBMIT_LOCK = false;
@@ -807,7 +786,7 @@
         const q = parseInt(String(qtyInp.value || "0").replace(/[^\d]/g,""), 10);
 
         if (!q || q <= 0) {
-          alert("⚠️ Quantité invalide.");
+          alert("Quantité invalide.");
           btn.disabled=false; btn.innerText="Confirmer le paiement";
           setPayMode_("CLASSIC");
           SUBMIT_LOCK = false;
@@ -816,7 +795,7 @@
         }
 
         if ((hasMin && q < parseInt(minParam,10)) || (hasMax && q > parseInt(maxParam,10))) {
-          alert(`⚠️ Quantité invalide. Min=${hasMin ? parseInt(minParam,10) : 0}${hasMax ? ` / Max=${parseInt(maxParam,10)}` : ""}.`);
+          alert(`Quantité invalide. Min=${hasMin ? parseInt(minParam,10) : 0}${hasMax ? ` / Max=${parseInt(maxParam,10)}` : ""}.`);
           btn.disabled=false; btn.innerText="Confirmer le paiement";
           setPayMode_("CLASSIC");
           SUBMIT_LOCK = false;
@@ -824,11 +803,9 @@
           return;
         }
 
-        input1 = link; // ✅ SMM: uniquement le lien
+        input1 = link;
         qtyVal = q;
 
-        // ✅ SMM: aucun champ numéro/mail
-        // Si wallet: on stocke l'email wallet pour suivi (optionnel côté sheet)
         if (PAY_MODE === "WALLET" && WALLET_EMAIL) {
           emailForSheet = WALLET_EMAIL;
           contactValue = WALLET_EMAIL;
@@ -838,7 +815,7 @@
         const creds = document.getElementById('creds').value.trim();
         const contact = document.getElementById('delivery-contact-abo').value.trim();
         if (!creds) {
-          alert("⚠️ Ajoute tes identifiants (mail + mot de passe).");
+          alert("Ajoutez vos identifiants (mail + mot de passe).");
           btn.disabled=false; btn.innerText="Confirmer le paiement";
           setPayMode_("CLASSIC");
           SUBMIT_LOCK = false;
@@ -846,7 +823,7 @@
           return;
         }
         if (!contact) {
-          alert("⚠️ Ajoute un contact de livraison (WhatsApp ou Email).");
+          alert("Ajoutez un contact de livraison (WhatsApp ou Email).");
           btn.disabled=false; btn.innerText="Confirmer le paiement";
           setPayMode_("CLASSIC");
           SUBMIT_LOCK = false;
@@ -854,15 +831,15 @@
           return;
         }
 
-        input1 = creds;          // ✅ uniquement identifiants
-        contactValue = contact;  // ✅ contact séparé
-        emailForSheet = contact; // ✅ stocké en colonne Email Client
+        input1 = creds;
+        contactValue = contact;
+        emailForSheet = contact;
         qtyVal = 1;
       }
       else if (isCarte) {
         const contact = document.getElementById('card-delivery').value.trim();
         if (!contact) {
-          alert("⚠️ Ajoute un contact de livraison (WhatsApp ou Email).");
+          alert("Ajoutez un contact de livraison (WhatsApp ou Email).");
           btn.disabled=false; btn.innerText="Confirmer le paiement";
           setPayMode_("CLASSIC");
           SUBMIT_LOCK = false;
@@ -879,7 +856,7 @@
         const main = document.getElementById('main-input').value.trim();
         const em = document.getElementById('email-client').value.trim();
         if (!main) {
-          alert("⚠️ Remplis l'information requise.");
+          alert("Remplissez l'information requise.");
           btn.disabled=false; btn.innerText="Confirmer le paiement";
           setPayMode_("CLASSIC");
           SUBMIT_LOCK = false;
@@ -897,7 +874,7 @@
       }
 
       if (!input1) {
-        alert("⚠️ Information manquante.");
+        alert("Information manquante.");
         btn.disabled=false; btn.innerText="Confirmer le paiement";
         setPayMode_("CLASSIC");
         SUBMIT_LOCK = false;
@@ -905,7 +882,6 @@
         return;
       }
 
-      // ✅ Si Wallet et pas d'email, on prend l'email du wallet
       if (PAY_MODE === "WALLET" && !emailForSheet && WALLET_EMAIL) {
         emailForSheet = WALLET_EMAIL;
         if (!contactValue) contactValue = WALLET_EMAIL;
@@ -918,7 +894,7 @@
       if (PAY_MODE !== "WALLET") {
         const file = document.getElementById('file').files[0];
         if (!file) {
-          alert("⚠️ Ajoute la preuve de paiement (paiement classique).");
+          alert("Ajoutez la preuve de paiement (paiement classique).");
           btn.disabled=false; btn.innerText="Confirmer le paiement";
           setPayMode_("CLASSIC");
           SUBMIT_LOCK = false;
@@ -934,7 +910,7 @@
             r.readAsDataURL(file);
           });
         } catch (e2) {
-          alert("⚠️ Impossible de lire l'image. Réessaie.");
+          alert("Impossible de lire l'image. Réessayez.");
           btn.disabled=false; btn.innerText="Confirmer le paiement";
           setPayMode_("CLASSIC");
           SUBMIT_LOCK = false;
@@ -956,7 +932,6 @@
 
         input1: input1,
 
-        // contact séparé (SMM = vide)
         contact: contactValue,
         email: emailForSheet,
 
@@ -970,12 +945,10 @@
         fileType: fileType,
         fileName: fileName,
 
-        // ✅ idempotence côté backend si tu veux l’utiliser plus tard
         idempotencyKey: "IDEMP_" + orderId
       };
 
       try {
-        // ✅ Dernière barrière (si quelqu’un relance la page pendant l’envoi)
         if (sessionStorage.getItem(SENT_KEY) === "1") { showLocked_(orderId); return; }
 
         await fetch(GOOGLE_URL, {
@@ -984,11 +957,9 @@
           body: JSON.stringify(payload)
         });
 
-        // ✅ Marque envoyé (bloque tout futur envoi de ce orderId)
         sessionStorage.setItem(SENT_KEY, "1");
         sessionStorage.removeItem(INFLIGHT_KEY);
 
-        // ✅ FIX IMPORTANT : on force un nouvel ID pour la prochaine commande
         sessionStorage.removeItem('active_order_id');
 
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
@@ -1005,7 +976,6 @@
         sessionStorage.removeItem(INFLIGHT_KEY);
       } finally {
         setPayMode_("CLASSIC");
-        // si envoyé => on garde lock
         if (sessionStorage.getItem(SENT_KEY) === "1") {
           hardLockForm_();
           SUBMIT_LOCK = true;
