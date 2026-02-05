@@ -3,7 +3,7 @@ name: Generate product pages
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/30 * * * *"   # toutes les 30 minutes
+    - cron: "*/30 * * * *" # toutes les 30 minutes
 
 permissions:
   contents: write
@@ -19,12 +19,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # important pour pull/rebase
+          fetch-depth: 0  # important pour pull/rebase
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+
+      - name: Pull latest main (avoid conflicts)
+        run: |
+          git fetch origin main
+          git checkout main
+          git pull --rebase origin main
 
       - name: Debug path
         run: |
@@ -33,17 +39,26 @@ jobs:
           ls -la scripts || true
           find . -maxdepth 5 -type f -name "generate-pages.mjs"
 
-      - name: Generate pages
+      - name: Generate pages (/p/)
         run: node ./scripts/generate-pages.mjs
+        env:
+          # 👉 Si ton script supporte ces variables, garde-les.
+          # Sinon, elles seront ignorées sans casser le job.
+          OUT_DIR: "."
+          P_DIR: "p"
+          SHARE_DIR: "share"
+          VF_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec"
 
       - name: Commit & Push changes
         run: |
           git config user.name "viralflowr-bot"
           git config user.email "viralflowr-bot@users.noreply.github.com"
 
-          git add p share
+          # ✅ Ajoute p/ et share/ si présents (ne casse pas si share n'existe pas)
+          git add -A p || true
+          git add -A share || true
 
-          # Si rien n'a changé, on stop proprement
+          # Si rien n'a changé, stop proprement
           if git diff --cached --quiet; then
             echo "No changes"
             exit 0
@@ -51,8 +66,9 @@ jobs:
 
           git commit -m "Auto-generate product pages"
 
-          # récupère les changements distants si un autre job a push
-          git pull --rebase origin main
-
-          # push final
-          git push origin main
+          # Push (avec petit retry si un push a eu lieu entre temps)
+          for i in 1 2 3; do
+            git push origin HEAD:main && break
+            echo "Push failed, retry $i/3 => pulling latest then retry..."
+            git pull --rebase origin main
+          done
