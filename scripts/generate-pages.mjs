@@ -38,9 +38,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>ViralFlowr | Boutique Officielle</title>
 
-  <!-- SEO standard (ajout, ne change rien à la logique) -->
+  <!-- SEO standard -->
   <meta name="description" content="Services Elite, Déblocage IMEI et Matériel High-Tech garantis." />
-
   <meta name="theme-color" content="#111827" />
   <link rel="icon" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
@@ -49,10 +48,9 @@
   <meta property="og:description" content="Services Elite, Déblocage IMEI et Matériel High-Tech garantis." />
   <meta property="og:image" content="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png" />
   <meta property="og:type" content="website" />
-  <!-- OG URL (ajout) -->
   <meta property="og:url" content="https://viralflowr.com/index.html" />
 
-  <!-- Config avant /vf_api.js (optionnel) -->
+  <!-- Config avant /vf_api.js -->
   <script>
     const inAppsScriptPanel =
       !!window.__VF_IN_APPS_SCRIPT_PANEL ||
@@ -74,10 +72,9 @@
   </script>
 
   <script src="/vf_api.js?v=200" defer></script>
-
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Perf fonts (ajout) -->
+  <!-- Perf fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -96,7 +93,6 @@
       background:#F8FAFC;
     }
 
-    /* no-scrollbar (amélioration CSS seulement, pas logique) */
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
 
@@ -108,20 +104,26 @@
     }
     .animate-text { animation: placeholderAnimate 4s infinite; }
 
+    @media (prefers-reduced-motion: reduce){
+      .animate-text { animation: none !important; }
+      .hover-card, .hover-card:hover { transition: none !important; transform: none !important; }
+    }
+
     .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
-    .hover-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+    .hover-card { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
     .hover-card:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); border-color: #F07E13; }
 
     .btn-support{
       background:#25D366;color:#fff;padding:8px 16px;border-radius:12px;font-weight:800;
       font-size:12px;display:inline-flex;align-items:center;justify-content:center;gap:8px;line-height:1;
-      transition:.3s;-webkit-tap-highlight-color:transparent;flex-shrink:0;white-space:nowrap;max-width:100%;
+      transition:.25s;-webkit-tap-highlight-color:transparent;flex-shrink:0;white-space:nowrap;max-width:100%;
     }
-    .btn-support:hover{ transform:scale(1.05); box-shadow:0 10px 15px -3px rgba(37,211,102,.3); }
+    .btn-support:hover{ transform:translateY(-1px); box-shadow:0 10px 15px -3px rgba(37,211,102,.28); }
 
     .btn-auth{
       padding:9px 14px;border-radius:14px;font-weight:900;font-size:11px;text-transform:uppercase;
-      letter-spacing:.12em;transition:.25s;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;
+      letter-spacing:.12em;transition:.2s;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;
       -webkit-tap-highlight-color:transparent;flex-shrink:0;
     }
     .btn-auth:hover{ transform:translateY(-1px); }
@@ -151,12 +153,30 @@
     @media (max-width: 768px){
       header{ backdrop-filter:none !important; -webkit-backdrop-filter:none !important; }
     }
+
     @media (max-width: 420px){
       .icon-btn{ width:36px;height:36px;border-radius:12px; }
       .btn-support{ padding:8px 10px;border-radius:12px;font-size:11px;gap:6px; }
       .btn-support .btn-support-text{ display:none; }
       .btn-auth{ padding:8px 10px;border-radius:12px;font-size:10px;letter-spacing:.10em;gap:6px; }
       .vf-brand-text{ font-size:22px; }
+    }
+
+    /* Amélioration visuelle: badge "+" en gradient au survol (sans changer la logique) */
+    .plus-badge{
+      background:#111827;
+      transition: background .2s ease, transform .2s ease;
+    }
+    .hover-card:hover .plus-badge{
+      background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%);
+      transform: translateY(-1px);
+    }
+
+    /* Cat active (au cas où) */
+    .cat-btn.active{
+      color:#fff !important;
+      background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%) !important;
+      border-color: rgba(240,126,19,.25) !important;
     }
   </style>
 </head>
@@ -183,7 +203,8 @@
 
       <div class="relative flex-1 max-w-[600px] hidden md:flex items-center">
         <input type="text" id="searchInput"
-          class="w-full h-11 pl-5 pr-12 rounded-xl bg-[#F1F5F9] text-sm font-semibold focus:ring-2 focus:ring-[#F07E13] focus:bg-white outline-none transition-all border-none">
+          class="w-full h-11 pl-5 pr-12 rounded-xl bg-[#F1F5F9] text-sm font-semibold focus:ring-2 focus:ring-[#F07E13] focus:bg-white outline-none transition-all border-none"
+          aria-label="Rechercher un produit">
 
         <div id="placeholder-box" class="absolute left-5 pointer-events-none text-gray-400 text-sm font-semibold">
           <span id="animated-placeholder" class="inline-block animate-text">Que cherchez-vous ? (SMM, iPhone, IMEI, Netflix...)</span>
@@ -251,7 +272,8 @@
       <article class="relative w-full h-[250px] md:h-[400px] rounded-[32px] overflow-hidden shadow-2xl group border-4 border-white">
         <img src="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png"
              class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
-             alt="ViralFlowr">
+             alt="ViralFlowr"
+             fetchpriority="high" decoding="async">
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"></div>
         <div class="relative z-10 p-8 md:p-16 flex flex-col justify-end h-full text-white">
           <h1 class="text-3xl md:text-6xl font-black max-w-2xl leading-[0.95] mb-4 tracking-tighter uppercase italic">
@@ -268,13 +290,34 @@
     </section>
 
     <div class="flex items-center gap-3 overflow-x-auto no-scrollbar pb-6 mb-10 border-b border-gray-100" id="catNav">
-      <button onclick="filterCat('all', this)" class="cat-btn active bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Tous</button>
-      <button onclick="filterCat('Materiel', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Matériel & Gadgets</button>
-      <button onclick="filterCat('Abonnement', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Abonnements</button>
-      <button onclick="filterCat('Carte2', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Cartes cadeaux</button>
-      <button onclick="filterCat('IMEI', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">IMEI & Réseau</button>
-      <button onclick="filterCat('Boost', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Boost SMM</button>
-      <button onclick="filterCat('Jeux', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Jeux</button>
+      <button type="button" onclick="filterCat('all', this)"
+        class="cat-btn active brand-gradient text-white px-8 py-3 rounded-2xl text-[12px] font-black shadow-sm whitespace-nowrap transition-all uppercase">
+        Tous
+      </button>
+      <button type="button" onclick="filterCat('Materiel', this)"
+        class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">
+        Matériel & Gadgets
+      </button>
+      <button type="button" onclick="filterCat('Abonnement', this)"
+        class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">
+        Abonnements
+      </button>
+      <button type="button" onclick="filterCat('Carte2', this)"
+        class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">
+        Cartes cadeaux
+      </button>
+      <button type="button" onclick="filterCat('IMEI', this)"
+        class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">
+        IMEI & Réseau
+      </button>
+      <button type="button" onclick="filterCat('Boost', this)"
+        class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">
+        Boost SMM
+      </button>
+      <button type="button" onclick="filterCat('Jeux', this)"
+        class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">
+        Jeux
+      </button>
     </div>
 
     <div id="loadError" class="hidden mb-6 bg-red-50 border border-red-200 text-red-700 font-bold text-xs rounded-2xl px-4 py-3"></div>
@@ -336,9 +379,16 @@
     const placeholderBox = document.getElementById("placeholder-box");
 
     if (input && placeholderBox) {
-      input.addEventListener("focus", () => placeholderBox.style.display = "none");
-      input.addEventListener("blur", () => { if (input.value === "") placeholderBox.style.display = "block"; });
-      input.addEventListener("input", () => render());
+      const syncPlaceholder = () => {
+        const has = (input.value || "").trim().length > 0;
+        placeholderBox.style.display = has ? "none" : "block";
+      };
+
+      input.addEventListener("focus", () => { placeholderBox.style.display = "none"; });
+      input.addEventListener("blur", () => syncPlaceholder());
+      input.addEventListener("input", () => { syncPlaceholder(); render(); });
+
+      syncPlaceholder();
     }
 
     // ========= HELPERS =========
@@ -361,7 +411,7 @@
     function pName(p){ return safe(p.nom || p.name || p.title); }
     function pCat(p){ return safe(p.cat || p.category || p.categorie); }
 
-    // ✅ prix revendeur prioritaire si API le renvoie
+    // prix revendeur prioritaire si API le renvoie
     function pPrice(p){
       return safe(
         (p && (
@@ -492,7 +542,7 @@
             </div>
           </div>
         </div>
-        <button id="logoutBtn" class="btn-auth btn-auth-outline">Déconnexion</button>
+        <button id="logoutBtn" class="btn-auth btn-auth-outline" type="button">Déconnexion</button>
       `;
 
       const logoutBtn = document.getElementById("logoutBtn");
@@ -500,7 +550,7 @@
         logoutBtn.addEventListener("click", () => {
           clearSession_();
           renderAccountUI_();
-          start_(); // relance propre
+          start_();
         });
       }
     }
@@ -631,17 +681,19 @@
         }
 
         const id = encodeURIComponent(safe(p.id).trim());
-        const productUrl = `/p/${id}/`; // ✅ absolu (pas de lien cassé)
+        const productUrl = `/p/${id}/`;
 
         const min = pMin(p);
         const max = pMax(p);
 
         return `
           <div onclick="location.href='${productUrl}'"
-            class="hover-card group bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col cursor-pointer shadow-sm">
+            class="hover-card product-card group bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col cursor-pointer shadow-sm">
             <div class="aspect-square bg-[#F8FAFC] rounded-[22px] mb-4 flex items-center justify-center p-6 overflow-hidden">
               <img src="${img}"
                 class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
+                loading="lazy" decoding="async"
+                alt="${escHtml(pName(p) || "Produit")}"
                 onerror="this.src='${FALLBACK_IMG}'">
             </div>
             <div class="px-1">
@@ -649,7 +701,7 @@
               <h3 class="text-[13px] font-bold text-gray-900 leading-tight mb-4 h-8 overflow-hidden line-clamp-2">${escHtml(pName(p))}</h3>
               <div class="flex items-center justify-between">
                 <span class="text-gray-900 font-black text-lg tracking-tighter">${escHtml(priceTxt)} $</span>
-                <div class="bg-gray-900 text-white p-1.5 rounded-lg group-hover:brand-gradient transition-all">
+                <div class="plus-badge text-white p-1.5 rounded-lg">
                   <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                     <path d="M12 4v16m8-8H4"></path>
                   </svg>
@@ -666,7 +718,7 @@
       }).join("");
     }
 
-    // ========= ANTI-FLASH PRIX (attendre token si session) =========
+    // ========= ANTI-FLASH PRIX =========
     function _sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
 
     async function waitForTokenOrTimeout_(timeoutMs){
@@ -700,7 +752,7 @@
       }
     });
 
-    // =========  START =========
+    // ========= START =========
     start_();
   </script>
 </body>
