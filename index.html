@@ -80,7 +80,7 @@
       touch-action: pan-y;
       -webkit-text-size-adjust: 100%;
       padding-bottom: env(safe-area-inset-bottom);
-      background:#F3F3F3; /* ✅ plus proche BSV */
+      background:#F3F3F3;
       color:#201B16;
     }
 
@@ -136,7 +136,7 @@
 
     header{ transform: translateZ(0); -webkit-transform: translateZ(0); }
 
-    /* ✅ header fixed mobile / sticky desktop (BSV style) */
+    /* header fixed mobile / sticky desktop */
     .vf-header{
       position: fixed;
       top: 0;
@@ -173,7 +173,7 @@
     MARKETPLACE PROFESSIONNELLE • LIVRAISON INTERNATIONALE • PAIEMENT SÉCURISÉ
   </div>
 
-  <!-- ✅ HEADER refait (burger + search mobile) -->
+  <!-- ✅ HEADER (boutons supprimés: commandes/wallet/social/compte) => garde seulement WhatsApp -->
   <header class="vf-header bg-white w-full border-b border-gray-200 shadow-[0_0_8px_0_rgba(0,0,0,0.13)]">
     <div class="max-w-[1280px] mx-auto px-4 pt-4 pb-4 grid grid-cols-[auto_1fr_auto] gap-3 items-center">
 
@@ -208,42 +208,8 @@
         </button>
       </div>
 
-      <!-- Right: actions -->
-      <div class="flex items-center justify-end gap-2 sm:gap-3 overflow-x-auto no-scrollbar max-w-full">
-        <div id="accountArea" class="hidden sm:flex items-center gap-2"></div>
-
-        <a href="commandes.html" class="icon-btn" title="Mes commandes" aria-label="Mes commandes">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 6h11"></path><path d="M9 12h11"></path><path d="M9 18h11"></path>
-            <path d="M4 6h.01"></path><path d="M4 12h.01"></path><path d="M4 18h.01"></path>
-          </svg>
-        </a>
-
-        <a href="wallet.html" class="icon-btn" title="Portefeuille" aria-label="Portefeuille">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
-            <path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/>
-            <path d="M20 12h-4a2 2 0 0 0 0 4h4"/>
-            <circle cx="16" cy="14" r="0.5" />
-          </svg>
-        </a>
-
-        <a href="https://www.instagram.com/di_corporation_1/" target="_blank" rel="noopener noreferrer"
-          class="hidden sm:flex icon-btn" aria-label="Instagram">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
-            <path d="M16 11.37a4 4 0 1 1-7.87 1.26 4 4 0 0 1 7.87-1.26z"></path>
-            <path d="M17.5 6.5h.01"></path>
-          </svg>
-        </a>
-
-        <a href="https://www.tiktok.com/@dicorporation" target="_blank" rel="noopener noreferrer"
-          class="hidden sm:flex icon-btn" aria-label="TikTok">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M16.7 7.4c-1-1-1.6-2.3-1.7-3.7h-3v12c0 1.3-1 2.3-2.3 2.3-1.2 0-2.2-1-2.2-2.2 0-1.3 1-2.3 2.2-2.3.3 0 .6.1.9.2V9.3c-.3-.1-.6-.1-.9-.1C6.6 9.2 4 11.8 4 15c0 3.2 2.6 5.8 5.8 5.8 3.2 0 5.8-2.6 5.8-5.8V11c1.1.8 2.4 1.2 3.8 1.2V9.3c-1.1 0-2.2-.4-3-.9z"/>
-          </svg>
-        </a>
-
+      <!-- Right: WhatsApp only -->
+      <div class="flex items-center justify-end gap-2 sm:gap-3 max-w-full">
         <a href="https://wa.me/243850373991" target="_blank" rel="noopener noreferrer" class="btn-support">
           <svg width="18" height="18" fill="white" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
@@ -497,19 +463,21 @@
 
     // ========= ACCOUNT UI =========
     function renderAccountUI_(){
-      const area = document.getElementById("accountArea");
+      const area = document.getElementById("accountArea"); // (peut ne plus exister, ok)
       const s = getSession_();
       const token = getToken_();
       const mode = document.getElementById("priceMode");
 
+      // ✅ garde ta logique "Mode" même si on a supprimé la zone account du header
+      if (mode){
+        mode.textContent = token ? "Mode: REVENDEUR (token détecté)" : "Mode: CLIENT (pas de token)";
+      }
+
+      // si pas de zone UI => on s'arrête (ta logique token/session continue pour produits)
       if (!area) return;
 
       area.innerHTML = "";
       area.classList.remove("hidden");
-
-      if (mode){
-        mode.textContent = token ? "Mode: REVENDEUR (token détecté)" : "Mode: CLIENT (pas de token)";
-      }
 
       if (!s){
         area.innerHTML = `
