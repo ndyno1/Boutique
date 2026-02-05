@@ -38,14 +38,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>ViralFlowr | Boutique Officielle</title>
 
+  <!-- SEO standard (ajout, ne change rien à la logique) -->
+  <meta name="description" content="Services Elite, Déblocage IMEI et Matériel High-Tech garantis." />
+
   <meta name="theme-color" content="#111827" />
-  <link rel="icon" href="favicon.png" />
-  <link rel="apple-touch-icon" href="favicon.png" />
+  <link rel="icon" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/favicon.png" />
 
   <meta property="og:title" content="ViralFlowr | Boutique Officielle" />
   <meta property="og:description" content="Services Elite, Déblocage IMEI et Matériel High-Tech garantis." />
   <meta property="og:image" content="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png" />
   <meta property="og:type" content="website" />
+  <!-- OG URL (ajout) -->
+  <meta property="og:url" content="https://viralflowr.com/index.html" />
 
   <!-- Config avant /vf_api.js (optionnel) -->
   <script>
@@ -71,6 +76,10 @@
   <script src="/vf_api.js?v=200" defer></script>
 
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Perf fonts (ajout) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
@@ -86,6 +95,9 @@
       padding-bottom: env(safe-area-inset-bottom);
       background:#F8FAFC;
     }
+
+    /* no-scrollbar (amélioration CSS seulement, pas logique) */
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
 
     @keyframes placeholderAnimate {
@@ -688,7 +700,7 @@
       }
     });
 
-    // ========= START =========
+    // =========  START =========
     start_();
   </script>
 </body>
