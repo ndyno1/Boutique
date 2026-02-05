@@ -207,6 +207,9 @@
           </div>
         </div>
 
+        <!-- =========================
+             HISTORIQUE WALLET_TX
+             ========================= -->
         <div class="mt-7">
           <div class="flex items-center justify-between">
             <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-300">Historique</div>
@@ -219,8 +222,23 @@
             <div class="p-4 text-sm font-bold text-gray-400">Chargement…</div>
           </div>
 
-          <!-- Debug invisible, activable via ?debug=1 -->
           <pre id="debugBox" class="hidden mt-3 p-3 rounded-2xl bg-black text-white text-[11px] overflow-auto"></pre>
+        </div>
+
+        <!-- =========================
+             ACHATS (Réponses Site)
+             ========================= -->
+        <div class="mt-7">
+          <div class="flex items-center justify-between">
+            <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-300">Achats</div>
+            <button id="refreshBuyBtn" class="btn btn-outline" style="height:38px;padding:0 12px;font-size:11px;">
+              Rafraîchir
+            </button>
+          </div>
+
+          <div id="buyBox" class="mt-3 rounded-2xl border border-gray-200 bg-white overflow-hidden">
+            <div class="p-4 text-sm font-bold text-gray-400">Chargement…</div>
+          </div>
         </div>
 
       </section>
@@ -232,6 +250,26 @@
       <p class="text-[11px] text-[#767676]">© 2026 ViralFlowr. Tous droits réservés.</p>
     </div>
   </footer>
+
+  <!-- =========================
+       MODAL "VOIR" (colonne M)
+       ========================= -->
+  <div id="respModal" class="hidden fixed inset-0 z-[9999]">
+    <div id="respOverlay" class="absolute inset-0 bg-black/50"></div>
+    <div class="relative max-w-[860px] mx-auto mt-16 p-4">
+      <div class="card p-5">
+        <div class="flex items-center justify-between gap-3">
+          <div class="font-black text-sm uppercase tracking-widest text-gray-400">Réponse</div>
+          <button id="closeRespBtn" class="btn btn-outline" style="height:34px;padding:0 10px;font-size:10px;">
+            Fermer
+          </button>
+        </div>
+        <pre id="respText"
+             class="mt-3 p-3 rounded-2xl bg-gray-50 border border-gray-200 text-[12px] font-semibold text-gray-800 overflow-auto"
+             style="white-space:pre-wrap;"></pre>
+      </div>
+    </div>
+  </div>
 
   <script>
     // =========================
@@ -268,6 +306,16 @@
     const openWaBtn = document.getElementById("openWaBtn");
     const copyManualBtn = document.getElementById("copyManualBtn");
     const hideManualBtn = document.getElementById("hideManualBtn");
+
+    // Achats
+    const buyBox = document.getElementById("buyBox");
+    const refreshBuyBtn = document.getElementById("refreshBuyBtn");
+
+    // Modal "Voir"
+    const respModal = document.getElementById("respModal");
+    const respOverlay = document.getElementById("respOverlay");
+    const respText = document.getElementById("respText");
+    const closeRespBtn = document.getElementById("closeRespBtn");
 
     // =========================
     // Debug
@@ -379,7 +427,6 @@
       btn.textContent = "Déconnexion";
       btn.disabled = false;
       btn.onclick = () => {
-        // supprime plusieurs clés possibles
         [
           "vf_session","VF_SESSION","vfSession","VFSession",
           "session","auth","vf_auth"
@@ -485,17 +532,15 @@
     }
 
     // =========================
-    // IMPORTANT: identité API
-    // - si token existe => on envoie SEULEMENT token
-    // - sinon => email
-    // (ça évite que l’Apps Script prenne l’email et tombe sur un autre user_id/wallet_id)
+    // Identité API (token + email)
     // =========================
     function identityParams_(auth){
       const token = String(auth?.token || "").trim();
       const email = String(auth?.email || "").trim().toLowerCase();
-      if(token) return { token };
-      if(email) return { email };
-      return {};
+      const o = {};
+      if(token) o.token = token;
+      if(email) o.email = email;
+      return o;
     }
 
     // =========================
@@ -559,7 +604,7 @@
     }
 
     // =========================
-    // Lecture solde + tx (TES actions existantes)
+    // Lecture solde + tx (API)
     // =========================
     function loadWallet_(auth){
       balanceValue.textContent = "—";
@@ -568,7 +613,6 @@
 
       const idp = identityParams_(auth);
 
-      // ligne mode auth (visible seulement en debug)
       if(DEBUG){
         authModeLine.classList.remove("hidden");
         if(idp.token) authModeLine.textContent = "Auth: token = " + maskToken_(idp.token);
@@ -606,7 +650,6 @@
 
     function loadTx_(auth){
       txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Chargement…</div>`;
-
       const idp = identityParams_(auth);
 
       dbg("wallet_tx request", { action:"wallet_tx", currency:"USD", limit:"50", ...idp });
@@ -626,6 +669,94 @@
         (why) => {
           dbg("wallet_tx error", why);
           txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Erreur réseau (${why}).</div>`;
+        }
+      );
+    }
+
+    // =========================
+    // Achats (Réponses Site) + bouton Voir (col M)
+    // =========================
+    function openResp_(text){
+      respText.textContent = String(text || "—");
+      respModal.classList.remove("hidden");
+    }
+    function closeResp_(){
+      respModal.classList.add("hidden");
+      respText.textContent = "";
+    }
+    closeRespBtn?.addEventListener("click", closeResp_);
+    respOverlay?.addEventListener("click", closeResp_);
+
+    function renderPurchases_(list){
+      if(!Array.isArray(list) || list.length === 0){
+        buyBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Aucun achat.</div>`;
+        return;
+      }
+
+      buyBox.innerHTML = `
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50">
+              <tr class="text-left text-[11px] uppercase tracking-widest text-gray-400 font-black">
+                <th class="p-3">Date</th>
+                <th class="p-3">Commande</th>
+                <th class="p-3">Produit</th>
+                <th class="p-3">Montant</th>
+                <th class="p-3">Statut</th>
+                <th class="p-3">Voir</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${list.map((it, idx) => {
+                const cur = String(it.currency || "USD").toUpperCase();
+                return `
+                  <tr class="border-t">
+                    <td class="p-3 font-bold text-gray-500">${it.created_at || "-"}</td>
+                    <td class="p-3 font-black text-gray-900">${it.order_id || "-"}</td>
+                    <td class="p-3 font-semibold text-gray-700">${it.product || "-"}</td>
+                    <td class="p-3 font-black text-gray-900">${fmt2(it.amount)} ${currencySymbol_(cur)}</td>
+                    <td class="p-3 font-extrabold text-gray-500">${it.status || ""}</td>
+                    <td class="p-3">
+                      <button class="btn btn-outline" style="height:32px;padding:0 10px;font-size:10px;" data-idx="${idx}">
+                        Voir
+                      </button>
+                    </td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      buyBox.querySelectorAll("button[data-idx]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const i = parseInt(btn.getAttribute("data-idx"), 10);
+          const responseText = list[i]?.response || "";
+          openResp_(responseText);
+        });
+      });
+    }
+
+    function loadPurchases_(auth){
+      buyBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Chargement…</div>`;
+      const idp = identityParams_(auth);
+
+      dbg("purchase_tx request", { action:"purchase_tx", limit:"80", ...idp });
+
+      jsonp_(
+        { action:"purchase_tx", limit:"80", ...idp },
+        (res) => {
+          dbg("purchase_tx response", res);
+          if(res && res.ok){
+            renderPurchases_(Array.isArray(res.items) ? res.items : []);
+            return;
+          }
+          buyBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Achats indisponibles (${res?.error || "ERREUR"}).</div>`;
+        },
+        (why) => {
+          dbg("purchase_tx error", why);
+          buyBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Erreur réseau (${why}).</div>`;
         }
       );
     }
@@ -864,7 +995,6 @@
             showAlert("Paiement non confirmé (" + (res?.error || status || "ERREUR") + ").", "error");
           }
 
-          // nettoyer l'URL
           u.searchParams.delete("monerooPaymentId");
           u.searchParams.delete("monerooPaymentStatus");
           u.searchParams.delete("status");
@@ -887,6 +1017,7 @@
         userLabel.textContent = "Non connecté";
         balanceValue.textContent = "—";
         txBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Connecte-toi pour voir ton solde.</div>`;
+        buyBox.innerHTML = `<div class="p-4 text-sm font-bold text-gray-400">Connecte-toi pour voir tes achats.</div>`;
         return;
       }
 
@@ -894,19 +1025,18 @@
       dbg("session raw", s);
       dbg("auth picked", { email: auth.email, token: maskToken_(auth.token) });
 
-      // Affichage compte (email si dispo)
       userLabel.textContent = auth.email || "Utilisateur";
 
-      // Note liée à l'identité (email si dispo sinon token)
       const identityKey = auth.email || auth.token || "user";
       let note = ensureTopupNote_(identityKey);
 
       applyMethodUI_();
       methodSel.addEventListener("change", applyMethodUI_);
 
-      // Charge solde + historique (utilise token si présent)
+      // Charge solde + wallet tx + achats
       loadWallet_(auth);
       loadTx_(auth);
+      loadPurchases_(auth);
 
       // Confirme retour Moneroo si présent
       maybeHandleMonerooReturn_(auth);
@@ -914,8 +1044,10 @@
       document.getElementById("refreshBtn").addEventListener("click", () => {
         loadWallet_(auth);
         loadTx_(auth);
+        loadPurchases_(auth);
       });
       document.getElementById("refreshTxBtn").addEventListener("click", () => loadTx_(auth));
+      refreshBuyBtn?.addEventListener("click", () => loadPurchases_(auth));
 
       document.getElementById("copyNoteBtn").addEventListener("click", () => copyText_(note));
       document.getElementById("newNoteBtn").addEventListener("click", () => {
