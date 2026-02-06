@@ -1,369 +1,532 @@
-// scripts/generate-pages.mjs
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const ROOT = path.resolve(__dirname, ".."); // repo root
-
-// ====== CONFIG (tu peux aussi overrider via env) ======
-const SCRIPT_URL =
-  process.env.VF_SCRIPT_URL ||
-  "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
-
-const BASE_URL = (process.env.VF_BASE_URL || "https://viralflowr.com").replace(/\/+$/, "");
-const OUT_P = path.join(ROOT, "p");
-const OUT_SHARE = path.join(ROOT, "share");
-
-// Debug: si tu veux vérifier un ID précis dans les logs
-const CHECK_ID = process.env.VF_CHECK_ID || "1767";
-
-// ====== HELPERS ======
-function safe(v) {
-  return v === null || v === undefined ? "" : String(v);
-}
-
-function escHtml(str) {
-  return safe(str).replace(/[&<>"']/g, (c) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;",
-  }[c]));
-}
-
-function oneLine(s) {
-  return safe(s).replace(/\s+/g, " ").trim();
-}
-
-function cut(s, n) {
-  const t = oneLine(s);
-  if (t.length <= n) return t;
-  return t.slice(0, n - 1).trim() + "…";
-}
-
-function normalizeImg(u) {
-  const s = safe(u).trim();
-  if (!s) return "";
-  // Drive file link -> lh3.googleusercontent
-  const m1 = s.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
-  if (m1) return `https://lh3.googleusercontent.com/d/${m1[1]}=w1200`;
-  const m2 = s.match(/(?:\?|&)id=([^&]+)/i);
-  if (/drive\.google\.com/i.test(s) && m2) return `https://lh3.googleusercontent.com/d/${m2[1]}=w1200`;
-  return s;
-}
-
-function extractList(payload) {
-  if (Array.isArray(payload)) return payload;
-  if (payload && Array.isArray(payload.products)) return payload.products;
-  if (payload && Array.isArray(payload.items)) return payload.items;
-  if (payload && Array.isArray(payload.data)) return payload.data;
-  if (payload && payload.data && Array.isArray(payload.data.products)) return payload.data.products;
-  if (payload && payload.data && Array.isArray(payload.data.items)) return payload.data.items;
-  return [];
-}
-
-// ID robuste (ton bug “rien généré” arrive souvent ici)
-function getId(p) {
-  const candidates = [
-    p?.id, p?.ID, p?.Id, p?.productId, p?.product_id, p?.productID,
-    p?.id_produit, p?.ID_PRODUIT, p?.["ID Produit"], p?.["ID_PRODUIT"],
-    p?.ref, p?.REF
-  ];
-  const v = candidates.find(x => safe(x).trim() !== "");
-  return safe(v).trim();
-}
-
-function pickName(p) {
-  return safe(p?.nom ?? p?.name ?? p?.title).trim();
-}
-
-function pickCat(p) {
-  return safe(p?.cat ?? p?.category ?? p?.categorie).trim();
-}
-
-// Public price (page statique) : client par défaut
-function pickPrice(p) {
-  const v = (
-    p?.prix_client ??
-    p?.prix ??
-    p?.price ??
-    p?.amount ??
-    p?.PV ?? p?.pv ??
-    p?.prix_affiche ?? // au cas où
-    p?.prix_revendeur  // fallback
-  );
-  return safe(v).trim();
-}
-
-function pickDesc(p) {
-  return safe(p?.desc ?? p?.description ?? p?.details ?? "").trim();
-}
-
-function pickMin(p) {
-  const v = p?.min ?? p?.minqnt ?? p?.minQty ?? p?.min_qty;
-  return safe(v).trim();
-}
-
-function pickMax(p) {
-  const v = p?.max ?? p?.maxqnt ?? p?.maxQty ?? p?.max_qty;
-  return safe(v).trim();
-}
-
-function buildPayUrl(prod, price) {
-  const qp = new URLSearchParams();
-  qp.set("nom", safe(prod.nom));
-  qp.set("prix", safe(price));
-  qp.set("cat", safe(prod.cat));
-  qp.set("id", safe(prod.id));
-  qp.set("min", safe(prod.min));
-  qp.set("max", safe(prod.max));
-  qp.set("img", safe(prod.img));
-  qp.set("desc", safe(prod.desc));
-  return `/paiement.html?${qp.toString()}`;
-}
-
-async function fetchProducts() {
-  // 1) essai JSON direct
-  const urls = [
-    `${SCRIPT_URL}?action=get_products&format=json&t=${Date.now()}`,
-    `${SCRIPT_URL}?action=get_products&t=${Date.now()}`
-  ];
-
-  let lastText = "";
-  for (const url of urls) {
-    const res = await fetch(url, { method: "GET" });
-    const text = await res.text();
-    lastText = text;
-
-    // tente JSON
-    try {
-      const json = JSON.parse(text);
-      return extractList(json);
-    } catch (_) {}
-
-    // tente JSONP: callback( ... );
-    const m = text.match(/^[\w$]+\(([\s\S]*)\)\s*;?\s*$/);
-    if (m) {
-      try {
-        const json = JSON.parse(m[1]);
-        return extractList(json);
-      } catch (_) {}
-    }
-  }
-
-  throw new Error("Impossible de parser la réponse produits (JSON/JSONP). Extrait: " + lastText.slice(0, 140));
-}
-
-// ====== TEMPLATES ======
-function productPageHtml(p) {
-  const fallbackImg = "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
-
-  const id = safe(p.id);
-  const name = safe(p.nom);
-  const cat = safe(p.cat);
-  const price = safe(p.price);
-  const img = normalizeImg(p.img) || fallbackImg;
-  const desc = safe(p.desc);
-
-  const canonical = `${BASE_URL}/p/${encodeURIComponent(id)}/`;
-  const metaDesc = cut(`${price} $ • ${cat} • ${desc}`, 160);
-
-  const ld = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name,
-    image: [img],
-    description: desc,
-    brand: { "@type": "Brand", name: "ViralFlowr" },
-    offers: {
-      "@type": "Offer",
-      priceCurrency: "USD",
-      price,
-      availability: "https://schema.org/InStock",
-      url: canonical,
-    },
-  };
-
-  const payUrl = buildPayUrl({ ...p, img }, price);
-
-  return `<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr" class="font-inter">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-  <title>${escHtml(name)} | ViralFlowr</title>
-  <meta name="description" content="${escHtml(metaDesc)}">
-  <link rel="canonical" href="${escHtml(canonical)}">
+  <title>{{NAME}} | ViralFlowr</title>
+
+  <!-- ✅ SEO: utilise LONG_DESC (colonne K) -->
+  <meta name="description" content="{{PRICE}} $ • {{CAT}} • {{LONG_DESC_META}}">
+  <link rel="canonical" href="https://viralflowr.com/p/{{ID}}/">
 
   <meta property="og:type" content="product">
   <meta property="og:site_name" content="ViralFlowr">
-  <meta property="og:title" content="${escHtml(name)}">
-  <meta property="og:description" content="${escHtml(metaDesc)}">
-  <meta property="og:image" content="${escHtml(img)}">
-  <meta property="og:url" content="${escHtml(canonical)}">
+  <meta property="og:title" content="{{NAME}}">
+  <meta property="og:description" content="{{LONG_DESC_META}}">
+  <meta property="og:image" content="{{IMG}}">
+  <meta property="og:url" content="https://viralflowr.com/p/{{ID}}/">
 
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="${escHtml(img)}">
+  <meta name="twitter:image" content="{{IMG}}">
 
-  <script type="application/ld+json">${escHtml(JSON.stringify(ld))}</script>
+  <!-- ✅ JSON-LD: description = LONG_DESC (échappée) -->
+  <script type="application/ld+json">
+  {{JSONLD_PRODUCT}}
+  </script>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
     html, body { width:100%; max-width:100%; overflow-x:hidden; }
-    body { font-family: Inter, sans-serif; background:#F3F3F3; color:#201B16; padding-bottom: env(safe-area-inset-bottom); }
-    .btn-gradient { background: linear-gradient(90deg, #F07E13 0%, #FFB26B 100%); }
-    .shadow-card { box-shadow: 0 0 7px 0 rgba(0,0,0,.15); }
+    *{ box-sizing:border-box; }
+    :root{
+      --vf-orange:#F07E13;
+      --vf-orange2:#FFB26B;
+      --vf-bg:#F3F3F3;
+      --vf-ink:#201B16;
+      --vf-card:#ffffff;
+      --vf-border:#E5E7EB;
+    }
+    body{
+      font-family:'Inter',sans-serif;
+      background:
+        radial-gradient(1200px 500px at 20% 0%, rgba(240,126,19,.10), transparent 55%),
+        radial-gradient(1200px 500px at 80% 0%, rgba(255,178,107,.10), transparent 55%),
+        var(--vf-bg);
+      color:var(--vf-ink);
+      -webkit-text-size-adjust:100%;
+      padding-bottom:env(safe-area-inset-bottom);
+      overscroll-behavior-x:none;
+    }
+    .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
+    .no-scrollbar::-webkit-scrollbar{ display:none; }
+
+    .text-orange-bsv { color: var(--vf-orange); }
+    .btn-gradient { background: linear-gradient(90deg, var(--vf-orange) 0%, var(--vf-orange2) 100%); }
+    .shadow-card {
+      box-shadow:
+        0 10px 28px rgba(17,24,39,.08),
+        0 2px 8px rgba(17,24,39,.06);
+    }
+
+    .btn-mini{
+      height:40px; padding:0 14px; border-radius:999px;
+      font-weight:900; font-size:11px; letter-spacing:.10em;
+      text-transform:uppercase;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      border:1px solid var(--vf-border); background:#fff; color:#111827;
+      transition:.18s ease; white-space:nowrap; flex:0 0 auto;
+      max-width:100%;
+    }
+    .btn-mini:hover{
+      transform: translateY(-1px);
+      border-color: rgba(240,126,19,.55);
+      color: var(--vf-orange);
+      box-shadow: 0 8px 18px rgba(240,126,19,.12);
+    }
+
+    .btn-waba{
+      height:40px; padding:0 14px; border-radius:999px;
+      font-weight:900; font-size:11px; letter-spacing:.10em;
+      text-transform:uppercase;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      border:1px solid rgba(37,211,102,.25);
+      background:#25D366; color:#fff;
+      transition:.18s ease; white-space:nowrap; flex:0 0 auto;
+      max-width:100%;
+    }
+    .btn-waba:hover{ transform: translateY(-1px); box-shadow: 0 10px 22px rgba(37,211,102,.18); }
+
+    .icon-btn{
+      width:40px; height:40px; border-radius:999px;
+      border:1px solid var(--vf-border); background:#fff; color:#374151;
+      display:flex; align-items:center; justify-content:center;
+      transition:.18s ease; flex:0 0 auto;
+    }
+    .icon-btn:hover{
+      transform: translateY(-1px);
+      border-color: rgba(240,126,19,.45);
+      color: var(--vf-orange);
+      box-shadow: 0 8px 18px rgba(240,126,19,.10);
+    }
+
+    .vf-brand-wrap{ min-width:0; overflow:hidden; }
+    .vf-brand-text{
+      display:block; max-width:100%;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      line-height:1;
+    }
+
+    .vf-page-title{
+      letter-spacing:-.02em;
+    }
+    .vf-desc{
+      background: linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(255,255,255,.96) 100%);
+    }
+
+    @media (max-width: 420px){
+      .btn-mini, .btn-waba{ padding:0 10px; font-size:10px; letter-spacing:.08em; }
+      .btn-mini .txt, .btn-waba .txt{ display:none; }
+      .icon-btn{ width:36px; height:36px; }
+    }
   </style>
 </head>
 
 <body class="flex flex-col min-h-screen">
-  <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-200 shadow-sm">
-    <div class="max-w-[1240px] mx-auto h-16 px-4 flex items-center justify-between">
-      <a class="text-2xl font-black tracking-tighter" href="/index.html">Viral<span style="color:#F07E13">Flowr</span></a>
-      <div class="flex gap-2">
-        <a class="px-4 h-10 rounded-full border border-gray-200 bg-white font-black text-[11px] uppercase tracking-wider flex items-center" href="/index.html">Boutique</a>
-        <a class="px-4 h-10 rounded-full border border-green-200 bg-green-500 text-white font-black text-[11px] uppercase tracking-wider flex items-center"
-           href="https://wa.me/243850373991" target="_blank" rel="noopener noreferrer">Support</a>
+
+  <header class="bg-white/90 backdrop-blur sticky top-0 w-full z-50 border-b border-gray-200 shadow-sm">
+    <div class="max-w-[1240px] mx-auto h-16 px-4 flex items-center justify-between gap-3">
+      <a class="flex items-center gap-2 shrink-0 vf-brand-wrap" href="/index.html" aria-label="Boutique ViralFlowr">
+        <div class="text-2xl font-black tracking-tighter vf-brand-text">
+          Viral<span class="text-orange-bsv">Flowr</span>
+        </div>
+      </a>
+
+      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar max-w-full">
+        <div id="accountArea" class="hidden sm:flex items-center gap-2"></div>
+
+        <a class="icon-btn" href="/commandes.html" title="Mes commandes" aria-label="Mes commandes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 6h11"></path><path d="M9 12h11"></path><path d="M9 18h11"></path>
+          <path d="M4 6h.01"></path><path d="M4 12h.01"></path><path d="M4 18h.01"></path>
+        </svg></a>
+
+        <a class="icon-btn" href="/wallet.html" title="Portefeuille" aria-label="Portefeuille"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
+          <path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/>
+          <path d="M20 12h-4a2 2 0 0 0 0 4h4"/>
+          <circle cx="16" cy="14" r="0.5" />
+        </svg></a>
+
+        <a class="hidden sm:flex icon-btn" href="https://www.instagram.com/di_corporation_1/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
+            <path d="M16 11.37a4 4 0 1 1-7.87 1.26 4 4 0 0 1 7.87-1.26z"></path>
+            <path d="M17.5 6.5h.01"></path>
+          </svg>
+        </a>
+
+        <a class="hidden sm:flex icon-btn" href="https://www.tiktok.com/@dicorporation" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M16.7 7.4c-1-1-1.6-2.3-1.7-3.7h-3v12c0 1.3-1 2.3-2.3 2.3-1.2 0-2.2-1-2.2-2.2 0-1.3 1-2.3 2.2-2.3.3 0 .6.1.9.2V9.3c-.3-.1-.6-.1-.9-.1C6.6 9.2 4 11.8 4 15c0 3.2 2.6 5.8 5.8 5.8 3.2 0 5.8-2.6 5.8-5.8V11c1.1.8 2.4 1.2 3.8 1.2V9.3c-1.1 0-2.2-.4-3-.9z"/>
+          </svg>
+        </a>
+
+        <a class="hidden sm:flex icon-btn" href="https://t.me/Viralflowr" target="_blank" rel="noopener noreferrer" aria-label="Telegram">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M9.9 15.6 9.7 19c.4 0 .6-.2.8-.4l1.9-1.8 4 2.9c.7.4 1.2.2 1.4-.7l2.6-12.1c.3-1.2-.4-1.7-1.2-1.4L3.6 10.3c-1.1.4-1.1 1.1-.2 1.4l4 1.2 9.2-5.8c.4-.3.8-.1.5.2z"/>
+          </svg>
+        </a>
+
+        <a href="/index.html" class="btn-mini" aria-label="Boutique">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 11l9-8 9 8"></path><path d="M9 22V12h6v10"></path>
+          </svg>
+          <span class="txt">Boutique</span>
+        </a>
+
+        <a href="https://wa.me/243850373991" target="_blank" rel="noopener noreferrer" class="btn-waba" aria-label="WABA WhatsApp">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
+          </svg>
+          <span class="txt">WABA</span>
+        </a>
       </div>
     </div>
   </header>
 
-  <main class="flex-1 mt-6 mb-16">
-    <div class="max-w-[1240px] mx-auto px-4 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
-      <section class="bg-white border border-gray-100 shadow-card rounded-xl p-6 md:p-8">
-        <h1 class="font-black text-2xl md:text-3xl mb-6">${escHtml(name)}</h1>
-        <div class="flex flex-col sm:flex-row gap-6">
-          <div class="w-[140px] h-[140px] bg-[#F8FAFC] rounded-2xl border border-gray-100 flex items-center justify-center p-4">
-            <img src="${escHtml(img)}" class="w-full h-full object-contain" alt="${escHtml(name)}"
-                 onerror="this.src='${fallbackImg}'">
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">${escHtml(cat)}</div>
-            <div class="text-sm font-medium whitespace-pre-line break-words text-gray-700">${escHtml(desc)}</div>
+  <main class="flex-1 mt-6 lg:mt-10 mb-20">
+    <div class="max-w-[1240px] mx-auto px-3 md:px-4 flex flex-col gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
+
+        <div class="flex flex-col gap-6">
+          <div class="bg-white border border-gray-100 shadow-card rounded-xl p-6 md:p-8 vf-desc">
+            <h1 class="vf-page-title text-[#18181B] font-black text-2xl md:text-3xl leading-tight mb-6">{{NAME}}</h1>
+
+            <div class="flex flex-col sm:flex-row gap-6">
+              <div class="shrink-0">
+                <div class="w-[140px] h-[140px] bg-[#F8FAFC] rounded-2xl border border-gray-100 flex items-center justify-center p-4">
+                  <img src="{{IMG}}" class="w-full h-full object-contain"
+                       onerror="this.src='https://cdn-icons-png.flaticon.com/512/11520/11520110.png'"
+                       alt="{{NAME}}">
+                </div>
+              </div>
+
+              <div class="flex-1 min-w-0">
+                <span class="text-[#767676] text-xs font-bold uppercase tracking-wider mb-2 block">Description :</span>
+
+                <!-- ✅ ICI: LONG_DESC (colonne K) -->
+                <div class="text-sm text-[#515052] leading-relaxed whitespace-pre-line font-medium break-words">
+{{LONG_DESC_HTML}}
+                </div>
+
+              </div>
+            </div>
           </div>
         </div>
-      </section>
 
-      <aside class="bg-white border border-gray-100 shadow-card rounded-xl p-6 flex flex-col gap-5">
-        <div class="flex items-end justify-between">
-          <div>
-            <div class="text-xs font-bold text-gray-400">Prix</div>
-            <div class="text-3xl font-black tracking-tighter">${escHtml(price)} $</div>
+        <aside class="flex flex-col gap-4">
+          <div class="bg-white border border-gray-100 shadow-card rounded-xl p-6 flex flex-col gap-6">
+            <div class="grid grid-cols-2 gap-4 items-end">
+              <div>
+                <span class="text-gray-500 text-xs font-medium block mb-1">Prix Total:</span>
+                <span id="priceValue" class="text-3xl font-black text-[#201B16] tracking-tighter">{{PRICE}} $</span>
+              </div>
+              <div class="flex flex-col text-right text-[11px] text-gray-400 font-medium">
+                <span>Min : <strong class="text-gray-700">1</strong></span>
+                <span>Max : <strong class="text-gray-700">∞</strong></span>
+              </div>
+            </div>
+
+            <!-- ✅ Buy URL: desc = LONG_DESC (colonne K) -->
+            <a id="buyBtn" href="/paiement.html?nom={{NAME_URL}}&amp;prix={{PRICE}}&amp;cat={{CAT_URL}}&amp;id={{ID}}&amp;min={{MIN_URL}}&amp;max={{MAX_URL}}&amp;img={{IMG_URL}}&amp;desc={{LONG_DESC_URL}}"
+               class="w-full h-12 rounded-full btn-gradient text-white font-black text-[15px] uppercase tracking-wide shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center">
+              Acheter maintenant
+            </a>
+
+            <a href="https://wa.me/243850373991" target="_blank" rel="noopener noreferrer"
+               class="w-full h-12 rounded-full bg-[#25D366] text-white font-black text-[13px] uppercase tracking-wide shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
+              </svg>
+              Contacter WABA
+            </a>
+
+            <a href="/share/{{ID}}/"
+               class="flex items-center justify-center gap-2 text-gray-400 text-xs font-bold hover:text-orange-500 transition-colors">
+              Partager ce produit
+            </a>
           </div>
-          <div class="text-right text-[11px] text-gray-400 font-bold">
-            <div>Min: <span class="text-gray-700">${escHtml(p.min || "-")}</span></div>
-            <div>Max: <span class="text-gray-700">${escHtml(p.max || "∞")}</span></div>
-          </div>
-        </div>
 
-        <a href="${escHtml(payUrl)}"
-           class="w-full h-12 rounded-full btn-gradient text-white font-black uppercase tracking-wide shadow-lg hover:scale-[1.02] transition flex items-center justify-center">
-          Acheter maintenant
-        </a>
+          <a href="/index.html"
+             class="bg-white border border-gray-200 shadow-card rounded-xl p-4 flex items-center justify-center gap-2 text-gray-600 font-black uppercase text-[12px] hover:text-orange-600 hover:border-orange-200 transition">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 11l9-8 9 8"></path><path d="M9 22V12h6v10"></path>
+            </svg>
+            Retour Boutique
+          </a>
+        </aside>
 
-        <a href="/share/${encodeURIComponent(id)}/"
-           class="text-center text-xs font-black text-gray-400 hover:text-orange-500 transition">
-          Partager ce produit
-        </a>
-
-        <a href="/index.html" class="text-center text-[12px] font-black uppercase text-gray-500 hover:text-orange-600 transition">
-          Retour Boutique
-        </a>
-      </aside>
+      </div>
     </div>
   </main>
 
-  <footer class="bg-white border-t border-gray-200">
-    <div class="max-w-[1240px] mx-auto px-4 py-10 text-[10px] text-gray-400 font-black uppercase tracking-widest">
-      © 2026 ViralFlowr • Paiement sécurisé • Livraison digitale
+  <footer class="mt-auto bg-white border-t border-gray-200">
+    <div class="max-w-[1240px] mx-auto px-4 py-10">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div class="text-xl font-black tracking-tighter">
+          Viral<span class="text-orange-bsv">Flowr</span>
+        </div>
+      </div>
+      <div class="mt-6 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+        © 2026 ViralFlowr • Paiement sécurisé • Livraison digitale
+      </div>
     </div>
   </footer>
-</body>
-</html>`;
-}
 
-function sharePageHtml(id) {
-  const url = `${BASE_URL}/p/${encodeURIComponent(id)}/`;
-  return `<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Partager | ViralFlowr</title>
-  <meta http-equiv="refresh" content="0;url=${escHtml(url)}">
-</head>
-<body>
+  <!-- Account UI (inchangé) -->
   <script>
-    (function(){
-      var u = ${JSON.stringify(url)};
+    const _VF_SVG_LOGIN = "<svg width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" viewBox=\"0 0 24 24\" aria-hidden=\"true\">\n    <path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\"></path>\n    <path d=\"M10 17l5-5-5-5\"></path>\n    <path d=\"M15 12H3\"></path>\n  </svg>";
+    const _VF_SVG_REGISTER = "<svg width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" viewBox=\"0 0 24 24\" aria-hidden=\"true\">\n    <path d=\"M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"></path>\n    <circle cx=\"8.5\" cy=\"7\" r=\"4\"></circle>\n    <path d=\"M20 8v6\"></path>\n    <path d=\"M23 11h-6\"></path>\n  </svg>";
+
+    function _vfSafe(v){ return (v === null || v === undefined) ? "" : String(v); }
+
+    function getSession_(){
       try{
-        if (navigator.share) {
-          navigator.share({ title: "ViralFlowr", url: u }).finally(function(){ location.href = u; });
-          return;
+        const raw = localStorage.getItem("vf_session");
+        if(!raw) return null;
+        const s = JSON.parse(raw);
+        if(!s || (!s.email && !s.username)) return null;
+        return s;
+      }catch(e){ return null; }
+    }
+
+    window.addEventListener("storage", (e) => {
+      if (e.key === "vf_session") renderAccountUI_();
+    });
+
+    function renderAccountUI_(){
+      const area = document.getElementById("accountArea");
+      if(!area) return;
+
+      const s = getSession_();
+      area.innerHTML = "";
+      area.classList.remove("hidden");
+
+      if(!s){
+        area.innerHTML =
+          '<a href="/login.html" class="btn-mini" aria-label="Connexion">' +
+            _VF_SVG_LOGIN +
+            '<span class="txt">Connexion</span>' +
+          '</a>' +
+          '<a href="/register.html" class="btn-mini" style="border-color:transparent;color:white;" aria-label="Inscription">' +
+            '<span style="display:inline-flex;align-items:center;gap:8px;" class="txt-wrap">' +
+              _VF_SVG_REGISTER +
+              '<span class="txt">Inscription</span>' +
+            '</span>' +
+          '</a>';
+
+        const links = area.querySelectorAll("a");
+        if(links && links[1]){
+          links[1].style.background = "linear-gradient(90deg, #F07E13 0%, #FFB26B 100%)";
+        }
+        return;
+      }
+
+      const display = _vfSafe(s.username || s.email || "Compte");
+      const first = display.slice(0,1).toUpperCase();
+
+      area.innerHTML =
+        '<div class="hidden md:flex items-center gap-2 bg-white border border-gray-200 px-3 py-2 rounded-2xl">' +
+          '<div class="w-8 h-8 rounded-xl" style="background:linear-gradient(90deg,#F07E13 0%,#FFB26B 100%);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:12px;">' +
+            first +
+          '</div>' +
+          '<div class="leading-tight">' +
+            '<div class="text-[11px] font-black text-gray-900">Bonjour, ' + display + '</div>' +
+            '<div class="text-[9px] font-black uppercase tracking-widest text-gray-300">Connecté</div>' +
+          '</div>' +
+        '</div>' +
+        '<button id="logoutBtn" class="btn-mini" type="button">Déconnexion</button>';
+
+      const btn = document.getElementById("logoutBtn");
+      if(btn){
+        btn.addEventListener("click", () => {
+          localStorage.removeItem("vf_session");
+          localStorage.setItem("vf_session_changed", String(Date.now()));
+          renderAccountUI_();
+        });
+      }
+    }
+
+    renderAccountUI_();
+  </script>
+
+  <!-- Prix revendeur dynamique + lien paiement cohérent (logique inchangée, juste fallback LONG_DESC) -->
+  <script>
+    const VF_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
+    const VF_PRODUCT_ID = "{{ID}}";
+
+    function _vfSafe2(v){ return (v === null || v === undefined) ? "" : String(v); }
+
+    function _vfGetStore(){
+      return (window.vfApi && window.vfApi.storage) ? window.vfApi.storage
+           : (window.vfStorage ? window.vfStorage : null);
+    }
+
+    function _vfGetCookie(name){
+      try{
+        const m = document.cookie.match(new RegExp("(^|;)\\s*" + name + "\\s*=\\s*([^;]+)"));
+        return m ? decodeURIComponent(m[2]) : "";
+      }catch(e){ return ""; }
+    }
+
+    function _vfGetSession(){
+      try{
+        const raw = localStorage.getItem("vf_session");
+        if(!raw) return null;
+        const s = JSON.parse(raw);
+        if(!s || (!s.email && !s.username)) return null;
+        return s;
+      }catch(e){ return null; }
+    }
+
+    function _vfGetToken(){
+      try{
+        const s = _vfGetSession();
+        const t = s && (s.token || s.vf_token || s.reseller_token || s.access_token || s.session_token);
+        if (t) return String(t).trim();
+      }catch(e){}
+
+      try{
+        const st = _vfGetStore();
+        if (st && typeof st.getToken === "function"){
+          const t = st.getToken();
+          if (t) return String(t).trim();
         }
       }catch(e){}
-      location.href = u;
-    })();
+
+      try{
+        const t2 = localStorage.getItem("vf_token");
+        if (t2) return String(t2).trim();
+      }catch(e){}
+
+      const ck = _vfGetCookie("vf_token");
+      if (ck){
+        try{ localStorage.setItem("vf_token", ck); }catch(e){}
+        return String(ck).trim();
+      }
+
+      return "";
+    }
+
+    function _vfPickPrice(prod){
+      const v = prod && (
+        prod.prix_affiche ??
+        prod.prix_revendeur ??
+        prod.RESELLER ?? prod.reseller ??
+        prod.prix ??
+        prod.price ??
+        prod.amount ??
+        prod.PV ?? prod.pv ??
+        prod.prix_client
+      );
+      return _vfSafe2(v).trim();
+    }
+
+    function _vfBuildPayUrl(prod, priceOverride){
+      const qp = new URLSearchParams();
+      qp.set("nom", _vfSafe2(prod.nom));
+      qp.set("prix", _vfSafe2(priceOverride));
+      qp.set("cat", _vfSafe2(prod.cat));
+      qp.set("id", _vfSafe2(prod.id));
+      qp.set("min", _vfSafe2(prod.min));
+      qp.set("max", _vfSafe2(prod.max));
+      qp.set("img", _vfSafe2(prod.img || ""));
+
+      // ✅ fallback: si long_desc existe => l’utiliser, sinon desc
+      const d = (prod && (prod.long_desc ?? prod.LONG_DESC ?? prod.longDesc)) || (prod && prod.desc) || "";
+      qp.set("desc", _vfSafe2(d).trim());
+
+      return "/paiement.html?" + qp.toString();
+    }
+
+    function _vfExtractList(payload){
+      if (Array.isArray(payload)) return payload;
+      if (payload && Array.isArray(payload.products)) return payload.products;
+      if (payload && Array.isArray(payload.items)) return payload.items;
+      if (payload && Array.isArray(payload.data)) return payload.data;
+      if (payload && payload.data && Array.isArray(payload.data.products)) return payload.data.products;
+      if (payload && payload.data && Array.isArray(payload.data.items)) return payload.data.items;
+      return [];
+    }
+
+    function _vfJsonpGetProducts(token){
+      return new Promise((resolve, reject) => {
+        const cb = "vf_cb_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
+        window[cb] = (payload) => {
+          try{
+            resolve(_vfExtractList(payload));
+          }finally{
+            try{ delete window[cb]; }catch(e){}
+          }
+        };
+
+        const tokenParam = token ? ("&token=" + encodeURIComponent(token)) : "";
+        const s = document.createElement("script");
+        s.src = VF_SCRIPT_URL + "?action=get_products" + tokenParam + "&callback=" + cb + "&t=" + Date.now();
+        s.onerror = () => {
+          try{ delete window[cb]; }catch(e){}
+          reject(new Error("JSONP error"));
+        };
+        document.body.appendChild(s);
+      });
+    }
+
+    async function _vfRefreshPrice(){
+      const token = _vfGetToken();
+      if(!token) return;
+
+      const priceEl = document.getElementById("priceValue");
+      const buyBtn = document.getElementById("buyBtn");
+      if (priceEl) priceEl.textContent = "... $";
+      if (buyBtn){
+        buyBtn.classList.add("opacity-60");
+        buyBtn.style.pointerEvents = "none";
+      }
+
+      try{
+        const list = await _vfJsonpGetProducts(token);
+        const prod = list.find(x => _vfSafe2(x && x.id).trim() === VF_PRODUCT_ID);
+        if(!prod) return;
+
+        const raw = _vfPickPrice(prod);
+        if(!raw) return;
+
+        const num = parseFloat(String(raw).replace(",", "."));
+        const txt = Number.isFinite(num) ? num.toFixed(2) : raw;
+
+        if(priceEl) priceEl.textContent = txt + " $";
+        if(buyBtn){
+          buyBtn.href = _vfBuildPayUrl(prod, txt);
+          buyBtn.classList.remove("opacity-60");
+          buyBtn.style.pointerEvents = "auto";
+        }
+      }catch(e){
+        if (priceEl) priceEl.textContent = "{{PRICE}} $";
+        if (buyBtn){
+          buyBtn.classList.remove("opacity-60");
+          buyBtn.style.pointerEvents = "auto";
+        }
+      }
+    }
+
+    function _vfStartPrice(){
+      _vfRefreshPrice();
+      setTimeout(() => { _vfRefreshPrice(); }, 700);
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", _vfStartPrice);
+    } else {
+      _vfStartPrice();
+    }
+
+    window.addEventListener("storage", (e) => {
+      if (e.key === "vf_session" || e.key === "vf_token" || e.key === "vf_session_changed") {
+        _vfRefreshPrice();
+      }
+    });
   </script>
+
 </body>
-</html>`;
-}
-
-// ====== MAIN ======
-async function main() {
-  console.log("[gen] root:", ROOT);
-  console.log("[gen] out:", OUT_P, OUT_SHARE);
-
-  fs.mkdirSync(OUT_P, { recursive: true });
-  fs.mkdirSync(OUT_SHARE, { recursive: true });
-
-  const products = await fetchProducts();
-  console.log("[gen] products fetched:", products.length);
-
-  let hitCheck = false;
-  let written = 0;
-
-  for (const raw of products) {
-    const id = getId(raw);
-    if (!id) continue;
-
-    const name = pickName(raw);
-    const cat = pickCat(raw);
-    const price = pickPrice(raw);
-    const desc = pickDesc(raw);
-    const img = safe(raw?.img ?? raw?.image ?? raw?.photo);
-    const min = pickMin(raw);
-    const max = pickMax(raw);
-
-    const data = { id, nom: name, cat, price, desc, img, min, max };
-
-    // p/<id>/index.html
-    const dirP = path.join(OUT_P, id);
-    fs.mkdirSync(dirP, { recursive: true });
-    fs.writeFileSync(path.join(dirP, "index.html"), productPageHtml(data), "utf8");
-
-    // share/<id>/index.html
-    const dirS = path.join(OUT_SHARE, id);
-    fs.mkdirSync(dirS, { recursive: true });
-    fs.writeFileSync(path.join(dirS, "index.html"), sharePageHtml(id), "utf8");
-
-    written++;
-    if (safe(CHECK_ID) === id) hitCheck = true;
-  }
-
-  console.log("[gen] pages written:", written);
-  console.log(`[gen] check id ${CHECK_ID}:`, hitCheck ? "OK (generated)" : "NOT FOUND in API list");
-
-  // petit fichier utile si jamais tu veux éviter des comportements jekyll
-  // fs.writeFileSync(path.join(ROOT, ".nojekyll"), "", "utf8");
-}
-
-main().catch((err) => {
-  console.error("[gen] ERROR:", err);
-  process.exit(1);
-});
+</html>
