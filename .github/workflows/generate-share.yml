@@ -1,15 +1,19 @@
-name: Generate product pages
+name: Pages (build + generate products)
 
 on:
   workflow_dispatch:
+  push:
+    branches: ["main"]
   schedule:
     - cron: "*/30 * * * *" # toutes les 30 minutes
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 concurrency:
-  group: generate-pages
+  group: "pages"
   cancel-in-progress: true
 
 jobs:
@@ -18,57 +22,40 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # important pour pull/rebase
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      - name: Pull latest main (avoid conflicts)
+      - name: Generate product pages (p/<id>/index.html)
         run: |
-          git fetch origin main
-          git checkout main
-          git pull --rebase origin main
+          node ./scripts/generate-pages.mjs
+          echo "---- debug: list p (top) ----"
+          ls -la p || true
+          echo "---- debug: find some product pages ----"
+          find p -maxdepth 2 -type f -name "index.html" | head -n 30 || true
+          echo "---- debug: check 1767 ----"
+          ls -la p/1767 || true
 
-      - name: Debug path
-        run: |
-          pwd
-          ls -la
-          ls -la scripts || true
-          find . -maxdepth 5 -type f -name "generate-pages.mjs"
+      - name: Build with Jekyll (copies static files into _site)
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: .
+          destination: ./_site
 
-      - name: Generate pages (/p/)
-        run: node ./scripts/generate-pages.mjs
-        env:
-          # 👉 Si ton script supporte ces variables, garde-les.
-          # Sinon, elles seront ignorées sans casser le job.
-          OUT_DIR: "."
-          P_DIR: "p"
-          SHARE_DIR: "share"
-          VF_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec"
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
 
-      - name: Commit & Push changes
-        run: |
-          git config user.name "viralflowr-bot"
-          git config user.email "viralflowr-bot@users.noreply.github.com"
-
-          # ✅ Ajoute p/ et share/ si présents (ne casse pas si share n'existe pas)
-          git add -A p || true
-          git add -A share || true
-
-          # Si rien n'a changé, stop proprement
-          if git diff --cached --quiet; then
-            echo "No changes"
-            exit 0
-          fi
-
-          git commit -m "Auto-generate product pages"
-
-          # Push (avec petit retry si un push a eu lieu entre temps)
-          for i in 1 2 3; do
-            git push origin HEAD:main && break
-            echo "Push failed, retry $i/3 => pulling latest then retry..."
-            git pull --rebase origin main
-          done
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
