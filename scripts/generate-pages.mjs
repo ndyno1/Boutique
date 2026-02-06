@@ -1,52 +1,243 @@
-<!DOCTYPE html>
+// scripts/generate-pages.mjs
+import fs from "fs/promises";
+import path from "path";
+
+const ROOT = process.cwd();
+
+const SITE_BASE = (process.env.SITE_BASE || "https://viralflowr.com").replace(/\/+$/, "");
+const VF_SCRIPT_URL =
+  process.env.VF_SCRIPT_URL ||
+  "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
+
+const TIMEOUT_MS = parseInt(process.env.FETCH_TIMEOUT_MS || "25000", 10);
+const EXPECT_ID = (process.env.EXPECT_ID || "").trim(); // optionnel: ex "1767"
+
+const OUT_P = path.join(ROOT, "p");
+const OUT_SHARE = path.join(ROOT, "share");
+
+function safeStr(v) {
+  return v === null || v === undefined ? "" : String(v);
+}
+
+function cleanId(v) {
+  const s = safeStr(v).trim();
+  if (!s) return "";
+  // accepte "1767" ou 1767
+  return s;
+}
+
+function escapeHtml(s) {
+  return safeStr(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function escapeAttr(s) {
+  // pour attribut HTML
+  return escapeHtml(s);
+}
+
+function truncateText(s, n = 160) {
+  const t = safeStr(s).replace(/\s+/g, " ").trim();
+  if (t.length <= n) return t;
+  return t.slice(0, n - 1).trim() + "…";
+}
+
+function formatPrice(v) {
+  const s = safeStr(v).trim().replace(",", ".");
+  const num = Number(s);
+  if (!Number.isFinite(num)) return safeStr(v).trim() || "0";
+  if (Math.abs(num - Math.round(num)) < 1e-9) return String(Math.round(num));
+  return num.toFixed(2);
+}
+
+function pick(obj, keys) {
+  for (const k of keys) {
+    if (obj && Object.prototype.hasOwnProperty.call(obj, k) && obj[k] !== undefined && obj[k] !== null) {
+      const v = obj[k];
+      if (safeStr(v).trim() !== "") return v;
+    }
+  }
+  return "";
+}
+
+function extractList(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (payload && Array.isArray(payload.products)) return payload.products;
+  if (payload && Array.isArray(payload.items)) return payload.items;
+  if (payload && Array.isArray(payload.data)) return payload.data;
+  if (payload && payload.data && Array.isArray(payload.data.products)) return payload.data.products;
+  if (payload && payload.data && Array.isArray(payload.data.items)) return payload.data.items;
+  return [];
+}
+
+async function fetchText(url) {
+  const ac = new AbortController();
+  const t = setTimeout(() => ac.abort(), TIMEOUT_MS);
+
+  try {
+    const res = await fetch(url, { signal: ac.signal, redirect: "follow" });
+    const text = await res.text();
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status} on ${url}\n${text.slice(0, 300)}`);
+    }
+    return text;
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+function parseJsonOrJsonp(text) {
+  const t = safeStr(text).trim();
+
+  // JSON direct
+  if ((t.startsWith("{") && t.endsWith("}")) || (t.startsWith("[") && t.endsWith("]"))) {
+    return JSON.parse(t);
+  }
+
+  // JSONP: callback(...)
+  const m = t.match(/^[a-zA-Z_$][\w$]*\(([\s\S]*)\)\s*;?\s*$/);
+  if (m) {
+    const inside = m[1].trim();
+    return JSON.parse(inside);
+  }
+
+  // parfois du garbage avant/après
+  const firstBrace = t.indexOf("{");
+  const lastBrace = t.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    return JSON.parse(t.slice(firstBrace, lastBrace + 1));
+  }
+
+  const firstArr = t.indexOf("[");
+  const lastArr = t.lastIndexOf("]");
+  if (firstArr !== -1 && lastArr !== -1 && lastArr > firstArr) {
+    return JSON.parse(t.slice(firstArr, lastArr + 1));
+  }
+
+  throw new Error("Réponse non-JSON / non-JSONP détectée (impossible à parser).");
+}
+
+function normalizeProduct(raw) {
+  // On attend idéalement un objet depuis ton Apps Script.
+  // Long_desc = colonne K => on cherche "long_desc" en priorité.
+  const id = cleanId(pick(raw, ["id", "ID", "product_id", "productId", "pid"]));
+  const nom = safeStr(pick(raw, ["nom", "name", "title", "product_name"])).trim();
+  const cat = safeStr(pick(raw, ["cat", "category", "categorie"])).trim();
+  const img = safeStr(pick(raw, ["img", "image", "image_url", "imageUrl", "thumbnail"])).trim();
+
+  const prixClient = pick(raw, ["prix", "price", "amount", "prix_client", "PV", "pv"]);
+  const min = safeStr(pick(raw, ["min", "minimum"])).trim();
+  const max = safeStr(pick(raw, ["max", "maximum"])).trim();
+
+  // IMPORTANT: on n'affiche QUE long_desc
+  const long_desc = safeStr(
+    pick(raw, ["long_desc", "longDesc", "long_description", "longDescription", "desc_long", "longdesc"])
+  ).trim();
+
+  // fallback soft si jamais ton backend n'envoie pas long_desc
+  const fallbackDesc = safeStr(pick(raw, ["desc", "description", "short_desc", "shortDesc"])).trim();
+  const finalLong = long_desc || fallbackDesc;
+
+  const priceTxt = formatPrice(prixClient);
+
+  return {
+    id,
+    nom: nom || `Produit ${id}`,
+    cat: cat || "",
+    img: img || "",
+    priceTxt,
+    min,
+    max,
+    long_desc: finalLong,
+  };
+}
+
+function buildPayUrl(prod, descForPayment) {
+  const qp = new URLSearchParams();
+  qp.set("nom", safeStr(prod.nom));
+  qp.set("prix", safeStr(prod.priceTxt));
+  qp.set("cat", safeStr(prod.cat));
+  qp.set("id", safeStr(prod.id));
+  qp.set("min", safeStr(prod.min));
+  qp.set("max", safeStr(prod.max));
+  qp.set("img", safeStr(prod.img || ""));
+  // On envoie long_desc (comme tu veux)
+  qp.set("desc", safeStr(descForPayment || ""));
+  return "/paiement.html?" + qp.toString();
+}
+
+function renderProductPage(prod) {
+  const id = prod.id;
+  const title = `${prod.nom} | ViralFlowr`;
+  const canonical = `${SITE_BASE}/p/${encodeURIComponent(id)}/`;
+
+  const seoDesc = `${prod.priceTxt} $ • ${prod.cat || "Produit"} • ${truncateText(prod.long_desc, 140)}`.trim();
+  const ogImg = prod.img || "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
+
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: prod.nom,
+    image: [ogImg],
+    description: prod.long_desc,
+    brand: { "@type": "Brand", name: "ViralFlowr" },
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "USD",
+      price: prod.priceTxt,
+      availability: "https://schema.org/InStock",
+      url: canonical,
+    },
+  };
+
+  const payHref = buildPayUrl(prod, prod.long_desc);
+
+  // IMPORTANT: on garde ta logique (structure + scripts), style juste un peu amélioré.
+  return `<!DOCTYPE html>
 <html lang="fr" class="font-inter">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-  <title>{{NAME}} | ViralFlowr</title>
-
-  <!-- ✅ SEO: utilise LONG_DESC (colonne K) -->
-  <meta name="description" content="{{PRICE}} $ • {{CAT}} • {{LONG_DESC_META}}">
-  <link rel="canonical" href="https://viralflowr.com/p/{{ID}}/">
+  <title>${escapeHtml(title)}</title>
+  <meta name="description" content="${escapeAttr(seoDesc)}">
+  <link rel="canonical" href="${escapeAttr(canonical)}">
 
   <meta property="og:type" content="product">
   <meta property="og:site_name" content="ViralFlowr">
-  <meta property="og:title" content="{{NAME}}">
-  <meta property="og:description" content="{{LONG_DESC_META}}">
-  <meta property="og:image" content="{{IMG}}">
-  <meta property="og:url" content="https://viralflowr.com/p/{{ID}}/">
+  <meta property="og:title" content="${escapeAttr(prod.nom)}">
+  <meta property="og:description" content="${escapeAttr(seoDesc)}">
+  <meta property="og:image" content="${escapeAttr(ogImg)}">
+  <meta property="og:url" content="${escapeAttr(canonical)}">
 
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="{{IMG}}">
+  <meta name="twitter:image" content="${escapeAttr(ogImg)}">
 
-  <!-- ✅ JSON-LD: description = LONG_DESC (échappée) -->
-  <script type="application/ld+json">
-  {{JSONLD_PRODUCT}}
-  </script>
+  <script type="application/ld+json">${JSON.stringify(schema).replace(/</g, "\\u003c")}</script>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
-    html, body { width:100%; max-width:100%; overflow-x:hidden; }
-    *{ box-sizing:border-box; }
     :root{
       --vf-orange:#F07E13;
       --vf-orange2:#FFB26B;
+      --vf-text:#201B16;
       --vf-bg:#F3F3F3;
-      --vf-ink:#201B16;
-      --vf-card:#ffffff;
-      --vf-border:#E5E7EB;
     }
+    html, body { width:100%; max-width:100%; overflow-x:hidden; }
+    *{ box-sizing:border-box; }
     body{
-      font-family:'Inter',sans-serif;
-      background:
-        radial-gradient(1200px 500px at 20% 0%, rgba(240,126,19,.10), transparent 55%),
-        radial-gradient(1200px 500px at 80% 0%, rgba(255,178,107,.10), transparent 55%),
-        var(--vf-bg);
-      color:var(--vf-ink);
+      font-family:'Inter', sans-serif;
+      background: radial-gradient(1000px 700px at 20% -10%, rgba(240,126,19,.10), transparent 60%),
+                  radial-gradient(900px 600px at 100% 0%, rgba(255,178,107,.12), transparent 55%),
+                  var(--vf-bg);
+      color:var(--vf-text);
       -webkit-text-size-adjust:100%;
-      padding-bottom:env(safe-area-inset-bottom);
+      padding-bottom: env(safe-area-inset-bottom);
       overscroll-behavior-x:none;
     }
     .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
@@ -54,10 +245,12 @@
 
     .text-orange-bsv { color: var(--vf-orange); }
     .btn-gradient { background: linear-gradient(90deg, var(--vf-orange) 0%, var(--vf-orange2) 100%); }
-    .shadow-card {
-      box-shadow:
-        0 10px 28px rgba(17,24,39,.08),
-        0 2px 8px rgba(17,24,39,.06);
+    .shadow-card { box-shadow: 0 12px 30px rgba(0,0,0,.08); }
+
+    a:focus-visible, button:focus-visible{
+      outline: 3px solid rgba(240,126,19,.35);
+      outline-offset: 2px;
+      border-radius: 999px;
     }
 
     .btn-mini{
@@ -65,16 +258,11 @@
       font-weight:900; font-size:11px; letter-spacing:.10em;
       text-transform:uppercase;
       display:inline-flex; align-items:center; justify-content:center; gap:8px;
-      border:1px solid var(--vf-border); background:#fff; color:#111827;
-      transition:.18s ease; white-space:nowrap; flex:0 0 auto;
+      border:1px solid #E5E7EB; background:#fff; color:#111827;
+      transition:.18s; white-space:nowrap; flex:0 0 auto;
       max-width:100%;
     }
-    .btn-mini:hover{
-      transform: translateY(-1px);
-      border-color: rgba(240,126,19,.55);
-      color: var(--vf-orange);
-      box-shadow: 0 8px 18px rgba(240,126,19,.12);
-    }
+    .btn-mini:hover{ transform: translateY(-1px); border-color:var(--vf-orange); color:var(--vf-orange); }
 
     .btn-waba{
       height:40px; padding:0 14px; border-radius:999px;
@@ -83,36 +271,24 @@
       display:inline-flex; align-items:center; justify-content:center; gap:8px;
       border:1px solid rgba(37,211,102,.25);
       background:#25D366; color:#fff;
-      transition:.18s ease; white-space:nowrap; flex:0 0 auto;
+      transition:.18s; white-space:nowrap; flex:0 0 auto;
       max-width:100%;
     }
-    .btn-waba:hover{ transform: translateY(-1px); box-shadow: 0 10px 22px rgba(37,211,102,.18); }
+    .btn-waba:hover{ transform: translateY(-1px); filter: brightness(1.02); }
 
     .icon-btn{
       width:40px; height:40px; border-radius:999px;
-      border:1px solid var(--vf-border); background:#fff; color:#374151;
+      border:1px solid #E5E7EB; background:#fff; color:#374151;
       display:flex; align-items:center; justify-content:center;
-      transition:.18s ease; flex:0 0 auto;
+      transition:.18s; flex:0 0 auto;
     }
-    .icon-btn:hover{
-      transform: translateY(-1px);
-      border-color: rgba(240,126,19,.45);
-      color: var(--vf-orange);
-      box-shadow: 0 8px 18px rgba(240,126,19,.10);
-    }
+    .icon-btn:hover{ transform: translateY(-1px); border-color: rgba(240,126,19,.35); color: var(--vf-orange); }
 
     .vf-brand-wrap{ min-width:0; overflow:hidden; }
     .vf-brand-text{
       display:block; max-width:100%;
       white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
       line-height:1;
-    }
-
-    .vf-page-title{
-      letter-spacing:-.02em;
-    }
-    .vf-desc{
-      background: linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(255,255,255,.96) 100%);
     }
 
     @media (max-width: 420px){
@@ -137,14 +313,13 @@
         <div id="accountArea" class="hidden sm:flex items-center gap-2"></div>
 
         <a class="icon-btn" href="/commandes.html" title="Mes commandes" aria-label="Mes commandes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M9 6h11"></path><path d="M9 12h11"></path><path d="M9 18h11"></path>
-          <path d="M4 6h.01"></path><path d="M4 12h.01"></path><path d="M4 18h.01"></path>
+          <path d="M9 6h11"></path><path d="M9 12h11"></path><path d="M9 18h11"></path><path d="M4 6h.01"></path><path d="M4 12h.01"></path><path d="M4 18h.01"></path>
         </svg></a>
 
         <a class="icon-btn" href="/wallet.html" title="Portefeuille" aria-label="Portefeuille"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
-          <path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/>
-          <path d="M20 12h-4a2 2 0 0 0 0 4h4"/>
+          <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"></path>
+          <path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"></path>
+          <path d="M20 12h-4a2 2 0 0 0 0 4h4"></path>
           <circle cx="16" cy="14" r="0.5" />
         </svg></a>
 
@@ -190,26 +365,23 @@
       <div class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
 
         <div class="flex flex-col gap-6">
-          <div class="bg-white border border-gray-100 shadow-card rounded-xl p-6 md:p-8 vf-desc">
-            <h1 class="vf-page-title text-[#18181B] font-black text-2xl md:text-3xl leading-tight mb-6">{{NAME}}</h1>
+          <div class="bg-white border border-gray-100 shadow-card rounded-xl p-6 md:p-8">
+            <h1 class="text-[#18181B] font-bold text-2xl md:text-3xl leading-tight mb-6">${escapeHtml(prod.nom)}</h1>
 
             <div class="flex flex-col sm:flex-row gap-6">
               <div class="shrink-0">
                 <div class="w-[140px] h-[140px] bg-[#F8FAFC] rounded-2xl border border-gray-100 flex items-center justify-center p-4">
-                  <img src="{{IMG}}" class="w-full h-full object-contain"
+                  <img src="${escapeAttr(ogImg)}" class="w-full h-full object-contain"
                        onerror="this.src='https://cdn-icons-png.flaticon.com/512/11520/11520110.png'"
-                       alt="{{NAME}}">
+                       alt="${escapeAttr(prod.nom)}">
                 </div>
               </div>
 
               <div class="flex-1 min-w-0">
                 <span class="text-[#767676] text-xs font-bold uppercase tracking-wider mb-2 block">Description :</span>
-
-                <!-- ✅ ICI: LONG_DESC (colonne K) -->
                 <div class="text-sm text-[#515052] leading-relaxed whitespace-pre-line font-medium break-words">
-{{LONG_DESC_HTML}}
+${escapeHtml(prod.long_desc)}
                 </div>
-
               </div>
             </div>
           </div>
@@ -220,17 +392,16 @@
             <div class="grid grid-cols-2 gap-4 items-end">
               <div>
                 <span class="text-gray-500 text-xs font-medium block mb-1">Prix Total:</span>
-                <span id="priceValue" class="text-3xl font-black text-[#201B16] tracking-tighter">{{PRICE}} $</span>
+                <span id="priceValue" class="text-3xl font-black text-[#201B16] tracking-tighter">${escapeHtml(prod.priceTxt)} $</span>
               </div>
               <div class="flex flex-col text-right text-[11px] text-gray-400 font-medium">
-                <span>Min : <strong class="text-gray-700">1</strong></span>
-                <span>Max : <strong class="text-gray-700">∞</strong></span>
+                <span>Min : <strong class="text-gray-700">${escapeHtml(prod.min || "1")}</strong></span>
+                <span>Max : <strong class="text-gray-700">${escapeHtml(prod.max || "∞")}</strong></span>
               </div>
             </div>
 
-            <!-- ✅ Buy URL: desc = LONG_DESC (colonne K) -->
-            <a id="buyBtn" href="/paiement.html?nom={{NAME_URL}}&amp;prix={{PRICE}}&amp;cat={{CAT_URL}}&amp;id={{ID}}&amp;min={{MIN_URL}}&amp;max={{MAX_URL}}&amp;img={{IMG_URL}}&amp;desc={{LONG_DESC_URL}}"
-               class="w-full h-12 rounded-full btn-gradient text-white font-black text-[15px] uppercase tracking-wide shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center">
+            <a id="buyBtn" href="${escapeAttr(payHref)}"
+               class="w-full h-12 rounded-full btn-gradient text-white font-bold text-[15px] uppercase tracking-wide shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center">
               Acheter maintenant
             </a>
 
@@ -242,7 +413,7 @@
               Contacter WABA
             </a>
 
-            <a href="/share/{{ID}}/"
+            <a href="/share/${encodeURIComponent(id)}/"
                class="flex items-center justify-center gap-2 text-gray-400 text-xs font-bold hover:text-orange-500 transition-colors">
               Partager ce produit
             </a>
@@ -268,16 +439,17 @@
           Viral<span class="text-orange-bsv">Flowr</span>
         </div>
       </div>
+
       <div class="mt-6 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
         © 2026 ViralFlowr • Paiement sécurisé • Livraison digitale
       </div>
     </div>
   </footer>
 
-  <!-- Account UI (inchangé) -->
+  <!-- Account UI -->
   <script>
-    const _VF_SVG_LOGIN = "<svg width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" viewBox=\"0 0 24 24\" aria-hidden=\"true\">\n    <path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\"></path>\n    <path d=\"M10 17l5-5-5-5\"></path>\n    <path d=\"M15 12H3\"></path>\n  </svg>";
-    const _VF_SVG_REGISTER = "<svg width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" viewBox=\"0 0 24 24\" aria-hidden=\"true\">\n    <path d=\"M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"></path>\n    <circle cx=\"8.5\" cy=\"7\" r=\"4\"></circle>\n    <path d=\"M20 8v6\"></path>\n    <path d=\"M23 11h-6\"></path>\n  </svg>";
+    const _VF_SVG_LOGIN = "<svg width=\\"16\\" height=\\"16\\" fill=\\"none\\" stroke=\\"currentColor\\" stroke-width=\\"2.5\\" viewBox=\\"0 0 24 24\\" aria-hidden=\\"true\\">\\n    <path d=\\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\\"></path>\\n    <path d=\\"M10 17l5-5-5-5\\"></path>\\n    <path d=\\"M15 12H3\\"></path>\\n  </svg>";
+    const _VF_SVG_REGISTER = "<svg width=\\"16\\" height=\\"16\\" fill=\\"none\\" stroke=\\"currentColor\\" stroke-width=\\"2.5\\" viewBox=\\"0 0 24 24\\" aria-hidden=\\"true\\">\\n    <path d=\\"M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\\"></path>\\n    <circle cx=\\"8.5\\" cy=\\"7\\" r=\\"4\\"></circle>\\n    <path d=\\"M20 8v6\\"></path>\\n    <path d=\\"M23 11h-6\\"></path>\\n  </svg>";
 
     function _vfSafe(v){ return (v === null || v === undefined) ? "" : String(v); }
 
@@ -351,10 +523,10 @@
     renderAccountUI_();
   </script>
 
-  <!-- Prix revendeur dynamique + lien paiement cohérent (logique inchangée, juste fallback LONG_DESC) -->
+  <!-- Prix revendeur dynamique + lien paiement cohérent -->
   <script>
-    const VF_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
-    const VF_PRODUCT_ID = "{{ID}}";
+    const VF_SCRIPT_URL = ${JSON.stringify(VF_SCRIPT_URL)};
+    const VF_PRODUCT_ID = ${JSON.stringify(String(id))};
 
     function _vfSafe2(v){ return (v === null || v === undefined) ? "" : String(v); }
 
@@ -365,7 +537,7 @@
 
     function _vfGetCookie(name){
       try{
-        const m = document.cookie.match(new RegExp("(^|;)\\s*" + name + "\\s*=\\s*([^;]+)"));
+        const m = document.cookie.match(new RegExp("(^|;)\\\\s*" + name + "\\\\s*=\\\\s*([^;]+)"));
         return m ? decodeURIComponent(m[2]) : "";
       }catch(e){ return ""; }
     }
@@ -432,11 +604,8 @@
       qp.set("min", _vfSafe2(prod.min));
       qp.set("max", _vfSafe2(prod.max));
       qp.set("img", _vfSafe2(prod.img || ""));
-
-      // ✅ fallback: si long_desc existe => l’utiliser, sinon desc
-      const d = (prod && (prod.long_desc ?? prod.LONG_DESC ?? prod.longDesc)) || (prod && prod.desc) || "";
-      qp.set("desc", _vfSafe2(d).trim());
-
+      // IMPORTANT: on met long_desc si dispo, sinon desc
+      qp.set("desc", _vfSafe2(prod.long_desc || prod.longDesc || prod.desc || prod.description || "").trim());
       return "/paiement.html?" + qp.toString();
     }
 
@@ -454,20 +623,14 @@
       return new Promise((resolve, reject) => {
         const cb = "vf_cb_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
         window[cb] = (payload) => {
-          try{
-            resolve(_vfExtractList(payload));
-          }finally{
-            try{ delete window[cb]; }catch(e){}
-          }
+          try{ resolve(_vfExtractList(payload)); }
+          finally{ try{ delete window[cb]; }catch(e){} }
         };
 
         const tokenParam = token ? ("&token=" + encodeURIComponent(token)) : "";
         const s = document.createElement("script");
         s.src = VF_SCRIPT_URL + "?action=get_products" + tokenParam + "&callback=" + cb + "&t=" + Date.now();
-        s.onerror = () => {
-          try{ delete window[cb]; }catch(e){}
-          reject(new Error("JSONP error"));
-        };
+        s.onerror = () => { try{ delete window[cb]; }catch(e){} reject(new Error("JSONP error")); };
         document.body.appendChild(s);
       });
     }
@@ -479,10 +642,7 @@
       const priceEl = document.getElementById("priceValue");
       const buyBtn = document.getElementById("buyBtn");
       if (priceEl) priceEl.textContent = "... $";
-      if (buyBtn){
-        buyBtn.classList.add("opacity-60");
-        buyBtn.style.pointerEvents = "none";
-      }
+      if (buyBtn){ buyBtn.classList.add("opacity-60"); buyBtn.style.pointerEvents = "none"; }
 
       try{
         const list = await _vfJsonpGetProducts(token);
@@ -502,11 +662,8 @@
           buyBtn.style.pointerEvents = "auto";
         }
       }catch(e){
-        if (priceEl) priceEl.textContent = "{{PRICE}} $";
-        if (buyBtn){
-          buyBtn.classList.remove("opacity-60");
-          buyBtn.style.pointerEvents = "auto";
-        }
+        if (priceEl) priceEl.textContent = ${JSON.stringify(String(prod.priceTxt))} + " $";
+        if (buyBtn){ buyBtn.classList.remove("opacity-60"); buyBtn.style.pointerEvents = "auto"; }
       }
     }
 
@@ -529,4 +686,99 @@
   </script>
 
 </body>
-</html>
+</html>`;
+}
+
+function renderSharePage(prod) {
+  const id = prod.id;
+  const target = `/p/${encodeURIComponent(id)}/`;
+  const canonical = `${SITE_BASE}${target}`;
+  const ogImg = prod.img || "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
+  const seoDesc = `${prod.priceTxt} $ • ${prod.cat || "Produit"} • ${truncateText(prod.long_desc, 140)}`.trim();
+
+  return `<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>${escapeHtml(prod.nom)} | Partage</title>
+  <link rel="canonical" href="${escapeAttr(canonical)}">
+  <meta property="og:type" content="product">
+  <meta property="og:site_name" content="ViralFlowr">
+  <meta property="og:title" content="${escapeAttr(prod.nom)}">
+  <meta property="og:description" content="${escapeAttr(seoDesc)}">
+  <meta property="og:image" content="${escapeAttr(ogImg)}">
+  <meta property="og:url" content="${escapeAttr(canonical)}">
+  <meta http-equiv="refresh" content="0;url=${escapeAttr(target)}">
+  <script>location.replace(${JSON.stringify(target)});</script>
+</head>
+<body></body>
+</html>`;
+}
+
+async function ensureDir(dir) {
+  await fs.mkdir(dir, { recursive: true });
+}
+
+async function writeFile(filePath, content) {
+  await ensureDir(path.dirname(filePath));
+  await fs.writeFile(filePath, content, "utf8");
+}
+
+async function fetchProducts() {
+  // IMPORTANT: on tente d'abord JSON (sans callback), puis on retombe sur JSONP si besoin.
+  const urlJson = `${VF_SCRIPT_URL}?action=get_products&t=${Date.now()}`;
+  const txt = await fetchText(urlJson);
+  const payload = parseJsonOrJsonp(txt);
+  return extractList(payload);
+}
+
+async function main() {
+  console.log("VF_SCRIPT_URL =", VF_SCRIPT_URL);
+  console.log("SITE_BASE     =", SITE_BASE);
+
+  const rawList = await fetchProducts();
+  if (!rawList.length) {
+    throw new Error("Aucun produit reçu depuis l'API (get_products).");
+  }
+
+  await ensureDir(OUT_P);
+  await ensureDir(OUT_SHARE);
+
+  let generated = 0;
+  let hasExpected = false;
+
+  for (const raw of rawList) {
+    const prod = normalizeProduct(raw);
+    if (!prod.id) continue;
+
+    if (EXPECT_ID && prod.id === EXPECT_ID) hasExpected = true;
+
+    const pIndex = path.join(OUT_P, prod.id, "index.html");
+    const sIndex = path.join(OUT_SHARE, prod.id, "index.html");
+
+    await writeFile(pIndex, renderProductPage(prod));
+    await writeFile(sIndex, renderSharePage(prod));
+
+    generated++;
+  }
+
+  console.log(`Pages générées: ${generated}`);
+
+  // Vérif optionnelle : utile pour ton cas /p/1767/
+  const must = EXPECT_ID || "";
+  if (must) {
+    const checkPath = path.join(OUT_P, must, "index.html");
+    try {
+      await fs.access(checkPath);
+      console.log(`OK: ${checkPath} existe`);
+    } catch {
+      throw new Error(`KO: ${checkPath} manquant => /p/${must}/ fera 404`);
+    }
+  }
+}
+
+main().catch((e) => {
+  console.error("ERROR:", e?.stack || e?.message || e);
+  process.exit(1);
+});
