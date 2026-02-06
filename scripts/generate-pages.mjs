@@ -20,10 +20,7 @@ function safeStr(v) {
 }
 
 function cleanId(v) {
-  const s = safeStr(v).trim();
-  if (!s) return "";
-  // accepte "1767" ou 1767
-  return s;
+  return safeStr(v).trim();
 }
 
 function escapeHtml(s) {
@@ -36,7 +33,6 @@ function escapeHtml(s) {
 }
 
 function escapeAttr(s) {
-  // pour attribut HTML
   return escapeHtml(s);
 }
 
@@ -81,9 +77,7 @@ async function fetchText(url) {
   try {
     const res = await fetch(url, { signal: ac.signal, redirect: "follow" });
     const text = await res.text();
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status} on ${url}\n${text.slice(0, 300)}`);
-    }
+    if (!res.ok) throw new Error(`HTTP ${res.status} on ${url}\n${text.slice(0, 300)}`);
     return text;
   } finally {
     clearTimeout(t);
@@ -93,37 +87,25 @@ async function fetchText(url) {
 function parseJsonOrJsonp(text) {
   const t = safeStr(text).trim();
 
-  // JSON direct
   if ((t.startsWith("{") && t.endsWith("}")) || (t.startsWith("[") && t.endsWith("]"))) {
     return JSON.parse(t);
   }
 
-  // JSONP: callback(...)
   const m = t.match(/^[a-zA-Z_$][\w$]*\(([\s\S]*)\)\s*;?\s*$/);
-  if (m) {
-    const inside = m[1].trim();
-    return JSON.parse(inside);
-  }
+  if (m) return JSON.parse(m[1].trim());
 
-  // parfois du garbage avant/après
-  const firstBrace = t.indexOf("{");
-  const lastBrace = t.lastIndexOf("}");
-  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-    return JSON.parse(t.slice(firstBrace, lastBrace + 1));
-  }
+  const fb = t.indexOf("{");
+  const lb = t.lastIndexOf("}");
+  if (fb !== -1 && lb !== -1 && lb > fb) return JSON.parse(t.slice(fb, lb + 1));
 
-  const firstArr = t.indexOf("[");
-  const lastArr = t.lastIndexOf("]");
-  if (firstArr !== -1 && lastArr !== -1 && lastArr > firstArr) {
-    return JSON.parse(t.slice(firstArr, lastArr + 1));
-  }
+  const fa = t.indexOf("[");
+  const la = t.lastIndexOf("]");
+  if (fa !== -1 && la !== -1 && la > fa) return JSON.parse(t.slice(fa, la + 1));
 
-  throw new Error("Réponse non-JSON / non-JSONP détectée (impossible à parser).");
+  throw new Error("Réponse non-JSON / non-JSONP (impossible à parser).");
 }
 
 function normalizeProduct(raw) {
-  // On attend idéalement un objet depuis ton Apps Script.
-  // Long_desc = colonne K => on cherche "long_desc" en priorité.
   const id = cleanId(pick(raw, ["id", "ID", "product_id", "productId", "pid"]));
   const nom = safeStr(pick(raw, ["nom", "name", "title", "product_name"])).trim();
   const cat = safeStr(pick(raw, ["cat", "category", "categorie"])).trim();
@@ -133,30 +115,25 @@ function normalizeProduct(raw) {
   const min = safeStr(pick(raw, ["min", "minimum"])).trim();
   const max = safeStr(pick(raw, ["max", "maximum"])).trim();
 
-  // IMPORTANT: on n'affiche QUE long_desc
+  // ✅ IMPORTANT: UNIQUEMENT long_desc (colonne K)
+  // ❌ AUCUN fallback sur desc/description (colonne C)
   const long_desc = safeStr(
     pick(raw, ["long_desc", "longDesc", "long_description", "longDescription", "desc_long", "longdesc"])
   ).trim();
-
-  // fallback soft si jamais ton backend n'envoie pas long_desc
-  const fallbackDesc = safeStr(pick(raw, ["desc", "description", "short_desc", "shortDesc"])).trim();
-  const finalLong = long_desc || fallbackDesc;
-
-  const priceTxt = formatPrice(prixClient);
 
   return {
     id,
     nom: nom || `Produit ${id}`,
     cat: cat || "",
     img: img || "",
-    priceTxt,
+    priceTxt: formatPrice(prixClient),
     min,
     max,
-    long_desc: finalLong,
+    long_desc, // peut être vide si ta K est vide
   };
 }
 
-function buildPayUrl(prod, descForPayment) {
+function buildPayUrl(prod) {
   const qp = new URLSearchParams();
   qp.set("nom", safeStr(prod.nom));
   qp.set("prix", safeStr(prod.priceTxt));
@@ -165,25 +142,27 @@ function buildPayUrl(prod, descForPayment) {
   qp.set("min", safeStr(prod.min));
   qp.set("max", safeStr(prod.max));
   qp.set("img", safeStr(prod.img || ""));
-  // On envoie long_desc (comme tu veux)
-  qp.set("desc", safeStr(descForPayment || ""));
+  // ✅ desc= UNIQUEMENT long_desc (colonne K)
+  qp.set("desc", safeStr(prod.long_desc || "").trim());
   return "/paiement.html?" + qp.toString();
 }
 
 function renderProductPage(prod) {
   const id = prod.id;
-  const title = `${prod.nom} | ViralFlowr`;
   const canonical = `${SITE_BASE}/p/${encodeURIComponent(id)}/`;
-
-  const seoDesc = `${prod.priceTxt} $ • ${prod.cat || "Produit"} • ${truncateText(prod.long_desc, 140)}`.trim();
   const ogImg = prod.img || "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
+
+  // ✅ meta description basé UNIQUEMENT sur long_desc (K)
+  const seoDescBase = truncateText(prod.long_desc, 140);
+  const seoDesc = `${prod.priceTxt} $ • ${prod.cat || "Produit"}${seoDescBase ? " • " + seoDescBase : ""}`.trim();
 
   const schema = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: prod.nom,
     image: [ogImg],
-    description: prod.long_desc,
+    // ✅ description schema = long_desc uniquement
+    description: prod.long_desc || "",
     brand: { "@type": "Brand", name: "ViralFlowr" },
     offers: {
       "@type": "Offer",
@@ -194,15 +173,14 @@ function renderProductPage(prod) {
     },
   };
 
-  const payHref = buildPayUrl(prod, prod.long_desc);
+  const payHref = buildPayUrl(prod);
 
-  // IMPORTANT: on garde ta logique (structure + scripts), style juste un peu amélioré.
   return `<!DOCTYPE html>
 <html lang="fr" class="font-inter">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-  <title>${escapeHtml(title)}</title>
+  <title>${escapeHtml(prod.nom)} | ViralFlowr</title>
   <meta name="description" content="${escapeAttr(seoDesc)}">
   <link rel="canonical" href="${escapeAttr(canonical)}">
 
@@ -222,12 +200,7 @@ function renderProductPage(prod) {
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
-    :root{
-      --vf-orange:#F07E13;
-      --vf-orange2:#FFB26B;
-      --vf-text:#201B16;
-      --vf-bg:#F3F3F3;
-    }
+    :root{ --vf-orange:#F07E13; --vf-orange2:#FFB26B; --vf-bg:#F3F3F3; --vf-text:#201B16; }
     html, body { width:100%; max-width:100%; overflow-x:hidden; }
     *{ box-sizing:border-box; }
     body{
@@ -246,12 +219,6 @@ function renderProductPage(prod) {
     .text-orange-bsv { color: var(--vf-orange); }
     .btn-gradient { background: linear-gradient(90deg, var(--vf-orange) 0%, var(--vf-orange2) 100%); }
     .shadow-card { box-shadow: 0 12px 30px rgba(0,0,0,.08); }
-
-    a:focus-visible, button:focus-visible{
-      outline: 3px solid rgba(240,126,19,.35);
-      outline-offset: 2px;
-      border-radius: 999px;
-    }
 
     .btn-mini{
       height:40px; padding:0 14px; border-radius:999px;
@@ -312,34 +279,18 @@ function renderProductPage(prod) {
       <div class="flex items-center gap-2 overflow-x-auto no-scrollbar max-w-full">
         <div id="accountArea" class="hidden sm:flex items-center gap-2"></div>
 
-        <a class="icon-btn" href="/commandes.html" title="Mes commandes" aria-label="Mes commandes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M9 6h11"></path><path d="M9 12h11"></path><path d="M9 18h11"></path><path d="M4 6h.01"></path><path d="M4 12h.01"></path><path d="M4 18h.01"></path>
-        </svg></a>
-
-        <a class="icon-btn" href="/wallet.html" title="Portefeuille" aria-label="Portefeuille"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"></path>
-          <path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"></path>
-          <path d="M20 12h-4a2 2 0 0 0 0 4h4"></path>
-          <circle cx="16" cy="14" r="0.5" />
-        </svg></a>
-
-        <a class="hidden sm:flex icon-btn" href="https://www.instagram.com/di_corporation_1/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
-            <path d="M16 11.37a4 4 0 1 1-7.87 1.26 4 4 0 0 1 7.87-1.26z"></path>
-            <path d="M17.5 6.5h.01"></path>
+        <a class="icon-btn" href="/commandes.html" title="Mes commandes" aria-label="Mes commandes">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 6h11"></path><path d="M9 12h11"></path><path d="M9 18h11"></path><path d="M4 6h.01"></path><path d="M4 12h.01"></path><path d="M4 18h.01"></path>
           </svg>
         </a>
 
-        <a class="hidden sm:flex icon-btn" href="https://www.tiktok.com/@dicorporation" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M16.7 7.4c-1-1-1.6-2.3-1.7-3.7h-3v12c0 1.3-1 2.3-2.3 2.3-1.2 0-2.2-1-2.2-2.2 0-1.3 1-2.3 2.2-2.3.3 0 .6.1.9.2V9.3c-.3-.1-.6-.1-.9-.1C6.6 9.2 4 11.8 4 15c0 3.2 2.6 5.8 5.8 5.8 3.2 0 5.8-2.6 5.8-5.8V11c1.1.8 2.4 1.2 3.8 1.2V9.3c-1.1 0-2.2-.4-3-.9z"/>
-          </svg>
-        </a>
-
-        <a class="hidden sm:flex icon-btn" href="https://t.me/Viralflowr" target="_blank" rel="noopener noreferrer" aria-label="Telegram">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M9.9 15.6 9.7 19c.4 0 .6-.2.8-.4l1.9-1.8 4 2.9c.7.4 1.2.2 1.4-.7l2.6-12.1c.3-1.2-.4-1.7-1.2-1.4L3.6 10.3c-1.1.4-1.1 1.1-.2 1.4l4 1.2 9.2-5.8c.4-.3.8-.1.5.2z"/>
+        <a class="icon-btn" href="/wallet.html" title="Portefeuille" aria-label="Portefeuille">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"></path>
+            <path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"></path>
+            <path d="M20 12h-4a2 2 0 0 0 0 4h4"></path>
+            <circle cx="16" cy="14" r="0.5" />
           </svg>
         </a>
 
@@ -379,8 +330,9 @@ function renderProductPage(prod) {
 
               <div class="flex-1 min-w-0">
                 <span class="text-[#767676] text-xs font-bold uppercase tracking-wider mb-2 block">Description :</span>
+                <!-- ✅ ICI: UNIQUEMENT long_desc (K) -->
                 <div class="text-sm text-[#515052] leading-relaxed whitespace-pre-line font-medium break-words">
-${escapeHtml(prod.long_desc)}
+${escapeHtml(prod.long_desc || "")}
                 </div>
               </div>
             </div>
@@ -408,7 +360,7 @@ ${escapeHtml(prod.long_desc)}
             <a href="https://wa.me/243850373991" target="_blank" rel="noopener noreferrer"
                class="w-full h-12 rounded-full bg-[#25D366] text-white font-black text-[13px] uppercase tracking-wide shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="white" aria-hidden="true">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-.1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
               </svg>
               Contacter WABA
             </a>
@@ -434,19 +386,16 @@ ${escapeHtml(prod.long_desc)}
 
   <footer class="mt-auto bg-white border-t border-gray-200">
     <div class="max-w-[1240px] mx-auto px-4 py-10">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-        <div class="text-xl font-black tracking-tighter">
-          Viral<span class="text-orange-bsv">Flowr</span>
-        </div>
+      <div class="text-xl font-black tracking-tighter">
+        Viral<span class="text-orange-bsv">Flowr</span>
       </div>
-
       <div class="mt-6 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
         © 2026 ViralFlowr • Paiement sécurisé • Livraison digitale
       </div>
     </div>
   </footer>
 
-  <!-- Account UI -->
+  <!-- Account UI (inchangé) -->
   <script>
     const _VF_SVG_LOGIN = "<svg width=\\"16\\" height=\\"16\\" fill=\\"none\\" stroke=\\"currentColor\\" stroke-width=\\"2.5\\" viewBox=\\"0 0 24 24\\" aria-hidden=\\"true\\">\\n    <path d=\\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\\"></path>\\n    <path d=\\"M10 17l5-5-5-5\\"></path>\\n    <path d=\\"M15 12H3\\"></path>\\n  </svg>";
     const _VF_SVG_REGISTER = "<svg width=\\"16\\" height=\\"16\\" fill=\\"none\\" stroke=\\"currentColor\\" stroke-width=\\"2.5\\" viewBox=\\"0 0 24 24\\" aria-hidden=\\"true\\">\\n    <path d=\\"M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\\"></path>\\n    <circle cx=\\"8.5\\" cy=\\"7\\" r=\\"4\\"></circle>\\n    <path d=\\"M20 8v6\\"></path>\\n    <path d=\\"M23 11h-6\\"></path>\\n  </svg>";
@@ -604,8 +553,8 @@ ${escapeHtml(prod.long_desc)}
       qp.set("min", _vfSafe2(prod.min));
       qp.set("max", _vfSafe2(prod.max));
       qp.set("img", _vfSafe2(prod.img || ""));
-      // IMPORTANT: on met long_desc si dispo, sinon desc
-      qp.set("desc", _vfSafe2(prod.long_desc || prod.longDesc || prod.desc || prod.description || "").trim());
+      // ✅ IMPORTANT: desc= UNIQUEMENT long_desc (K). AUCUN fallback.
+      qp.set("desc", _vfSafe2(prod.long_desc || prod.longDesc || prod.long_description || "").trim());
       return "/paiement.html?" + qp.toString();
     }
 
@@ -694,7 +643,9 @@ function renderSharePage(prod) {
   const target = `/p/${encodeURIComponent(id)}/`;
   const canonical = `${SITE_BASE}${target}`;
   const ogImg = prod.img || "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
-  const seoDesc = `${prod.priceTxt} $ • ${prod.cat || "Produit"} • ${truncateText(prod.long_desc, 140)}`.trim();
+
+  const seoDescBase = truncateText(prod.long_desc, 140);
+  const seoDesc = `${prod.priceTxt} $ • ${prod.cat || "Produit"}${seoDescBase ? " • " + seoDescBase : ""}`.trim();
 
   return `<!doctype html>
 <html lang="fr">
@@ -726,9 +677,8 @@ async function writeFile(filePath, content) {
 }
 
 async function fetchProducts() {
-  // IMPORTANT: on tente d'abord JSON (sans callback), puis on retombe sur JSONP si besoin.
-  const urlJson = `${VF_SCRIPT_URL}?action=get_products&t=${Date.now()}`;
-  const txt = await fetchText(urlJson);
+  const url = `${VF_SCRIPT_URL}?action=get_products&t=${Date.now()}`;
+  const txt = await fetchText(url);
   const payload = parseJsonOrJsonp(txt);
   return extractList(payload);
 }
@@ -738,42 +688,34 @@ async function main() {
   console.log("SITE_BASE     =", SITE_BASE);
 
   const rawList = await fetchProducts();
-  if (!rawList.length) {
-    throw new Error("Aucun produit reçu depuis l'API (get_products).");
-  }
+  if (!rawList.length) throw new Error("Aucun produit reçu depuis l'API (get_products).");
 
   await ensureDir(OUT_P);
   await ensureDir(OUT_SHARE);
 
   let generated = 0;
-  let hasExpected = false;
 
   for (const raw of rawList) {
     const prod = normalizeProduct(raw);
     if (!prod.id) continue;
-
-    if (EXPECT_ID && prod.id === EXPECT_ID) hasExpected = true;
 
     const pIndex = path.join(OUT_P, prod.id, "index.html");
     const sIndex = path.join(OUT_SHARE, prod.id, "index.html");
 
     await writeFile(pIndex, renderProductPage(prod));
     await writeFile(sIndex, renderSharePage(prod));
-
     generated++;
   }
 
   console.log(`Pages générées: ${generated}`);
 
-  // Vérif optionnelle : utile pour ton cas /p/1767/
-  const must = EXPECT_ID || "";
-  if (must) {
-    const checkPath = path.join(OUT_P, must, "index.html");
+  if (EXPECT_ID) {
+    const checkPath = path.join(OUT_P, EXPECT_ID, "index.html");
     try {
       await fs.access(checkPath);
       console.log(`OK: ${checkPath} existe`);
     } catch {
-      throw new Error(`KO: ${checkPath} manquant => /p/${must}/ fera 404`);
+      throw new Error(`KO: ${checkPath} manquant => /p/${EXPECT_ID}/ fera 404`);
     }
   }
 }
