@@ -18,11 +18,9 @@ const OUT_SHARE = path.join(ROOT, "share");
 function safeStr(v) {
   return v === null || v === undefined ? "" : String(v);
 }
-
 function cleanId(v) {
   return safeStr(v).trim();
 }
-
 function escapeHtml(s) {
   return safeStr(s)
     .replace(/&/g, "&amp;")
@@ -31,17 +29,14 @@ function escapeHtml(s) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
-
 function escapeAttr(s) {
   return escapeHtml(s);
 }
-
 function truncateText(s, n = 160) {
   const t = safeStr(s).replace(/\s+/g, " ").trim();
   if (t.length <= n) return t;
   return t.slice(0, n - 1).trim() + "…";
 }
-
 function formatPrice(v) {
   const s = safeStr(v).trim().replace(",", ".");
   const num = Number(s);
@@ -49,7 +44,6 @@ function formatPrice(v) {
   if (Math.abs(num - Math.round(num)) < 1e-9) return String(Math.round(num));
   return num.toFixed(2);
 }
-
 function pick(obj, keys) {
   for (const k of keys) {
     if (obj && Object.prototype.hasOwnProperty.call(obj, k) && obj[k] !== undefined && obj[k] !== null) {
@@ -59,7 +53,6 @@ function pick(obj, keys) {
   }
   return "";
 }
-
 function extractList(payload) {
   if (Array.isArray(payload)) return payload;
   if (payload && Array.isArray(payload.products)) return payload.products;
@@ -115,8 +108,12 @@ function normalizeProduct(raw) {
   const min = safeStr(pick(raw, ["min", "minimum"])).trim();
   const max = safeStr(pick(raw, ["max", "maximum"])).trim();
 
-  // ✅ IMPORTANT: UNIQUEMENT long_desc (colonne K)
-  // ❌ AUCUN fallback sur desc/description (colonne C)
+  // ✅ Colonne C (courte) => utilisée UNIQUEMENT pour /paiement.html
+  const desc = safeStr(
+    pick(raw, ["desc", "description", "short_desc", "shortDesc", "desc_short", "description_short"])
+  ).trim();
+
+  // ✅ Colonne K (longue) => affichée UNIQUEMENT sur la page produit /p/<id>/
   const long_desc = safeStr(
     pick(raw, ["long_desc", "longDesc", "long_description", "longDescription", "desc_long", "longdesc"])
   ).trim();
@@ -129,7 +126,8 @@ function normalizeProduct(raw) {
     priceTxt: formatPrice(prixClient),
     min,
     max,
-    long_desc, // peut être vide si ta K est vide
+    desc,      // C
+    long_desc, // K
   };
 }
 
@@ -142,8 +140,8 @@ function buildPayUrl(prod) {
   qp.set("min", safeStr(prod.min));
   qp.set("max", safeStr(prod.max));
   qp.set("img", safeStr(prod.img || ""));
-  // ✅ desc= UNIQUEMENT long_desc (colonne K)
-  qp.set("desc", safeStr(prod.long_desc || "").trim());
+  // ✅ IMPORTANT: on envoie la description COLONNE C (pas long_desc)
+  qp.set("desc", safeStr(prod.desc || "").trim());
   return "/paiement.html?" + qp.toString();
 }
 
@@ -152,7 +150,7 @@ function renderProductPage(prod) {
   const canonical = `${SITE_BASE}/p/${encodeURIComponent(id)}/`;
   const ogImg = prod.img || "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
 
-  // ✅ meta description basé UNIQUEMENT sur long_desc (K)
+  // ✅ SEO: basé sur long_desc (K) (page produit)
   const seoDescBase = truncateText(prod.long_desc, 140);
   const seoDesc = `${prod.priceTxt} $ • ${prod.cat || "Produit"}${seoDescBase ? " • " + seoDescBase : ""}`.trim();
 
@@ -161,7 +159,6 @@ function renderProductPage(prod) {
     "@type": "Product",
     name: prod.nom,
     image: [ogImg],
-    // ✅ description schema = long_desc uniquement
     description: prod.long_desc || "",
     brand: { "@type": "Brand", name: "ViralFlowr" },
     offers: {
@@ -317,7 +314,9 @@ function renderProductPage(prod) {
 
         <div class="flex flex-col gap-6">
           <div class="bg-white border border-gray-100 shadow-card rounded-xl p-6 md:p-8">
-            <h1 class="text-[#18181B] font-bold text-2xl md:text-3xl leading-tight mb-6">${escapeHtml(prod.nom)}</h1>
+            <h1 class="text-[#18181B] font-bold text-2xl md:text-3xl leading-tight mb-6">${escapeHtml(
+              prod.nom
+            )}</h1>
 
             <div class="flex flex-col sm:flex-row gap-6">
               <div class="shrink-0">
@@ -330,7 +329,7 @@ function renderProductPage(prod) {
 
               <div class="flex-1 min-w-0">
                 <span class="text-[#767676] text-xs font-bold uppercase tracking-wider mb-2 block">Description :</span>
-                <!-- ✅ ICI: UNIQUEMENT long_desc (K) -->
+                <!-- ✅ UNIQUEMENT long_desc (COL K) -->
                 <div class="text-sm text-[#515052] leading-relaxed whitespace-pre-line font-medium break-words">
 ${escapeHtml(prod.long_desc || "")}
                 </div>
@@ -344,7 +343,9 @@ ${escapeHtml(prod.long_desc || "")}
             <div class="grid grid-cols-2 gap-4 items-end">
               <div>
                 <span class="text-gray-500 text-xs font-medium block mb-1">Prix Total:</span>
-                <span id="priceValue" class="text-3xl font-black text-[#201B16] tracking-tighter">${escapeHtml(prod.priceTxt)} $</span>
+                <span id="priceValue" class="text-3xl font-black text-[#201B16] tracking-tighter">${escapeHtml(
+                  prod.priceTxt
+                )} $</span>
               </div>
               <div class="flex flex-col text-right text-[11px] text-gray-400 font-medium">
                 <span>Min : <strong class="text-gray-700">${escapeHtml(prod.min || "1")}</strong></span>
@@ -360,7 +361,7 @@ ${escapeHtml(prod.long_desc || "")}
             <a href="https://wa.me/243850373991" target="_blank" rel="noopener noreferrer"
                class="w-full h-12 rounded-full bg-[#25D366] text-white font-black text-[13px] uppercase tracking-wide shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="white" aria-hidden="true">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-.1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
               </svg>
               Contacter WABA
             </a>
@@ -553,8 +554,8 @@ ${escapeHtml(prod.long_desc || "")}
       qp.set("min", _vfSafe2(prod.min));
       qp.set("max", _vfSafe2(prod.max));
       qp.set("img", _vfSafe2(prod.img || ""));
-      // ✅ IMPORTANT: desc= UNIQUEMENT long_desc (K). AUCUN fallback.
-      qp.set("desc", _vfSafe2(prod.long_desc || prod.longDesc || prod.long_description || "").trim());
+      // ✅ IMPORTANT: paiement reçoit la description COLONNE C (desc/description), PAS long_desc
+      qp.set("desc", _vfSafe2(prod.desc ?? prod.description ?? "").trim());
       return "/paiement.html?" + qp.toString();
     }
 
@@ -670,7 +671,6 @@ function renderSharePage(prod) {
 async function ensureDir(dir) {
   await fs.mkdir(dir, { recursive: true });
 }
-
 async function writeFile(filePath, content) {
   await ensureDir(path.dirname(filePath));
   await fs.writeFile(filePath, content, "utf8");
