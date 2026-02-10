@@ -300,6 +300,9 @@
     let CURRENT_FILTER = "all";
     let _startSeq = 0;
 
+    // ✅ Empêche les réponses JSONP anciennes d’écraser les nouvelles
+    let _productsReqSeq = 0;
+
     const FILTER_MAP = {
       "Abonnement": ["ABONNEMENT","CARTE"],
       "Carte2":     ["CARTE2"],
@@ -336,6 +339,11 @@
       }[c]));
     }
 
+    function escAttr(str){
+      // (sécurise data-attributes / href)
+      return safe(str).replace(/["']/g, "");
+    }
+
     function sanitizeHttpUrl(u){
       const s = safe(u).trim();
       if (!s) return "";
@@ -361,9 +369,35 @@
       );
     }
 
-    function pImg(p){ return safe(p.img || p.image || p.photo); }
-    function pMin(p){ return safe(p.min || p.minqnt || p.minQty || p.min_qty); }
-    function pMax(p){ return safe(p.max || p.maxqnt || p.maxQty || p.max_qty); }
+    // ✅ Image: on check plusieurs champs (selon mode / payload)
+    function pImg(p){
+      return safe(
+        p.img || p.image || p.photo ||
+        p.image_url || p.img_url || p.photo_url ||
+        p.cover || p.cover_url ||
+        p.thumbnail || p.thumb || p.thumb_url ||
+        p.banner || p.banner_url
+      );
+    }
+
+    // ✅ ID: on check plusieurs champs pour éviter id vide / dupliqué
+    function pIdRaw(p){
+      const candidates = [
+        p.id, p.ID, p.Id,
+        p.product_id, p.productId, p.PRODUCT_ID,
+        p.pid, p.PID,
+        p.sku, p.SKU,
+        p.code, p.CODE,
+        p.key, p.KEY,
+        p.slug, p.SLUG,
+        p.ref, p.REF
+      ];
+      for (const v of candidates){
+        const s = safe(v).trim();
+        if (s) return s;
+      }
+      return "";
+    }
 
     // ========= STORAGE / TOKEN =========
     function getStore(){
@@ -499,21 +533,56 @@
       box.textContent = "";
     }
 
+    // ========= NORMALIZE PRODUCTS =========
+    function normalizeProducts_(list){
+      const seen = new Set();
+      const out = [];
+
+      for (let i = 0; i < list.length; i++){
+        const p = list[i] || {};
+        const base = pIdRaw(p) || ""; // doit venir du serveur si possible
+
+        // si pas d'id du tout => on garde quand même quelque chose (évite /p//)
+        // NOTE: idéalement, ton API doit toujours renvoyer un id stable.
+        let id = base || ("row-" + (i+1));
+
+        // de-dup (évite 2 produits => même /p/<id>/)
+        if (seen.has(id)) id = id + "__" + (i+1);
+        seen.add(id);
+
+        // on stocke un id interne stable
+        p.__vf_id = id;
+        out.push(p);
+      }
+
+      return out;
+    }
+
     // ========= PRODUCTS LOAD (JSONP) =========
     function initProducts(forcedToken){
       hideLoadError_();
+
+      // ✅ incrémente la séquence (seule la dernière réponse a le droit de s’appliquer)
+      const reqSeq = ++_productsReqSeq;
 
       const old = document.getElementById("vf_products_loader");
       if (old) old.remove();
 
       const cbName = "vf_cb_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
       window[cbName] = function(payload){
+        // ✅ ignore si ce n’est pas la dernière requête
+        if (reqSeq !== _productsReqSeq) {
+          try { delete window[cbName]; } catch(_){}
+          return;
+        }
+
         try{
           if (payload && payload.error){
             showLoadError_("Erreur API produits: " + safe(payload.error));
             ALL_PRODUCTS = [];
           } else {
-            ALL_PRODUCTS = Array.isArray(payload) ? payload : (Array.isArray(payload.products) ? payload.products : []);
+            const list = Array.isArray(payload) ? payload : (Array.isArray(payload.products) ? payload.products : []);
+            ALL_PRODUCTS = normalizeProducts_(list);
           }
           render();
         } finally {
@@ -528,6 +597,7 @@
       s.id = "vf_products_loader";
       s.src = SCRIPT_URL + "?action=get_products" + tokenParam + "&callback=" + cbName + "&t=" + Date.now();
       s.onerror = () => {
+        if (reqSeq !== _productsReqSeq) return;
         showLoadError_("Impossible de charger les produits (API). Vérifie ton déploiement Apps Script / doGet JSONP.");
         ALL_PRODUCTS = [];
         render();
@@ -586,7 +656,7 @@
           !query ||
           nameL.includes(query) ||
           catL.includes(query) ||
-          safe(p.id).toLowerCase().includes(query);
+          safe(p.__vf_id).toLowerCase().includes(query);
 
         return matchCat && matchSearch;
       });
@@ -607,19 +677,21 @@
           priceTxt = Number.isFinite(priceNum) ? priceNum.toFixed(2) : safe(priceRaw);
         }
 
-        const id = encodeURIComponent(safe(p.id).trim());
-        const productUrl = `/p/${id}/`;
+        const pid = safe(p.__vf_id).trim();
+        const pidEnc = encodeURIComponent(pid);
+        const productUrl = `/p/${pidEnc}/`;
 
-        const min = pMin(p);
-        const max = pMax(p);
+        const min = safe(p.min || p.minqnt || p.minQty || p.min_qty);
+        const max = safe(p.max || p.maxqnt || p.maxQty || p.max_qty);
 
         return `
-          <div onclick="location.href='${productUrl}'"
-            class="hover-card group bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col cursor-pointer shadow-sm">
+          <a href="${productUrl}" data-pid="${escAttr(pid)}"
+            class="hover-card group bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col cursor-pointer shadow-sm no-underline">
             <div class="aspect-square bg-[#F8FAFC] rounded-[22px] mb-4 flex items-center justify-center p-6 overflow-hidden">
-              <img src="${img}"
+              <img src="${escAttr(img)}"
                 class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
-                onerror="this.src='${FALLBACK_IMG}'">
+                loading="lazy" decoding="async"
+                onerror="this.onerror=null;this.src='${escAttr(FALLBACK_IMG)}'">
             </div>
             <div class="px-1">
               <span class="text-[9px] font-black text-[#F07E13] uppercase tracking-tighter mb-1 block">${escHtml(pCat(p))}</span>
@@ -635,13 +707,29 @@
 
               ${(min || max) ? `
                 <div class="mt-3 text-[9px] font-black uppercase tracking-widest text-gray-300">
-                  Min ${escHtml(safe(min) || "-")} • Max ${escHtml(safe(max) || "-")}
+                  Min ${escHtml(min || "-")} • Max ${escHtml(max || "-")}
                 </div>` : ``}
             </div>
-          </div>
+          </a>
         `;
       }).join("");
     }
+
+    // ✅ Cache le produit au click (évite “mauvaise image” si la page produit relit ailleurs)
+    document.addEventListener("click", (e) => {
+      const a = e.target && e.target.closest ? e.target.closest('a[data-pid]') : null;
+      if (!a) return;
+
+      const pid = a.getAttribute("data-pid") || "";
+      if (!pid) return;
+
+      try{
+        // on retrouve le produit dans la liste courante
+        const p = ALL_PRODUCTS.find(x => safe(x.__vf_id) === pid);
+        if (p) sessionStorage.setItem("vf_p_cache_" + pid, JSON.stringify(p));
+        sessionStorage.setItem("vf_last_pid", pid);
+      }catch(_){}
+    });
 
     // ========= START (attend token si session) =========
     function _sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
@@ -666,13 +754,8 @@
 
       if (seq !== _startSeq) return;
 
+      // ✅ UN chargement (et protégé contre les réponses en retard)
       initProducts(token);
-
-      setTimeout(() => {
-        if (seq !== _startSeq) return;
-        const t2 = getToken_();
-        if (t2 && t2 !== token) initProducts(t2);
-      }, 900);
     }
 
     // ========= SYNC ONGLET =========
