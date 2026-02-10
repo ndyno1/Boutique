@@ -62,7 +62,9 @@
     };
   </script>
 
+  <!-- ✅ API VF (remis en place) -->
   <script src="/vf_api.js?v=200" defer></script>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
@@ -175,7 +177,6 @@
         </button>
       </div>
 
-      <!-- actions (scroll horizontal mobile) -->
       <div class="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar max-w-full">
         <div id="accountArea" class="hidden sm:flex items-center gap-2"></div>
 
@@ -192,22 +193,6 @@
             <path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/>
             <path d="M20 12h-4a2 2 0 0 0 0 4h4"/>
             <circle cx="16" cy="14" r="0.5" />
-          </svg>
-        </a>
-
-        <a href="https://www.instagram.com/di_corporation_1/" target="_blank" rel="noopener noreferrer"
-          class="hidden sm:flex icon-btn" aria-label="Instagram">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
-            <path d="M16 11.37a4 4 0 1 1-7.87 1.26 4 4 0 0 1 7.87-1.26z"></path>
-            <path d="M17.5 6.5h.01"></path>
-          </svg>
-        </a>
-
-        <a href="https://www.tiktok.com/@dicorporation" target="_blank" rel="noopener noreferrer"
-          class="hidden sm:flex icon-btn" aria-label="TikTok">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M16.7 7.4c-1-1-1.6-2.3-1.7-3.7h-3v12c0 1.3-1 2.3-2.3 2.3-1.2 0-2.2-1-2.2-2.2 0-1.3 1-2.3 2.2-2.3.3 0 .6.1.9.2V9.3c-.3-.1-.6-.1-.9-.1C6.6 9.2 4 11.8 4 15c0 3.2 2.6 5.8 5.8 5.8 3.2 0 5.8-2.6 5.8-5.8V11c1.1.8 2.4 1.2 3.8 1.2V9.3c-1.1 0-2.2-.4-3-.9z"/>
           </svg>
         </a>
 
@@ -272,15 +257,6 @@
       <div class="text-2xl font-black tracking-tighter mb-6">
         Viral<span class="text-[#F07E13]">Flowr</span>
       </div>
-
-      <div class="flex flex-wrap justify-center gap-8 mb-8 text-[11px] font-black uppercase text-gray-400 tracking-widest">
-        <a href="/about.html" class="hover:text-gray-900">À Propos</a>
-        <a href="https://wa.me/243850373991" target="_blank" rel="noopener noreferrer" class="hover:text-green-500">Contact Support</a>
-        <a href="https://t.me/Viralflow" target="_blank" rel="noopener noreferrer" class="hover:text-blue-500">Telegram Community</a>
-        <a href="https://www.instagram.com/di_corporation_1/" target="_blank" rel="noopener noreferrer" class="hover:text-pink-500">Instagram</a>
-        <a href="https://www.tiktok.com/@dicorporation" target="_blank" rel="noopener noreferrer" class="hover:text-gray-900">TikTok</a>
-      </div>
-
       <p class="text-[9px] text-gray-300 text-center max-w-lg leading-relaxed uppercase">
         © 2026 ViralFlowr Enterprise. Livraison garantie. Les marques citées appartiennent à leurs propriétaires.
       </p>
@@ -288,19 +264,13 @@
   </footer>
 
   <script>
-    // ========= CONFIG =========
-    const SCRIPT_URL =
-      (window.VF_CONFIG && window.VF_CONFIG.scriptUrl)
-        ? String(window.VF_CONFIG.scriptUrl)
-        : "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
-
     const FALLBACK_IMG = "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
 
     let ALL_PRODUCTS = [];
     let CURRENT_FILTER = "all";
     let _startSeq = 0;
 
-    // ✅ Empêche les réponses JSONP anciennes d’écraser les nouvelles
+    // ✅ Anti-race : seule la dernière réponse produits s'applique
     let _productsReqSeq = 0;
 
     const FILTER_MAP = {
@@ -338,9 +308,7 @@
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
       }[c]));
     }
-
     function escAttr(str){
-      // (sécurise data-attributes / href)
       return safe(str).replace(/["']/g, "");
     }
 
@@ -369,7 +337,6 @@
       );
     }
 
-    // ✅ Image: on check plusieurs champs (selon mode / payload)
     function pImg(p){
       return safe(
         p.img || p.image || p.photo ||
@@ -380,7 +347,6 @@
       );
     }
 
-    // ✅ ID: on check plusieurs champs pour éviter id vide / dupliqué
     function pIdRaw(p){
       const candidates = [
         p.id, p.ID, p.Id,
@@ -397,6 +363,21 @@
         if (s) return s;
       }
       return "";
+    }
+
+    function normalizeProducts_(list){
+      const seen = new Set();
+      const out = [];
+
+      for (let i = 0; i < list.length; i++){
+        const p = list[i] || {};
+        let id = pIdRaw(p) || ("row-" + (i+1));
+        if (seen.has(id)) id = id + "__" + (i+1);
+        seen.add(id);
+        p.__vf_id = id;
+        out.push(p);
+      }
+      return out;
     }
 
     // ========= STORAGE / TOKEN =========
@@ -473,23 +454,8 @@
 
       if (!s){
         area.innerHTML = `
-          <a href="/login.html" class="btn-auth btn-auth-outline">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-              <path d="M10 17l5-5-5-5"></path>
-              <path d="M15 12H3"></path>
-            </svg>
-            Connexion
-          </a>
-          <a href="/register.html" class="btn-auth btn-auth-primary brand-gradient text-white shadow-md">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="8.5" cy="7" r="4"></circle>
-              <path d="M20 8v6"></path>
-              <path d="M23 11h-6"></path>
-            </svg>
-            Inscription
-          </a>
+          <a href="/login.html" class="btn-auth btn-auth-outline">Connexion</a>
+          <a href="/register.html" class="btn-auth btn-auth-primary brand-gradient text-white shadow-md">Inscription</a>
         `;
         return;
       }
@@ -533,78 +499,41 @@
       box.textContent = "";
     }
 
-    // ========= NORMALIZE PRODUCTS =========
-    function normalizeProducts_(list){
-      const seen = new Set();
-      const out = [];
+    // ========= API PRODUCTS (remis en place) =========
+    async function apiGetProducts_(token){
+      const api = window.vfApi;
 
-      for (let i = 0; i < list.length; i++){
-        const p = list[i] || {};
-        const base = pIdRaw(p) || ""; // doit venir du serveur si possible
-
-        // si pas d'id du tout => on garde quand même quelque chose (évite /p//)
-        // NOTE: idéalement, ton API doit toujours renvoyer un id stable.
-        let id = base || ("row-" + (i+1));
-
-        // de-dup (évite 2 produits => même /p/<id>/)
-        if (seen.has(id)) id = id + "__" + (i+1);
-        seen.add(id);
-
-        // on stocke un id interne stable
-        p.__vf_id = id;
-        out.push(p);
+      // 1) vfApi.getProducts (si ton vf_api.js le fournit)
+      if (api && typeof api.getProducts === "function"){
+        return await api.getProducts({ cat: "all", token: token || "" });
       }
 
-      return out;
+      // 2) vfJsonp direct (si exposé)
+      if (typeof window.vfJsonp === "function"){
+        return await window.vfJsonp("get_products", { cat: "all", token: token || "" });
+      }
+
+      throw new Error("VF_API_NOT_LOADED");
     }
 
-    // ========= PRODUCTS LOAD (JSONP) =========
-    function initProducts(forcedToken){
+    async function loadProducts_(token){
       hideLoadError_();
-
-      // ✅ incrémente la séquence (seule la dernière réponse a le droit de s’appliquer)
       const reqSeq = ++_productsReqSeq;
 
-      const old = document.getElementById("vf_products_loader");
-      if (old) old.remove();
+      try{
+        const payload = await apiGetProducts_(token);
 
-      const cbName = "vf_cb_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
-      window[cbName] = function(payload){
-        // ✅ ignore si ce n’est pas la dernière requête
-        if (reqSeq !== _productsReqSeq) {
-          try { delete window[cbName]; } catch(_){}
-          return;
-        }
+        if (reqSeq !== _productsReqSeq) return; // ignore ancien retour
 
-        try{
-          if (payload && payload.error){
-            showLoadError_("Erreur API produits: " + safe(payload.error));
-            ALL_PRODUCTS = [];
-          } else {
-            const list = Array.isArray(payload) ? payload : (Array.isArray(payload.products) ? payload.products : []);
-            ALL_PRODUCTS = normalizeProducts_(list);
-          }
-          render();
-        } finally {
-          try { delete window[cbName]; } catch(_){}
-        }
-      };
-
-      const token = (typeof forcedToken === "string") ? forcedToken : getToken_();
-      const tokenParam = token ? ("&token=" + encodeURIComponent(token)) : "";
-
-      const s = document.createElement("script");
-      s.id = "vf_products_loader";
-      s.src = SCRIPT_URL + "?action=get_products" + tokenParam + "&callback=" + cbName + "&t=" + Date.now();
-      s.onerror = () => {
+        const list = Array.isArray(payload) ? payload : (Array.isArray(payload.products) ? payload.products : []);
+        ALL_PRODUCTS = normalizeProducts_(list);
+        render();
+      }catch(err){
         if (reqSeq !== _productsReqSeq) return;
-        showLoadError_("Impossible de charger les produits (API). Vérifie ton déploiement Apps Script / doGet JSONP.");
+        showLoadError_("Erreur chargement produits: " + (err && err.message ? err.message : String(err)));
         ALL_PRODUCTS = [];
         render();
-        try { delete window[cbName]; } catch(_){}
-      };
-      s.onload = () => { try { s.remove(); } catch(_){ } };
-      document.body.appendChild(s);
+      }
     }
 
     // ========= FILTER =========
@@ -715,7 +644,7 @@
       }).join("");
     }
 
-    // ✅ Cache le produit au click (évite “mauvaise image” si la page produit relit ailleurs)
+    // ✅ Cache produit au click (utile pour page produit)
     document.addEventListener("click", (e) => {
       const a = e.target && e.target.closest ? e.target.closest('a[data-pid]') : null;
       if (!a) return;
@@ -724,14 +653,13 @@
       if (!pid) return;
 
       try{
-        // on retrouve le produit dans la liste courante
         const p = ALL_PRODUCTS.find(x => safe(x.__vf_id) === pid);
         if (p) sessionStorage.setItem("vf_p_cache_" + pid, JSON.stringify(p));
         sessionStorage.setItem("vf_last_pid", pid);
       }catch(_){}
     });
 
-    // ========= START (attend token si session) =========
+    // ========= START =========
     function _sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
 
     async function waitForTokenOrTimeout_(timeoutMs){
@@ -749,23 +677,29 @@
 
       renderAccountUI_();
 
+      // attendre un peu le token si session existe (revendeur)
       const hasSession = !!getSession_();
       const token = await waitForTokenOrTimeout_(hasSession ? 1200 : 0);
 
       if (seq !== _startSeq) return;
 
-      // ✅ UN chargement (et protégé contre les réponses en retard)
-      initProducts(token);
+      // 1) charge avec token trouvé
+      await loadProducts_(token);
+
+      // 2) si token arrive après (cookie/localStorage), reload propre (protégé anti-race)
+      setTimeout(() => {
+        if (seq !== _startSeq) return;
+        const t2 = getToken_();
+        if (t2 && t2 !== token) loadProducts_(t2);
+      }, 900);
     }
 
-    // ========= SYNC ONGLET =========
     window.addEventListener("storage", (e)=>{
       if (e.key === "vf_session" || e.key === "vf_token" || e.key === "vf_session_changed"){
         start_();
       }
     });
 
-    // Safari bfcache
     window.addEventListener("pageshow", () => start_());
 
     start_();
