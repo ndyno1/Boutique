@@ -4,161 +4,164 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
   <title>Portefeuille | ViralFlowr</title>
-
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
   <style>
-    :root{ color-scheme: light; }
-    html, body{ width:100%; max-width:100%; overflow-x:hidden; overscroll-behavior-x:none; }
-    *{ box-sizing:border-box; }
-    body{ font-family:'Inter',sans-serif; background:#F3F3F3; color:#201B16; -webkit-text-size-adjust:100%; text-rendering:optimizeLegibility; }
-    .text-orange-bsv{ color:#F07E13; }
-    .brand-gradient{ background: linear-gradient(90deg, #F07E13 0%, #FFB26B 100%); }
-    .card{ background:#fff; border:1px solid #eee; border-radius:24px; box-shadow: 0 12px 25px rgba(0,0,0,.06); overflow:hidden; }
-    .btn{ height:44px; padding:0 16px; border-radius:14px; font-weight:900; font-size:12px; text-transform:uppercase; transition:.2s; display:inline-flex; align-items:center; justify-content:center; gap:10px; white-space:nowrap; cursor:pointer; }
-    .btn-outline{ background:#fff; border:1px solid #E5E7EB; color:#111827; }
-    .btn-primary{ color:#fff; border:none; }
-    .icon-btn{ display:flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:14px; background:#fff; border:1px solid #E5E7EB; color:#374151; transition:.2s; }
-    .input{ width:100%; height:44px; padding:0 14px; border-radius:14px; background:#fff; border:1px solid #E5E7EB; outline:none; font-weight:800; font-size:13px; transition:.2s; }
-    .input:focus{ border-color:#F07E13; box-shadow:0 6px 16px rgba(240,126,19,.10); }
-    .box-note{ border:2px dashed #E5E7EB; border-radius: 22px; background: #FBFBFB; }
-    .skeleton{ position:relative; overflow:hidden; background:#f3f4f6; border-radius:12px; }
-    .skeleton::after{ content:""; position:absolute; top:0; left:-60%; width:60%; height:100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent); animation: shimmer 1.1s infinite; }
-    @keyframes shimmer{ 0%{ left:-60%; } 100%{ left:120%; } }
-    .toast{ position:fixed; left:50%; bottom:20px; transform:translateX(-50%); background: rgba(17,24,39,.95); color:#fff; padding:12px 14px; border-radius:16px; font-weight:900; font-size:12px; z-index:9999; display:none; }
-    .toast.show{ display:block; }
+    body { font-family:'Inter',sans-serif; background:#F3F3F3; color:#201B16; }
+    .brand-gradient { background: linear-gradient(90deg, #F07E13 0%, #FFB26B 100%); }
+    .card { background:#fff; border-radius:24px; box-shadow: 0 12px 25px rgba(0,0,0,.06); overflow:hidden; }
+    .btn { height:48px; padding:0 16px; border-radius:14px; font-weight:900; font-size:12px; text-transform:uppercase; transition:.2s; display:inline-flex; align-items:center; justify-content:center; gap:10px; cursor:pointer; border:none; }
+    .input { width:100%; height:48px; padding:0 14px; border-radius:14px; background:#fff; border:1px solid #E5E7EB; outline:none; font-weight:700; }
+    .input:focus { border-color:#F07E13; }
+    .tx-row { border-bottom: 1px solid #F3F3F3; padding: 12px; font-size: 13px; }
+    .tx-row:last-child { border: none; }
   </style>
 </head>
+<body class="min-h-screen flex flex-col p-4 md:p-8">
 
-<body class="min-h-screen flex flex-col">
+  <div class="max-w-[800px] mx-auto w-full">
+    <header class="flex items-center justify-between mb-8">
+      <a href="index.html" class="text-2xl font-black tracking-tighter">Viral<span class="text-[#F07E13]">Flowr</span></a>
+      <a href="index.html" class="p-3 bg-white rounded-xl shadow-sm">Boutique</a>
+    </header>
 
-  <header class="bg-white sticky top-0 z-50 border-b border-gray-200 shadow-sm">
-    <div class="max-w-[1240px] mx-auto h-16 px-4 flex items-center justify-between">
-      <a class="flex items-center gap-2" href="index.html">
-        <div class="text-2xl font-black tracking-tighter">Viral<span class="text-orange-bsv">Flowr</span></div>
-      </a>
-      <div class="flex items-center gap-2">
-        <a href="index.html" class="icon-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 11l9-8 9 8M9 22V12h6v10"/></svg></a>
-        <button id="logoutBtn" class="btn btn-outline hidden sm:inline-flex">Déconnexion</button>
-      </div>
-    </div>
-  </header>
-
-  <main class="flex-1 p-4">
-    <div class="max-w-[860px] mx-auto">
-      <div class="text-center mt-6 mb-4">
-        <div class="text-3xl font-black tracking-tighter">Mon <span class="text-orange-bsv">Portefeuille</span></div>
+    <section class="card p-6 md:p-8 mb-6">
+      <div class="flex justify-between items-start mb-8">
+        <div>
+          <div class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Mon Solde</div>
+          <div class="text-4xl font-black mt-1"><span id="balanceValue">0.00</span><span class="text-gray-300 ml-1">$</span></div>
+          <div class="text-xs font-bold text-gray-500 mt-2">Compte : <span id="userLabel" class="text-gray-900">—</span></div>
+        </div>
+        <button id="refreshBtn" class="p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">🔄 Actualiser</button>
       </div>
 
-      <div id="alertBox" class="hidden mb-4 px-4 py-3 rounded-2xl border text-sm font-bold"></div>
-
-      <section class="card p-6 md:p-8">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div class="bg-gray-50 rounded-3xl p-6 border border-gray-100">
+        <h3 class="text-xs font-black uppercase text-gray-400 mb-4">Recharger le Wallet</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-300">Solde Disponible</div>
-            <div class="text-4xl font-black tracking-tighter mt-1">
-              <span id="balanceValue">—</span><span class="text-gray-300 ml-1">$</span>
-            </div>
-            <div class="mt-2 text-xs font-bold text-gray-500">Compte : <span id="userLabel" class="text-gray-900">—</span></div>
+            <label class="text-[10px] font-black text-gray-400 ml-1">MONTANT (USD)</label>
+            <input id="amountInp" type="number" class="input mt-1" placeholder="Ex: 10.00">
           </div>
-          <button id="refreshBtn" class="btn btn-outline">Actualiser</button>
-        </div>
-
-        <div class="mt-8 p-6 rounded-3xl bg-gray-50 border border-gray-100">
-          <div class="text-[11px] font-black uppercase text-gray-400 mb-4">Recharger le compte</div>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="text-[10px] font-black uppercase text-gray-400 ml-1">Montant à ajouter (USD)</label>
-              <input id="amountInp" type="number" class="input mt-1" placeholder="Ex: 10.00">
-            </div>
-            <div>
-              <label class="text-[10px] font-black uppercase text-gray-400 ml-1">Méthode de paiement</label>
-              <select id="methodSel" class="input mt-1">
-                <option value="BINANCE_PAY">Binance Pay (Validation Auto)</option>
-                <option value="MONEROO_MOMO">Mobile Money (Moneroo)</option>
-                <option value="USDT_TRC20">USDT TRC-20</option>
-              </select>
-            </div>
-          </div>
-
-          <div id="binanceField" class="mt-4 p-4 bg-[#121417] rounded-2xl text-white">
-            <div class="flex justify-between items-center mb-3">
-              <span class="text-[10px] font-bold text-orange-400">ID BINANCE : 744370418</span>
-              <button onclick="copyText_('744370418')" class="text-[9px] bg-white/10 px-2 py-1 rounded">Copier ID</button>
-            </div>
-            <label class="text-[10px] font-black uppercase text-gray-400">Transaction ID (TXID)</label>
-            <input id="txidInp" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm mt-1 outline-none focus:border-orange-500" placeholder="Collez l'ID reçu après votre transfert">
-            <p class="text-[9px] text-gray-500 mt-2">Le robot créditera votre compte dès que l'ID sera validé sur Binance.</p>
-          </div>
-
-          <button id="paidBtn" class="btn brand-gradient btn-primary w-full mt-6">Confirmer le dépôt</button>
-        </div>
-
-        <div class="mt-10">
-          <div class="text-[11px] font-black uppercase text-gray-300 mb-4">Historique des transactions</div>
-          <div id="txBox" class="rounded-2xl border border-gray-100 overflow-hidden">
-            <div class="p-8 text-center text-gray-400 text-sm font-bold">Chargement de l'historique...</div>
+          <div>
+            <label class="text-[10px] font-black text-gray-400 ml-1">MÉTHODE</label>
+            <select id="methodSel" class="input mt-1">
+              <option value="BINANCE_PAY">Binance Pay (Auto)</option>
+              <option value="MOBILE_MONEY">Mobile Money (WhatsApp)</option>
+              <option value="USDT">USDT TRC-20</option>
+            </select>
           </div>
         </div>
-      </section>
-    </div>
-  </main>
 
-  <div id="toast" class="toast"></div>
+        <div id="binanceField" class="mt-4 p-4 bg-[#121417] rounded-2xl text-white">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-[10px] font-bold text-orange-400">ID BINANCE : 744370418</span>
+            <button onclick="navigator.clipboard.writeText('744370418')" class="text-[9px] bg-white/10 px-2 py-1 rounded">Copier</button>
+          </div>
+          <input id="txidInp" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none focus:border-orange-500" placeholder="Transaction ID (TXID) après transfert">
+        </div>
+
+        <button id="paidBtn" class="btn brand-gradient text-white w-full mt-6 shadow-lg">Confirmer le dépôt</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="p-6 border-b border-gray-50 font-black text-xs uppercase tracking-widest text-gray-400">Historique des Transactions</div>
+      <div id="txBox" class="min-h-[200px]">
+        <div class="p-10 text-center text-gray-400 font-bold text-sm">Chargement de l'historique...</div>
+      </div>
+    </section>
+  </div>
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
-    
-    function getSession_(){ return JSON.parse(localStorage.getItem("vf_session") || "null"); }
-    function toast(m){ const e=$("toast"); e.textContent=m; e.classList.add("show"); setTimeout(()=>e.classList.remove("show"), 2000); }
-    function copyText_(t){ navigator.clipboard.writeText(t); toast("Copié !"); }
+    const WA_NUMBER = "243850373991";
     const $ = (id) => document.getElementById(id);
 
-    // Gestion de l'affichage Binance
+    function getSession_() { return JSON.parse(localStorage.getItem("vf_session") || "null"); }
+
+    // Alterner entre Binance et Mobile Money
     $("methodSel").onchange = function() {
+      const isMomo = this.value === "MOBILE_MONEY";
       $("binanceField").style.display = (this.value === "BINANCE_PAY") ? "block" : "none";
+      $("paidBtn").textContent = isMomo ? "Payer via WhatsApp" : "Confirmer le dépôt";
     };
 
-    async function loadWallet() {
+    // Charger le solde (JSONP pour éviter CORS)
+    function loadWallet() {
       const s = getSession_();
-      if(!s) return;
+      if(!s) return window.location.href="login.html";
       $("userLabel").textContent = s.email;
-      
-      const cb = "cb_" + Date.now();
+
+      const cb = "bal_" + Date.now();
       window[cb] = (res) => {
         if(res.ok) $("balanceValue").textContent = parseFloat(res.balance).toFixed(2);
       };
       const scr = document.createElement("script");
       scr.src = `${SCRIPT_URL}?action=wallet_balance&email=${s.email}&callback=${cb}`;
       document.body.appendChild(scr);
+      loadTx(s.email);
     }
 
+    // Charger l'historique (JSONP)
+    function loadTx(email) {
+      const cb = "tx_" + Date.now();
+      window[cb] = (res) => {
+        const box = $("txBox");
+        if(res.ok && res.txs && res.txs.length > 0) {
+          box.innerHTML = res.txs.map(tx => `
+            <div class="tx-row flex justify-between items-center">
+              <div>
+                <div class="font-black text-gray-900">${tx.type}</div>
+                <div class="text-[10px] text-gray-400 uppercase">${tx.date || ''}</div>
+              </div>
+              <div class="text-right">
+                <div class="font-black ${tx.amount > 0 ? 'text-green-600' : 'text-red-600'}">${tx.amount > 0 ? '+' : ''}${parseFloat(tx.amount).toFixed(2)} $</div>
+                <div class="text-[10px] font-bold text-gray-300 uppercase">${tx.status || 'Terminé'}</div>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          box.innerHTML = `<div class="p-10 text-center text-gray-300 font-bold">Aucune transaction trouvée.</div>`;
+        }
+      };
+      const scr = document.createElement("script");
+      scr.src = `${SCRIPT_URL}?action=wallet_tx&email=${email}&callback=${cb}`;
+      document.body.appendChild(scr);
+    }
+
+    // Action du bouton principal
     $("paidBtn").onclick = async function() {
       const s = getSession_();
       const amount = $("amountInp").value;
       const method = $("methodSel").value;
       const txid = $("txidInp").value.trim();
 
-      if(!amount || amount <= 0) return alert("Montant invalide");
-      if(method === "BINANCE_PAY" && !txid) return alert("Veuillez entrer le Transaction ID de votre transfert Binance");
+      if(!amount || amount <= 0) return alert("Veuillez entrer un montant valide.");
 
-      this.disabled = true; this.textContent = "Traitement...";
+      // CAS MOBILE MONEY : Redirection WhatsApp
+      if(method === "MOBILE_MONEY") {
+        const msg = encodeURIComponent(`Bonjour ViralFlowr, je souhaite recharger mon wallet.\n\nEmail: ${s.email}\nMontant: ${amount} $\nMéthode: Mobile Money RDC`);
+        window.open(`https://wa.me/${WA_NUMBER}?text=${msg}`, "_blank");
+        return;
+      }
 
+      // CAS BINANCE : Envoi au robot Python
+      if(method === "BINANCE_PAY" && !txid) return alert("Veuillez entrer le Transaction ID reçu de Binance.");
+
+      this.disabled = true; this.textContent = "Validation...";
+      
       const payload = {
         action: "wallet_topup_create",
         email: s.email,
         amount: amount,
         method: method,
-        transactionId: txid, // Envoyé pour le script Python
+        transactionId: txid,
         note: "TOPUP-" + Date.now()
       };
 
-      // Envoi vers Apps Script
-      const resp = await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-      
-      alert("Demande de dépôt envoyée ! Votre solde sera mis à jour après vérification.");
+      await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+      alert("Demande enregistrée. Votre solde sera mis à jour après vérification automatique.");
       location.reload();
     };
 
