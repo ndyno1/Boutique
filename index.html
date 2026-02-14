@@ -118,7 +118,7 @@
     }
     .icon-btn:hover{ border-color:#F07E13;color:#F07E13;transform:translateY(-1px); }
 
-    /* Animation Shimmer pour le Skeleton */
+    /* Skeleton Shimmer Animation */
     @keyframes shimmer {
       0% { background-position: -200% 0; }
       100% { background-position: 200% 0; }
@@ -146,7 +146,7 @@
 
   <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-100 shadow-sm backdrop-blur-md bg-white/95">
     <div class="max-w-[1280px] mx-auto px-4 h-16 flex items-center justify-between gap-2 sm:gap-4">
-      <a href="/index.html" class="flex items-center gap-2 shrink-0 vf-brand-wrap">
+      <a href="/index.html" class="flex items-center gap-2 shrink-0 vf-brand-wrap" aria-label="ViralFlowr">
         <div class="text-2xl font-black tracking-tighter text-gray-900 vf-brand-text">
           Viral<span class="text-[#F07E13]">Flowr</span>
         </div>
@@ -162,12 +162,16 @@
       <div class="flex items-center gap-2 sm:gap-3">
         <div id="accountArea" class="hidden sm:flex items-center gap-2"></div>
         <a href="/commandes.html" class="icon-btn" title="Mes commandes">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/>
+          </svg>
         </a>
         <a href="/wallet.html" class="icon-btn" title="Portefeuille">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2ZM16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2M20 12h-4a2 2 0 0 0 0 4h4"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2ZM16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2M20 12h-4a2 2 0 0 0 0 4h4"/>
+          </svg>
         </a>
-        <a href="https://wa.me/243850373991" target="_blank" class="btn-support">
+        <a href="https://wa.me/243850373991" target="_blank" rel="noopener noreferrer" class="btn-support">
           <svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/></svg>
           <span class="btn-support-text">Aide</span>
         </a>
@@ -182,6 +186,7 @@
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"></div>
         <div class="relative z-10 p-8 md:p-16 flex flex-col justify-end h-full text-white">
           <h1 class="text-3xl md:text-6xl font-black max-w-2xl leading-[0.95] mb-4 tracking-tighter uppercase italic">L'Univers Digital <br>& Matériel.</h1>
+          <p class="text-xs md:text-lg font-medium opacity-90 max-w-md">Services Elite, Déblocage IMEI et Matériel High-Tech garantis.</p>
           <div id="priceMode" class="mt-4 text-[10px] font-black uppercase tracking-[0.18em] opacity-90">Mode: ...</div>
         </div>
       </article>
@@ -200,7 +205,13 @@
     <div id="loadError" class="hidden mb-6 bg-red-50 border border-red-200 text-red-700 font-bold text-xs rounded-2xl px-4 py-3"></div>
 
     <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 mb-24">
-      </div>
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
+    </div>
   </main>
 
   <footer class="bg-white border-t border-gray-100 py-12">
@@ -214,8 +225,6 @@
     const FALLBACK_IMG = "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
     let ALL_PRODUCTS = [];
     let CURRENT_FILTER = "all";
-    let _startSeq = 0;
-    let _productsReqSeq = 0;
     let _isFirstLoad = true;
 
     const FILTER_MAP = {
@@ -241,13 +250,11 @@
 
     function safe(v){ return (v === null || v === undefined) ? "" : String(v); }
     function up(v){ return safe(v).trim().toUpperCase(); }
-    function escHtml(str){
-      return safe(str).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-    }
+    function escHtml(str){ return safe(str).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
     function escAttr(str){ return safe(str).replace(/["']/g, ""); }
     function pName(p){ return safe(p.nom || p.name || p.title); }
     function pCat(p){ return safe(p.cat || p.category || p.categorie); }
-    function pPrice(p){ return safe(p.prix_affiche ?? p.prix_revendeur ?? p.RESELLER ?? p.prix ?? p.price ?? p.amount); }
+    function pPrice(p){ return safe(p.prix_affiche ?? p.prix_revendeur ?? p.prix ?? p.price ?? p.amount); }
     function pImg(p){ return safe(p.img || p.image || p.photo || p.image_url || p.cover || p.thumbnail); }
 
     function getStore(){ return window.vfApi?.storage || window.vfStorage || null; }
@@ -262,50 +269,37 @@
       return localStorage.getItem("vf_token")?.trim() || "";
     }
 
-    function renderSkeleton() {
-      const grid = document.getElementById("product-grid");
-      if (!grid) return;
-      let html = '';
-      for(let i=0; i<12; i++) {
-        html += `<div class="bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col shadow-sm">
-          <div class="aspect-square skeleton-box rounded-[22px] mb-4"></div>
-          <div class="h-3 w-1/2 skeleton-box rounded mb-2"></div>
-          <div class="h-4 w-3/4 skeleton-box rounded mb-4"></div>
-          <div class="flex justify-between items-center"><div class="h-6 w-1/3 skeleton-box rounded"></div><div class="h-8 w-8 skeleton-box rounded-lg"></div></div>
-        </div>`;
-      }
-      grid.innerHTML = html;
-    }
-
     async function loadProducts_(token){
-      if (_isFirstLoad) renderSkeleton();
-      const reqSeq = ++_productsReqSeq;
-      try{
+      try {
         const api = window.vfApi;
         let payload;
-        if (api?.getProducts) payload = await api.getProducts({ cat: "all", token: token || "" });
-        else if (window.vfJsonp) payload = await window.vfJsonp("get_products", { cat: "all", token: token || "" });
-        else throw new Error("API_NOT_READY");
+        if (api && typeof api.getProducts === "function") {
+          payload = await api.getProducts({ cat: "all", token: token || "" });
+        } else if (window.vfJsonp) {
+          payload = await window.vfJsonp("get_products", { cat: "all", token: token || "" });
+        } else {
+          // Secours direct fetch si l'API n'est pas chargée
+          const resp = await fetch(`${window.VF_CONFIG.scriptUrl}?action=get_products&token=${token || ""}`);
+          payload = await resp.json();
+        }
 
-        if (reqSeq !== _productsReqSeq) return;
-        const list = Array.isArray(payload) ? payload : (Array.isArray(payload.products) ? payload.products : []);
-        
-        // Anti-flash : On ne vide le skeleton que si on a des data ou si l'API a répondu
+        const list = Array.isArray(payload) ? payload : (payload.products || []);
         ALL_PRODUCTS = list.map((p, i) => ({ ...p, __vf_id: (p.id || p.ID || "p-"+i) }));
         _isFirstLoad = false;
+        document.getElementById("loadError").classList.add("hidden");
         render();
-      }catch(err){
-        if (reqSeq !== _productsReqSeq) return;
-        document.getElementById("loadError").textContent = "Erreur de connexion...";
-        document.getElementById("loadError").classList.remove("hidden");
-        _isFirstLoad = false;
-        render();
+      } catch (err) {
+        console.error("Load Error:", err);
+        if (_isFirstLoad) {
+           document.getElementById("loadError").textContent = "Problème de connexion aux services. Veuillez rafraîchir.";
+           document.getElementById("loadError").classList.remove("hidden");
+        }
       }
     }
 
     function render(){
       const grid = document.getElementById("product-grid");
-      if (!grid || _isFirstLoad) return;
+      if (!grid) return;
 
       const query = (input?.value || "").toLowerCase().trim();
       const filtered = ALL_PRODUCTS.filter(p=>{
@@ -315,14 +309,17 @@
         return matchCat && (!query || nameL.includes(query));
       });
 
-      if (filtered.length === 0){
-        grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-300 font-bold uppercase">Aucun article disponible</div>';
+      if (filtered.length === 0 && !_isFirstLoad){
+        grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-300 font-bold uppercase tracking-widest">Aucun produit trouvé</div>';
         return;
       }
 
+      if (_isFirstLoad) return; // Garder le skeleton si on charge encore
+
       grid.innerHTML = filtered.map(p=>{
         const img = pImg(p) || FALLBACK_IMG;
-        const price = parseFloat(String(pPrice(p)).replace(",", "."));
+        const priceNum = parseFloat(String(pPrice(p)).replace(",", "."));
+        const priceTxt = isNaN(priceNum) ? "0.00" : priceNum.toFixed(2);
         const pid = encodeURIComponent(p.__vf_id);
 
         return `<a href="/p/${pid}/" class="hover-card group bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col shadow-sm">
@@ -333,7 +330,7 @@
             <span class="text-[9px] font-black text-[#F07E13] uppercase tracking-tighter mb-1 block">${escHtml(pCat(p))}</span>
             <h3 class="text-[13px] font-bold text-gray-900 leading-tight mb-4 h-8 overflow-hidden line-clamp-2">${escHtml(pName(p))}</h3>
             <div class="flex items-center justify-between">
-              <span class="text-gray-900 font-black text-lg tracking-tighter">${price.toFixed(2)} $</span>
+              <span class="text-gray-900 font-black text-lg tracking-tighter">${priceTxt} $</span>
               <div class="bg-gray-900 text-white p-1.5 rounded-lg group-hover:brand-gradient transition-all">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
               </div>
@@ -371,14 +368,11 @@
     }
 
     async function start_(){
-      _startSeq++;
       renderAccountUI_();
-      const token = getToken_();
-      await loadProducts_(token);
+      await loadProducts_(getToken_());
     }
 
-    window.addEventListener("pageshow", start_);
-    start_();
+    window.addEventListener("load", start_);
   </script>
 </body>
 </html>
