@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr" class="font-inter">
 <head>
-  <!-- Canonical domaine (www -> non-www) sans boucle -->
   <script>
     (function () {
       const ref = document.referrer || "";
@@ -44,7 +43,6 @@
   <meta property="og:image" content="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png" />
   <meta property="og:type" content="website" />
 
-  <!-- Config avant /vf_api.js -->
   <script>
     const inAppsScriptPanel =
       !!window.__VF_IN_APPS_SCRIPT_PANEL ||
@@ -62,9 +60,7 @@
     };
   </script>
 
-  <!-- ✅ API VF (remis en place) -->
   <script src="/vf_api.js?v=200" defer></script>
-
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
@@ -112,14 +108,8 @@
     .btn-auth:hover{ transform:translateY(-1px); }
     .btn-auth-outline{ background:#fff;border:1px solid #E5E7EB;color:#111827; }
     .btn-auth-outline:hover{ border-color:#F07E13;color:#F07E13; }
-    .btn-auth-primary{ color:#fff; }
 
-    .line-clamp-2{
-      display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
-    }
-
-    .vf-brand-wrap{ min-width:0; overflow:hidden; }
-    .vf-brand-text{ display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1; }
+    .line-clamp-2{ display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden; }
 
     .icon-btn{
       display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:14px;
@@ -128,17 +118,21 @@
     }
     .icon-btn:hover{ border-color:#F07E13;color:#F07E13;transform:translateY(-1px); }
 
-    #catNav{ touch-action:pan-x; overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch; }
-
-    header{ transform:translateZ(0); -webkit-transform:translateZ(0); }
-    @media (max-width:768px){
-      header{ backdrop-filter:none !important; -webkit-backdrop-filter:none !important; }
+    /* Animation Shimmer pour le Skeleton */
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
     }
+    .skeleton-box {
+      background: linear-gradient(90deg, #f0f4f8 25%, #f8fafc 50%, #f0f4f8 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite linear;
+    }
+
     @media (max-width:420px){
       .icon-btn{ width:36px;height:36px;border-radius:12px; }
-      .btn-support{ padding:8px 10px;border-radius:12px;font-size:11px;gap:6px; }
       .btn-support .btn-support-text{ display:none; }
-      .btn-auth{ padding:8px 10px;border-radius:12px;font-size:10px;letter-spacing:.10em;gap:6px; }
+      .btn-auth{ padding:8px 10px;border-radius:12px;font-size:10px; }
       .vf-brand-text{ font-size:22px; }
     }
   </style>
@@ -152,79 +146,43 @@
 
   <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-100 shadow-sm backdrop-blur-md bg-white/95">
     <div class="max-w-[1280px] mx-auto px-4 h-16 flex items-center justify-between gap-2 sm:gap-4">
-
-      <a href="/index.html" class="flex items-center gap-2 shrink-0 vf-brand-wrap" aria-label="ViralFlowr">
+      <a href="/index.html" class="flex items-center gap-2 shrink-0 vf-brand-wrap">
         <div class="text-2xl font-black tracking-tighter text-gray-900 vf-brand-text">
           Viral<span class="text-[#F07E13]">Flowr</span>
         </div>
       </a>
 
-      <div class="hidden lg:flex items-center gap-6 text-[11px] font-black uppercase tracking-widest text-gray-400">
-        <a href="/index.html" class="hover:text-gray-900 transition-colors">Boutique</a>
-        <a href="/about.html" class="hover:text-gray-900 transition-colors">À Propos</a>
-      </div>
-
       <div class="relative flex-1 max-w-[600px] hidden md:flex items-center">
-        <input type="text" id="searchInput"
-          class="w-full h-11 pl-5 pr-12 rounded-xl bg-[#F1F5F9] text-sm font-semibold focus:ring-2 focus:ring-[#F07E13] focus:bg-white outline-none transition-all border-none">
+        <input type="text" id="searchInput" class="w-full h-11 pl-5 pr-12 rounded-xl bg-[#F1F5F9] text-sm font-semibold focus:ring-2 focus:ring-[#F07E13] outline-none transition-all border-none">
         <div id="placeholder-box" class="absolute left-5 pointer-events-none text-gray-400 text-sm font-semibold">
           <span id="animated-placeholder" class="inline-block animate-text">Que cherchez-vous ? (SMM, iPhone, IMEI, Netflix...)</span>
         </div>
-        <button id="searchBtn" type="button" class="absolute right-1.5 top-1.5 brand-gradient p-2 rounded-lg text-white shadow-md" aria-label="Rechercher">
-          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
-            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-        </button>
       </div>
 
-      <div class="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar max-w-full">
+      <div class="flex items-center gap-2 sm:gap-3">
         <div id="accountArea" class="hidden sm:flex items-center gap-2"></div>
-
-        <a href="/commandes.html" class="icon-btn" title="Mes commandes" aria-label="Mes commandes">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 6h11"></path><path d="M9 12h11"></path><path d="M9 18h11"></path>
-            <path d="M4 6h.01"></path><path d="M4 12h.01"></path><path d="M4 18h.01"></path>
-          </svg>
+        <a href="/commandes.html" class="icon-btn" title="Mes commandes">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>
         </a>
-
-        <a href="/wallet.html" class="icon-btn" title="Portefeuille" aria-label="Portefeuille">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
-            <path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/>
-            <path d="M20 12h-4a2 2 0 0 0 0 4h4"/>
-            <circle cx="16" cy="14" r="0.5" />
-          </svg>
+        <a href="/wallet.html" class="icon-btn" title="Portefeuille">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2ZM16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2M20 12h-4a2 2 0 0 0 0 4h4"/></svg>
         </a>
-
-        <a href="https://wa.me/243850373991" target="_blank" rel="noopener noreferrer" class="btn-support">
-          <svg width="18" height="18" fill="white" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
-          </svg>
+        <a href="https://wa.me/243850373991" target="_blank" class="btn-support">
+          <svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/></svg>
           <span class="btn-support-text">Aide</span>
         </a>
       </div>
-
     </div>
   </header>
 
   <main class="max-w-[1280px] mx-auto px-4 py-8">
-
     <section class="mb-10">
       <article class="relative w-full h-[250px] md:h-[400px] rounded-[32px] overflow-hidden shadow-2xl group border-4 border-white">
-        <img src="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png"
-             class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
-             alt="ViralFlowr">
+        <img src="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" alt="ViralFlowr">
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"></div>
         <div class="relative z-10 p-8 md:p-16 flex flex-col justify-end h-full text-white">
-          <h1 class="text-3xl md:text-6xl font-black max-w-2xl leading-[0.95] mb-4 tracking-tighter uppercase italic">
-            L'Univers Digital <br>& Matériel.
-          </h1>
-          <p class="text-xs md:text-lg font-medium opacity-90 max-w-md">
-            Services Elite, Déblocage IMEI et Matériel High-Tech garantis.
-          </p>
-          <div id="priceMode" class="mt-4 text-[10px] font-black uppercase tracking-[0.18em] opacity-90">
-            Mode: ...
-          </div>
+          <h1 class="text-3xl md:text-6xl font-black max-w-2xl leading-[0.95] mb-4 tracking-tighter uppercase italic">L'Univers Digital <br>& Matériel.</h1>
+          <div id="priceMode" class="mt-4 text-[10px] font-black uppercase tracking-[0.18em] opacity-90">Mode: ...</div>
         </div>
       </article>
     </section>
@@ -242,317 +200,147 @@
     <div id="loadError" class="hidden mb-6 bg-red-50 border border-red-200 text-red-700 font-bold text-xs rounded-2xl px-4 py-3"></div>
 
     <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 mb-24">
-      <div class="h-64 bg-white rounded-3xl animate-pulse shadow-sm"></div>
-      <div class="h-64 bg-white rounded-3xl animate-pulse shadow-sm"></div>
-      <div class="h-64 bg-white rounded-3xl animate-pulse shadow-sm"></div>
-      <div class="h-64 bg-white rounded-3xl animate-pulse shadow-sm"></div>
-      <div class="h-64 bg-white rounded-3xl animate-pulse shadow-sm"></div>
-      <div class="h-64 bg-white rounded-3xl animate-pulse shadow-sm"></div>
-    </div>
-
+      </div>
   </main>
 
   <footer class="bg-white border-t border-gray-100 py-12">
     <div class="max-w-[1280px] mx-auto px-4 flex flex-col items-center">
-      <div class="text-2xl font-black tracking-tighter mb-6">
-        Viral<span class="text-[#F07E13]">Flowr</span>
-      </div>
-      <p class="text-[9px] text-gray-300 text-center max-w-lg leading-relaxed uppercase">
-        © 2026 ViralFlowr Enterprise. Livraison garantie. Les marques citées appartiennent à leurs propriétaires.
-      </p>
+      <div class="text-2xl font-black tracking-tighter mb-6">Viral<span class="text-[#F07E13]">Flowr</span></div>
+      <p class="text-[9px] text-gray-300 text-center max-w-lg leading-relaxed uppercase">© 2026 ViralFlowr Enterprise. Livraison garantie.</p>
     </div>
   </footer>
 
   <script>
     const FALLBACK_IMG = "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
-
     let ALL_PRODUCTS = [];
     let CURRENT_FILTER = "all";
     let _startSeq = 0;
-
-    // ✅ Anti-race : seule la dernière réponse produits s'applique
     let _productsReqSeq = 0;
+    let _isFirstLoad = true;
 
     const FILTER_MAP = {
       "Abonnement": ["ABONNEMENT","CARTE"],
-      "Carte2":     ["CARTE2"],
-      "Boost":      ["BOOST","BOOST2","SMM1","SMM2","SMM3","PEAKERR","PEAK"],
-      "Materiel":   ["MATERIEL","GADGET","PHONE"],
-      "IMEI":       ["IMEI"],
-      "Jeux":       ["JEUX","JEU","GAME","GAMING","PSN","PLAYSTATION","XBOX","STEAM","NINTENDO"]
+      "Carte2": ["CARTE2"],
+      "Boost": ["BOOST","BOOST2","SMM1","SMM2","SMM3","PEAKERR","PEAK"],
+      "Materiel": ["MATERIEL","GADGET","PHONE"],
+      "IMEI": ["IMEI"],
+      "Jeux": ["JEUX","JEU","GAME","GAMING","PSN","PLAYSTATION","XBOX","STEAM","NINTENDO"]
     };
 
-    // ========= UI SEARCH =========
     const input = document.getElementById("searchInput");
     const placeholderBox = document.getElementById("placeholder-box");
-    const searchBtn = document.getElementById("searchBtn");
 
     if (input && placeholderBox) {
       const syncPH = () => {
-        if (document.activeElement === input) { placeholderBox.style.display = "none"; return; }
-        placeholderBox.style.display = (input.value || "").trim() ? "none" : "block";
+        placeholderBox.style.display = (document.activeElement === input || (input.value || "").trim()) ? "none" : "block";
       };
       input.addEventListener("focus", syncPH);
       input.addEventListener("blur", syncPH);
       input.addEventListener("input", () => { syncPH(); render(); });
-      syncPH();
     }
-    if (searchBtn && input) searchBtn.addEventListener("click", () => input.focus());
 
-    // ========= HELPERS =========
     function safe(v){ return (v === null || v === undefined) ? "" : String(v); }
     function up(v){ return safe(v).trim().toUpperCase(); }
-
     function escHtml(str){
-      return safe(str).replace(/[&<>"']/g, (c) => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-      }[c]));
+      return safe(str).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
     }
-    function escAttr(str){
-      return safe(str).replace(/["']/g, "");
-    }
-
-    function sanitizeHttpUrl(u){
-      const s = safe(u).trim();
-      if (!s) return "";
-      if (/^https?:\/\//i.test(s)) return s;
-      return "";
-    }
-
+    function escAttr(str){ return safe(str).replace(/["']/g, ""); }
     function pName(p){ return safe(p.nom || p.name || p.title); }
     function pCat(p){ return safe(p.cat || p.category || p.categorie); }
+    function pPrice(p){ return safe(p.prix_affiche ?? p.prix_revendeur ?? p.RESELLER ?? p.prix ?? p.price ?? p.amount); }
+    function pImg(p){ return safe(p.img || p.image || p.photo || p.image_url || p.cover || p.thumbnail); }
 
-    function pPrice(p){
-      return safe(
-        (p && (
-          p.prix_affiche ??
-          p.prix_revendeur ??
-          p.RESELLER ?? p.reseller ??
-          p.prix ??
-          p.price ??
-          p.amount ??
-          p.PV ?? p.pv ??
-          p.prix_client
-        ))
-      );
-    }
-
-    function pImg(p){
-      return safe(
-        p.img || p.image || p.photo ||
-        p.image_url || p.img_url || p.photo_url ||
-        p.cover || p.cover_url ||
-        p.thumbnail || p.thumb || p.thumb_url ||
-        p.banner || p.banner_url
-      );
-    }
-
-    function pIdRaw(p){
-      const candidates = [
-        p.id, p.ID, p.Id,
-        p.product_id, p.productId, p.PRODUCT_ID,
-        p.pid, p.PID,
-        p.sku, p.SKU,
-        p.code, p.CODE,
-        p.key, p.KEY,
-        p.slug, p.SLUG,
-        p.ref, p.REF
-      ];
-      for (const v of candidates){
-        const s = safe(v).trim();
-        if (s) return s;
-      }
-      return "";
-    }
-
-    function normalizeProducts_(list){
-      const seen = new Set();
-      const out = [];
-
-      for (let i = 0; i < list.length; i++){
-        const p = list[i] || {};
-        let id = pIdRaw(p) || ("row-" + (i+1));
-        if (seen.has(id)) id = id + "__" + (i+1);
-        seen.add(id);
-        p.__vf_id = id;
-        out.push(p);
-      }
-      return out;
-    }
-
-    // ========= STORAGE / TOKEN =========
-    function getStore(){
-      return (window.vfApi && window.vfApi.storage) ? window.vfApi.storage
-           : (window.vfStorage ? window.vfStorage : null);
-    }
-
+    function getStore(){ return window.vfApi?.storage || window.vfStorage || null; }
     function getSession_(){
       const st = getStore();
-      try{ if (st && typeof st.getSession === "function") return st.getSession(); }catch(_){}
-      try{
-        const raw = localStorage.getItem("vf_session");
-        if (!raw) return null;
-        const s = JSON.parse(raw);
-        if (!s || (!s.email && !s.username)) return null;
-        return s;
-      }catch(_){ return null; }
+      try{ if (st?.getSession) return st.getSession(); }catch(_){}
+      try{ return JSON.parse(localStorage.getItem("vf_session")); }catch(_){ return null; }
     }
-
-    function getCookie_(name){
-      try{
-        const m = document.cookie.match(new RegExp("(^|;)\\s*" + name + "\\s*=\\s*([^;]+)"));
-        return m ? decodeURIComponent(m[2]) : "";
-      }catch(_){ return ""; }
-    }
-
     function getToken_(){
       const st = getStore();
-
-      try{
-        if (st && typeof st.getToken === "function"){
-          const t = st.getToken();
-          if (t) return String(t).trim();
-        }
-      }catch(_){}
-
-      try{
-        const t2 = localStorage.getItem("vf_token");
-        if (t2) return String(t2).trim();
-      }catch(_){}
-
-      const ck = getCookie_("vf_token");
-      if (ck) {
-        try { localStorage.setItem("vf_token", ck); } catch(_){}
-        return String(ck).trim();
-      }
-      return "";
+      try{ if (st?.getToken) return String(st.getToken()).trim(); }catch(_){}
+      return localStorage.getItem("vf_token")?.trim() || "";
     }
 
-    function clearSession_(){
-      const st = getStore();
-      try{ if (st && typeof st.clear === "function") st.clear(); }catch(_){}
-      try{ localStorage.removeItem("vf_token"); }catch(_){}
-      try{ localStorage.removeItem("vf_session"); }catch(_){}
-      try{ localStorage.setItem("vf_session_changed", String(Date.now())); }catch(_){}
-    }
-
-    // ========= ACCOUNT UI =========
-    function renderAccountUI_(){
-      const area = document.getElementById("accountArea");
-      const s = getSession_();
-      const token = getToken_();
-      const mode = document.getElementById("priceMode");
-
-      if (!area) return;
-
-      area.innerHTML = "";
-      area.classList.remove("hidden");
-
-      if (mode){
-        mode.textContent = token ? "Mode: REVENDEUR (token détecté)" : "Mode: CLIENT (pas de token)";
+    function renderSkeleton() {
+      const grid = document.getElementById("product-grid");
+      if (!grid) return;
+      let html = '';
+      for(let i=0; i<12; i++) {
+        html += `<div class="bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col shadow-sm">
+          <div class="aspect-square skeleton-box rounded-[22px] mb-4"></div>
+          <div class="h-3 w-1/2 skeleton-box rounded mb-2"></div>
+          <div class="h-4 w-3/4 skeleton-box rounded mb-4"></div>
+          <div class="flex justify-between items-center"><div class="h-6 w-1/3 skeleton-box rounded"></div><div class="h-8 w-8 skeleton-box rounded-lg"></div></div>
+        </div>`;
       }
-
-      if (!s){
-        area.innerHTML = `
-          <a href="/login.html" class="btn-auth btn-auth-outline">Connexion</a>
-          <a href="/register.html" class="btn-auth btn-auth-primary brand-gradient text-white shadow-md">Inscription</a>
-        `;
-        return;
-      }
-
-      const display = safe(s.username || s.email || "Compte");
-      area.innerHTML = `
-        <div class="hidden md:flex items-center gap-2 bg-white border border-gray-200 px-3 py-2 rounded-2xl">
-          <div class="w-8 h-8 rounded-xl brand-gradient flex items-center justify-center text-white font-black text-sm">
-            ${escHtml(display.slice(0,1).toUpperCase())}
-          </div>
-          <div class="leading-tight">
-            <div class="text-[11px] font-black text-gray-900">Bonjour, ${escHtml(display)}</div>
-            <div class="text-[9px] font-black uppercase tracking-widest ${token ? "text-green-400" : "text-gray-300"}">
-              ${token ? "TOKEN OK" : "SANS TOKEN"}
-            </div>
-          </div>
-        </div>
-        <button id="logoutBtn" class="btn-auth btn-auth-outline">Déconnexion</button>
-      `;
-
-      const logoutBtn = document.getElementById("logoutBtn");
-      if (logoutBtn){
-        logoutBtn.addEventListener("click", () => {
-          clearSession_();
-          start_();
-        });
-      }
-    }
-
-    // ========= ERROR =========
-    function showLoadError_(msg){
-      const box = document.getElementById("loadError");
-      if (!box) return;
-      box.textContent = msg;
-      box.classList.remove("hidden");
-    }
-    function hideLoadError_(){
-      const box = document.getElementById("loadError");
-      if (!box) return;
-      box.classList.add("hidden");
-      box.textContent = "";
-    }
-
-    // ========= API PRODUCTS (remis en place) =========
-    async function apiGetProducts_(token){
-      const api = window.vfApi;
-
-      // 1) vfApi.getProducts (si ton vf_api.js le fournit)
-      if (api && typeof api.getProducts === "function"){
-        return await api.getProducts({ cat: "all", token: token || "" });
-      }
-
-      // 2) vfJsonp direct (si exposé)
-      if (typeof window.vfJsonp === "function"){
-        return await window.vfJsonp("get_products", { cat: "all", token: token || "" });
-      }
-
-      throw new Error("VF_API_NOT_LOADED");
+      grid.innerHTML = html;
     }
 
     async function loadProducts_(token){
-      hideLoadError_();
+      if (_isFirstLoad) renderSkeleton();
       const reqSeq = ++_productsReqSeq;
-
       try{
-        const payload = await apiGetProducts_(token);
+        const api = window.vfApi;
+        let payload;
+        if (api?.getProducts) payload = await api.getProducts({ cat: "all", token: token || "" });
+        else if (window.vfJsonp) payload = await window.vfJsonp("get_products", { cat: "all", token: token || "" });
+        else throw new Error("API_NOT_READY");
 
-        if (reqSeq !== _productsReqSeq) return; // ignore ancien retour
-
+        if (reqSeq !== _productsReqSeq) return;
         const list = Array.isArray(payload) ? payload : (Array.isArray(payload.products) ? payload.products : []);
-        ALL_PRODUCTS = normalizeProducts_(list);
+        
+        // Anti-flash : On ne vide le skeleton que si on a des data ou si l'API a répondu
+        ALL_PRODUCTS = list.map((p, i) => ({ ...p, __vf_id: (p.id || p.ID || "p-"+i) }));
+        _isFirstLoad = false;
         render();
       }catch(err){
         if (reqSeq !== _productsReqSeq) return;
-        showLoadError_("Erreur chargement produits: " + (err && err.message ? err.message : String(err)));
-        ALL_PRODUCTS = [];
+        document.getElementById("loadError").textContent = "Erreur de connexion...";
+        document.getElementById("loadError").classList.remove("hidden");
+        _isFirstLoad = false;
         render();
       }
     }
 
-    // ========= FILTER =========
-    function matchCatByFilter(productCatUpper, filterKey){
-      if (filterKey === "all") return true;
+    function render(){
+      const grid = document.getElementById("product-grid");
+      if (!grid || _isFirstLoad) return;
 
-      const allowed = FILTER_MAP[filterKey];
-      if (!allowed) return (productCatUpper === up(filterKey));
+      const query = (input?.value || "").toLowerCase().trim();
+      const filtered = ALL_PRODUCTS.filter(p=>{
+        const catU = up(pCat(p));
+        const nameL = pName(p).toLowerCase();
+        const matchCat = CURRENT_FILTER === "all" || (FILTER_MAP[CURRENT_FILTER]?.some(a => catU.includes(up(a)))) || catU === up(CURRENT_FILTER);
+        return matchCat && (!query || nameL.includes(query));
+      });
 
-      for (const a of allowed){
-        const A = up(a);
-        if (productCatUpper === A) return true;
-
-        if (A === "IMEI" && productCatUpper.includes("IMEI")) return true;
-        if ((A === "PEAKERR" || A === "PEAK") && (productCatUpper.includes("PEAK") || productCatUpper.includes("PEAKERR"))) return true;
-        if (A.startsWith("SMM") && productCatUpper.includes("SMM")) return true;
-        if (filterKey === "Jeux" && productCatUpper.includes(A)) return true;
+      if (filtered.length === 0){
+        grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-300 font-bold uppercase">Aucun article disponible</div>';
+        return;
       }
-      return false;
+
+      grid.innerHTML = filtered.map(p=>{
+        const img = pImg(p) || FALLBACK_IMG;
+        const price = parseFloat(String(pPrice(p)).replace(",", "."));
+        const pid = encodeURIComponent(p.__vf_id);
+
+        return `<a href="/p/${pid}/" class="hover-card group bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col shadow-sm">
+          <div class="aspect-square bg-[#F8FAFC] rounded-[22px] mb-4 flex items-center justify-center p-6 overflow-hidden">
+            <img src="${escAttr(img)}" class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" onerror="this.src='${FALLBACK_IMG}'">
+          </div>
+          <div class="px-1">
+            <span class="text-[9px] font-black text-[#F07E13] uppercase tracking-tighter mb-1 block">${escHtml(pCat(p))}</span>
+            <h3 class="text-[13px] font-bold text-gray-900 leading-tight mb-4 h-8 overflow-hidden line-clamp-2">${escHtml(pName(p))}</h3>
+            <div class="flex items-center justify-between">
+              <span class="text-gray-900 font-black text-lg tracking-tighter">${price.toFixed(2)} $</span>
+              <div class="bg-gray-900 text-white p-1.5 rounded-lg group-hover:brand-gradient transition-all">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
+              </div>
+            </div>
+          </div>
+        </a>`;
+      }).join("");
     }
 
     function filterCat(cat, btn){
@@ -560,148 +348,36 @@
         b.classList.remove("text-white","brand-gradient","active");
         b.classList.add("bg-white","text-gray-500");
       });
-      if (btn){
-        btn.classList.add("text-white","brand-gradient","active");
-        btn.classList.remove("bg-white","text-gray-500");
-      }
+      btn.classList.add("text-white","brand-gradient","active");
       CURRENT_FILTER = cat;
       render();
     }
 
-    // ========= RENDER =========
-    function render(){
-      const grid = document.getElementById("product-grid");
-      if (!grid) return;
+    function renderAccountUI_(){
+      const area = document.getElementById("accountArea");
+      const s = getSession_();
+      const token = getToken_();
+      if (!area) return;
+      area.innerHTML = "";
+      area.classList.remove("hidden");
+      document.getElementById("priceMode").textContent = token ? "Mode: REVENDEUR" : "Mode: CLIENT";
 
-      const query = (input ? (input.value || "") : "").toLowerCase().trim();
-
-      const filtered = ALL_PRODUCTS.filter(p=>{
-        const catU = up(pCat(p));
-        const nameL = pName(p).toLowerCase();
-        const catL  = pCat(p).toLowerCase();
-
-        const matchCat = matchCatByFilter(catU, CURRENT_FILTER);
-        const matchSearch =
-          !query ||
-          nameL.includes(query) ||
-          catL.includes(query) ||
-          safe(p.__vf_id).toLowerCase().includes(query);
-
-        return matchCat && matchSearch;
-      });
-
-      if (filtered.length === 0){
-        grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-300 font-bold uppercase">Aucun article trouvé</div>';
+      if (!s){
+        area.innerHTML = `<a href="/login.html" class="btn-auth btn-auth-outline">Connexion</a>`;
         return;
       }
-
-      grid.innerHTML = filtered.map(p=>{
-        const imgRaw = sanitizeHttpUrl(pImg(p));
-        const img = imgRaw || FALLBACK_IMG;
-
-        const priceRaw = pPrice(p);
-        let priceTxt = "—";
-        if (safe(priceRaw).trim() !== ""){
-          const priceNum = parseFloat(String(priceRaw).replace(",", "."));
-          priceTxt = Number.isFinite(priceNum) ? priceNum.toFixed(2) : safe(priceRaw);
-        }
-
-        const pid = safe(p.__vf_id).trim();
-        const pidEnc = encodeURIComponent(pid);
-        const productUrl = `/p/${pidEnc}/`;
-
-        const min = safe(p.min || p.minqnt || p.minQty || p.min_qty);
-        const max = safe(p.max || p.maxqnt || p.maxQty || p.max_qty);
-
-        return `
-          <a href="${productUrl}" data-pid="${escAttr(pid)}"
-            class="hover-card group bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col cursor-pointer shadow-sm no-underline">
-            <div class="aspect-square bg-[#F8FAFC] rounded-[22px] mb-4 flex items-center justify-center p-6 overflow-hidden">
-              <img src="${escAttr(img)}"
-                class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
-                loading="lazy" decoding="async"
-                onerror="this.onerror=null;this.src='${escAttr(FALLBACK_IMG)}'">
-            </div>
-            <div class="px-1">
-              <span class="text-[9px] font-black text-[#F07E13] uppercase tracking-tighter mb-1 block">${escHtml(pCat(p))}</span>
-              <h3 class="text-[13px] font-bold text-gray-900 leading-tight mb-4 h-8 overflow-hidden line-clamp-2">${escHtml(pName(p))}</h3>
-              <div class="flex items-center justify-between">
-                <span class="text-gray-900 font-black text-lg tracking-tighter">${escHtml(priceTxt)} $</span>
-                <div class="bg-gray-900 text-white p-1.5 rounded-lg group-hover:brand-gradient transition-all">
-                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
-                    <path d="M12 4v16m8-8H4"></path>
-                  </svg>
-                </div>
-              </div>
-
-              ${(min || max) ? `
-                <div class="mt-3 text-[9px] font-black uppercase tracking-widest text-gray-300">
-                  Min ${escHtml(min || "-")} • Max ${escHtml(max || "-")}
-                </div>` : ``}
-            </div>
-          </a>
-        `;
-      }).join("");
-    }
-
-    // ✅ Cache produit au click (utile pour page produit)
-    document.addEventListener("click", (e) => {
-      const a = e.target && e.target.closest ? e.target.closest('a[data-pid]') : null;
-      if (!a) return;
-
-      const pid = a.getAttribute("data-pid") || "";
-      if (!pid) return;
-
-      try{
-        const p = ALL_PRODUCTS.find(x => safe(x.__vf_id) === pid);
-        if (p) sessionStorage.setItem("vf_p_cache_" + pid, JSON.stringify(p));
-        sessionStorage.setItem("vf_last_pid", pid);
-      }catch(_){}
-    });
-
-    // ========= START =========
-    function _sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
-
-    async function waitForTokenOrTimeout_(timeoutMs){
-      const start = Date.now();
-      let t = getToken_();
-      while(!t && (Date.now() - start) < timeoutMs){
-        await _sleep(120);
-        t = getToken_();
-      }
-      return t;
+      area.innerHTML = `<div class="text-[11px] font-black text-gray-900 mr-2">${escHtml(s.username || s.email)}</div>
+      <button onclick="localStorage.clear();location.reload();" class="btn-auth btn-auth-outline">Quitter</button>`;
     }
 
     async function start_(){
-      const seq = ++_startSeq;
-
+      _startSeq++;
       renderAccountUI_();
-
-      // attendre un peu le token si session existe (revendeur)
-      const hasSession = !!getSession_();
-      const token = await waitForTokenOrTimeout_(hasSession ? 1200 : 0);
-
-      if (seq !== _startSeq) return;
-
-      // 1) charge avec token trouvé
+      const token = getToken_();
       await loadProducts_(token);
-
-      // 2) si token arrive après (cookie/localStorage), reload propre (protégé anti-race)
-      setTimeout(() => {
-        if (seq !== _startSeq) return;
-        const t2 = getToken_();
-        if (t2 && t2 !== token) loadProducts_(t2);
-      }, 900);
     }
 
-    window.addEventListener("storage", (e)=>{
-      if (e.key === "vf_session" || e.key === "vf_token" || e.key === "vf_session_changed"){
-        start_();
-      }
-    });
-
-    window.addEventListener("pageshow", () => start_());
-
+    window.addEventListener("pageshow", start_);
     start_();
   </script>
 </body>
