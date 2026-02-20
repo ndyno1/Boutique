@@ -296,7 +296,6 @@
       // Transforme en majuscules sans accents pour simplifier les vérifications
       const s = String(st||"").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       
-      // Ajout de "SUCCES" à la liste des statuts complets
       if (s.includes("PAID") || s.includes("VALID") || s.includes("RECEIVED") || s.includes("DONE") || s.includes("SUCCESS") || s.includes("SUCCES") || s.includes("DELIVER")) {
           return ["bg-green-100 text-green-700", "Complet"];
       }
@@ -315,7 +314,7 @@
     function tryParse_(raw){ try { return JSON.parse(raw); } catch { return null; } }
 
     // =========================
-    // Session robuste (comme wallet)
+    // Session robuste
     // =========================
     function getSession_(){
       const keys = ["vf_session","VF_SESSION","vfSession","VFSession","session","auth","vf_auth"];
@@ -401,7 +400,7 @@
       };
 
       const s = document.createElement("script");
-      const qs = new URLSearchParams({ ...params, callback: cb, t: String(Date.now()) });
+      const qs = newSearchParams({ ...params, callback: cb, t: String(Date.now()) });
       const url = GOOGLE_URL + "?" + qs.toString();
       dbg("JSONP URL", url);
       s.src = url;
@@ -416,6 +415,16 @@
 
       document.body.appendChild(s);
       s.onload = () => setTimeout(() => { try { s.remove(); } catch(_){ } }, 0);
+    }
+    
+    // Polyfill URLSearchParams if missing
+    function newSearchParams(obj) {
+      if (typeof URLSearchParams !== "undefined") return new URLSearchParams(obj);
+      let res = [];
+      for (let k in obj) {
+        if(obj.hasOwnProperty(k)) res.push(encodeURIComponent(k) + "=" + encodeURIComponent(obj[k]));
+      }
+      return { toString: () => res.join("&") };
     }
 
     // =========================
@@ -444,7 +453,7 @@
     });
 
     // =========================
-    // Response field (col M) robust
+    // Helpers Données (Liens / Textes)
     // =========================
     function getResponseText_(o){
       const cand = [
@@ -468,11 +477,20 @@
       return 0;
     }
 
-    // Helper pour extraire le lien (input1)
+    // Extraction robuste du Lien (Cherche aussi dans les colonnes potentiellement nommées input1 ou F)
     function extractLink_(o) {
-      const link = String(o.input1 || o.link || o.lien || "").trim();
-      if (link.startsWith("http://") || link.startsWith("https://")) {
-        return link;
+      // Tableau de toutes les clés possibles que le backend pourrait renvoyer
+      const cand = [
+        o.input1, o.link, o.lien, o.colF, o.f, o.F, o.Input1, o.input_1,
+        o.information, o.info, o.url, o.reponses_site, o.reponsesSite
+      ];
+      
+      for(const v of cand){
+        const t = String(v || "").trim();
+        // Si ça ressemble à un lien valide, on le renvoie directement
+        if(t.startsWith("http://") || t.startsWith("https://")) {
+          return t;
+        }
       }
       return "";
     }
@@ -517,10 +535,10 @@
         const hasResp = !!String(resp||"").trim();
         const respEnc = encodeURIComponent(resp || "");
 
-        // Extraction du lien
+        // Construction du bouton Lien
         const link = extractLink_(o);
         const linkHtml = link 
-          ? `<a href="${esc_(link)}" target="_blank" class="btn btn-outline" style="height:32px;padding:0 10px;font-size:10px;text-decoration:none;">Ouvrir</a>` 
+          ? `<a href="${esc_(link)}" target="_blank" class="btn btn-outline" style="height:32px;padding:0 10px;font-size:10px;text-decoration:none;border-color:#F07E13;color:#F07E13;">Ouvrir</a>` 
           : `<span class="text-[11px] font-black text-gray-300 uppercase tracking-widest">—</span>`;
 
         return `
@@ -623,7 +641,7 @@
     });
 
     // =========================
-    // Load transactions: try order_history then fallback purchase_tx
+    // Load transactions
     // =========================
     function extractListFromRes_(res){
       if(Array.isArray(res)) return res;
