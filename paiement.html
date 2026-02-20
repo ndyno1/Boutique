@@ -11,8 +11,6 @@
 
   <style>
     body { font-family:'Inter',sans-serif; background:#F3F3F3; color:#201B16; overflow-x:hidden; }
-    .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
-    .brand-gradient:hover { filter: brightness(.98); }
     .text-orange-bsv { color:#F07E13; }
     .checkout-container { max-width:500px; width:100%; margin:2rem auto; }
 
@@ -212,37 +210,40 @@
             </p>
           </div>
 
-          <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 mb-2">
-            <p class="text-[10px] text-gray-500 font-medium leading-relaxed">
-              En cliquant sur "Payer avec Wallet", vous acceptez notre 
-              <a href="politique.html" class="text-orange-bsv font-black underline decoration-2 underline-offset-2 hover:opacity-80">
-                Politique de règlement et de remboursement
-              </a>. 
-              Tout achat est définitif et les fonds sont déduits de votre compte ViralFlows.
-            </p>
-          </div>
-
-          <div id="walletBox" class="hidden mt-4 rounded-2xl border border-[#FFD7B0] bg-[#FFF7EE] p-4">
+          <div id="walletBox" class="hidden mt-4 rounded-2xl border border-gray-800 bg-gray-900 p-4 shadow-xl">
             <div class="flex items-center justify-between gap-3">
               <div>
-                <div class="text-[10px] font-black uppercase tracking-widest text-[#B65E0B]">Paiement Wallet</div>
-                <div class="text-[13px] font-bold text-[#3B2A16] mt-1">
+                <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Paiement Wallet</div>
+                <div class="text-[13px] font-bold text-white mt-1">
                   Solde : <span id="walletBalance" class="font-black">—</span> <span class="text-gray-400">$</span>
                 </div>
-                <div class="text-[11px] font-bold text-gray-500 mt-1">
-                  Compte : <span id="walletEmail" class="font-black text-gray-700">—</span>
+                <div class="text-[11px] font-bold text-gray-400 mt-1">
+                  Compte : <span id="walletEmail" class="font-black text-gray-300">—</span>
                 </div>
-                <div id="walletHint" class="text-[11px] font-bold mt-2 text-gray-500">
+                <div id="walletHint" class="text-[11px] font-bold mt-2 text-gray-400">
                   Vérification du solde...
                 </div>
               </div>
               <div class="flex flex-col gap-2 w-[160px]">
                 <button type="button" id="walletPayBtn"
-                  class="w-full brand-gradient text-white py-3 rounded-2xl font-black text-[11px] uppercase shadow-xl hover:scale-[1.02] transition-transform">
+                  class="w-full bg-white text-black py-3 rounded-2xl font-black text-[11px] uppercase shadow-lg hover:scale-[1.02] transition-transform">
                   Payer avec Wallet
                 </button>
               </div>
             </div>
+
+                      <div class="bg-gray-800 border border-gray-700 rounded-xl p-3 mt-4 text-center">
+            <p class="text-[10px] text-gray-400 font-medium leading-relaxed">
+              En cliquant sur "Payer avec Wallet", vous acceptez notre 
+              <a href="politique.html" class="text-white font-black underline decoration-2 underline-offset-2 hover:opacity-80">
+                Politique de règlement
+              </a>. 
+              Tout achat est définitif. Pour en savoir plus sur notre plateforme, découvrez 
+              <a href="about.html" class="text-white font-black underline decoration-2 underline-offset-2 hover:opacity-80">
+                qui nous sommes
+              </a>.
+            </p>
+          </div>
           </div>
 
         </form>
@@ -491,7 +492,7 @@
 
       const hint = document.getElementById("walletHint");
       hint.textContent = "Vérification du solde wallet...";
-      hint.className = "text-[11px] font-black mt-2 text-gray-500";
+      hint.className = "text-[11px] font-black mt-2 text-gray-400";
 
       const btn = document.getElementById("walletPayBtn");
       if (btn){
@@ -511,7 +512,6 @@
       }
 
       if(!WALLET_OK){
-        // Si erreur inattendue
         return;
       }
 
@@ -526,17 +526,17 @@
       if (sessionStorage.getItem(SENT_KEY) === "1") {
         btn.disabled = true; btn.style.opacity = ".6"; btn.style.cursor = "not-allowed";
         hint.textContent = "Commande déjà payée.";
-        hint.className = "text-[11px] font-black mt-2 text-green-700";
+        hint.className = "text-[11px] font-black mt-2 text-green-400";
         return;
       }
 
       if (WALLET_BAL >= need && need > 0) {
         hint.textContent = "Solde suffisant pour régler l'achat.";
-        hint.className = "text-[11px] font-black mt-2 text-green-700";
+        hint.className = "text-[11px] font-black mt-2 text-green-400";
         btn.disabled = false; btn.style.opacity = "1"; btn.style.cursor = "pointer";
       } else {
-        hint.innerHTML = `Solde insuffisant. <a href="wallet.html" class="text-orange-bsv underline">Ajoutez du crédit</a>.`;
-        hint.className = "text-[11px] font-black mt-2 text-red-700";
+        hint.innerHTML = `Solde insuffisant. <a href="wallet.html" class="text-orange-400 underline">Ajoutez du crédit</a>.`;
+        hint.className = "text-[11px] font-black mt-2 text-red-400";
         btn.disabled = true; btn.style.opacity = ".6"; btn.style.cursor = "not-allowed";
       }
     }
@@ -574,16 +574,15 @@
     function initWallet_(){
       const s = getSession_();
       if(!s) {
-        // Afficher un message demandant de se connecter
         const box = document.getElementById("walletBox");
         box.classList.remove("hidden");
         box.innerHTML = `
           <div class="flex items-center justify-between gap-3">
             <div>
-              <div class="text-[10px] font-black uppercase tracking-widest text-[#B65E0B]">Paiement Wallet</div>
-              <div class="text-[12px] font-bold text-gray-700 mt-1">Vous devez vous connecter pour payer.</div>
+              <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Paiement Wallet</div>
+              <div class="text-[12px] font-bold text-white mt-1">Vous devez vous connecter pour payer.</div>
             </div>
-            <a href="wallet.html" class="brand-gradient text-white py-3 px-5 rounded-2xl font-black text-[11px] uppercase shadow-xl hover:scale-[1.02] transition-transform text-center whitespace-nowrap">Se connecter</a>
+            <a href="wallet.html" class="bg-white text-black py-3 px-5 rounded-2xl font-black text-[11px] uppercase shadow-lg hover:scale-[1.02] transition-transform text-center whitespace-nowrap">Se connecter</a>
           </div>
         `;
         return;
