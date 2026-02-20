@@ -468,6 +468,15 @@
       return 0;
     }
 
+    // Helper pour extraire le lien (input1)
+    function extractLink_(o) {
+      const link = String(o.input1 || o.link || o.lien || "").trim();
+      if (link.startsWith("http://") || link.startsWith("https://")) {
+        return link;
+      }
+      return "";
+    }
+
     // =========================
     // Render table
     // =========================
@@ -508,6 +517,12 @@
         const hasResp = !!String(resp||"").trim();
         const respEnc = encodeURIComponent(resp || "");
 
+        // Extraction du lien
+        const link = extractLink_(o);
+        const linkHtml = link 
+          ? `<a href="${esc_(link)}" target="_blank" class="btn btn-outline" style="height:32px;padding:0 10px;font-size:10px;text-decoration:none;">Ouvrir</a>` 
+          : `<span class="text-[11px] font-black text-gray-300 uppercase tracking-widest">—</span>`;
+
         return `
           <tr class="border-t">
             <td class="p-3 font-bold text-gray-500">${esc_(created)}</td>
@@ -516,6 +531,7 @@
             <td class="p-3 font-black text-gray-900">${esc_(String(qty))}</td>
             <td class="p-3 font-black text-gray-900">${esc_(fmt2(amount))} $</td>
             <td class="p-3"><span class="badge ${badgeCls}">${esc_(badgeTxt)}</span></td>
+            <td class="p-3">${linkHtml}</td>
             <td class="p-3">
               ${hasResp
                 ? `<button class="btn btn-outline seeBtn" type="button" style="height:32px;padding:0 10px;font-size:10px;" data-resp="${respEnc}">Voir</button>`
@@ -542,6 +558,7 @@
                 <th class="p-3">Qté</th>
                 <th class="p-3">Montant</th>
                 <th class="p-3">Statut</th>
+                <th class="p-3">Lien</th>
                 <th class="p-3">Voir</th>
               </tr>
             </thead>
