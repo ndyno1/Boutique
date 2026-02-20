@@ -123,13 +123,16 @@
       if(!s) return window.location.href="login.html";
       $("userLabel").textContent = s.email;
 
-      const cb = "bal_" + Date.now();
-      window[cb] = (res) => {
+      // Charge le solde
+      const cbBal = "bal_" + Date.now();
+      window[cbBal] = (res) => {
         if(res.ok) $("balanceValue").textContent = parseFloat(res.balance).toFixed(2);
       };
-      const scr = document.createElement("script");
-      scr.src = `${SCRIPT_URL}?action=wallet_balance&email=${s.email}&callback=${cb}`;
-      document.body.appendChild(scr);
+      const scrBal = document.createElement("script");
+      scrBal.src = `${SCRIPT_URL}?action=wallet_balance&email=${s.email}&callback=${cbBal}`;
+      document.body.appendChild(scrBal);
+
+      // Charge l'historique
       loadTx(s.email);
     }
 
@@ -138,20 +141,29 @@
       window[cb] = (res) => {
         const box = $("txBox");
         if(res.ok && res.txs && res.txs.length > 0) {
-          box.innerHTML = res.txs.map(tx => `
+          box.innerHTML = res.txs.map(tx => {
+            // Adaptation aux noms de colonnes exacts de ta feuille Google Sheets
+            const isCredit = tx.type === "CREDIT";
+            const sign = isCredit ? "+" : "-";
+            const colorClass = isCredit ? "text-green-600" : "text-gray-900";
+            const dateFmt = tx.created_at ? new Date(tx.created_at).toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) : "";
+
+            return `
             <div class="tx-row flex justify-between items-center">
               <div>
-                <div class="font-black text-gray-900 uppercase text-[11px]">${tx.type || 'Transaction'}</div>
-                <div class="text-[10px] text-gray-400 mt-1">${tx.date || ''}</div>
+                <div class="font-black text-gray-900 uppercase text-[11px]">${tx.type || 'TX'} <span class="text-[9px] text-gray-400 font-medium ml-1">(${tx.ref || 'API'})</span></div>
+                <div class="text-[10px] text-gray-400 mt-1">${dateFmt}</div>
+                <div class="text-[9px] text-gray-300 mt-1 uppercase font-mono">${tx.tx_id || ''}</div>
               </div>
               <div class="text-right">
-                <div class="font-black ${tx.amount > 0 ? 'text-green-600' : 'text-red-600'}">${tx.amount > 0 ? '+' : ''}${parseFloat(tx.amount).toFixed(2)} $</div>
-                <div class="text-[9px] font-bold text-gray-300 uppercase">${tx.status || 'Valide'}</div>
+                <div class="font-black ${colorClass}">${sign}${parseFloat(tx.amount).toFixed(2)} $</div>
+                <div class="text-[9px] font-bold text-gray-400 uppercase mt-1">${tx.status || 'OK'}</div>
               </div>
             </div>
-          `).join('');
+            `;
+          }).join('');
         } else {
-          box.innerHTML = `<div class="p-10 text-center text-gray-300 font-bold">Aucune transaction.</div>`;
+          box.innerHTML = `<div class="p-10 text-center text-gray-400 font-bold text-sm">Aucune transaction trouvée.</div>`;
         }
       };
       const scr = document.createElement("script");
@@ -186,12 +198,22 @@
         note: "TOPUP-" + Date.now()
       };
 
-      await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-      alert("Demande enregistree. Verification en cours.");
-      location.reload();
+      try {
+        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+        alert("Demande enregistrée. Vérification en cours.");
+        location.reload();
+      } catch (e) {
+        alert("Erreur de connexion.");
+        this.disabled = false; this.textContent = "Confirmer le depot";
+      }
     };
 
-    $("refreshBtn").onclick = loadWallet;
+    $("refreshBtn").onclick = () => {
+       $("balanceValue").textContent = "...";
+       $("txBox").innerHTML = `<div class="p-8 text-center text-gray-400 text-sm font-bold">Actualisation...</div>`;
+       loadWallet();
+    };
+
     window.onload = loadWallet;
   </script>
 </body>
