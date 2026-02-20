@@ -78,7 +78,7 @@
     }
     .icon-btn:hover{ transform:translateY(-1px); border-color:#F07E13; color:#F07E13; }
 
-    /* Topbar layout (fix buttons above) */
+    /* Topbar layout */
     .topbar{
       display:flex;
       align-items:center;
@@ -95,7 +95,6 @@
       min-width:0;
     }
 
-    /* On very small screens: if needed, allow horizontal scroll instead of overflow/wrap */
     @media (max-width: 420px){
       .top-actions{
         max-width: 62vw;
@@ -293,7 +292,7 @@
     }
 
     function badgeForStatus_(st){
-      // Transforme en majuscules sans accents pour simplifier les vérifications
+      // Transforme en majuscules sans accents
       const s = String(st||"").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       
       if (s.includes("PAID") || s.includes("VALID") || s.includes("RECEIVED") || s.includes("DONE") || s.includes("SUCCESS") || s.includes("SUCCES") || s.includes("DELIVER")) {
@@ -453,7 +452,7 @@
     });
 
     // =========================
-    // Helpers Données (Liens / Textes)
+    // Helpers Données
     // =========================
     function getResponseText_(o){
       const cand = [
@@ -477,22 +476,33 @@
       return 0;
     }
 
-    // Extraction robuste du Lien (Cherche aussi dans les colonnes potentiellement nommées input1 ou F)
+    // =========================
+    // NOUVEAU : Extraction intelligente du Lien (Colonne F / input1)
+    // =========================
     function extractLink_(o) {
-      // Tableau de toutes les clés possibles que le backend pourrait renvoyer
+      // On cherche dans toutes les variables possibles renvoyées par ton Google Apps Script
       const cand = [
         o.input1, o.link, o.lien, o.colF, o.f, o.F, o.Input1, o.input_1,
-        o.information, o.info, o.url, o.reponses_site, o.reponsesSite
+        o.information, o.info, o.url
       ];
       
       for(const v of cand){
-        const t = String(v || "").trim();
-        // Si ça ressemble à un lien valide, on le renvoie directement
+        let t = String(v || "").trim();
+        
+        if (!t) continue;
+
+        // Si le texte commence directement par http ou https, c'est parfait
         if(t.startsWith("http://") || t.startsWith("https://")) {
           return t;
         }
+
+        // AUTO-CORRECTION : Si l'utilisateur a tapé une URL sans https:// (ex: www.tiktok.com/@pseudo ou instagram.com/pseudo)
+        // On vérifie si ça ressemble à un lien web classique
+        if (t.includes(".com/") || t.startsWith("www.") || t.includes("tiktok.com") || t.includes("instagram.com") || t.includes("youtube.com")) {
+          return "https://" + t;
+        }
       }
-      return "";
+      return ""; // Retourne vide si ce n'est pas un lien
     }
 
     // =========================
@@ -535,7 +545,7 @@
         const hasResp = !!String(resp||"").trim();
         const respEnc = encodeURIComponent(resp || "");
 
-        // Construction du bouton Lien
+        // Affichage du bouton Lien avec l'extraction intelligente
         const link = extractLink_(o);
         const linkHtml = link 
           ? `<a href="${esc_(link)}" target="_blank" class="btn btn-outline" style="height:32px;padding:0 10px;font-size:10px;text-decoration:none;border-color:#F07E13;color:#F07E13;">Ouvrir</a>` 
