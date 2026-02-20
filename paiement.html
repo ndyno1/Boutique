@@ -19,35 +19,6 @@
     input, textarea { outline:none; transition:all .2s; border:1px solid #e5e7eb !important; }
     input:focus, textarea:focus { border-color:#F07E13 !important; }
 
-    .payment-row{
-      display:flex; justify-content:space-between; align-items:center;
-      padding:12px; border-radius:12px;
-      border:1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.03);
-      margin-bottom:8px; gap:10px;
-    }
-    .copy-badge{
-      font-size:10px; font-weight:800;
-      background: rgba(255,255,255,0.1);
-      padding:4px 8px; border-radius:10px;
-      cursor:pointer; transition:0.2s;
-      white-space:nowrap;
-      flex-shrink:0;
-    }
-    .copy-badge:hover{ background:#F07E13; color:#fff; }
-
-    .mini-copy{
-      font-size:10px; font-weight:900;
-      padding:6px 10px; border-radius:12px;
-      border:1px solid rgba(255,255,255,0.14);
-      background: rgba(255,255,255,0.08);
-      color:#fff;
-      transition:.2s;
-      white-space:nowrap;
-      flex-shrink:0;
-    }
-    .mini-copy:hover{ background:#F07E13; border-color:#F07E13; color:#fff; transform:translateY(-1px); }
-
     .brand-wrap{ min-width:0; max-width:100%; }
     .brand-text{
       display:block; max-width:100%;
@@ -88,11 +59,6 @@
       background:#fff; border:1px solid #eee; border-radius:24px;
       padding:18px;
       box-shadow:0 20px 60px rgba(0,0,0,.2);
-    }
-
-    @media (max-width: 420px){
-      .copy-badge{ padding:3px 6px; font-size:9px; border-radius:10px; }
-      .mini-copy{ padding:5px 8px; font-size:9px; border-radius:12px; }
     }
   </style>
 </head>
@@ -170,46 +136,11 @@
           </div>
         </div>
 
-        <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-4 text-center mb-8 hover:border-orange-200 transition-all">
+        <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-4 text-center mb-8">
           <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">
-            Note de commande (à mettre dans “Note” lors du paiement)
+            Numéro de Commande
           </span>
           <span id="live-order-id" class="block text-2xl font-black text-gray-900 tracking-tight cursor-pointer" onclick="copyText(this.innerText)">...</span>
-          <div class="mt-2">
-            <button type="button" onclick="copyText(document.getElementById('live-order-id').innerText)"
-              class="text-[9px] bg-white border border-gray-300 px-3 py-1 rounded-full font-bold shadow-sm">
-              Copier la note
-            </button>
-          </div>
-          <p class="text-[10px] text-gray-500 font-bold mt-3">
-            Astuce : si vous ne mettez pas la note, la vérification peut prendre plus de temps.
-          </p>
-        </div>
-
-        <div id="walletBox" class="hidden mb-6 rounded-2xl border border-[#FFD7B0] bg-[#FFF7EE] p-4">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <div class="text-[10px] font-black uppercase tracking-widest text-[#B65E0B]">Paiement avec Wallet</div>
-              <div class="text-[13px] font-bold text-[#3B2A16] mt-1">
-                Solde disponible : <span id="walletBalance" class="font-black">—</span> <span class="text-gray-400">$</span>
-              </div>
-              <div class="text-[11px] font-bold text-gray-500 mt-1">
-                Compte : <span id="walletEmail" class="font-black text-gray-700">—</span>
-              </div>
-              <div id="walletHint" class="text-[11px] font-bold mt-2 text-gray-500">
-                Si votre solde est suffisant, vous pouvez payer sans preuve.
-              </div>
-            </div>
-            <div class="flex flex-col gap-2 w-[180px]">
-              <button type="button" id="walletPayBtn"
-                class="w-full brand-gradient text-white py-3 rounded-2xl font-black text-[11px] uppercase shadow-xl hover:scale-[1.02] transition-transform">
-                Payer avec Wallet
-              </button>
-              <a href="wallet.html" class="w-full text-center bg-white border border-gray-200 py-3 rounded-2xl font-black text-[11px] uppercase hover:border-[#F07E13] hover:text-[#F07E13] transition">
-                Ajouter du crédit
-              </a>
-            </div>
-          </div>
         </div>
 
         <form id="orderForm" class="space-y-5">
@@ -281,88 +212,39 @@
             </p>
           </div>
 
-          <div class="bg-[#121417] rounded-[24px] p-5 text-white shadow-2xl relative overflow-hidden">
-            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Moyens de paiement acceptés</h4>
-            <p class="text-[11px] text-gray-300 font-bold mb-4 leading-relaxed">
-              Après paiement, mettez la note de commande (ID) dans la case “Note” si disponible.
-            </p>
-
-            <div class="payment-row">
-              <div>
-                <span class="block text-[10px] font-bold text-orange-400 uppercase">Binance Pay</span>
-                <span class="text-[13px] font-bold">744370418</span>
-              </div>
-              <button type="button" class="copy-badge" onclick="copyText('744370418')">Copier</button>
-            </div>
-
-            <div class="payment-row">
-              <div class="overflow-hidden mr-2">
-                <span class="block text-[10px] font-bold text-blue-400 uppercase">USDT (TRC-20)</span>
-                <span id="trc20" class="text-[10px] font-mono opacity-80 truncate block">TN6c8PCwF1TU2XKPFDsGHw1fgen1MTRGka</span>
-              </div>
-              <button type="button" class="copy-badge" onclick="copyText(document.getElementById('trc20').innerText)">Copier</button>
-            </div>
-
-            <div class="payment-row">
-              <div class="overflow-hidden mr-2">
-                <span class="block text-[10px] font-bold text-yellow-400 uppercase">USDT (BEP-20)</span>
-                <span id="bep20" class="text-[10px] font-mono opacity-80 truncate block">0x532795969be892b943c160b94c075ca3385e2ea0</span>
-              </div>
-              <button type="button" class="copy-badge" onclick="copyText(document.getElementById('bep20').innerText)">Copier</button>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-
-              <div class="bg-white/5 p-3 rounded-xl border border-white/10">
-                <span class="block text-[9px] font-bold text-red-400 uppercase mb-1">Airtel Money (RDC)</span>
-                <div class="flex justify-between items-center gap-2">
-                  <span class="text-[11px] font-bold truncate">0971028041</span>
-                  <button type="button" class="mini-copy shrink-0" onclick="copyText('0971028041')">Copier</button>
-                </div>
-              </div>
-
-              <div class="bg-white/5 p-3 rounded-xl border border-white/10">
-                <span class="block text-[9px] font-bold text-green-300 uppercase mb-1">Orange Money (RDC)</span>
-                <div class="flex justify-between items-center gap-2">
-                  <span class="text-[11px] font-bold truncate">0850373991</span>
-                  <button type="button" class="mini-copy shrink-0" onclick="copyText('0850373991')">Copier</button>
-                </div>
-              </div>
-
-            </div>
-
-            <p class="text-[10px] text-gray-400 font-bold mt-4 leading-relaxed">
-              Important : mettez la note (ID) dans Binance (case “Note”) si elle est disponible.
-            </p>
-          </div>
-
-          <div class="pt-2" id="proofSection">
-            <label class="text-[11px] font-bold text-gray-900 uppercase ml-1 block mb-2">
-              Preuve de paiement (obligatoire si paiement classique)
-            </label>
-            <input type="file" id="file" accept="image/*"
-              class="w-full text-xs bg-white rounded-xl p-3 border border-gray-200
-              file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs
-              file:font-bold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
-            <div class="text-[10px] font-bold text-gray-400 mt-2">
-              Si vous payez avec Wallet, aucune preuve n’est nécessaire.
-            </div>
-          </div>
-
           <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 mb-2">
             <p class="text-[10px] text-gray-500 font-medium leading-relaxed">
-              En cliquant sur "Confirmer le paiement", vous acceptez notre 
+              En cliquant sur "Payer avec Wallet", vous acceptez notre 
               <a href="politique.html" class="text-orange-bsv font-black underline decoration-2 underline-offset-2 hover:opacity-80">
                 Politique de règlement et de remboursement
               </a>. 
-              Tout achat est définitif et les fonds sont crédités sur votre compte ViralFlows.
+              Tout achat est définitif et les fonds sont déduits de votre compte ViralFlows.
             </p>
           </div>
 
-          <button type="submit" id="submitBtn"
-            class="w-full brand-gradient text-white py-4 rounded-2xl font-black text-sm uppercase shadow-xl hover:scale-[1.02] transition-transform">
-            Confirmer le paiement
-          </button>
+          <div id="walletBox" class="hidden mt-4 rounded-2xl border border-[#FFD7B0] bg-[#FFF7EE] p-4">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <div class="text-[10px] font-black uppercase tracking-widest text-[#B65E0B]">Paiement Wallet</div>
+                <div class="text-[13px] font-bold text-[#3B2A16] mt-1">
+                  Solde : <span id="walletBalance" class="font-black">—</span> <span class="text-gray-400">$</span>
+                </div>
+                <div class="text-[11px] font-bold text-gray-500 mt-1">
+                  Compte : <span id="walletEmail" class="font-black text-gray-700">—</span>
+                </div>
+                <div id="walletHint" class="text-[11px] font-bold mt-2 text-gray-500">
+                  Vérification du solde...
+                </div>
+              </div>
+              <div class="flex flex-col gap-2 w-[160px]">
+                <button type="button" id="walletPayBtn"
+                  class="w-full brand-gradient text-white py-3 rounded-2xl font-black text-[11px] uppercase shadow-xl hover:scale-[1.02] transition-transform">
+                  Payer avec Wallet
+                </button>
+              </div>
+            </div>
+          </div>
+
         </form>
       </div>
 
@@ -372,9 +254,9 @@
             <path d="M5 13l4 4L19 7"></path>
           </svg>
         </div>
-        <h3 class="text-3xl font-black text-gray-900 mb-2">Paiement reçu</h3>
+        <h3 class="text-3xl font-black text-gray-900 mb-2">Paiement réussi</h3>
         <p class="text-gray-500 text-sm mb-8 font-medium">
-          Votre commande <strong id="final-id" class="text-gray-900"></strong> est en cours de traitement.
+          Votre commande <strong id="final-id" class="text-gray-900"></strong> a été payée avec succès via votre Wallet.
         </p>
 
         <div class="grid grid-cols-2 gap-2">
@@ -403,19 +285,16 @@
     // ====== AUTO-FILL BY ID (depuis Produits) ======
     (function autoFillFromId(){
       const p = new URLSearchParams(location.search);
-
       const id = (p.get("id") || "").trim();
       const hasBasics = (p.get("nom") && p.get("prix") && p.get("cat"));
 
       if (!id || hasBasics) return;
 
       const cb = "VF_PROD_" + Date.now();
-
       window[cb] = function(list){
         try{
           const arr = Array.isArray(list) ? list : [];
           const prod = arr.find(x => String(x.id || "").trim() === id);
-
           if (!prod) return;
 
           const qp = new URLSearchParams();
@@ -432,7 +311,6 @@
           location.replace("paiement.html?" + qp.toString());
         } catch(e){}
       };
-
       const s = document.createElement("script");
       s.src = `${GOOGLE_URL}?action=get_products&callback=${cb}&t=${Date.now()}`;
       document.body.appendChild(s);
@@ -501,13 +379,8 @@
     }
 
     function hardLockForm_(){
-      const btn = document.getElementById('submitBtn');
-      btn.disabled = true;
-      btn.innerText = "Commande déjà envoyée";
-      try { btn.style.opacity = ".7"; } catch(_){}
-
       const wbtn = document.getElementById("walletPayBtn");
-      if (wbtn) { wbtn.disabled = true; wbtn.style.opacity = ".6"; wbtn.style.cursor = "not-allowed"; }
+      if (wbtn) { wbtn.disabled = true; wbtn.style.opacity = ".6"; wbtn.style.cursor = "not-allowed"; wbtn.innerText = "Déjà payé"; }
     }
 
     if (sessionStorage.getItem(SENT_KEY) === "1") {
@@ -523,7 +396,6 @@
 
     const desc     = safeDecode(params.get('desc') || "");
     const longDesc = safeDecode(params.get('long') || params.get('long_desc') || "");
-
     const minParam = parseFloat(params.get('min'));
     const maxParam = parseFloat(params.get('max'));
 
@@ -566,7 +438,6 @@
     const qtyHint = document.getElementById('qty-hint');
 
     // ====== WALLET STATE ======
-    let PAY_MODE = "CLASSIC";
     let WALLET_OK = false;
     let WALLET_BAL = 0;
     let WALLET_EMAIL = "";
@@ -591,13 +462,6 @@
     function getTotalNumber_(){
       const totalTxt = String(priceEl.innerText || "0").replace("$","").trim();
       return parseFloat(totalTxt) || 0;
-    }
-
-    function setPayMode_(mode){
-      PAY_MODE = mode === "WALLET" ? "WALLET" : "CLASSIC";
-      const proof = document.getElementById("proofSection");
-      if (PAY_MODE === "WALLET") proof.classList.add("hidden");
-      else proof.classList.remove("hidden");
     }
 
     function jsonp_(params, onOk, onErr){
@@ -626,7 +490,7 @@
       document.getElementById("walletEmail").textContent = WALLET_EMAIL || "—";
 
       const hint = document.getElementById("walletHint");
-      hint.textContent = "Chargement du solde wallet...";
+      hint.textContent = "Vérification du solde wallet...";
       hint.className = "text-[11px] font-black mt-2 text-gray-500";
 
       const btn = document.getElementById("walletPayBtn");
@@ -647,7 +511,7 @@
       }
 
       if(!WALLET_OK){
-        box.classList.add("hidden");
+        // Si erreur inattendue
         return;
       }
 
@@ -661,17 +525,17 @@
 
       if (sessionStorage.getItem(SENT_KEY) === "1") {
         btn.disabled = true; btn.style.opacity = ".6"; btn.style.cursor = "not-allowed";
-        hint.textContent = "Commande déjà envoyée.";
+        hint.textContent = "Commande déjà payée.";
         hint.className = "text-[11px] font-black mt-2 text-green-700";
         return;
       }
 
       if (WALLET_BAL >= need && need > 0) {
-        hint.textContent = "Solde suffisant : paiement possible sans preuve.";
+        hint.textContent = "Solde suffisant pour régler l'achat.";
         hint.className = "text-[11px] font-black mt-2 text-green-700";
         btn.disabled = false; btn.style.opacity = "1"; btn.style.cursor = "pointer";
       } else {
-        hint.textContent = "Solde insuffisant : ajoutez du crédit puis revenez payer.";
+        hint.innerHTML = `Solde insuffisant. <a href="wallet.html" class="text-orange-bsv underline">Ajoutez du crédit</a>.`;
         hint.className = "text-[11px] font-black mt-2 text-red-700";
         btn.disabled = true; btn.style.opacity = ".6"; btn.style.cursor = "not-allowed";
       }
@@ -687,7 +551,6 @@
         { action:"wallet_balance", email: WALLET_EMAIL, currency:"USD" },
         (res) => {
           WALLET_LOADING = false;
-
           if(res && res.ok){
             WALLET_OK = true;
             WALLET_BAL = Number(res.balance || 0);
@@ -710,10 +573,23 @@
 
     function initWallet_(){
       const s = getSession_();
-      if(!s) return;
+      if(!s) {
+        // Afficher un message demandant de se connecter
+        const box = document.getElementById("walletBox");
+        box.classList.remove("hidden");
+        box.innerHTML = `
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <div class="text-[10px] font-black uppercase tracking-widest text-[#B65E0B]">Paiement Wallet</div>
+              <div class="text-[12px] font-bold text-gray-700 mt-1">Vous devez vous connecter pour payer.</div>
+            </div>
+            <a href="wallet.html" class="brand-gradient text-white py-3 px-5 rounded-2xl font-black text-[11px] uppercase shadow-xl hover:scale-[1.02] transition-transform text-center whitespace-nowrap">Se connecter</a>
+          </div>
+        `;
+        return;
+      }
 
       WALLET_EMAIL = String(s.email||"").trim().toLowerCase();
-
       WALLET_LOADING = true;
       showWalletLoadingUI_();
       refreshWalletBalance_();
@@ -731,7 +607,6 @@
             alert("Solde insuffisant. Ajoutez du crédit puis réessayez.");
             return;
           }
-          setPayMode_("WALLET");
           document.getElementById("orderForm").requestSubmit();
         });
       });
@@ -786,7 +661,7 @@
     initWallet_();
     updateWalletUI_();
 
-    // ====== SUBMIT ======
+    // ====== SUBMIT VIA WALLET ======
     document.getElementById('orderForm').onsubmit = async (e) => {
       e.preventDefault();
 
@@ -796,9 +671,11 @@
       SUBMIT_LOCK = true;
       sessionStorage.setItem(INFLIGHT_KEY, "1");
 
-      const btn = document.getElementById('submitBtn');
-      btn.disabled = true;
-      btn.innerText = "Validation en cours..." ;
+      const btn = document.getElementById('walletPayBtn');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = "Validation en cours..." ;
+      }
 
       let input1 = "";
       let emailForSheet = "";
@@ -807,12 +684,15 @@
 
       const totalNumber = getTotalNumber_();
 
-      if (!idS) {
-        alert("ID du service manquant (paramètre id).");
-        btn.disabled=false; btn.innerText="Confirmer le paiement";
-        setPayMode_("CLASSIC");
+      const resetLockAndBtn = () => {
+        if(btn) { btn.disabled=false; btn.innerText="Payer avec Wallet"; }
         SUBMIT_LOCK = false;
         sessionStorage.removeItem(INFLIGHT_KEY);
+      };
+
+      if (!idS) {
+        alert("ID du service manquant (paramètre id).");
+        resetLockAndBtn();
         return;
       }
 
@@ -820,10 +700,7 @@
         const link = document.getElementById('boost-link').value.trim();
         if (!link) {
           alert("Ajoutez le lien à booster.");
-          btn.disabled=false; btn.innerText="Confirmer le paiement";
-          setPayMode_("CLASSIC");
-          SUBMIT_LOCK = false;
-          sessionStorage.removeItem(INFLIGHT_KEY);
+          resetLockAndBtn();
           return;
         }
 
@@ -833,47 +710,32 @@
 
         if (!q || q <= 0) {
           alert("Quantité invalide.");
-          btn.disabled=false; btn.innerText="Confirmer le paiement";
-          setPayMode_("CLASSIC");
-          SUBMIT_LOCK = false;
-          sessionStorage.removeItem(INFLIGHT_KEY);
+          resetLockAndBtn();
           return;
         }
 
         if ((hasMin && q < parseInt(minParam,10)) || (hasMax && q > parseInt(maxParam,10))) {
           alert(`Quantité invalide. Min=${hasMin ? parseInt(minParam,10) : 0}${hasMax ? ` / Max=${parseInt(maxParam,10)}` : ""}.`);
-          btn.disabled=false; btn.innerText="Confirmer le paiement";
-          setPayMode_("CLASSIC");
-          SUBMIT_LOCK = false;
-          sessionStorage.removeItem(INFLIGHT_KEY);
+          resetLockAndBtn();
           return;
         }
 
         input1 = link;
         qtyVal = q;
-
-        if (PAY_MODE === "WALLET" && WALLET_EMAIL) {
-          emailForSheet = WALLET_EMAIL;
-          contactValue = WALLET_EMAIL;
-        }
+        emailForSheet = WALLET_EMAIL;
+        contactValue = WALLET_EMAIL;
       }
       else if (isAbo) {
         const creds = document.getElementById('creds').value.trim();
         const contact = document.getElementById('delivery-contact-abo').value.trim();
         if (!creds) {
           alert("Ajoutez vos identifiants (mail + mot de passe).");
-          btn.disabled=false; btn.innerText="Confirmer le paiement";
-          setPayMode_("CLASSIC");
-          SUBMIT_LOCK = false;
-          sessionStorage.removeItem(INFLIGHT_KEY);
+          resetLockAndBtn();
           return;
         }
         if (!contact) {
           alert("Ajoutez un contact de livraison (WhatsApp ou Email).");
-          btn.disabled=false; btn.innerText="Confirmer le paiement";
-          setPayMode_("CLASSIC");
-          SUBMIT_LOCK = false;
-          sessionStorage.removeItem(INFLIGHT_KEY);
+          resetLockAndBtn();
           return;
         }
 
@@ -886,10 +748,7 @@
         const contact = document.getElementById('card-delivery').value.trim();
         if (!contact) {
           alert("Ajoutez un contact de livraison (WhatsApp ou Email).");
-          btn.disabled=false; btn.innerText="Confirmer le paiement";
-          setPayMode_("CLASSIC");
-          SUBMIT_LOCK = false;
-          sessionStorage.removeItem(INFLIGHT_KEY);
+          resetLockAndBtn();
           return;
         }
 
@@ -903,10 +762,7 @@
         const em = document.getElementById('email-client').value.trim();
         if (!main) {
           alert("Remplissez l'information requise.");
-          btn.disabled=false; btn.innerText="Confirmer le paiement";
-          setPayMode_("CLASSIC");
-          SUBMIT_LOCK = false;
-          sessionStorage.removeItem(INFLIGHT_KEY);
+          resetLockAndBtn();
           return;
         }
 
@@ -921,56 +777,17 @@
 
       if (!input1) {
         alert("Information manquante.");
-        btn.disabled=false; btn.innerText="Confirmer le paiement";
-        setPayMode_("CLASSIC");
-        SUBMIT_LOCK = false;
-        sessionStorage.removeItem(INFLIGHT_KEY);
+        resetLockAndBtn();
         return;
       }
 
-      if (PAY_MODE === "WALLET" && !emailForSheet && WALLET_EMAIL) {
+      if (!emailForSheet && WALLET_EMAIL) {
         emailForSheet = WALLET_EMAIL;
         if (!contactValue) contactValue = WALLET_EMAIL;
       }
 
-      let fileData = "";
-      let fileType = "";
-      let fileName = "";
-
-      if (PAY_MODE !== "WALLET") {
-        const file = document.getElementById('file').files[0];
-        if (!file) {
-          alert("Ajoutez la preuve de paiement (paiement classique).");
-          btn.disabled=false; btn.innerText="Confirmer le paiement";
-          setPayMode_("CLASSIC");
-          SUBMIT_LOCK = false;
-          sessionStorage.removeItem(INFLIGHT_KEY);
-          return;
-        }
-
-        try {
-          fileData = await new Promise((resolve, reject) => {
-            const r = new FileReader();
-            r.onload = () => resolve(r.result);
-            r.onerror = reject;
-            r.readAsDataURL(file);
-          });
-        } catch (e2) {
-          alert("Impossible de lire l'image. Réessayez.");
-          btn.disabled=false; btn.innerText="Confirmer le paiement";
-          setPayMode_("CLASSIC");
-          SUBMIT_LOCK = false;
-          sessionStorage.removeItem(INFLIGHT_KEY);
-          return;
-        }
-
-        fileType = file.type || "image/jpeg";
-        fileName = file.name || ("preuve_" + orderId + ".jpg");
-      }
-
       const payload = {
-        action: (PAY_MODE === "WALLET") ? "wallet_pay" : "",
-
+        action: "wallet_pay",
         orderId: orderId,
         produit: nom,
         idService: idS,
@@ -984,12 +801,13 @@
         quantite: qtyVal,
         total: totalNumber,
 
-        payMethod: (PAY_MODE === "WALLET") ? "WALLET" : "CLASSIC",
-        walletEmail: (PAY_MODE === "WALLET") ? WALLET_EMAIL : "",
+        payMethod: "WALLET",
+        walletEmail: WALLET_EMAIL,
 
-        fileData: fileData,
-        fileType: fileType,
-        fileName: fileName,
+        // Données vides obligatoires pour le backend
+        fileData: "",
+        fileType: "",
+        fileName: "",
 
         idempotencyKey: "IDEMP_" + orderId
       };
@@ -1005,7 +823,6 @@
 
         sessionStorage.setItem(SENT_KEY, "1");
         sessionStorage.removeItem(INFLIGHT_KEY);
-
         sessionStorage.removeItem('active_order_id');
 
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
@@ -1016,12 +833,8 @@
 
       } catch (err) {
         alert("Erreur de connexion. Réessayez.");
-        btn.disabled = false;
-        btn.innerText = "Confirmer le paiement";
-        SUBMIT_LOCK = false;
-        sessionStorage.removeItem(INFLIGHT_KEY);
+        resetLockAndBtn();
       } finally {
-        setPayMode_("CLASSIC");
         if (sessionStorage.getItem(SENT_KEY) === "1") {
           hardLockForm_();
           SUBMIT_LOCK = true;
