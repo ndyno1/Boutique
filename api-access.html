@@ -165,6 +165,10 @@
         <a href="/index.html" class="btn btn-outline hidden sm:inline-flex">Boutique</a>
         <a href="/wallet.html" class="btn btn-outline hidden sm:inline-flex">Wallet</a>
         <a href="/transactions.html" class="btn btn-outline hidden sm:inline-flex">Commandes</a>
+        
+        <button onclick="document.getElementById('revealBtn').click(); document.getElementById('apiKeyDisplay').scrollIntoView({behavior: 'smooth', block: 'center'});" class="bg-gray-900 text-white px-5 py-2 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-gray-800 transition-colors hidden sm:inline-block ml-2">
+          Révéler ma clé API
+        </button>
       </div>
     </div>
 
@@ -210,7 +214,19 @@
         </div>
 
         <div>
-          <h3 class="text-sm font-black text-gray-900 mb-2">1. Passer une commande</h3>
+          <h3 class="text-sm font-black text-gray-900 mb-2">1. Récupérer la liste des services</h3>
+          <p class="text-xs text-gray-500 font-medium mb-3">Récupère tous les services disponibles avec vos tarifs appliqués.</p>
+          <div class="bg-gray-900 rounded-xl p-4 mono text-xs text-gray-300 overflow-x-auto">
+<span class="text-blue-400">action</span> = api_services
+<span class="text-blue-400">key</span> = VOTRE_CLE_API
+          </div>
+          <div class="mt-2 text-[10px] text-gray-400 font-mono">
+            Réponse: {"status":"success", "services":[{"service":"12", "name":"Followers IG", "rate":1.50, ...}]}
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-sm font-black text-gray-900 mb-2">2. Passer une commande</h3>
           <p class="text-xs text-gray-500 font-medium mb-3">Crée une nouvelle commande et débite automatiquement votre wallet.</p>
           <div class="bg-gray-900 rounded-xl p-4 mono text-xs text-gray-300 overflow-x-auto">
 <span class="text-blue-400">action</span> = api_add_order
@@ -222,7 +238,7 @@
         </div>
 
         <div>
-          <h3 class="text-sm font-black text-gray-900 mb-2">2. Vérifier son solde (Wallet)</h3>
+          <h3 class="text-sm font-black text-gray-900 mb-2">3. Vérifier son solde (Wallet)</h3>
           <p class="text-xs text-gray-500 font-medium mb-3">Récupère le solde actuel de votre portefeuille en USD.</p>
           <div class="bg-gray-900 rounded-xl p-4 mono text-xs text-gray-300 overflow-x-auto">
 <span class="text-blue-400">action</span> = api_balance
