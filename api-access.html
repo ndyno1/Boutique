@@ -257,7 +257,7 @@
       </div>
 
       <div class="top-actions">
-        <button onclick="document.getElementById('apiKeyDisplay').scrollIntoView({behavior: 'smooth', block: 'center'});" class="bg-gray-900 text-white px-5 py-2 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-gray-800 transition-colors hidden sm:inline-block mr-2">
+        <button onclick="document.getElementById('apiKeyDisplay') && document.getElementById('apiKeyDisplay').scrollIntoView({behavior: 'smooth', block: 'center'});" class="bg-gray-900 text-white px-5 py-2 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-gray-800 transition-colors hidden sm:inline-block mr-2">
           Révéler ma clé API
         </button>
 
@@ -317,12 +317,14 @@
     </nav>
 
     <div class="p-6 border-t border-gray-100 bg-gray-50">
-      <div id="sideAccountArea"></div>
+      <div id="sideAccountArea">
+        <a href="/login.html" class="btn brand-gradient w-full text-white">Connexion</a>
+      </div>
     </div>
   </aside>
 
   <div class="page">
-    <div class="card p-6 md:p-8 mb-6 bg-[#121417] text-white border-none shadow-2xl">
+    <div class="card p-6 md:p-8 mb-6 bg-[#121417] text-white border-none shadow-2xl" id="apiCardBlock">
       <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
         <div class="w-full">
           <div class="text-[10px] font-black uppercase tracking-widest text-orange-400 mb-2">Accès Développeur / Revendeur</div>
@@ -432,88 +434,55 @@
     }
 
     // =========================
-    // Session Helper Robuste
+    // Initialisation
     // =========================
-    function getSessionRobust_() {
-      const store = window.vfApi?.storage || window.vfStorage;
-      let sessionData = null;
-
-      // 1. Tenter via l'API vf_api
-      try {
-        if (store && typeof store.getSession === 'function') {
-          sessionData = store.getSession();
-        }
-      } catch (e) {}
-
-      // 2. Tenter en direct via localStorage
-      if (!sessionData) {
-        try {
-          const raw = localStorage.getItem("vf_session");
-          if (raw) sessionData = JSON.parse(raw);
-        } catch (e) {}
+    window.addEventListener('load', () => {
+      // On utilise ton API vf_api.js pour récupérer le token et la session
+      let token = "";
+      let email = "";
+      
+      if (window.vfStorage) {
+         token = window.vfStorage.getToken() || "";
+         const s = window.vfStorage.getSession();
+         if (s) email = s.email || s.username || "";
       }
 
-      return sessionData;
-    }
+      const sideArea = document.getElementById("sideAccountArea");
+      const apiKeyDisplay = document.getElementById("apiKeyDisplay");
+      const revealBtn = document.getElementById("revealBtn");
+      const copyBtn = document.getElementById("copyBtn");
+      const apiCardBlock = document.getElementById("apiCardBlock");
 
-    function getTokenRobust_() {
-      const store = window.vfApi?.storage || window.vfStorage;
-      let token = null;
-
-      // 1. Tenter via l'API
-      try {
-        if (store && typeof store.getToken === 'function') {
-          token = store.getToken();
-        }
-      } catch (e) {}
-
-      // 2. Tenter via localStorage
       if (!token) {
-        token = localStorage.getItem("vf_token");
-      }
-
-      // 3. Tenter via session (fallback)
-      if (!token) {
-        const s = getSessionRobust_();
-        if (s && s.token) token = s.token;
-      }
-
-      return token ? String(token).trim() : null;
-    }
-
-    // =========================
-    // Initialisation Page
-    // =========================
-    
-    // On attend que la page ET potentiellement vf_api.js soient prêts
-    window.addEventListener("load", () => {
-      setTimeout(() => {
-        const s = getSessionRobust_();
-        const token = getTokenRobust_();
-        const sideArea = document.getElementById("sideAccountArea");
+        // NON CONNECTÉ : On affiche un message d'erreur SANS rediriger
+        if (sideArea) {
+          sideArea.innerHTML = `<a href="/login.html" class="btn brand-gradient w-full text-white">Connexion / Inscription</a>`;
+        }
         
-        // Sécurité : Redirection SI NON CONNECTÉ
-        if (!token) {
-          window.location.replace("/login.html");
-          return;
+        if (apiCardBlock) {
+          apiCardBlock.innerHTML = `
+            <div class="flex flex-col items-center justify-center w-full py-8 text-center">
+              <div class="bg-white/10 text-orange-400 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+              </div>
+              <h2 class="text-xl md:text-2xl font-black text-white mb-2 tracking-tight">Accès Refusé</h2>
+              <p class="text-sm font-medium text-gray-400 mb-6 max-w-sm">Vous devez être connecté à votre compte pour générer et voir votre clé API.</p>
+              <a href="/login.html" class="btn brand-gradient text-white px-8">Se connecter</a>
+            </div>
+          `;
         }
-
-        // Remplir la section utilisateur du menu latéral
-        if (sideArea && s && s.email) {
+      } else {
+        // CONNECTÉ
+        if (sideArea) {
+          const displayEmail = String(email).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
           sideArea.innerHTML = `
-            <div class="text-sm font-bold text-gray-900 mb-4 truncate">Connecté en tant que<br><span class="text-[#F07E13]">${String(s.email).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}</span></div>
-            <button onclick="localStorage.clear();window.location.replace('/login.html');" class="btn btn-outline w-full bg-white">Se déconnecter</button>
+            <div class="text-sm font-bold text-gray-900 mb-4 truncate">Connecté en tant que<br><span class="text-[#F07E13]">${displayEmail}</span></div>
+            <button onclick="window.vfStorage.clear(); window.location.href='/login.html';" class="btn btn-outline w-full bg-white">Se déconnecter</button>
           `;
         }
 
-        const apiKeyDisplay = document.getElementById("apiKeyDisplay");
-        const revealBtn = document.getElementById("revealBtn");
-        const copyBtn = document.getElementById("copyBtn");
-
-        // Afficher le token masqué par défaut
         if (apiKeyDisplay) apiKeyDisplay.textContent = token;
 
-        // Fonction Révéler / Masquer
         if (revealBtn) {
           revealBtn.addEventListener("click", () => {
             if (apiKeyDisplay.classList.contains("revealed")) {
@@ -526,14 +495,12 @@
           });
         }
 
-        // Fonction Copier
         if (copyBtn) {
           copyBtn.addEventListener("click", async () => {
             try {
               await navigator.clipboard.writeText(token);
               toast("Clé API copiée !");
             } catch (err) {
-              // Fallback
               const ta = document.createElement("textarea");
               ta.value = token;
               document.body.appendChild(ta);
@@ -544,7 +511,7 @@
             }
           });
         }
-      }, 600); // Petit délai pour laisser le temps à vf_api de se charger si besoin
+      }
     });
   </script>
 </body>
