@@ -432,84 +432,119 @@
     }
 
     // =========================
-    // Parse Session
+    // Session Helper Robuste
     // =========================
-    function tryParse_(raw){ try { return JSON.parse(raw); } catch { return null; } }
+    function getSessionRobust_() {
+      const store = window.vfApi?.storage || window.vfStorage;
+      let sessionData = null;
 
-    function getSession_(){
-      const keys = ["vf_session","VF_SESSION","vfSession","VFSession","session","auth","vf_auth"];
-      for(const k of keys){
-        const raw = localStorage.getItem(k);
-        if(!raw) continue;
-        const s = tryParse_(raw);
-        if(s && typeof s === "object") return s;
+      // 1. Tenter via l'API vf_api
+      try {
+        if (store && typeof store.getSession === 'function') {
+          sessionData = store.getSession();
+        }
+      } catch (e) {}
+
+      // 2. Tenter en direct via localStorage
+      if (!sessionData) {
+        try {
+          const raw = localStorage.getItem("vf_session");
+          if (raw) sessionData = JSON.parse(raw);
+        } catch (e) {}
       }
-      return null;
+
+      return sessionData;
+    }
+
+    function getTokenRobust_() {
+      const store = window.vfApi?.storage || window.vfStorage;
+      let token = null;
+
+      // 1. Tenter via l'API
+      try {
+        if (store && typeof store.getToken === 'function') {
+          token = store.getToken();
+        }
+      } catch (e) {}
+
+      // 2. Tenter via localStorage
+      if (!token) {
+        token = localStorage.getItem("vf_token");
+      }
+
+      // 3. Tenter via session (fallback)
+      if (!token) {
+        const s = getSessionRobust_();
+        if (s && s.token) token = s.token;
+      }
+
+      return token ? String(token).trim() : null;
     }
 
     // =========================
-    // Initialisation Page (CORRIGÉE avec délai)
+    // Initialisation Page
     // =========================
-    window.addEventListener("load", async () => {
-      // On donne 500ms à vf_api.js pour s'initialiser s'il est utilisé
-      await new Promise(r => setTimeout(r, 500)); 
-      
-      const s = getSession_();
-      const token = s ? s.token : null;
-      const sideArea = document.getElementById("sideAccountArea");
-      
-      // Sécurité : Redirection SI VRAIMENT non connecté
-      if (!s || !token) {
-        toast("Veuillez vous connecter pour voir votre clé API.");
-        setTimeout(() => { window.location.href = "/login.html"; }, 1500);
-        return;
-      }
+    
+    // On attend que la page ET potentiellement vf_api.js soient prêts
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        const s = getSessionRobust_();
+        const token = getTokenRobust_();
+        const sideArea = document.getElementById("sideAccountArea");
+        
+        // Sécurité : Redirection SI NON CONNECTÉ
+        if (!token) {
+          window.location.replace("/login.html");
+          return;
+        }
 
-      // Remplir la section utilisateur du menu latéral
-      if (sideArea) {
-        sideArea.innerHTML = `
-          <div class="text-sm font-bold text-gray-900 mb-4 truncate">Connecté en tant que<br><span class="text-[#F07E13]">${String(s.email).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}</span></div>
-          <button onclick="localStorage.clear();location.href='/login.html';" class="btn btn-outline w-full bg-white">Se déconnecter</button>
-        `;
-      }
+        // Remplir la section utilisateur du menu latéral
+        if (sideArea && s && s.email) {
+          sideArea.innerHTML = `
+            <div class="text-sm font-bold text-gray-900 mb-4 truncate">Connecté en tant que<br><span class="text-[#F07E13]">${String(s.email).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}</span></div>
+            <button onclick="localStorage.clear();window.location.replace('/login.html');" class="btn btn-outline w-full bg-white">Se déconnecter</button>
+          `;
+        }
 
-      const apiKeyDisplay = document.getElementById("apiKeyDisplay");
-      const revealBtn = document.getElementById("revealBtn");
-      const copyBtn = document.getElementById("copyBtn");
+        const apiKeyDisplay = document.getElementById("apiKeyDisplay");
+        const revealBtn = document.getElementById("revealBtn");
+        const copyBtn = document.getElementById("copyBtn");
 
-      if (apiKeyDisplay) apiKeyDisplay.textContent = token;
+        // Afficher le token masqué par défaut
+        if (apiKeyDisplay) apiKeyDisplay.textContent = token;
 
-      // Fonction Révéler / Masquer
-      if (revealBtn) {
-        revealBtn.addEventListener("click", () => {
-          if (apiKeyDisplay.classList.contains("revealed")) {
-            apiKeyDisplay.classList.remove("revealed");
-            revealBtn.textContent = "Révéler";
-          } else {
-            apiKeyDisplay.classList.add("revealed");
-            revealBtn.textContent = "Masquer";
-          }
-        });
-      }
+        // Fonction Révéler / Masquer
+        if (revealBtn) {
+          revealBtn.addEventListener("click", () => {
+            if (apiKeyDisplay.classList.contains("revealed")) {
+              apiKeyDisplay.classList.remove("revealed");
+              revealBtn.textContent = "Révéler";
+            } else {
+              apiKeyDisplay.classList.add("revealed");
+              revealBtn.textContent = "Masquer";
+            }
+          });
+        }
 
-      // Fonction Copier
-      if (copyBtn) {
-        copyBtn.addEventListener("click", async () => {
-          try {
-            await navigator.clipboard.writeText(token);
-            toast("Clé API copiée !");
-          } catch (err) {
-            // Fallback
-            const ta = document.createElement("textarea");
-            ta.value = token;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand("copy");
-            ta.remove();
-            toast("Clé API copiée !");
-          }
-        });
-      }
+        // Fonction Copier
+        if (copyBtn) {
+          copyBtn.addEventListener("click", async () => {
+            try {
+              await navigator.clipboard.writeText(token);
+              toast("Clé API copiée !");
+            } catch (err) {
+              // Fallback
+              const ta = document.createElement("textarea");
+              ta.value = token;
+              document.body.appendChild(ta);
+              ta.select();
+              document.execCommand("copy");
+              ta.remove();
+              toast("Clé API copiée !");
+            }
+          });
+        }
+      }, 600); // Petit délai pour laisser le temps à vf_api de se charger si besoin
     });
   </script>
 </body>
