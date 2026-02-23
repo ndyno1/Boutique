@@ -2,48 +2,263 @@
 <html lang="fr" class="font-inter">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"/>
   <title>Documentation API | ViralFlowr</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
   <style>
-    body { font-family:'Inter',sans-serif; background:#F3F3F3; color:#201B16; }
+    :root{ color-scheme: light; }
+    html, body{ width:100%; max-width:100%; overflow-x:hidden; overscroll-behavior-x:none; }
+    *{ box-sizing:border-box; }
+
+    body{
+      font-family:'Inter',sans-serif;
+      background:#F3F3F3;
+      color:#201B16;
+      -webkit-text-size-adjust:100%;
+      text-rendering:optimizeLegibility;
+      scroll-behavior:smooth;
+    }
+
+    .page{ width:100%; max-width:980px; margin:0 auto; padding:16px; }
+    @media (min-width: 768px){ .page{ padding:32px; } }
+
+    .text-orange-bsv{ color:#F07E13; }
     .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
-    .mono { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+
+    .card{
+      background:#fff;
+      border:1px solid #eee;
+      border-radius:24px;
+      box-shadow:0 10px 25px rgba(0,0,0,.06);
+      width:100%;
+      max-width:100%;
+      overflow:hidden;
+    }
+
+    .btn{
+      height:44px;
+      border-radius:16px;
+      font-weight:900;
+      font-size:12px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:0 14px;
+      max-width:100%;
+      white-space:nowrap;
+      flex:0 0 auto;
+      -webkit-tap-highlight-color:transparent;
+      transition:.2s;
+    }
+    .btn-outline{ border:1px solid #E5E7EB; background:#fff; color:#111827; }
+    .btn-outline:hover{ border-color:#F07E13; color:#F07E13; }
+
+    .icon-btn{
+      width:44px;
+      height:44px;
+      border-radius:16px;
+      border:1px solid #E5E7EB;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition:.2s;
+      color:#374151;
+      flex:0 0 auto;
+      -webkit-tap-highlight-color:transparent;
+      cursor: pointer;
+    }
+    .icon-btn:hover{ border-color:#F07E13; color:#F07E13; transform:translateY(-1px); }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:18px;
+    }
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace; }
+
+    /* Menu Lateral Styles */
+    #sideMenu {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: translateX(-100%);
+    }
+    #sideMenu.open {
+      transform: translateX(0);
+    }
+    #menuOverlay {
+      transition: opacity 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+    }
+    #menuOverlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .menu-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      border-radius: 16px;
+      color: #1f2937;
+      font-weight: 700;
+      font-size: 15px;
+      transition: all 0.2s;
+    }
+    .menu-link svg { color: #9ca3af; transition: color 0.2s; }
+    .menu-link:hover { background: #f8fafc; color: #F07E13; transform: translateX(4px); }
+    .menu-link:hover svg { color: #F07E13; }
+
+    @media (max-width:420px){
+      .icon-btn{ width:36px;height:36px;border-radius:12px; }
+    }
   </style>
 </head>
-<body class="p-4 md:p-8">
 
-  <div class="max-w-4xl mx-auto">
-    <div class="flex items-center justify-between mb-8">
-      <a href="index.html" class="text-2xl font-black tracking-tighter">
-        Viral<span class="text-[#F07E13]">Flowr</span> API
-      </a>
-      <a href="wallet.html" class="bg-gray-900 text-white px-5 py-2 rounded-xl font-bold text-xs uppercase tracking-wider">Obtenir ma clé API</a>
+<body>
+
+  <div class="bg-gray-900 text-white py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-center">
+    MARKETPLACE PROFESSIONNELLE • LIVRAISON INTERNATIONALE • PAIEMENT SÉCURISÉ
+  </div>
+
+  <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-100 shadow-sm backdrop-blur-md bg-white/95">
+    <div class="max-w-[1280px] mx-auto px-4 h-16 flex items-center justify-between gap-2 sm:gap-4">
+      
+      <div class="flex items-center gap-3">
+        <button onclick="toggleMenu()" class="icon-btn border-none bg-transparent hover:bg-gray-50 !shadow-none" aria-label="Menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        
+        <a href="/index.html" class="inline-flex items-center gap-2 brand-link" aria-label="ViralFlowr">
+          <span class="text-2xl font-black tracking-tighter text-gray-900">
+            Viral<span class="text-orange-bsv">Flowr</span>
+          </span>
+        </a>
+      </div>
+
+      <div class="top-actions">
+        <a href="/api-access.html" class="bg-gray-900 text-white px-4 md:px-5 py-2.5 rounded-xl font-bold text-[10px] md:text-xs uppercase tracking-wider hover:bg-gray-800 transition-colors">
+          Obtenir ma clé API
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div id="menuOverlay" onclick="toggleMenu()" class="fixed inset-0 bg-black/40 z-[60] backdrop-blur-sm"></div>
+
+  <aside id="sideMenu" class="fixed top-0 left-0 h-full w-[300px] bg-white shadow-2xl z-[70] flex flex-col overflow-y-auto">
+    <div class="p-6 flex items-center justify-between border-b border-gray-100">
+      <div class="text-2xl font-black tracking-tighter text-gray-900">
+        Viral<span class="text-[#F07E13]">Flowr</span>
+      </div>
+      <button onclick="toggleMenu()" class="text-gray-400 hover:text-gray-900 transition-colors bg-gray-50 p-2 rounded-xl">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
     </div>
 
-    <div class="bg-white rounded-[24px] shadow-lg p-6 md:p-10 border border-gray-100">
-      <h1 class="text-2xl font-black mb-2">Documentation pour les Revendeurs</h1>
-      <p class="text-gray-500 mb-8">Automatisez vos commandes en connectant votre site ou votre propre panel SMM directement à ViralFlows.</p>
+    <nav class="flex-1 p-4 flex flex-col gap-1">
+      <div class="text-[10px] font-black uppercase tracking-widest text-gray-400 px-4 mb-2 mt-2">Général</div>
+      <a href="/index.html" class="menu-link">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        Boutique
+      </a>
+      <a href="/wallet.html" class="menu-link">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2ZM16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2M20 12h-4a2 2 0 0 0 0 4h4"/></svg>
+        Mon Portefeuille
+      </a>
+      <a href="/transactions.html" class="menu-link">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>
+        Mes Commandes
+      </a>
+      
+      <div class="h-px bg-gray-100 my-4 mx-4"></div>
+      <div class="text-[10px] font-black uppercase tracking-widest text-gray-400 px-4 mb-2">Développeurs & Infos</div>
 
-      <div class="mb-8">
+      <a href="/api-access.html" class="menu-link">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+        Ma Clé API
+      </a>
+      <a href="/api.html" class="menu-link">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        Documentation
+      </a>
+      <a href="/politique.html" class="menu-link">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        Politique de règlement
+      </a>
+    </nav>
+  </aside>
+
+  <div class="page">
+    <div class="mb-8">
+      <h1 class="text-3xl md:text-4xl font-black tracking-tight mb-2 text-gray-900">Documentation API</h1>
+      <p class="text-gray-500 font-medium">Automatisez vos commandes en connectant votre site ou votre panel SMM directement à ViralFlows.</p>
+    </div>
+
+    <div class="card p-6 md:p-10 border border-gray-100">
+
+      <div class="mb-10">
         <h2 class="text-sm font-black uppercase text-gray-400 tracking-widest mb-3">URL de Base (Endpoint)</h2>
-        <div class="bg-gray-900 text-green-400 p-4 rounded-xl mono text-xs overflow-x-auto">
-          POST https://script.google.com/macros/s/TON_ID_DE_SCRIPT/exec
+        <div class="bg-gray-900 text-green-400 p-4 rounded-xl mono text-xs md:text-sm overflow-x-auto shadow-inner">
+          POST https://script.google.com/macros/s/<span class="text-orange-400 font-bold">AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H</span>/exec
         </div>
       </div>
 
-      <div class="mb-8">
+      <div class="mb-10">
         <h2 class="text-sm font-black uppercase text-gray-400 tracking-widest mb-3">Authentification</h2>
-        <p class="text-sm text-gray-700 mb-2">Tous les appels nécessitent votre clé API passée en paramètre <code class="bg-gray-100 px-1 rounded text-red-500">key</code>.</p>
+        <p class="text-sm text-gray-700 font-medium bg-gray-50 p-4 rounded-xl border border-gray-100">Tous les appels nécessitent votre clé API passée en paramètre <code class="bg-gray-200 px-2 py-1 rounded text-red-500 font-bold mono">key</code>.</p>
       </div>
 
-      <div class="mb-8 border-t pt-6">
-        <h2 class="text-lg font-black mb-3 text-gray-900">1. Ajouter une commande</h2>
-        <p class="text-sm text-gray-600 mb-4">Passez une commande pour un lien spécifique.</p>
+      <div class="mb-10 border-t border-gray-100 pt-8">
+        <h2 class="text-xl font-black mb-3 text-gray-900">1. Lister les services</h2>
+        <p class="text-sm text-gray-600 mb-4">Récupère la liste de tous les services disponibles avec vos tarifs revendeur appliqués.</p>
         
-        <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 mono text-xs mb-4">
-          <span class="font-bold text-gray-700">Paramètres requis :</span><br/>
+        <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 mono text-xs md:text-sm mb-4">
+          <span class="font-bold text-gray-700 uppercase tracking-wider text-[10px]">Paramètres requis :</span><br/>
+          <span class="text-blue-600">action</span> = api_services<br/>
+          <span class="text-blue-600">key</span> = VOTRE_CLE_API
+        </div>
+
+        <h3 class="text-[10px] font-bold uppercase text-gray-400 mb-2 tracking-widest">Réponse JSON Succès</h3>
+        <pre class="bg-[#121417] text-gray-300 p-4 rounded-xl mono text-xs overflow-x-auto">
+{
+  "status": "success",
+  "services": [
+    {
+      "service": "12",
+      "name": "Abonnés Instagram Garantis",
+      "category": "Boost SMM",
+      "rate": 1.50,
+      "min": "100",
+      "max": "10000"
+    }
+  ]
+}</pre>
+      </div>
+
+      <div class="mb-10 border-t border-gray-100 pt-8">
+        <h2 class="text-xl font-black mb-3 text-gray-900">2. Ajouter une commande</h2>
+        <p class="text-sm text-gray-600 mb-4">Passez une commande pour un lien spécifique. Le montant sera déduit de votre Wallet.</p>
+        
+        <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 mono text-xs md:text-sm mb-4">
+          <span class="font-bold text-gray-700 uppercase tracking-wider text-[10px]">Paramètres requis :</span><br/>
           <span class="text-blue-600">action</span> = api_add_order<br/>
           <span class="text-blue-600">key</span> = VOTRE_CLE_API<br/>
           <span class="text-blue-600">service</span> = ID_DU_SERVICE<br/>
@@ -51,8 +266,8 @@
           <span class="text-blue-600">quantity</span> = 1000
         </div>
 
-        <h3 class="text-xs font-bold uppercase text-gray-400 mb-2">Réponse JSON Succès</h3>
-        <pre class="bg-gray-900 text-gray-300 p-4 rounded-xl mono text-xs overflow-x-auto">
+        <h3 class="text-[10px] font-bold uppercase text-gray-400 mb-2 tracking-widest">Réponse JSON Succès</h3>
+        <pre class="bg-[#121417] text-gray-300 p-4 rounded-xl mono text-xs overflow-x-auto">
 {
   "status": "success",
   "order_id": "API-1708123456",
@@ -60,13 +275,39 @@
 }</pre>
       </div>
 
-      <div class="mb-8 border-t pt-6">
-        <h2 class="text-lg font-black mb-3 text-gray-900">2. Voir son solde (Wallet)</h2>
-        <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 mono text-xs mb-4">
+      <div class="mb-10 border-t border-gray-100 pt-8">
+        <h2 class="text-xl font-black mb-3 text-gray-900">3. Statut d'une commande</h2>
+        <p class="text-sm text-gray-600 mb-4">Vérifie l'état d'une commande passée via l'API.</p>
+        
+        <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 mono text-xs md:text-sm mb-4">
+          <span class="font-bold text-gray-700 uppercase tracking-wider text-[10px]">Paramètres requis :</span><br/>
+          <span class="text-blue-600">action</span> = api_status<br/>
+          <span class="text-blue-600">key</span> = VOTRE_CLE_API<br/>
+          <span class="text-blue-600">order_id</span> = ID_DE_LA_COMMANDE
+        </div>
+
+        <h3 class="text-[10px] font-bold uppercase text-gray-400 mb-2 tracking-widest">Réponse JSON Succès</h3>
+        <pre class="bg-[#121417] text-gray-300 p-4 rounded-xl mono text-xs overflow-x-auto">
+{
+  "status": "success",
+  "order_id": "API-1708123456",
+  "order_status": "En traitement",
+  "remains": 0
+}</pre>
+      </div>
+
+      <div class="border-t border-gray-100 pt-8">
+        <h2 class="text-xl font-black mb-3 text-gray-900">4. Voir son solde (Wallet)</h2>
+        <p class="text-sm text-gray-600 mb-4">Récupère le solde actuel de votre portefeuille.</p>
+
+        <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 mono text-xs md:text-sm mb-4">
+          <span class="font-bold text-gray-700 uppercase tracking-wider text-[10px]">Paramètres requis :</span><br/>
           <span class="text-blue-600">action</span> = api_balance<br/>
           <span class="text-blue-600">key</span> = VOTRE_CLE_API
         </div>
-        <pre class="bg-gray-900 text-gray-300 p-4 rounded-xl mono text-xs overflow-x-auto">
+        
+        <h3 class="text-[10px] font-bold uppercase text-gray-400 mb-2 tracking-widest">Réponse JSON Succès</h3>
+        <pre class="bg-[#121417] text-gray-300 p-4 rounded-xl mono text-xs overflow-x-auto">
 {
   "status": "success",
   "balance": 145.50,
@@ -75,7 +316,19 @@
       </div>
 
     </div>
+
+    <div class="mt-12 text-center pb-8">
+      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">© 2026 ViralFlowr • Documentation Officielle</p>
+    </div>
   </div>
 
+  <script>
+    function toggleMenu() {
+      const menu = document.getElementById('sideMenu');
+      const overlay = document.getElementById('menuOverlay');
+      menu.classList.toggle('open');
+      overlay.classList.toggle('open');
+    }
+  </script>
 </body>
 </html>
