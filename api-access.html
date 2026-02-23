@@ -2,6 +2,7 @@
 <html lang="fr" class="font-inter">
 <head>
   <script>
+    // Redirection stricte vers le domaine canonique UNIQUEMENT si on n'est pas sur le panel Google Apps Script
     (function () {
       const ref = document.referrer || "";
       const inAppsScriptPanel = /script\.googleusercontent\.com|script\.google\.com/i.test(ref);
@@ -38,24 +39,6 @@
   <link rel="icon" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
 
-  <script>
-    const inAppsScriptPanel =
-      !!window.__VF_IN_APPS_SCRIPT_PANEL ||
-      /script\.googleusercontent\.com|script\.google\.com/i.test(document.referrer || "");
-
-    window.VF_CONFIG = {
-      scriptUrl: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec",
-      timeoutMs: 20000,
-      debug: false,
-      postMode: "auto",
-      proxyUrl: "/vf_proxy",
-      postMessageTargetOrigin: inAppsScriptPanel ? "*" : location.origin,
-      cookieDomain: ".viralflowr.com",
-      cookieTokenKey: "vf_token"
-    };
-  </script>
-
-  <script src="/vf_api.js?v=200" defer></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
@@ -318,8 +301,7 @@
 
     <div class="p-6 border-t border-gray-100 bg-gray-50">
       <div id="sideAccountArea">
-        <a href="/login.html" class="btn brand-gradient w-full text-white">Connexion</a>
-      </div>
+        </div>
     </div>
   </aside>
 
@@ -434,18 +416,36 @@
     }
 
     // =========================
-    // Initialisation
+    // Call API Silencieux (Enregistrement en DB)
     // =========================
-    window.addEventListener('load', () => {
-      // On utilise ton API vf_api.js pour récupérer le token et la session
+    function markApiGenerated(token) {
+      if (!token) return;
+      const scriptUrl = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
+      const script = document.createElement("script");
+      const cb = "cb_" + Date.now();
+      window[cb] = function(res) { delete window[cb]; script.remove(); };
+      script.src = scriptUrl + "?action=mark_api_generated&token=" + encodeURIComponent(token) + "&callback=" + cb;
+      document.body.appendChild(script);
+    }
+
+    // =========================
+    // Initialisation SANS DÉCONNEXION (Read-only)
+    // =========================
+    document.addEventListener("DOMContentLoaded", () => {
+      
+      // Lecture DIRECTE du localStorage SANS interaction avec vf_api.js
       let token = "";
       let email = "";
       
-      if (window.vfStorage) {
-         token = window.vfStorage.getToken() || "";
-         const s = window.vfStorage.getSession();
-         if (s) email = s.email || s.username || "";
-      }
+      try {
+        token = localStorage.getItem("vf_token") || "";
+        const rawSession = localStorage.getItem("vf_session");
+        if (rawSession) {
+          const s = JSON.parse(rawSession);
+          if (!token && s.token) token = s.token;
+          email = s.email || s.username || "";
+        }
+      } catch(e) {}
 
       const sideArea = document.getElementById("sideAccountArea");
       const apiKeyDisplay = document.getElementById("apiKeyDisplay");
@@ -477,11 +477,14 @@
           const displayEmail = String(email).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
           sideArea.innerHTML = `
             <div class="text-sm font-bold text-gray-900 mb-4 truncate">Connecté en tant que<br><span class="text-[#F07E13]">${displayEmail}</span></div>
-            <button onclick="window.vfStorage.clear(); window.location.href='/login.html';" class="btn btn-outline w-full bg-white">Se déconnecter</button>
+            <button onclick="localStorage.removeItem('vf_token'); localStorage.removeItem('vf_session'); window.location.href='/login.html';" class="btn btn-outline w-full bg-white">Se déconnecter</button>
           `;
         }
 
         if (apiKeyDisplay) apiKeyDisplay.textContent = token;
+
+        // On déclenche l'appel backend de manière totalement asynchrone et invisible
+        setTimeout(() => { markApiGenerated(token); }, 1000);
 
         if (revealBtn) {
           revealBtn.addEventListener("click", () => {
