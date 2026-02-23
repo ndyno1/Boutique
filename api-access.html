@@ -74,8 +74,9 @@
       color:#374151;
       flex:0 0 auto;
       -webkit-tap-highlight-color:transparent;
+      cursor: pointer;
     }
-    .icon-btn:hover{ transform:translateY(-1px); border-color:#F07E13; color:#F07E13; }
+    .icon-btn:hover{ border-color:#F07E13; color:#F07E13; transform:translateY(-1px); }
 
     .topbar{
       display:flex;
@@ -132,6 +133,40 @@
 
     .blur-text { filter: blur(5px); user-select: none; transition: filter 0.3s ease; }
     .blur-text.revealed { filter: blur(0); user-select: auto; }
+
+    /* Menu Lateral Styles */
+    #sideMenu {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: translateX(-100%);
+    }
+    #sideMenu.open {
+      transform: translateX(0);
+    }
+    #menuOverlay {
+      transition: opacity 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+    }
+    #menuOverlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .menu-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      color: #374151;
+      font-weight: 700;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .menu-link:hover {
+      background: #F8FAFC;
+      color: #F07E13;
+      transform: translateX(4px);
+    }
   </style>
 </head>
 
@@ -139,11 +174,21 @@
   <div class="page">
 
     <div class="topbar">
-      <a href="/index.html" class="inline-flex items-center gap-2 brand-link" aria-label="ViralFlowr">
-        <span class="text-2xl font-black tracking-tighter safe-text">
-          Viral<span class="text-orange-bsv">Flowr</span>
-        </span>
-      </a>
+      <div class="flex items-center gap-3">
+        <button onclick="toggleMenu()" class="icon-btn border-none bg-transparent hover:bg-gray-50 !shadow-none" aria-label="Menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        
+        <a href="/index.html" class="inline-flex items-center gap-2 brand-link" aria-label="ViralFlowr">
+          <span class="text-2xl font-black tracking-tighter safe-text">
+            Viral<span class="text-orange-bsv">Flowr</span>
+          </span>
+        </a>
+      </div>
 
       <div class="top-actions">
         <a href="/index.html" class="icon-btn sm:hidden" title="Boutique" aria-label="Boutique">
@@ -171,6 +216,54 @@
         </button>
       </div>
     </div>
+
+    <div id="menuOverlay" onclick="toggleMenu()" class="fixed inset-0 bg-black/40 z-[60] backdrop-blur-sm"></div>
+
+    <aside id="sideMenu" class="fixed top-0 left-0 h-full w-[280px] bg-white shadow-2xl z-[70] flex flex-col overflow-y-auto">
+      <div class="p-6 flex items-center justify-between border-b border-gray-100">
+        <div class="text-2xl font-black tracking-tighter text-gray-900">
+          Viral<span class="text-[#F07E13]">Flowr</span>
+        </div>
+        <button onclick="toggleMenu()" class="text-gray-400 hover:text-gray-900 transition-colors">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <nav class="flex-1 p-4 flex flex-col gap-2">
+        <a href="/index.html" class="menu-link">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          Boutique
+        </a>
+        <a href="/wallet.html" class="menu-link">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2ZM16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2M20 12h-4a2 2 0 0 0 0 4h4"/></svg>
+          Mon Portefeuille
+        </a>
+        <a href="/transactions.html" class="menu-link">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>
+          Mes Commandes
+        </a>
+        
+        <div class="h-px bg-gray-100 my-2"></div>
+        
+        <a href="/api-access.html" class="menu-link">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          Accès API (Revendeurs)
+        </a>
+        
+        <a href="/politique.html" class="menu-link">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          Politique de règlement
+        </a>
+        <a href="/about.html" class="menu-link">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          À propos de nous
+        </a>
+      </nav>
+
+      <div class="p-6 border-t border-gray-100">
+        <div id="sideAccountArea"></div>
+      </div>
+    </aside>
 
     <div class="card p-6 md:p-8 mb-6 bg-[#121417] text-white border-none shadow-2xl">
       <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
@@ -272,6 +365,16 @@
     }
 
     // =========================
+    // Menu Toggle
+    // =========================
+    function toggleMenu() {
+      const menu = document.getElementById('sideMenu');
+      const overlay = document.getElementById('menuOverlay');
+      menu.classList.toggle('open');
+      overlay.classList.toggle('open');
+    }
+
+    // =========================
     // Parse Session
     // =========================
     function tryParse_(raw){ try { return JSON.parse(raw); } catch { return null; } }
@@ -292,11 +395,20 @@
     // =========================
     document.addEventListener("DOMContentLoaded", () => {
       const s = getSession_();
+      const sideArea = document.getElementById("sideAccountArea");
       
       // Sécurité : Redirection si non connecté
       if (!s || !s.token) {
         window.location.href = "/login.html";
         return;
+      }
+
+      // Remplir la section utilisateur du menu latéral
+      if (sideArea) {
+        sideArea.innerHTML = `
+          <div class="text-sm font-bold text-gray-900 mb-4 truncate">Connecté en tant que<br><span class="text-[#F07E13]">${String(s.email).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}</span></div>
+          <button onclick="localStorage.clear();location.href='/login.html';" class="btn btn-outline w-full">Se déconnecter</button>
+        `;
       }
 
       const apiKeyDisplay = document.getElementById("apiKeyDisplay");
