@@ -18,12 +18,12 @@
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ViralFlowr | Connexion Rapide</title>
+  <title>ViralFlowr | Connexion</title>
 
   <script>
     window.VF_CONFIG = {
       scriptUrl: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec",
-      timeoutMs: 25000,
+      timeoutMs: 60000, // Augmenté à 60s pour éviter le "Délai dépassé"
       postMode: "iframe" 
     };
   </script>
@@ -36,7 +36,6 @@
     body{ font-family:Inter,system-ui,sans-serif; background:#F8FAFC; }
     .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
     .input-field { transition: all 0.2s; border: 1px solid #E5E7EB; }
-    .is-valid { border-color: #10B981 !important; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1); }
     .animate-spin { animation: spin 1s linear infinite; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   </style>
@@ -79,7 +78,7 @@
     const $ = (id) => document.getElementById(id);
     let cachedIp = "0.0.0.0";
 
-    /* 🚀 RÉCUPÉRATION IP EN ARRIÈRE-PLAN (ULTRA RAPIDE) */
+    /* 🚀 RÉCUPÉRATION IP EN ARRIÈRE-PLAN */
     (async function prefetchIp() {
       try {
         const res = await fetch('https://api.ipify.org?format=json');
@@ -105,13 +104,11 @@
         const email = $("email").value.trim();
         const password = $("password").value;
 
-        // UI Loading
         btn.disabled = true;
         btn.innerHTML = `<svg class="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" viewBox="0 0 24 24"></svg> CONNEXION...`;
-        showMsg("ok", "Vérification de sécurité...");
+        showMsg("ok", "Vérification de sécurité en cours...");
 
         try {
-          // On utilise l'IP déjà chargée en mémoire
           const res = await window.vfApi.login({ 
             email: email, 
             password: password, 
@@ -119,15 +116,18 @@
           });
           
           if (res && res.ok === true) {
-            showMsg("ok", "Succès ! Bienvenue sur ViralFlowr.");
-            setTimeout(() => location.replace("index.html"), 500);
+            showMsg("ok", "Connexion réussie ! Redirection...");
+            // Nettoyage des gardes de redirection avant de partir
+            localStorage.removeItem("vf_login_redirect_guard");
+            setTimeout(() => location.replace("index.html"), 600);
           } else {
-            showMsg("err", res?.error || "Identifiants incorrects.");
+            showMsg("err", res?.error || "Identifiants incorrects ou compte inexistant.");
             btn.disabled = false;
             btn.textContent = "Se connecter";
           }
         } catch(err) {
-          showMsg("err", "Délai dépassé. Veuillez réessayer.");
+          // Si on tombe ici, c'est le timeout de 60s
+          showMsg("err", "Le serveur met trop de temps à répondre. Vérifie ta connexion ou réessaie.");
           btn.disabled = false;
           btn.textContent = "Se connecter";
         }
