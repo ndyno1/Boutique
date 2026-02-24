@@ -23,7 +23,7 @@
   <script>
     window.VF_CONFIG = {
       scriptUrl: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec",
-      timeoutMs: 60000, // Augmenté à 60s pour éviter le "Délai dépassé"
+      timeoutMs: 60000, 
       postMode: "iframe" 
     };
   </script>
@@ -53,7 +53,7 @@
     <form id="loginForm" class="mt-5 space-y-4">
       <div>
         <label class="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Email</label>
-        <input id="email" type="email" required class="input-field mt-1 h-11 w-full px-4 rounded-2xl bg-white text-sm font-semibold outline-none focus:ring-2 focus:ring-[#F07E13]" placeholder="ex: test@gmail.com" />
+        <input id="email" type="email" required class="input-field mt-1 h-11 w-full px-4 rounded-2xl bg-white text-sm font-semibold outline-none focus:ring-2 focus:ring-[#F07E13]" placeholder="ex: patrick@gmail.com" />
       </div>
 
       <div>
@@ -79,13 +79,14 @@
     let cachedIp = "0.0.0.0";
 
     /* 🚀 RÉCUPÉRATION IP EN ARRIÈRE-PLAN */
-    (async function prefetchIp() {
+    async function fetchIp() {
       try {
         const res = await fetch('https://api.ipify.org?format=json');
         const data = await res.json();
         cachedIp = data.ip;
       } catch (e) { cachedIp = "IP_TIMEOUT"; }
-    })();
+    }
+    fetchIp();
 
     function showMsg(type, text){
       const box = $("msg");
@@ -104,9 +105,13 @@
         const email = $("email").value.trim();
         const password = $("password").value;
 
+        // UI Loading
         btn.disabled = true;
         btn.innerHTML = `<svg class="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" viewBox="0 0 24 24"></svg> CONNEXION...`;
         showMsg("ok", "Vérification de sécurité en cours...");
+
+        // Si l'IP n'est pas encore là, on refait une tentative rapide
+        if (cachedIp === "0.0.0.0") await fetchIp();
 
         try {
           const res = await window.vfApi.login({ 
@@ -116,8 +121,8 @@
           });
           
           if (res && res.ok === true) {
-            showMsg("ok", "Connexion réussie ! Redirection...");
-            // Nettoyage des gardes de redirection avant de partir
+            showMsg("ok", "Succès ! Bienvenue sur ViralFlowr.");
+            // Nettoyage avant redirection
             localStorage.removeItem("vf_login_redirect_guard");
             setTimeout(() => location.replace("index.html"), 600);
           } else {
@@ -126,8 +131,8 @@
             btn.textContent = "Se connecter";
           }
         } catch(err) {
-          // Si on tombe ici, c'est le timeout de 60s
-          showMsg("err", "Le serveur met trop de temps à répondre. Vérifie ta connexion ou réessaie.");
+          console.error(err);
+          showMsg("err", "Le serveur ne répond pas. Vérifie ton code Apps Script ou l'URL.");
           btn.disabled = false;
           btn.textContent = "Se connecter";
         }
