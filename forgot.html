@@ -75,6 +75,18 @@
   <script>
     const $ = (id) => document.getElementById(id);
     
+    // --- Fonction IP (Sécurité) ---
+    async function getUserIp() {
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 3000);
+        const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
+        const data = await res.json();
+        clearTimeout(tid);
+        return data.ip;
+      } catch (e) { return "IP_TIMEOUT"; }
+    }
+
     function showMsg(type, text){
       const box = $("msg");
       box.classList.remove("hidden");
@@ -83,56 +95,75 @@
       box.textContent = text;
     }
 
-    // --- ENVOI DU CODE (ÉTAPE 1) ---
-    $("step1Form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = $("email").value.trim();
-      $("btn1").disabled = true;
-      showMsg("ok", "Recherche de ton compte...");
+    window.addEventListener("DOMContentLoaded", () => {
+      
+      // --- ENVOI DU CODE (ÉTAPE 1) ---
+      $("step1Form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        if (!window.vfApi) {
+          showMsg("err", "L'API n'est pas encore prête. Attends 2 secondes.");
+          return;
+        }
 
-      try {
-        const res = await window.vfApi.post({ action: "forgot_password", email: email });
-        if (res.ok) {
-          showMsg("ok", "Code envoyé ! Vérifie tes emails (et spams).");
-          $("step1Form").classList.add("hidden");
-          $("step2Form").classList.remove("hidden");
-          $("step-title").textContent = "Saisis ton code secret";
-        } else {
-          showMsg("err", res.error || "Erreur lors de l'envoi.");
+        const email = $("email").value.trim();
+        const user_ip = await getUserIp();
+        
+        $("btn1").disabled = true;
+        showMsg("ok", "Recherche de ton compte...");
+
+        try {
+          const res = await window.vfApi.post({ 
+            action: "forgot_password", 
+            email: email,
+            user_ip: user_ip 
+          });
+          
+          if (res.ok) {
+            showMsg("ok", "Code envoyé ! Vérifie tes emails (et spams).");
+            $("step1Form").classList.add("hidden");
+            $("step2Form").classList.remove("hidden");
+            $("step-title").textContent = "Saisis ton code secret";
+          } else {
+            showMsg("err", res.error || "Erreur lors de l'envoi.");
+            $("btn1").disabled = false;
+          }
+        } catch (err) {
+          showMsg("err", "Erreur réseau. Vérifie ta connexion.");
           $("btn1").disabled = false;
         }
-      } catch (err) {
-        showMsg("err", "Erreur réseau. Réessaie.");
-        $("btn1").disabled = false;
-      }
-    });
+      });
 
-    // --- CHANGEMENT MDP (ÉTAPE 2) ---
-    $("step2Form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const data = {
-        action: "reset_password",
-        email: $("email").value.trim(),
-        code: $("code").value.trim(),
-        new_password: $("new_password").value
-      };
+      // --- CHANGEMENT MDP (ÉTAPE 2) ---
+      $("step2Form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        const user_ip = await getUserIp();
+        const data = {
+          action: "reset_password",
+          email: $("email").value.trim(),
+          code: $("code").value.trim(),
+          new_password: $("new_password").value,
+          user_ip: user_ip
+        };
 
-      $("btn2").disabled = true;
-      showMsg("ok", "Vérification du code...");
+        $("btn2").disabled = true;
+        showMsg("ok", "Vérification du code...");
 
-      try {
-        const res = await window.vfApi.post(data);
-        if (res.ok) {
-          showMsg("ok", "Mot de passe modifié ! Redirection...");
-          setTimeout(() => location.href = "login.html", 2000);
-        } else {
-          showMsg("err", res.error || "Code invalide ou expiré.");
+        try {
+          const res = await window.vfApi.post(data);
+          if (res.ok) {
+            showMsg("ok", "Mot de passe modifié ! Redirection...");
+            setTimeout(() => location.href = "login.html", 2000);
+          } else {
+            showMsg("err", res.error || "Code invalide ou expiré.");
+            $("btn2").disabled = false;
+          }
+        } catch (err) {
+          showMsg("err", "Erreur réseau.");
           $("btn2").disabled = false;
         }
-      } catch (err) {
-        showMsg("err", "Erreur réseau.");
-        $("btn2").disabled = false;
-      }
+      });
     });
   </script>
 </body>
