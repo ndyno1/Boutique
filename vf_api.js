@@ -1,7 +1,7 @@
 /** ===========================
- * VF API CLIENT — V18.8 (HYBRIDE RAPIDE)
- * - GET (Produits) => JSONP (Instantané)
- * - POST (Login/Register) => Iframe (Sécurisé)
+ * VF API CLIENT — V18.9 (FORCE PRODUITS)
+ * - Supporte le format JSONP et le format Iframe
+ * - Compatible ViralFlowr Index
  * =========================== */
 
 (function initVfBridge(){
@@ -21,24 +21,7 @@
 
   const pending = new Map();
 
-  // --- MÉTHODE 1 : JSONP (Pour récupérer les produits sans bloquer) ---
-  function vfJsonp(action, params = {}) {
-    return new Promise((resolve, reject) => {
-      const cb = "cb_" + Math.floor(Math.random() * 1e6);
-      window[cb] = (data) => {
-        resolve(data);
-        delete window[cb];
-        document.head.removeChild(script);
-      };
-      const qs = new URLSearchParams({ action, callback: cb, ...params }).toString();
-      const script = document.createElement("script");
-      script.src = VF_SCRIPT_URL + (VF_SCRIPT_URL.includes("?") ? "&" : "?") + qs;
-      script.onerror = () => reject(new Error("Erreur chargement produits"));
-      document.head.appendChild(script);
-    });
-  }
-
-  // --- MÉTHODE 2 : IFRAME (Pour Login / Register / Wallet) ---
+  // --- ÉCOUTEUR DE RETOUR (Pour Login et Wallet) ---
   window.addEventListener("message", (e) => {
     let m = e.data;
     if (typeof m === "string") { try { m = JSON.parse(m); } catch(err) { return; } }
@@ -52,6 +35,7 @@
     }
   });
 
+  // --- MÉTHODE POST (Iframe) ---
   function vfPost(payload = {}) {
     return new Promise((resolve, reject) => {
       const rid = "REQ-" + Date.now();
@@ -61,7 +45,7 @@
       document.body.appendChild(ifr);
       const timer = setTimeout(() => {
         if (pending.has(rid)) { reject(new Error("DÉLAI DÉPASSÉ")); pending.delete(rid); }
-      }, 30000);
+      }, 35000);
       const form = document.createElement("form");
       form.method = "POST"; form.action = VF_SCRIPT_URL; form.target = ifr.name;
       const add = (k, v) => {
@@ -73,16 +57,38 @@
       pending.set(rid, { resolve, timer, ifr });
       document.body.appendChild(form);
       form.submit();
-      setTimeout(() => { if(form.parentNode) form.parentNode.removeChild(form); }, 1000);
     });
   }
 
-  // --- INTERFACE PUBLIQUE (Compatible avec index.html) ---
+  // --- MÉTHODE GET (JSONP - Pour les Produits) ---
+  function vfJsonp(action, params = {}) {
+    return new Promise((resolve) => {
+      const cb = "cb_" + Math.floor(Math.random() * 1e6);
+      window[cb] = (data) => {
+        resolve(data);
+        try { delete window[cb]; } catch(e){}
+      };
+      const script = document.createElement("script");
+      const qs = new URLSearchParams({ action, callback: cb, ...params }).toString();
+      script.src = VF_SCRIPT_URL + (VF_SCRIPT_URL.includes("?") ? "&" : "?") + qs;
+      script.onerror = () => resolve({ ok: false, error: "SCRIPT_LOAD_ERR" });
+      document.head.appendChild(script);
+    });
+  }
+
+  // --- INTERFACE UNIVERSELLE ---
   window.vfApi = {
-    // Les produits utilisent JSONP (Très rapide, pas d'erreur réseau)
-    getProducts: (params) => vfJsonp("get_products", params),
-    
-    // Le login utilise Iframe (Sécurisé)
+    // Force la récupération des produits
+    getProducts: async (params) => {
+      // On tente d'abord en JSONP (doGet) car c'est le plus probable pour les produits
+      let res = await vfJsonp("get_products", params);
+      // Si ça échoue ou renvoie vide, on tente en POST (doPost)
+      if (!res || (Array.isArray(res) && res.length === 0)) {
+        res = await vfPost({ action: "get_products", ...params });
+      }
+      return res;
+    },
+
     login: async (data) => {
       const res = await vfPost({ action: "login", ...data });
       if (res.ok && res.token) { 
@@ -91,10 +97,11 @@
       }
       return res;
     },
-    
+
     walletBalance: (params) => vfPost({ action: "db_wallet_balance", ...params }),
     storage: vfStorage,
     post: (data) => vfPost(data)
   };
 
+  window.vfStorage = vfStorage;
 })();
