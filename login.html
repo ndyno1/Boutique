@@ -2,53 +2,33 @@
 <html lang="fr">
 <head>
   <script>
+    /* REDIRECTION CANONIQUE & PROTECTION IFRAME */
     (function () {
       const ref = document.referrer || "";
       const inAppsScriptPanel = /script\.googleusercontent\.com|script\.google\.com/i.test(ref);
       window.__VF_IN_APPS_SCRIPT_PANEL = inAppsScriptPanel;
       if (inAppsScriptPanel) return;
-
       const host = (location.hostname || "").toLowerCase();
-      const isWWW = host === "www.viralflowr.com";
-      const isApex = host === "viralflowr.com";
-      const isTarget = isWWW || isApex;
-      if (!isTarget) return;
-
       const CANON_HOST = "viralflowr.com"; 
-      if (host === CANON_HOST) return;
-
-      const GUARD_KEY = "vf_canon_redirect_guard";
-      const now = Date.now();
-
-      try {
-        const guard = JSON.parse(sessionStorage.getItem(GUARD_KEY) || "null");
-        if (guard && (now - guard.ts) < 15000) return;
-        sessionStorage.setItem(GUARD_KEY, JSON.stringify({ ts: now, from: host, to: CANON_HOST }));
-      } catch (_) {}
-
-      location.replace("https://" + CANON_HOST + location.pathname + location.search + location.hash);
+      if (host !== CANON_HOST && (host === "www.viralflowr.com" || host === "viralflowr.com")) {
+        location.replace("https://" + CANON_HOST + location.pathname + location.search + location.hash);
+      }
     })();
   </script>
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ViralFlowr | Connexion</title>
+  <title>ViralFlowr | Connexion Rapide</title>
 
   <script>
-    const inAppsScriptPanel =
-      window.__VF_IN_APPS_SCRIPT_PANEL ||
-      /script\.googleusercontent\.com|script\.google\.com/i.test(document.referrer || "");
-
     window.VF_CONFIG = {
       scriptUrl: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec",
       timeoutMs: 25000,
-      debug: true,
-      postMode: "iframe", // FORCE LE MODE IFRAME POUR ÉVITER L'ERREUR RÉSEAU
-      postMessageTargetOrigin: inAppsScriptPanel ? "*" : location.origin
+      postMode: "iframe" 
     };
   </script>
 
-  <script src="/vf_api.js?v=102" defer></script>
+  <script src="/vf_api.js?v=105" defer></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
 
@@ -57,7 +37,8 @@
     .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
     .input-field { transition: all 0.2s; border: 1px solid #E5E7EB; }
     .is-valid { border-color: #10B981 !important; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1); }
-    .is-invalid { border-color: #EF4444 !important; box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1); }
+    .animate-spin { animation: spin 1s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   </style>
 </head>
 
@@ -66,73 +47,46 @@
     <div class="text-2xl font-black tracking-tight text-gray-900">
       Viral<span class="text-[#F07E13]">Flowr</span>
     </div>
-    <div class="mt-1 text-sm font-semibold text-gray-400">
-      Connexion à ton compte
-    </div>
+    <div class="mt-1 text-sm font-semibold text-gray-400">Ravis de vous revoir !</div>
 
     <div id="msg" class="mt-4 hidden rounded-2xl border p-3 text-sm font-semibold"></div>
 
     <form id="loginForm" class="mt-5 space-y-4">
       <div>
         <label class="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Email</label>
-        <input id="email" type="email" required
-          class="input-field mt-1 h-11 w-full px-4 rounded-2xl bg-white text-sm font-semibold outline-none focus:ring-2 focus:ring-[#F07E13]"
-          placeholder="ex: test@gmail.com" />
+        <input id="email" type="email" required class="input-field mt-1 h-11 w-full px-4 rounded-2xl bg-white text-sm font-semibold outline-none focus:ring-2 focus:ring-[#F07E13]" placeholder="ex: test@gmail.com" />
       </div>
 
       <div>
         <div class="flex justify-between items-center ml-1">
           <label class="text-xs font-black uppercase tracking-widest text-gray-400">Mot de passe</label>
-          <a href="forgot.html" class="text-[10px] font-bold text-[#F07E13] hover:underline uppercase tracking-tighter">Mot de passe oublié ?</a>
+          <a href="forgot.html" class="text-[10px] font-bold text-[#F07E13] hover:underline uppercase tracking-tighter">Oublié ?</a>
         </div>
-        <input id="password" type="password" required
-          class="input-field mt-1 h-11 w-full px-4 rounded-2xl bg-white text-sm font-semibold outline-none focus:ring-2 focus:ring-[#F07E13]"
-          placeholder="••••••••" />
+        <input id="password" type="password" required class="input-field mt-1 h-11 w-full px-4 rounded-2xl bg-white text-sm font-semibold outline-none focus:ring-2 focus:ring-[#F07E13]" placeholder="••••••••" />
       </div>
 
-      <button id="btn" type="submit"
-        class="w-full h-11 rounded-2xl brand-gradient text-white font-black uppercase tracking-widest text-[12px] shadow-md hover:opacity-95 transition disabled:opacity-50">
+      <button id="btn" type="submit" class="w-full h-11 rounded-2xl brand-gradient text-white font-black uppercase tracking-widest text-[12px] shadow-md hover:opacity-95 transition disabled:opacity-50 flex items-center justify-center">
         Se connecter
       </button>
     </form>
 
     <div class="mt-4 text-xs font-bold text-gray-400 text-center">
-      Pas de compte ? <a class="text-gray-900 hover:underline" href="register.html">Créer un compte</a>
+      Nouveau ici ? <a class="text-gray-900 hover:underline" href="register.html">Créer un compte</a>
     </div>
   </div>
 
   <script>
     const $ = (id) => document.getElementById(id);
+    let cachedIp = "0.0.0.0";
 
-    // --- Fonction IP Robuste ---
-    async function getUserIp() {
+    /* 🚀 RÉCUPÉRATION IP EN ARRIÈRE-PLAN (ULTRA RAPIDE) */
+    (async function prefetchIp() {
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000);
-        const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
+        const res = await fetch('https://api.ipify.org?format=json');
         const data = await res.json();
-        clearTimeout(timeoutId);
-        return data.ip;
-      } catch (e) {
-        return "IP_TIMEOUT";
-      }
-    }
-
-    function isValidEmail(email) {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email);
-    }
-
-    // Validation visuelle
-    $("email").addEventListener("input", function() {
-      const valid = isValidEmail(this.value.trim());
-      this.classList.toggle("is-valid", this.value.length > 0 && valid);
-      this.classList.toggle("is-invalid", this.value.length > 0 && !valid);
-    });
-
-    $("password").addEventListener("input", function() {
-      this.classList.toggle("is-valid", this.value.length >= 6);
-      this.classList.toggle("is-invalid", this.value.length > 0 && this.value.length < 6);
-    });
+        cachedIp = data.ip;
+      } catch (e) { cachedIp = "IP_TIMEOUT"; }
+    })();
 
     function showMsg(type, text){
       const box = $("msg");
@@ -142,42 +96,40 @@
       box.textContent = text;
     }
 
-    function getNext(){
-      const u = new URL(location.href);
-      return u.searchParams.get("next") || "index.html";
-    }
-
-    // --- LOGIQUE DE CONNEXION ---
+    /* GESTION FORMULAIRE */
     window.addEventListener("DOMContentLoaded", () => {
       $("loginForm").addEventListener("submit", async (e) => {
         e.preventDefault();
         
-        if (!window.vfApi) {
-          showMsg("err", "L'API est en cours de chargement...");
-          return;
-        }
-
+        const btn = $("btn");
         const email = $("email").value.trim();
         const password = $("password").value;
-        $("btn").disabled = true;
-        showMsg("ok", "Sécurisation et connexion...");
 
-        const user_ip = await getUserIp();
+        // UI Loading
+        btn.disabled = true;
+        btn.innerHTML = `<svg class="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" viewBox="0 0 24 24"></svg> CONNEXION...`;
+        showMsg("ok", "Vérification de sécurité...");
 
         try {
-          // Utilisation de l'API avec les 3 paramètres
-          const res = await window.vfApi.login({ email, password, user_ip });
+          // On utilise l'IP déjà chargée en mémoire
+          const res = await window.vfApi.login({ 
+            email: email, 
+            password: password, 
+            user_ip: cachedIp 
+          });
           
           if (res && res.ok === true) {
-            showMsg("ok", "Succès ! Redirection...");
-            setTimeout(() => location.replace(getNext()), 500);
+            showMsg("ok", "Succès ! Bienvenue sur ViralFlowr.");
+            setTimeout(() => location.replace("index.html"), 500);
           } else {
             showMsg("err", res?.error || "Identifiants incorrects.");
-            $("btn").disabled = false;
+            btn.disabled = false;
+            btn.textContent = "Se connecter";
           }
         } catch(err) {
-          showMsg("err", "Erreur réseau. Vérifiez votre URL de script Google.");
-          $("btn").disabled = false;
+          showMsg("err", "Délai dépassé. Veuillez réessayer.");
+          btn.disabled = false;
+          btn.textContent = "Se connecter";
         }
       });
     });
