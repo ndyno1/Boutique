@@ -41,8 +41,9 @@
 
     window.VF_CONFIG = {
       scriptUrl: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec",
-      timeoutMs: 25000, // Augmenté pour éviter les timeouts réseaux
+      timeoutMs: 25000,
       debug: true,
+      postMode: "iframe", // FORCE LE MODE IFRAME POUR ÉVITER L'ERREUR RÉSEAU
       postMessageTargetOrigin: inAppsScriptPanel ? "*" : location.origin
     };
   </script>
@@ -102,19 +103,17 @@
 
   <script>
     const $ = (id) => document.getElementById(id);
-    const REDIRECT_GUARD_KEY = "vf_login_redirect_guard";
 
     // --- Fonction IP Robuste ---
     async function getUserIp() {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000); // Stop après 4 sec
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
         const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
         const data = await res.json();
         clearTimeout(timeoutId);
         return data.ip;
       } catch (e) {
-        console.warn("Délai IP dépassé, continuation...");
         return "IP_TIMEOUT";
       }
     }
@@ -123,289 +122,61 @@
       return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email);
     }
 
+    // Validation visuelle
     $("email").addEventListener("input", function() {
       const valid = isValidEmail(this.value.trim());
-      if(this.value.length > 0) {
-        this.classList.toggle("is-valid", valid);
-        this.classList.toggle("is-invalid", !valid);
-      } else {
-        this.classList.remove("is-valid", "is-invalid");
-      }
+      this.classList.toggle("is-valid", this.value.length > 0 && valid);
+      this.classList.toggle("is-invalid", this.value.length > 0 && !valid);
     });
 
     $("password").addEventListener("input", function() {
-      if(this.value.length > 0) {
-        this.classList.toggle("is-valid", this.value.length >= 6);
-        this.classList.toggle("is-invalid", this.value.length < 6);
-      } else {
-        this.classList.remove("is-valid", "is-invalid");
-      }
+      this.classList.toggle("is-valid", this.value.length >= 6);
+      this.classList.toggle("is-invalid", this.value.length > 0 && this.value.length < 6);
     });
 
     function showMsg(type, text){
       const box = $("msg");
       box.classList.remove("hidden");
-      box.className = "mt-4 rounded-2xl border p-3 text-sm font-semibold";
-      if (type === "ok") box.classList.add("border-green-200","bg-green-50","text-green-900");
-      else box.classList.add("border-red-200","bg-red-50","text-red-900");
+      box.className = "mt-4 rounded-2xl border p-3 text-sm font-semibold " + 
+        (type === "ok" ? "border-green-200 bg-green-50 text-green-900" : "border-red-200 bg-red-50 text-red-900");
       box.textContent = text;
     }
 
     function getNext(){
       const u = new URL(location.href);
-      const raw = u.searchParams.get("next") || "index.html";
-      try{
-        const n = new URL(raw, location.href);
-        if (n.origin !== location.origin) return "index.html";
-        return n.pathname + n.search + n.hash;
-      }catch(_){ return "index.html"; }
+      return u.searchParams.get("next") || "index.html";
     }
 
-    // --- FORMULAIRE ---
+    // --- LOGIQUE DE CONNEXION ---
     window.addEventListener("DOMContentLoaded", () => {
       $("loginForm").addEventListener("submit", async (e) => {
         e.preventDefault();
         
-        const api = window.vfApi;
-        if (!api) {
-          showMsg("err", "L'API ViralFlowr charge encore... Réessaie dans 2 secondes.");
+        if (!window.vfApi) {
+          showMsg("err", "L'API est en cours de chargement...");
           return;
         }
 
         const email = $("email").value.trim();
         const password = $("password").value;
-
         $("btn").disabled = true;
         showMsg("ok", "Sécurisation et connexion...");
 
-        // On récupère l'IP
         const user_ip = await getUserIp();
 
         try {
-          const res = await api.login({ email, password, user_ip });
+          // Utilisation de l'API avec les 3 paramètres
+          const res = await window.vfApi.login({ email, password, user_ip });
           
-          if (!res || res.ok !== true){
+          if (res && res.ok === true) {
+            showMsg("ok", "Succès ! Redirection...");
+            setTimeout(() => location.replace(getNext()), 500);
+          } else {
             showMsg("err", res?.error || "Identifiants incorrects.");
             $("btn").disabled = false;
-            return;
           }
-
-          if (res.token) localStorage.setItem("vf_token", String(res.token));
-          if (res.session) localStorage.setItem("vf_session", JSON.stringify(res.session));
-
-          showMsg("ok", "Succès ! Redirection...");
-          setTimeout(() => location.replace(getNext()), 500);
-
         } catch(err) {
-          console.error(err);
-          showMsg("err", "Erreur réseau (vérifie ta connexion internet).");
-          $("btn").disabled = false;
-        }
-      });
-    });
-  </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="fr">
-<head>
-  <script>
-    (function () {
-      const ref = document.referrer || "";
-      const inAppsScriptPanel = /script\.googleusercontent\.com|script\.google\.com/i.test(ref);
-      window.__VF_IN_APPS_SCRIPT_PANEL = inAppsScriptPanel;
-      if (inAppsScriptPanel) return;
-
-      const host = (location.hostname || "").toLowerCase();
-      const isWWW = host === "www.viralflowr.com";
-      const isApex = host === "viralflowr.com";
-      const isTarget = isWWW || isApex;
-      if (!isTarget) return;
-
-      const CANON_HOST = "viralflowr.com"; 
-      if (host === CANON_HOST) return;
-
-      const GUARD_KEY = "vf_canon_redirect_guard";
-      const now = Date.now();
-
-      try {
-        const guard = JSON.parse(sessionStorage.getItem(GUARD_KEY) || "null");
-        if (guard && (now - guard.ts) < 15000) return;
-        sessionStorage.setItem(GUARD_KEY, JSON.stringify({ ts: now, from: host, to: CANON_HOST }));
-      } catch (_) {}
-
-      location.replace("https://" + CANON_HOST + location.pathname + location.search + location.hash);
-    })();
-  </script>
-
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ViralFlowr | Connexion</title>
-
-  <script>
-    const inAppsScriptPanel =
-      window.__VF_IN_APPS_SCRIPT_PANEL ||
-      /script\.googleusercontent\.com|script\.google\.com/i.test(document.referrer || "");
-
-    window.VF_CONFIG = {
-      scriptUrl: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec",
-      timeoutMs: 25000, // Augmenté pour éviter les timeouts réseaux
-      debug: true,
-      postMessageTargetOrigin: inAppsScriptPanel ? "*" : location.origin
-    };
-  </script>
-
-  <script src="/vf_api.js?v=102" defer></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
-
-  <style>
-    body{ font-family:Inter,system-ui,sans-serif; background:#F8FAFC; }
-    .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
-    .input-field { transition: all 0.2s; border: 1px solid #E5E7EB; }
-    .is-valid { border-color: #10B981 !important; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1); }
-    .is-invalid { border-color: #EF4444 !important; box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1); }
-  </style>
-</head>
-
-<body class="min-h-screen flex items-center justify-center px-4">
-  <div class="w-full max-w-md bg-white border border-gray-100 shadow-sm rounded-3xl p-6">
-    <div class="text-2xl font-black tracking-tight text-gray-900">
-      Viral<span class="text-[#F07E13]">Flowr</span>
-    </div>
-    <div class="mt-1 text-sm font-semibold text-gray-400">
-      Connexion à ton compte
-    </div>
-
-    <div id="msg" class="mt-4 hidden rounded-2xl border p-3 text-sm font-semibold"></div>
-
-    <form id="loginForm" class="mt-5 space-y-4">
-      <div>
-        <label class="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Email</label>
-        <input id="email" type="email" required
-          class="input-field mt-1 h-11 w-full px-4 rounded-2xl bg-white text-sm font-semibold outline-none focus:ring-2 focus:ring-[#F07E13]"
-          placeholder="ex: test@gmail.com" />
-      </div>
-
-      <div>
-        <div class="flex justify-between items-center ml-1">
-          <label class="text-xs font-black uppercase tracking-widest text-gray-400">Mot de passe</label>
-          <a href="forgot.html" class="text-[10px] font-bold text-[#F07E13] hover:underline uppercase tracking-tighter">Mot de passe oublié ?</a>
-        </div>
-        <input id="password" type="password" required
-          class="input-field mt-1 h-11 w-full px-4 rounded-2xl bg-white text-sm font-semibold outline-none focus:ring-2 focus:ring-[#F07E13]"
-          placeholder="••••••••" />
-      </div>
-
-      <button id="btn" type="submit"
-        class="w-full h-11 rounded-2xl brand-gradient text-white font-black uppercase tracking-widest text-[12px] shadow-md hover:opacity-95 transition disabled:opacity-50">
-        Se connecter
-      </button>
-    </form>
-
-    <div class="mt-4 text-xs font-bold text-gray-400 text-center">
-      Pas de compte ? <a class="text-gray-900 hover:underline" href="register.html">Créer un compte</a>
-    </div>
-  </div>
-
-  <script>
-    const $ = (id) => document.getElementById(id);
-    const REDIRECT_GUARD_KEY = "vf_login_redirect_guard";
-
-    // --- Fonction IP Robuste ---
-    async function getUserIp() {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000); // Stop après 4 sec
-        const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
-        const data = await res.json();
-        clearTimeout(timeoutId);
-        return data.ip;
-      } catch (e) {
-        console.warn("Délai IP dépassé, continuation...");
-        return "IP_TIMEOUT";
-      }
-    }
-
-    function isValidEmail(email) {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email);
-    }
-
-    $("email").addEventListener("input", function() {
-      const valid = isValidEmail(this.value.trim());
-      if(this.value.length > 0) {
-        this.classList.toggle("is-valid", valid);
-        this.classList.toggle("is-invalid", !valid);
-      } else {
-        this.classList.remove("is-valid", "is-invalid");
-      }
-    });
-
-    $("password").addEventListener("input", function() {
-      if(this.value.length > 0) {
-        this.classList.toggle("is-valid", this.value.length >= 6);
-        this.classList.toggle("is-invalid", this.value.length < 6);
-      } else {
-        this.classList.remove("is-valid", "is-invalid");
-      }
-    });
-
-    function showMsg(type, text){
-      const box = $("msg");
-      box.classList.remove("hidden");
-      box.className = "mt-4 rounded-2xl border p-3 text-sm font-semibold";
-      if (type === "ok") box.classList.add("border-green-200","bg-green-50","text-green-900");
-      else box.classList.add("border-red-200","bg-red-50","text-red-900");
-      box.textContent = text;
-    }
-
-    function getNext(){
-      const u = new URL(location.href);
-      const raw = u.searchParams.get("next") || "index.html";
-      try{
-        const n = new URL(raw, location.href);
-        if (n.origin !== location.origin) return "index.html";
-        return n.pathname + n.search + n.hash;
-      }catch(_){ return "index.html"; }
-    }
-
-    // --- FORMULAIRE ---
-    window.addEventListener("DOMContentLoaded", () => {
-      $("loginForm").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        
-        const api = window.vfApi;
-        if (!api) {
-          showMsg("err", "L'API ViralFlowr charge encore... Réessaie dans 2 secondes.");
-          return;
-        }
-
-        const email = $("email").value.trim();
-        const password = $("password").value;
-
-        $("btn").disabled = true;
-        showMsg("ok", "Sécurisation et connexion...");
-
-        // On récupère l'IP
-        const user_ip = await getUserIp();
-
-        try {
-          const res = await api.login({ email, password, user_ip });
-          
-          if (!res || res.ok !== true){
-            showMsg("err", res?.error || "Identifiants incorrects.");
-            $("btn").disabled = false;
-            return;
-          }
-
-          if (res.token) localStorage.setItem("vf_token", String(res.token));
-          if (res.session) localStorage.setItem("vf_session", JSON.stringify(res.session));
-
-          showMsg("ok", "Succès ! Redirection...");
-          setTimeout(() => location.replace(getNext()), 500);
-
-        } catch(err) {
-          console.error(err);
-          showMsg("err", "Erreur réseau (vérifie ta connexion internet).");
+          showMsg("err", "Erreur réseau. Vérifiez votre URL de script Google.");
           $("btn").disabled = false;
         }
       });
