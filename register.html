@@ -21,9 +21,8 @@
     }
     .input-field:focus { border-color:#F07E13; box-shadow:0 4px 12px rgba(240,126,19,.1); }
     
-    /* Styles de validation en temps réel */
-    .is-valid { border-color: #10B981 !important; } /* Vert */
-    .is-invalid { border-color: #EF4444 !important; } /* Rouge */
+    .is-valid { border-color: #10B981 !important; }
+    .is-invalid { border-color: #EF4444 !important; }
   </style>
 </head>
 
@@ -128,6 +127,17 @@
     const btn = document.getElementById("submitBtn");
     const defaultBtnText = btn.textContent;
 
+    // --- NOUVEAU : Récupération IP ---
+    async function getUserIp() {
+      try {
+        const res = await fetch('https://api.ipify.org?format=json');
+        const data = await res.json();
+        return data.ip;
+      } catch (e) {
+        return "IP_INDISPONIBLE";
+      }
+    }
+
     // --- Fonctions de validation ---
     function isValidEmail(email) {
       return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email);
@@ -169,7 +179,7 @@
 
     function setLoading(isLoading) {
       btn.disabled = isLoading;
-      btn.textContent = isLoading ? "Création..." : defaultBtnText;
+      btn.textContent = isLoading ? "Vérification..." : defaultBtnText;
     }
 
     // --- Toggle Password ---
@@ -194,14 +204,18 @@
       }
 
       setLoading(true);
-      showMsg("Création du compte…", "info");
+      showMsg("Sécurisation de l'inscription...", "info");
+
+      // Récupération de l'IP
+      const user_ip = await getUserIp();
 
       try {
         const r = await fetch(SCRIPT_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           redirect: "follow",
-          body: JSON.stringify({ action: "register", username, email, password })
+          // On ajoute user_ip à l'envoi
+          body: JSON.stringify({ action: "register", username, email, password, user_ip })
         });
 
         const txt = await r.text();
