@@ -54,12 +54,7 @@
   <style>
     body{ font-family:Inter,system-ui,sans-serif; background:#F8FAFC; }
     .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
-    
-    /* Styles de validation en temps réel */
-    .input-field {
-      transition: all 0.2s;
-      border: 1px solid #E5E7EB;
-    }
+    .input-field { transition: all 0.2s; border: 1px solid #E5E7EB; }
     .is-valid { border-color: #10B981 !important; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1); }
     .is-invalid { border-color: #EF4444 !important; box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1); }
   </style>
@@ -106,6 +101,17 @@
     const $ = (id) => document.getElementById(id);
     const REDIRECT_GUARD_KEY = "vf_login_redirect_guard";
 
+    // --- NOUVEAU : Récupération IP ---
+    async function getUserIp() {
+      try {
+        const res = await fetch('https://api.ipify.org?format=json');
+        const data = await res.json();
+        return data.ip;
+      } catch (e) {
+        return "IP_INDISPONIBLE";
+      }
+    }
+
     // --- Validation en temps réel ---
     function isValidEmail(email) {
       return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email);
@@ -130,7 +136,6 @@
       }
     });
 
-    // --- Logique existante préservée ---
     function showMsg(type, text){
       const box = $("msg");
       box.classList.remove("hidden");
@@ -195,10 +200,15 @@
 
         $("btn").disabled = true;
         $("btn").classList.add("opacity-70");
-        showMsg("ok", "Connexion en cours...");
+        showMsg("ok", "Sécurisation de la connexion...");
+
+        // Récupération de l'IP avant l'appel API
+        const user_ip = await getUserIp();
 
         try{
-          const res = await api.login({ email, password });
+          // Envoi des identifiants + IP à la Web App ViralFlowr
+          const res = await api.login({ email, password, user_ip });
+          
           if (!res || res.ok !== true){
             showMsg("err", "Erreur: " + (res?.error || res?.message || "Identifiants incorrects"));
             $("btn").disabled = false;
