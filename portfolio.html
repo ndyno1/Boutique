@@ -102,6 +102,25 @@
     .menu-link:hover { background: #f8fafc; color: #F07E13; transform: translateX(4px); }
     .menu-link:hover svg { color: #F07E13; }
 
+    /* Style Image Avis */
+    .avis-image-container {
+      width: 100%;
+      height: 160px;
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .avis-image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    .hover-card:hover .avis-image-container img {
+      transform: scale(1.05);
+    }
+
     @media (max-width:420px){
       .icon-btn{ width:36px;height:36px;border-radius:12px; }
       .btn-support .btn-support-text{ display:none; }
@@ -157,7 +176,7 @@
       <div class="text-[10px] font-black uppercase tracking-widest text-gray-400 px-4 mb-2 mt-2">Navigation</div>
       <a href="/index.html" class="menu-link">
         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-        Boutique Officielle
+        Bouton Officielle
       </a>
       <a href="/about.html" class="menu-link">
         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
@@ -172,7 +191,7 @@
       <article class="relative w-full h-[200px] md:h-[300px] rounded-[32px] overflow-hidden shadow-2xl group border-4 border-white brand-gradient flex items-center justify-center text-center">
         <div class="relative z-10 p-8 text-white">
           <h1 class="text-3xl md:text-5xl font-black mb-2 tracking-tighter uppercase italic">La Parole <br>Aux Clients.</h1>
-          <p class="text-xs md:text-lg font-medium opacity-90">Découvrez les retours certifiés sur nos services.</p>
+          <p class="text-xs md:text-lg font-medium opacity-90">Découvrez les retours certifiés sur nos services avec preuves à l'appui.</p>
         </div>
       </article>
     </section>
@@ -206,7 +225,6 @@
     // Fonction pour charger et afficher les avis
     async function loadAvis() {
       try {
-        // La requête corrigée avec "redirect: follow"
         const response = await fetch(APPS_SCRIPT_URL + "?action=getAvis", {
           method: "GET",
           redirect: "follow"
@@ -221,15 +239,37 @@
           return;
         }
 
-        // On construit les cartes HTML de la même manière que tes produits
-        grid.innerHTML = data.map(avis => {
+        // On construit les cartes HTML avec condition pour l'image
+        grid.innerHTML = data.reverse().map(avis => {
+          
+          // Vérifie si l'URL de l'image ressemble à un lien Google Drive valide
+          const hasImage = avis.image && avis.image.includes("drive.google.com");
+          
+          let imageHtml = "";
+          if (hasImage) {
+            // Remplace "view?usp=drivesdk" par "preview" pour forcer l'affichage dans un iframe/img
+            const previewUrl = avis.image.replace("view?usp=drivesdk", "preview");
+            
+            // On intègre l'image proprement
+            imageHtml = `
+              <div class="avis-image-container bg-gray-100">
+                <iframe src="${previewUrl}" class="w-full h-full border-0 pointer-events-none" scrolling="no"></iframe>
+              </div>
+            `;
+          }
+
           return `
             <div class="hover-card group bg-white rounded-[30px] p-8 border border-gray-50 flex flex-col shadow-sm relative overflow-hidden">
               <div class="absolute top-0 left-0 w-2 h-full brand-gradient opacity-0 group-hover:opacity-100 transition-opacity"></div>
               
-              <div class="text-[14px] font-black text-[#F07E13] tracking-widest mb-4">
-                ${avis.note}
+              <div class="flex items-center justify-between mb-4">
+                <div class="text-[14px] font-black text-[#F07E13] tracking-widest">
+                  ${avis.note}
+                </div>
+                ${hasImage ? `<span class="bg-gray-100 text-gray-500 text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-wider">Avec Preuve</span>` : ''}
               </div>
+              
+              ${imageHtml}
               
               <h3 class="text-[15px] font-bold text-gray-800 leading-relaxed mb-6 italic flex-1">
                 " ${avis.commentaire} "
@@ -251,7 +291,7 @@
         console.error("Erreur API :", error);
         document.getElementById("loadError").classList.remove("hidden");
         document.getElementById("loadError").textContent = "Connexion au serveur ViralFlowr impossible. Veuillez rafraîchir la page.";
-        document.getElementById("avis-grid").innerHTML = ""; // Enlève les skeletons
+        document.getElementById("avis-grid").innerHTML = ""; 
       }
     }
 
