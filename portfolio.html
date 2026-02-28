@@ -194,8 +194,8 @@
   </footer>
 
   <script>
-    // 🔴 REMPLACE CECI PAR L'URL WEBHOOK DE TON GOOGLE APPS SCRIPT
-   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbylffBPr9m8Y26asnlPuVDizwS5xOUe9zpUIt3NrbUZlVsMgNkh9bOcANYbkvTZbpL9/exec";
+    // URL Webhook Google Apps Script
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbylffBPr9m8Y26asnlPuVDizwS5xOUe9zpUIt3NrbUZlVsMgNkh9bOcANYbkvTZbpL9/exec";
 
     // Fonction d'ouverture/fermeture du Menu
     function toggleMenu() {
@@ -206,7 +206,12 @@
     // Fonction pour charger et afficher les avis
     async function loadAvis() {
       try {
-        const response = await fetch(APPS_SCRIPT_URL + "?action=getAvis");
+        // La requête corrigée avec "redirect: follow"
+        const response = await fetch(APPS_SCRIPT_URL + "?action=getAvis", {
+          method: "GET",
+          redirect: "follow"
+        });
+        
         const data = await response.json();
         
         const grid = document.getElementById("avis-grid");
