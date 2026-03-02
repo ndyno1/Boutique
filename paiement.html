@@ -825,29 +825,26 @@
           body: JSON.stringify(payload)
         });
 
-        // 🚨 2. NOTIFICATION DIRECTE AU BOT WHATSAPP (LE CERVEAU) VIA JSONP 🚨
+       // 🚨 2. NOTIFICATION DIRECTE AU BOT WHATSAPP (TECHNIQUE DU PIXEL INVISIBLE) 🚨
         try {
           let pseudoNom = WALLET_EMAIL ? WALLET_EMAIL.split('@')[0] : "Client Web";
           
-          // Construction de l'URL avec les paramètres
+          // On prépare les données
           const qs = new URLSearchParams({
             source: "website",
             action: "nouvelle_commande",
             nom: pseudoNom,
             contact: contactValue || "N/A",
-            service: nom,
-            quantite: qtyVal,
+            service: nom || "Service inconnu",
+            quantite: qtyVal || 1,
             montant: totalNumber + " $",
-            t: Date.now() // anti-cache
+            t: Date.now() // Anti-cache
           }).toString();
 
-          // Création d'une balise script invisible pour faire l'appel GET sans être bloqué
-          const botScript = document.createElement("script");
-          botScript.src = BOT_WEBHOOK_URL + "?" + qs;
-          document.body.appendChild(botScript);
-          
-          // On nettoie la balise juste après
-          setTimeout(() => { try { botScript.remove(); } catch(e){} }, 2000);
+          // 🚀 TECHNIQUE INFAILLIBLE : On charge l'URL comme si c'était une image
+          // Le navigateur ne bloquera pas ça, et le bot recevra le signal instantanément !
+          let pingBot = new Image();
+          pingBot.src = BOT_WEBHOOK_URL + "?" + qs;
           
         } catch (botErr) {
           console.log("Erreur préparation Bot:", botErr);
