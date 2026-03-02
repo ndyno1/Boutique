@@ -825,21 +825,34 @@
           body: JSON.stringify(payload)
         });
 
-        // 🚨 2. NOTIFICATION DIRECTE AU BOT WHATSAPP (LE CERVEAU) 🚨
+       // 🚨 2. NOTIFICATION DIRECTE AU BOT WHATSAPP (LE CERVEAU) VIA JSONP 🚨
         try {
-          // Utilisation du pseudo du client ou de son adresse email
           let pseudoNom = WALLET_EMAIL ? WALLET_EMAIL.split('@')[0] : "Client Web";
-
-          const botPayload = {
+          
+          // Construction de l'URL avec les paramètres
+          const qs = new URLSearchParams({
             source: "website",
             action: "nouvelle_commande",
             nom: pseudoNom,
-            contact: contactValue,
+            contact: contactValue || "N/A",
             service: nom,
             quantite: qtyVal,
-            montant: totalNumber + " $"
-          };
+            montant: totalNumber + " $",
+            t: Date.now() // anti-cache
+          }).toString();
 
+          // Création d'une balise script invisible pour faire l'appel GET sans être bloqué
+          const botScript = document.createElement("script");
+          botScript.src = BOT_WEBHOOK_URL + "?" + qs;
+          document.body.appendChild(botScript);
+          
+          // On nettoie la balise juste après
+          setTimeout(() => { try { botScript.remove(); } catch(e){} }, 2000);
+          
+        } catch (botErr) {
+          console.log("Erreur préparation Bot:", botErr);
+        }
+        // 🚨 FIN DE LA NOTIFICATION BOT 🚨
           // On envoie la requête silencieusement à l'App Script de ton Bot
           fetch(BOT_WEBHOOK_URL, {
             method: 'POST',
