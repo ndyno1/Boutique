@@ -1,199 +1,143 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <script>
+    /* REDIRECTION CANONIQUE & PROTECTION IFRAME */
+    (function () {
+      const ref = document.referrer || "";
+      const inAppsScriptPanel = /script\.googleusercontent\.com|script\.google\.com/i.test(ref);
+      window.__VF_IN_APPS_SCRIPT_PANEL = inAppsScriptPanel;
+      if (inAppsScriptPanel) return;
+      const host = (location.hostname || "").toLowerCase();
+      const CANON_HOST = "viralflowr.com"; 
+      if (host !== CANON_HOST && (host === "www.viralflowr.com" || host === "viralflowr.com")) {
+        location.replace("https://" + CANON_HOST + location.pathname + location.search + location.hash);
+      }
+    })();
+  </script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ViralFlowr | Connexion</title>
 
-  <!-- Preconnect (accélère) -->
-  <link rel="preconnect" href="https://script.google.com">
-  <link rel="preconnect" href="https://script.googleusercontent.com">
-  <link rel="preconnect" href="https://api.ipify.org">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-  <!-- Fonts sans bloquer -->
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" media="print" onload="this.media='all'">
-  <noscript>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap">
-  </noscript>
-
   <script>
-    // ✅ Config utilisée par vf_api.js
+    // CONFIGURATION DE TON BACKEND (Ne pas modifier l'URL)
     window.VF_CONFIG = {
       scriptUrl: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec",
-      // ton bridge ignore timeoutMs, mais on le garde pour cohérence
-      timeoutMs: 35000,
-      postMode: "iframe"
+      timeoutMs: 30000, // Temps d'attente max réduit à 30 secondes
+      postMode: "iframe" 
     };
   </script>
 
-  <!-- ✅ Ton bridge (le code vf_api.js que tu as envoyé) -->
   <script src="/vf_api.js?v=105" defer></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
 
   <style>
-    :root{
-      --bg:#F8FAFC;
-      --card:#ffffff;
-      --text:#0f172a;
-      --muted:#64748b;
-      --border:#e5e7eb;
-      --brand1:#F07E13;
-      --brand2:#FFB26B;
-      --okbg:#ecfdf5; --okbd:#bbf7d0; --oktx:#065f46;
-      --erbg:#fef2f2; --erbd:#fecaca; --ertx:#991b1b;
+    body { font-family: 'Inter', system-ui, sans-serif; background: #F8FAFC; }
+    .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
+    .input-field { transition: all 0.2s; border: 1px solid #E5E7EB; }
+    .animate-spin { animation: spin 1s linear infinite; }
+    @keyframes spin { 
+      from { transform: rotate(0deg); } 
+      to { transform: rotate(360deg); } 
     }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background:var(--bg);
-      color:var(--text);
-    }
-    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
-    .card{
-      width:100%;max-width:420px;background:var(--card);
-      border:1px solid #f1f5f9;box-shadow:0 10px 30px rgba(2,6,23,.06);
-      border-radius:24px;padding:22px;
-    }
-    .brand{font-weight:900;font-size:22px;letter-spacing:-.02em}
-    .brand span{color:var(--brand1)}
-    .sub{margin-top:4px;font-size:13px;font-weight:700;color:var(--muted);opacity:.85}
-    .msg{
-      display:none;margin-top:14px;padding:10px 12px;border-radius:16px;
-      border:1px solid var(--border);font-weight:700;font-size:13px;line-height:1.35
-    }
-    .msg.ok{display:block;background:var(--okbg);border-color:var(--okbd);color:var(--oktx)}
-    .msg.err{display:block;background:var(--erbg);border-color:var(--erbd);color:var(--ertx)}
-    label{display:block;font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:10px 0 6px 6px}
-    .input{
-      width:100%;height:44px;border-radius:16px;border:1px solid var(--border);
-      padding:0 14px;font-size:14px;font-weight:700;outline:none;transition:.15s;background:#fff
-    }
-    .input:focus{border-color:#fed7aa;box-shadow:0 0 0 3px rgba(240,126,19,.18)}
-    .row{display:flex;align-items:center;justify-content:space-between;margin:6px 6px 0 6px}
-    .forgot{font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--brand1);text-decoration:none}
-    .forgot:hover{text-decoration:underline}
-    .btn{
-      margin-top:14px;width:100%;height:44px;border-radius:16px;border:none;cursor:pointer;
-      font-weight:900;letter-spacing:.12em;text-transform:uppercase;font-size:12px;color:#fff;
-      background:linear-gradient(135deg,var(--brand1),var(--brand2));
-      box-shadow:0 10px 20px rgba(240,126,19,.22);
-      display:flex;align-items:center;justify-content:center;gap:8px;transition:.12s
-    }
-    .btn:disabled{opacity:.6;cursor:not-allowed}
-    .spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.9);border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .foot{margin-top:14px;text-align:center;font-size:12px;font-weight:800;color:var(--muted)}
-    .foot a{color:var(--text);text-decoration:none}
-    .foot a:hover{text-decoration:underline}
   </style>
 </head>
 
-<body>
-  <div class="wrap">
-    <div class="card">
-      <div class="brand">Viral<span>Flowr</span></div>
-      <div class="sub">Ravis de vous revoir !</div>
+<body class="min-h-screen flex items-center justify-center px-4">
+  <div class="w-full max-w-md bg-white border border-gray-100 shadow-sm rounded-3xl p-6">
+    <div class="text-2xl font-black tracking-tight text-gray-900 text-center">
+      Viral<span class="text-[#F07E13]">Flowr</span>
+    </div>
+    <div class="mt-1 text-sm font-semibold text-gray-400 text-center">Ravis de vous revoir !</div>
 
-      <div id="msg" class="msg"></div>
+    <div id="msg" class="mt-4 hidden rounded-2xl border p-3 text-sm font-semibold text-center"></div>
 
-      <form id="loginForm" autocomplete="on">
-        <label>Email</label>
-        <input id="email" type="email" required class="input" placeholder="ex: patrick@gmail.com" autocomplete="email" />
-
-        <div class="row">
-          <label style="margin:0;padding:0">Mot de passe</label>
-          <a class="forgot" href="forgot.html">Oublié ?</a>
-        </div>
-        <input id="password" type="password" required class="input" placeholder="••••••••" autocomplete="current-password" />
-
-        <button id="btn" type="submit" class="btn">Se connecter</button>
-      </form>
-
-      <div class="foot">
-        Nouveau ici ? <a href="register.html">Créer un compte</a>
+    <form id="loginForm" class="mt-5 space-y-4">
+      <div>
+        <label class="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Email</label>
+        <input id="email" type="email" required 
+          class="input-field mt-1 h-11 w-full px-4 rounded-2xl bg-white text-sm font-semibold outline-none focus:ring-2 focus:ring-[#F07E13]" 
+          placeholder="ex: patrick@gmail.com" />
       </div>
+
+      <div>
+        <div class="flex justify-between items-center ml-1">
+          <label class="text-xs font-black uppercase tracking-widest text-gray-400">Mot de passe</label>
+          <a href="forgot.html" class="text-[10px] font-bold text-[#F07E13] hover:underline uppercase tracking-tighter">Oublié ?</a>
+        </div>
+        <input id="password" type="password" required 
+          class="input-field mt-1 h-11 w-full px-4 rounded-2xl bg-white text-sm font-semibold outline-none focus:ring-2 focus:ring-[#F07E13]" 
+          placeholder="••••••••" />
+      </div>
+
+      <button id="btn" type="submit" 
+        class="w-full h-11 rounded-2xl brand-gradient text-white font-black uppercase tracking-widest text-[12px] shadow-md hover:opacity-95 transition disabled:opacity-50 flex items-center justify-center">
+        Se connecter
+      </button>
+    </form>
+
+    <div class="mt-4 text-xs font-bold text-gray-400 text-center">
+      Nouveau ici ? <a class="text-gray-900 hover:underline" href="register.html">Créer un compte</a>
     </div>
   </div>
 
   <script>
     const $ = (id) => document.getElementById(id);
+    let cachedIp = "0.0.0.0"; // IP par défaut pour ne pas bloquer
 
-    // IP optionnelle : timeout court + ne bloque jamais
-    let cachedIp = "IP_UNKNOWN";
+    /* 🚀 RÉCUPÉRATION IP EN ARRIÈRE-PLAN (Ultra-rapide, non-bloquant) */
+    fetch('https://api.ipify.org?format=json')
+      .then(res => res.json())
+      .then(data => { cachedIp = data.ip; })
+      .catch(() => { cachedIp = "IP_TIMEOUT"; });
 
-    async function fetchIpWithTimeout(ms = 2000) {
-      const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), ms);
-      try {
-        const res = await fetch("https://api.ipify.org?format=json", { signal: ctrl.signal, cache: "no-store" });
-        const data = await res.json();
-        cachedIp = data?.ip || "IP_UNKNOWN";
-      } catch (e) {
-        cachedIp = "IP_TIMEOUT";
-      } finally {
-        clearTimeout(t);
-      }
-    }
-    // lance après 1s (page s’affiche vite)
-    setTimeout(fetchIpWithTimeout, 1000);
-
+    // Fonction d'affichage des messages
     function showMsg(type, text) {
       const box = $("msg");
-      box.className = "msg " + (type === "ok" ? "ok" : "err");
+      box.classList.remove("hidden");
+      box.className = "mt-4 rounded-2xl border p-3 text-sm font-semibold text-center " + 
+        (type === "ok" ? "border-green-200 bg-green-50 text-green-900" : "border-red-200 bg-red-50 text-red-900");
       box.textContent = text;
     }
 
-    async function waitForVfApi(maxMs = 4000) {
-      const start = Date.now();
-      while (!window.vfApi || typeof window.vfApi.login !== "function") {
-        await new Promise(r => setTimeout(r, 50));
-        if (Date.now() - start > maxMs) throw new Error("vfApi non chargé (vf_api.js)");
-      }
-    }
-
+    /* ⚡ GESTION DU FORMULAIRE DE CONNEXION */
     window.addEventListener("DOMContentLoaded", () => {
       $("loginForm").addEventListener("submit", async (e) => {
         e.preventDefault();
-
+        
         const btn = $("btn");
         const email = $("email").value.trim();
         const password = $("password").value;
 
-        if (!email || !password) {
-          showMsg("err", "Veuillez renseigner l’email et le mot de passe.");
-          return;
-        }
-
+        // UI Loading instantané
         btn.disabled = true;
-        btn.innerHTML = `<span class="spin"></span> CONNEXION...`;
-        showMsg("ok", "Connexion en cours...");
+        btn.innerHTML = `<svg class="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" viewBox="0 0 24 24"></svg> CONNEXION...`;
+        $("msg").classList.add("hidden"); // Cache les anciens messages
 
         try {
-          await waitForVfApi();
-
-          // si IP pas prête, tentative courte, sinon on continue
-          if (cachedIp === "IP_UNKNOWN") await fetchIpWithTimeout(1200);
-
-          const res = await window.vfApi.login({
-            email,
-            password,
-            user_ip: cachedIp
+          // Appel à l'API via ton fichier vf_api.js
+          const res = await window.vfApi.login({ 
+            email: email, 
+            password: password, 
+            user_ip: cachedIp 
           });
-
+          
           if (res && res.ok === true) {
-            showMsg("ok", "Succès ! Bienvenue sur ViralFlowr.");
-            setTimeout(() => location.replace("index.html"), 600);
+            showMsg("ok", "Succès ! Redirection...");
+            localStorage.removeItem("vf_login_redirect_guard");
+            
+            // 🚀 Redirection immédiate (100ms) vers l'accueil
+            setTimeout(() => location.replace("index.html"), 100);
           } else {
             showMsg("err", res?.error || "Identifiants incorrects ou compte inexistant.");
             btn.disabled = false;
             btn.textContent = "Se connecter";
           }
-        } catch (err) {
-          console.error(err);
-          showMsg("err", "Le serveur ne répond pas. Vérifie le scriptUrl Apps Script et vf_api.js.");
+        } catch(err) {
+          console.error("Erreur de connexion :", err);
+          showMsg("err", "Le serveur est très sollicité. Réessayez dans un instant.");
           btn.disabled = false;
           btn.textContent = "Se connecter";
         }
