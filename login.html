@@ -18,12 +18,12 @@
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ViralFlowr | Connexion</title>
+  <title>ViralFlowr | Connexion Rapide</title>
 
   <script>
     window.VF_CONFIG = {
       scriptUrl: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec",
-      timeoutMs: 60000, 
+      timeoutMs: 30000, // Réduit à 30s (60s c'était trop long pour l'UX)
       postMode: "iframe" 
     };
   </script>
@@ -76,17 +76,13 @@
 
   <script>
     const $ = (id) => document.getElementById(id);
-    let cachedIp = "0.0.0.0";
+    let cachedIp = "IP_PENDING";
 
-    /* 🚀 RÉCUPÉRATION IP EN ARRIÈRE-PLAN */
-    async function fetchIp() {
-      try {
-        const res = await fetch('https://api.ipify.org?format=json');
-        const data = await res.json();
-        cachedIp = data.ip;
-      } catch (e) { cachedIp = "IP_TIMEOUT"; }
-    }
-    fetchIp();
+    /* 🚀 RÉCUPÉRATION IP NON-BLOQUANTE */
+    fetch('https://api.ipify.org?format=json')
+      .then(res => res.json())
+      .then(data => cachedIp = data.ip)
+      .catch(() => cachedIp = "IP_TIMEOUT");
 
     function showMsg(type, text){
       const box = $("msg");
@@ -105,15 +101,14 @@
         const email = $("email").value.trim();
         const password = $("password").value;
 
-        // UI Loading
+        // UI Loading instantané
         btn.disabled = true;
         btn.innerHTML = `<svg class="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" viewBox="0 0 24 24"></svg> CONNEXION...`;
-        showMsg("ok", "Vérification de sécurité en cours...");
-
-        // Si l'IP n'est pas encore là, on refait une tentative rapide
-        if (cachedIp === "0.0.0.0") await fetchIp();
-
+        
+        // On a supprimé la longue phrase "Vérification de sécurité..." pour la rendre plus fluide
+        
         try {
+          // On envoie directement la requête sans attendre l'IP si elle n'est pas encore là
           const res = await window.vfApi.login({ 
             email: email, 
             password: password, 
@@ -121,18 +116,19 @@
           });
           
           if (res && res.ok === true) {
-            showMsg("ok", "Succès ! Bienvenue sur ViralFlowr.");
-            // Nettoyage avant redirection
+            showMsg("ok", "Succès ! Redirection...");
             localStorage.removeItem("vf_login_redirect_guard");
-            setTimeout(() => location.replace("index.html"), 600);
+            
+            // Redirection quasi-immédiate (100ms au lieu de 600ms)
+            setTimeout(() => location.replace("index.html"), 100);
           } else {
-            showMsg("err", res?.error || "Identifiants incorrects ou compte inexistant.");
+            showMsg("err", res?.error || "Identifiants incorrects.");
             btn.disabled = false;
             btn.textContent = "Se connecter";
           }
         } catch(err) {
           console.error(err);
-          showMsg("err", "Le serveur ne répond pas. Vérifie ton code Apps Script ou l'URL.");
+          showMsg("err", "Le serveur est très sollicité. Réessayez.");
           btn.disabled = false;
           btn.textContent = "Se connecter";
         }
