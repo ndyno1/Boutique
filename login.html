@@ -85,15 +85,13 @@
 
   <script>
     const $ = (id) => document.getElementById(id);
-    let cachedIp = "0.0.0.0"; // IP par défaut pour ne pas bloquer
+    let cachedIp = "0.0.0.0"; 
 
-    /* 🚀 RÉCUPÉRATION IP EN ARRIÈRE-PLAN (Ultra-rapide, non-bloquant) */
     fetch('https://api.ipify.org?format=json')
       .then(res => res.json())
       .then(data => { cachedIp = data.ip; })
       .catch(() => { cachedIp = "IP_TIMEOUT"; });
 
-    // Fonction d'affichage des messages
     function showMsg(type, text) {
       const box = $("msg");
       box.classList.remove("hidden");
@@ -102,7 +100,6 @@
       box.textContent = text;
     }
 
-    /* ⚡ GESTION DU FORMULAIRE DE CONNEXION */
     window.addEventListener("DOMContentLoaded", () => {
       $("loginForm").addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -111,13 +108,11 @@
         const email = $("email").value.trim();
         const password = $("password").value;
 
-        // UI Loading instantané
         btn.disabled = true;
         btn.innerHTML = `<svg class="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" viewBox="0 0 24 24"></svg> CONNEXION...`;
-        $("msg").classList.add("hidden"); // Cache les anciens messages
+        $("msg").classList.add("hidden");
 
         try {
-          // Appel à l'API via ton fichier vf_api.js
           const res = await window.vfApi.login({ 
             email: email, 
             password: password, 
@@ -125,11 +120,19 @@
           });
           
           if (res && res.ok === true) {
+            // 🚨 FORCAGE DE LA SAUVEGARDE DE SESSION POUR INDEX.HTML 🚨
+            const userData = res.user || {};
+            localStorage.setItem("vf_session", JSON.stringify({
+              token: res.token || userData.token || "TOKEN_OK",
+              email: userData.email || email,
+              user_id: userData.user_id || userData.id,
+              username: userData.username || "Client"
+            }));
+
             showMsg("ok", "Succès ! Redirection...");
             localStorage.removeItem("vf_login_redirect_guard");
             
-            // 🚀 Redirection immédiate (100ms) vers l'accueil
-            setTimeout(() => location.replace("index.html"), 100);
+            setTimeout(() => location.replace("index.html"), 150);
           } else {
             showMsg("err", res?.error || "Identifiants incorrects ou compte inexistant.");
             btn.disabled = false;
@@ -144,5 +147,3 @@
       });
     });
   </script>
-</body>
-</html>
