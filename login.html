@@ -19,6 +19,19 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap">
   </noscript>
 
+  <script>
+    // ✅ Config utilisée par vf_api.js
+    window.VF_CONFIG = {
+      scriptUrl: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec",
+      // ton bridge ignore timeoutMs, mais on le garde pour cohérence
+      timeoutMs: 35000,
+      postMode: "iframe"
+    };
+  </script>
+
+  <!-- ✅ Ton bridge (le code vf_api.js que tu as envoyé) -->
+  <script src="/vf_api.js?v=105" defer></script>
+
   <style>
     :root{
       --bg:#F8FAFC;
@@ -38,206 +51,107 @@
       background:var(--bg);
       color:var(--text);
     }
-    .wrap{
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:16px;
-    }
+    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
     .card{
-      width:100%;
-      max-width:420px;
-      background:var(--card);
-      border:1px solid #f1f5f9;
-      box-shadow:0 10px 30px rgba(2,6,23,.06);
-      border-radius:24px;
-      padding:22px;
+      width:100%;max-width:420px;background:var(--card);
+      border:1px solid #f1f5f9;box-shadow:0 10px 30px rgba(2,6,23,.06);
+      border-radius:24px;padding:22px;
     }
-    .brand{
-      font-weight:900;
-      font-size:22px;
-      letter-spacing:-.02em;
-    }
-    .brand span{ color:var(--brand1); }
-    .sub{
-      margin-top:4px;
-      font-size:13px;
-      font-weight:700;
-      color:var(--muted);
-      opacity:.8;
-    }
+    .brand{font-weight:900;font-size:22px;letter-spacing:-.02em}
+    .brand span{color:var(--brand1)}
+    .sub{margin-top:4px;font-size:13px;font-weight:700;color:var(--muted);opacity:.85}
     .msg{
-      display:none;
-      margin-top:14px;
-      padding:10px 12px;
-      border-radius:16px;
-      border:1px solid var(--border);
-      font-weight:700;
-      font-size:13px;
-      line-height:1.35;
+      display:none;margin-top:14px;padding:10px 12px;border-radius:16px;
+      border:1px solid var(--border);font-weight:700;font-size:13px;line-height:1.35
     }
-    .msg.ok{ display:block; background:var(--okbg); border-color:var(--okbd); color:var(--oktx); }
-    .msg.err{ display:block; background:var(--erbg); border-color:var(--erbd); color:var(--ertx); }
-
-    label{
-      display:block;
-      font-size:11px;
-      font-weight:900;
-      letter-spacing:.12em;
-      text-transform:uppercase;
-      color:var(--muted);
-      margin:10px 0 6px 6px;
-    }
+    .msg.ok{display:block;background:var(--okbg);border-color:var(--okbd);color:var(--oktx)}
+    .msg.err{display:block;background:var(--erbg);border-color:var(--erbd);color:var(--ertx)}
+    label{display:block;font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:10px 0 6px 6px}
     .input{
-      width:100%;
-      height:44px;
-      border-radius:16px;
-      border:1px solid var(--border);
-      padding:0 14px;
-      font-size:14px;
-      font-weight:700;
-      outline:none;
-      transition:.15s;
-      background:#fff;
+      width:100%;height:44px;border-radius:16px;border:1px solid var(--border);
+      padding:0 14px;font-size:14px;font-weight:700;outline:none;transition:.15s;background:#fff
     }
-    .input:focus{
-      border-color:#fed7aa;
-      box-shadow:0 0 0 3px rgba(240,126,19,.18);
-    }
-    .row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      margin:6px 6px 0 6px;
-    }
-    .forgot{
-      font-size:10px;
-      font-weight:900;
-      letter-spacing:.06em;
-      text-transform:uppercase;
-      color:var(--brand1);
-      text-decoration:none;
-    }
-    .forgot:hover{ text-decoration:underline; }
-
+    .input:focus{border-color:#fed7aa;box-shadow:0 0 0 3px rgba(240,126,19,.18)}
+    .row{display:flex;align-items:center;justify-content:space-between;margin:6px 6px 0 6px}
+    .forgot{font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--brand1);text-decoration:none}
+    .forgot:hover{text-decoration:underline}
     .btn{
-      margin-top:14px;
-      width:100%;
-      height:44px;
-      border-radius:16px;
-      border:none;
-      cursor:pointer;
-      font-weight:900;
-      letter-spacing:.12em;
-      text-transform:uppercase;
-      font-size:12px;
-      color:#fff;
+      margin-top:14px;width:100%;height:44px;border-radius:16px;border:none;cursor:pointer;
+      font-weight:900;letter-spacing:.12em;text-transform:uppercase;font-size:12px;color:#fff;
       background:linear-gradient(135deg,var(--brand1),var(--brand2));
       box-shadow:0 10px 20px rgba(240,126,19,.22);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      transition:.12s;
+      display:flex;align-items:center;justify-content:center;gap:8px;transition:.12s
     }
-    .btn:disabled{ opacity:.6; cursor:not-allowed; }
-    .btn:hover{ filter:saturate(1.05); }
-
-    .spin{
-      width:14px;height:14px;
-      border:2px solid rgba(255,255,255,.9);
-      border-top-color:transparent;
-      border-radius:50%;
-      animation:spin 1s linear infinite;
-    }
-    @keyframes spin{ to{ transform:rotate(360deg); } }
-
-    .foot{
-      margin-top:14px;
-      text-align:center;
-      font-size:12px;
-      font-weight:800;
-      color:var(--muted);
-    }
-    .foot a{ color:var(--text); text-decoration:none; }
-    .foot a:hover{ text-decoration:underline; }
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+    .spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.9);border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .foot{margin-top:14px;text-align:center;font-size:12px;font-weight:800;color:var(--muted)}
+    .foot a{color:var(--text);text-decoration:none}
+    .foot a:hover{text-decoration:underline}
   </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="brand">Viral<span>Flowr</span></div>
+      <div class="sub">Ravis de vous revoir !</div>
+
+      <div id="msg" class="msg"></div>
+
+      <form id="loginForm" autocomplete="on">
+        <label>Email</label>
+        <input id="email" type="email" required class="input" placeholder="ex: patrick@gmail.com" autocomplete="email" />
+
+        <div class="row">
+          <label style="margin:0;padding:0">Mot de passe</label>
+          <a class="forgot" href="forgot.html">Oublié ?</a>
+        </div>
+        <input id="password" type="password" required class="input" placeholder="••••••••" autocomplete="current-password" />
+
+        <button id="btn" type="submit" class="btn">Se connecter</button>
+      </form>
+
+      <div class="foot">
+        Nouveau ici ? <a href="register.html">Créer un compte</a>
+      </div>
+    </div>
+  </div>
 
   <script>
-    // ✅ Mets ton URL Apps Script ici
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
+    const $ = (id) => document.getElementById(id);
 
-    // Timeout réseau (ms)
-    const API_TIMEOUT_MS = 15000;
-
-    // IP optionnelle (ne bloque jamais)
+    // IP optionnelle : timeout court + ne bloque jamais
     let cachedIp = "IP_UNKNOWN";
 
-    function $(id){ return document.getElementById(id); }
-
-    function showMsg(type, text){
-      const box = $("msg");
-      box.className = "msg " + (type === "ok" ? "ok" : "err");
-      box.textContent = text;
-    }
-
-    async function fetchIpWithTimeout(ms = 2000){
+    async function fetchIpWithTimeout(ms = 2000) {
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), ms);
       try {
         const res = await fetch("https://api.ipify.org?format=json", { signal: ctrl.signal, cache: "no-store" });
         const data = await res.json();
         cachedIp = data?.ip || "IP_UNKNOWN";
-      } catch(e){
+      } catch (e) {
         cachedIp = "IP_TIMEOUT";
       } finally {
         clearTimeout(t);
       }
     }
-
-    // Lance après 1s -> page s’affiche d’abord
+    // lance après 1s (page s’affiche vite)
     setTimeout(fetchIpWithTimeout, 1000);
 
-    async function postJsonWithTimeout(url, bodyObj, timeoutMs){
-      const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), timeoutMs);
-
-      try {
-        const res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(bodyObj),
-          signal: ctrl.signal,
-        });
-
-        // Certaines configs Apps Script renvoient text/plain
-        const txt = await res.text();
-        let data = null;
-        try { data = JSON.parse(txt); } catch(_) { data = { ok:false, error:"Réponse non-JSON", raw: txt }; }
-        return data;
-
-      } catch (e) {
-        if (String(e).includes("AbortError")) return { ok:false, error:"Timeout serveur (" + timeoutMs/1000 + "s)" };
-        return { ok:false, error:"Erreur réseau: " + String(e) };
-      } finally {
-        clearTimeout(t);
-      }
+    function showMsg(type, text) {
+      const box = $("msg");
+      box.className = "msg " + (type === "ok" ? "ok" : "err");
+      box.textContent = text;
     }
 
-    async function login(email, password){
-      // Si IP pas prête -> tentative rapide mais courte
-      if (cachedIp === "IP_UNKNOWN") await fetchIpWithTimeout(1200);
-
-      // ✅ Payload standard (à matcher côté Apps Script)
-      const payload = {
-        action: "login",
-        email,
-        password,
-        user_ip: cachedIp
-      };
-
-      return await postJsonWithTimeout(SCRIPT_URL, payload, API_TIMEOUT_MS);
+    async function waitForVfApi(maxMs = 4000) {
+      const start = Date.now();
+      while (!window.vfApi || typeof window.vfApi.login !== "function") {
+        await new Promise(r => setTimeout(r, 50));
+        if (Date.now() - start > maxMs) throw new Error("vfApi non chargé (vf_api.js)");
+      }
     }
 
     window.addEventListener("DOMContentLoaded", () => {
@@ -257,49 +171,34 @@
         btn.innerHTML = `<span class="spin"></span> CONNEXION...`;
         showMsg("ok", "Connexion en cours...");
 
-        const res = await login(email, password);
+        try {
+          await waitForVfApi();
 
-        if (res && res.ok === true) {
-          showMsg("ok", "Succès ! Bienvenue sur ViralFlowr.");
-          // Ici tu peux stocker token/session si ton API en renvoie
-          // ex: localStorage.setItem("vf_token", res.token);
+          // si IP pas prête, tentative courte, sinon on continue
+          if (cachedIp === "IP_UNKNOWN") await fetchIpWithTimeout(1200);
 
-          setTimeout(() => location.replace("index.html"), 600);
-        } else {
-          showMsg("err", res?.error || "Identifiants incorrects ou compte inexistant.");
+          const res = await window.vfApi.login({
+            email,
+            password,
+            user_ip: cachedIp
+          });
+
+          if (res && res.ok === true) {
+            showMsg("ok", "Succès ! Bienvenue sur ViralFlowr.");
+            setTimeout(() => location.replace("index.html"), 600);
+          } else {
+            showMsg("err", res?.error || "Identifiants incorrects ou compte inexistant.");
+            btn.disabled = false;
+            btn.textContent = "Se connecter";
+          }
+        } catch (err) {
+          console.error(err);
+          showMsg("err", "Le serveur ne répond pas. Vérifie le scriptUrl Apps Script et vf_api.js.");
           btn.disabled = false;
           btn.textContent = "Se connecter";
         }
       });
     });
   </script>
-</head>
-
-<body>
-  <div class="wrap">
-    <div class="card">
-      <div class="brand">Viral<span>Flowr</span></div>
-      <div class="sub">Ravis de vous revoir !</div>
-
-      <div id="msg" class="msg"></div>
-
-      <form id="loginForm" class="mt-5" autocomplete="on">
-        <label>Email</label>
-        <input id="email" type="email" required class="input" placeholder="ex: patrick@gmail.com" autocomplete="email" />
-
-        <div class="row">
-          <label style="margin:0; padding:0;">Mot de passe</label>
-          <a class="forgot" href="forgot.html">Oublié ?</a>
-        </div>
-        <input id="password" type="password" required class="input" placeholder="••••••••" autocomplete="current-password" />
-
-        <button id="btn" type="submit" class="btn">Se connecter</button>
-      </form>
-
-      <div class="foot">
-        Nouveau ici ? <a href="register.html">Créer un compte</a>
-      </div>
-    </div>
-  </div>
 </body>
 </html>
