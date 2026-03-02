@@ -232,18 +232,18 @@
               </div>
             </div>
 
-                      <div class="bg-gray-800 border border-gray-700 rounded-xl p-3 mt-4 text-center">
-            <p class="text-[10px] text-gray-400 font-medium leading-relaxed">
-              En cliquant sur "Payer avec Wallet", vous acceptez notre 
-              <a href="politique.html" class="text-white font-black underline decoration-2 underline-offset-2 hover:opacity-80">
-                Politique de règlement
-              </a>. 
-              Tout achat est définitif. Pour en savoir plus sur notre plateforme, découvrez 
-              <a href="about.html" class="text-white font-black underline decoration-2 underline-offset-2 hover:opacity-80">
-                qui nous sommes
-              </a>.
-            </p>
-          </div>
+            <div class="bg-gray-800 border border-gray-700 rounded-xl p-3 mt-4 text-center">
+              <p class="text-[10px] text-gray-400 font-medium leading-relaxed">
+                En cliquant sur "Payer avec Wallet", vous acceptez notre 
+                <a href="politique.html" class="text-white font-black underline decoration-2 underline-offset-2 hover:opacity-80">
+                  Politique de règlement
+                </a>. 
+                Tout achat est définitif. Pour en savoir plus sur notre plateforme, découvrez 
+                <a href="about.html" class="text-white font-black underline decoration-2 underline-offset-2 hover:opacity-80">
+                  qui nous sommes
+                </a>.
+              </p>
+            </div>
           </div>
 
         </form>
@@ -281,7 +281,11 @@
 
   <script>
     // ====== CONFIG ======
+    // Ton Google App Script principal (backend de paiement)
     const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
+    
+    // Ton Google App Script pour le Bot WhatsApp (avec l'ID que tu m'as donné)
+    const BOT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbylffBPr9m8Y26asnlPuVDizwS5xOUe9zpUIt3NrbUZlVsMgNkh9bOcANYbkvTZbpL9/exec";
 
     // ====== AUTO-FILL BY ID (depuis Produits) ======
     (function autoFillFromId(){
@@ -814,12 +818,40 @@
       try {
         if (sessionStorage.getItem(SENT_KEY) === "1") { showLocked_(orderId); return; }
 
+        // 1. Envoi au backend de paiement principal (Viralflowr)
         await fetch(GOOGLE_URL, {
           method:'POST',
           mode:'no-cors',
           body: JSON.stringify(payload)
         });
 
+        // 🚨 2. NOTIFICATION DIRECTE AU BOT WHATSAPP (LE CERVEAU) 🚨
+        try {
+          // Utilisation du pseudo du client ou de son adresse email
+          let pseudoNom = WALLET_EMAIL ? WALLET_EMAIL.split('@')[0] : "Client Web";
+
+          const botPayload = {
+            source: "website",
+            action: "nouvelle_commande",
+            nom: pseudoNom,
+            contact: contactValue,
+            service: nom,
+            quantite: qtyVal,
+            montant: totalNumber + " $"
+          };
+
+          // On envoie la requête silencieusement à l'App Script de ton Bot
+          fetch(BOT_WEBHOOK_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify(botPayload)
+          }).catch(e => console.log("Erreur silencieuse Bot:", e));
+        } catch (botErr) {
+          console.log("Erreur préparation Bot:", botErr);
+        }
+        // 🚨 FIN DE LA NOTIFICATION BOT 🚨
+
+        // 3. Suite normale (Interface de succès)
         sessionStorage.setItem(SENT_KEY, "1");
         sessionStorage.removeItem(INFLIGHT_KEY);
         sessionStorage.removeItem('active_order_id');
