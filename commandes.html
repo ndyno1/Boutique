@@ -292,23 +292,37 @@
     }
 
     function badgeForStatus_(st){
-      // Transforme en majuscules sans accents
-      const s = String(st||"").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      
-      if (s.includes("PAID") || s.includes("VALID") || s.includes("RECEIVED") || s.includes("DONE") || s.includes("SUCCESS") || s.includes("SUCCES") || s.includes("DELIVER")) {
-          return ["bg-green-100 text-green-700", "Complet"];
-      }
-      if (s.includes("PENDING") || s.includes("ATTENTE")) {
-          return ["bg-yellow-100 text-yellow-700", "En attente"];
-      }
-      if (s.includes("PROCESS") || s.includes("TRAIT")) {
-          return ["bg-purple-100 text-purple-700", "En traitement"];
-      }
-      if (s.includes("FAIL") || s.includes("REFUS") || s.includes("ERROR")) {
-          return ["bg-red-100 text-red-700", "Erreur"];
-      }
-      return ["bg-gray-100 text-gray-700", st || "—"];
-    }
+  const s = String(st||"").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  
+  if (
+    s.includes("SUCCESS") || s.includes("SUCCES") || s.includes("DONE") ||
+    s.includes("COMPLETE") || s.includes("DELIVER") || s.includes("TERMINE")
+  ) {
+    return ["bg-green-100 text-green-700", "Complet"];
+  }
+
+  if (s.includes("PARTIAL") || s.includes("PARTIEL")) {
+    return ["bg-orange-100 text-orange-700", "Partiel"];
+  }
+
+  if (s.includes("PENDING") || s.includes("ATTENTE")) {
+    return ["bg-yellow-100 text-yellow-700", "En attente"];
+  }
+
+  if (s.includes("PROCESS") || s.includes("TRAIT") || s.includes("EN COURS")) {
+    return ["bg-purple-100 text-purple-700", "En traitement"];
+  }
+
+  if (
+    s.includes("FAIL") || s.includes("ERROR") ||
+    s.includes("REFUND") || s.includes("REMBOURSE") ||
+    s.includes("CANCEL")
+  ) {
+    return ["bg-red-100 text-red-700", "Erreur / remboursement"];
+  }
+
+  return ["bg-gray-100 text-gray-700", st || "—"];
+}
 
     function tryParse_(raw){ try { return JSON.parse(raw); } catch { return null; } }
 
