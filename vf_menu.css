@@ -1,0 +1,222 @@
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body.vf-menu-open {
+  overflow: hidden;
+}
+
+.vf-menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(2, 6, 23, 0.42);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .28s ease, visibility .28s ease;
+}
+
+.vf-menu-overlay.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.vf-side-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: min(86vw, 320px);
+  max-width: 320px;
+  height: 100dvh;
+  z-index: 70;
+  background: rgba(255,255,255,.97);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-right: 1px solid rgba(229,231,235,.95);
+  box-shadow: 0 24px 60px rgba(15,23,42,.18);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translate3d(-104%, 0, 0);
+  transition: transform .34s cubic-bezier(.22,1,.36,1);
+  will-change: transform;
+}
+
+.vf-side-menu.open {
+  transform: translate3d(0, 0, 0);
+}
+
+.vf-side-menu__header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 20px;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid #F1F5F9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vf-side-menu__brand {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: #111827;
+  line-height: 1;
+}
+
+.vf-side-menu__brand span {
+  color: #F07E13;
+}
+
+.vf-side-menu__sub {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .18em;
+  color: #9CA3AF;
+}
+
+.vf-side-menu__close {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #EEF2F7;
+  border-radius: 14px;
+  background: #F8FAFC;
+  color: #6B7280;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.vf-side-menu__close:hover {
+  background: #FFF7ED;
+  color: #F07E13;
+  border-color: #FED7AA;
+  transform: rotate(90deg);
+}
+
+.vf-side-menu__body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 14px;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.vf-side-menu__footer {
+  border-top: 1px solid #F1F5F9;
+  background: linear-gradient(to top, #F8FAFC, #FFFFFF);
+  padding: 18px;
+  padding-bottom: calc(18px + env(safe-area-inset-bottom));
+}
+
+.vf-side-menu__section {
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .16em;
+  color: #9CA3AF;
+  padding: 10px 14px 8px;
+}
+
+.vf-side-menu__sep {
+  height: 1px;
+  background: #F1F5F9;
+  margin: 14px 8px;
+}
+
+.vf-menu-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 54px;
+  padding: 14px;
+  border-radius: 18px;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-decoration: none;
+  transition: transform .22s ease, background-color .22s ease, color .22s ease, box-shadow .22s ease;
+}
+
+.vf-menu-link svg {
+  flex-shrink: 0;
+  color: #9CA3AF;
+  transition: color .22s ease, transform .22s ease;
+}
+
+.vf-menu-link:hover {
+  background: #F8FAFC;
+  color: #F07E13;
+  transform: translateX(4px);
+  box-shadow: inset 0 0 0 1px #FDE7D1;
+}
+
+.vf-menu-link:hover svg {
+  color: #F07E13;
+  transform: scale(1.04);
+}
+
+.vf-menu-link.active {
+  background: linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 100%);
+  color: #F07E13;
+  box-shadow: inset 0 0 0 1px #FDE7D1;
+}
+
+.vf-menu-link.active svg {
+  color: #F07E13;
+}
+
+.vf-menu-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: transparent;
+  border: none;
+  color: #374151;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.vf-menu-toggle:hover {
+  background: #F9FAFB;
+  color: #F07E13;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 420px) {
+  .vf-side-menu {
+    width: min(90vw, 300px);
+  }
+
+  .vf-menu-link {
+    min-height: 50px;
+    padding: 13px;
+    border-radius: 16px;
+    font-size: 13px;
+  }
+
+  .vf-menu-toggle {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+  }
+}
