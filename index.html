@@ -43,23 +43,7 @@
   <meta property="og:image" content="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png" />
   <meta property="og:type" content="website" />
 
-  <script>
-    const inAppsScriptPanel =
-      !!window.__VF_IN_APPS_SCRIPT_PANEL ||
-      /script\.googleusercontent\.com|script\.google\.com/i.test(document.referrer || "");
-
-    window.VF_CONFIG = {
-      scriptUrl: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec",
-      timeoutMs: 20000,
-      debug: false,
-      postMode: "auto",
-      proxyUrl: "/vf_proxy",
-      postMessageTargetOrigin: inAppsScriptPanel ? "*" : location.origin,
-      cookieDomain: ".viralflowr.com",
-      cookieTokenKey: "vf_token"
-    };
-  </script>
-
+  <script src="/styles/vf_config.js?v=1"></script>
   <script src="/vf_api.js?v=200" defer></script>
   <script src="/styles/vf_menu.js?v=2" defer></script>
   <script src="/styles/vf_footer.js?v=2" defer></script>
