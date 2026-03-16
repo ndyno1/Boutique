@@ -41,7 +41,8 @@
   <meta property="og:title" content="ViralFlowr | Portfolio & Avis" />
   <meta property="og:description" content="Découvrez les retours certifiés de nos clients sur nos services." />
   <meta property="og:type" content="website" />
-
+  
+  <script src="/styles/vf_config.js?v=1"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
@@ -127,7 +128,7 @@
   </main>
 
   <script>
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbylffBPr9m8Y26asnlPuVDizwS5xOUe9zpUIt3NrbUZlVsMgNkh9bOcANYbkvTZbpL9/exec";
+    const APPS_SCRIPT_URL = window.VF_CONFIG.avisScriptUrl;
 
     function setActiveMenuLinkFallback_() {
       const currentPath = (window.location.pathname.split("/").pop() || "").toLowerCase();
