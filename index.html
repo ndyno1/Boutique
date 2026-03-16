@@ -61,11 +61,11 @@
   </script>
 
   <script src="/vf_api.js?v=200" defer></script>
-  <script src="/styles/vf_menu.js?v=1" defer></script>
-  <script src="/styles/vf_footer.js?v=1" defer></script>
+  <script src="/styles/vf_menu.js?v=2" defer></script>
+  <script src="/styles/vf_footer.js?v=2" defer></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles/vf_theme.css?v=1">
+  <link rel="stylesheet" href="/styles/vf_theme.css?v=2">
 </head>
 
 <body>
@@ -76,12 +76,23 @@
   <main class="max-w-[1280px] mx-auto px-4 py-8">
     <section class="mb-10">
       <article class="relative w-full h-[220px] sm:h-[250px] md:h-[400px] rounded-[24px] md:rounded-[32px] overflow-hidden shadow-2xl group border-4 border-white">
-        <img src="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" alt="ViralFlowr">
+        <img
+          src="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png"
+          class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
+          alt="ViralFlowr"
+        >
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"></div>
+
         <div class="relative z-10 p-5 sm:p-8 md:p-16 flex flex-col justify-end h-full text-white">
-          <h1 class="text-2xl sm:text-3xl md:text-6xl font-black max-w-2xl leading-[0.95] mb-3 md:mb-4 tracking-tighter uppercase italic">L'Univers Digital <br>& Matériel.</h1>
-          <p class="text-[11px] sm:text-xs md:text-lg font-medium opacity-90 max-w-md">Services Elite, Déblocage IMEI et Matériel High-Tech garantis.</p>
-          <div id="priceMode" class="mt-4 text-[10px] font-black uppercase tracking-[0.18em] opacity-90">Mode: ...</div>
+          <h1 class="text-2xl sm:text-3xl md:text-6xl font-black max-w-2xl leading-[0.95] mb-3 md:mb-4 tracking-tighter uppercase italic">
+            L'Univers Digital <br>& Matériel.
+          </h1>
+          <p class="text-[11px] sm:text-xs md:text-lg font-medium opacity-90 max-w-md">
+            Services Elite, Déblocage IMEI et Matériel High-Tech garantis.
+          </p>
+          <div id="priceMode" class="mt-4 text-[10px] font-black uppercase tracking-[0.18em] opacity-90">
+            Mode: ...
+          </div>
         </div>
       </article>
     </section>
@@ -99,12 +110,36 @@
     <div id="loadError" class="hidden mb-6 bg-red-50 border border-red-200 text-red-700 font-bold text-xs rounded-2xl px-4 py-3"></div>
 
     <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 mb-24">
-      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
-      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
-      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
-      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
-      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
-      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm">
+        <div class="aspect-square skeleton-box rounded-[22px] mb-4"></div>
+        <div class="h-4 skeleton-box rounded mb-2 w-3/4"></div>
+        <div class="h-3 skeleton-box rounded w-1/2"></div>
+      </div>
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm">
+        <div class="aspect-square skeleton-box rounded-[22px] mb-4"></div>
+        <div class="h-4 skeleton-box rounded mb-2 w-3/4"></div>
+        <div class="h-3 skeleton-box rounded w-1/2"></div>
+      </div>
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm">
+        <div class="aspect-square skeleton-box rounded-[22px] mb-4"></div>
+        <div class="h-4 skeleton-box rounded mb-2 w-3/4"></div>
+        <div class="h-3 skeleton-box rounded w-1/2"></div>
+      </div>
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm">
+        <div class="aspect-square skeleton-box rounded-[22px] mb-4"></div>
+        <div class="h-4 skeleton-box rounded mb-2 w-3/4"></div>
+        <div class="h-3 skeleton-box rounded w-1/2"></div>
+      </div>
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm">
+        <div class="aspect-square skeleton-box rounded-[22px] mb-4"></div>
+        <div class="h-4 skeleton-box rounded mb-2 w-3/4"></div>
+        <div class="h-3 skeleton-box rounded w-1/2"></div>
+      </div>
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm">
+        <div class="aspect-square skeleton-box rounded-[22px] mb-4"></div>
+        <div class="h-4 skeleton-box rounded mb-2 w-3/4"></div>
+        <div class="h-3 skeleton-box rounded w-1/2"></div>
+      </div>
     </div>
   </main>
 
@@ -115,32 +150,42 @@
     let _isFirstLoad = true;
 
     const FILTER_MAP = {
-      "Abonnement": ["ABONNEMENT","CARTE"],
+      "Abonnement": ["ABONNEMENT", "CARTE"],
       "Carte2": ["CARTE2"],
-      "Boost": ["BOOST","BOOST2","SMM1","SMM2","SMM3","PEAKERR","PEAK"],
-      "Materiel": ["MATERIEL","GADGET","PHONE"],
+      "Boost": ["BOOST", "BOOST2", "SMM1", "SMM2", "SMM3", "PEAKERR", "PEAK"],
+      "Materiel": ["MATERIEL", "GADGET", "PHONE"],
       "IMEI": ["IMEI"],
-      "Jeux": ["JEUX","JEU","GAME","GAMING","PSN","PLAYSTATION","XBOX","STEAM","NINTENDO"]
+      "Jeux": ["JEUX", "JEU", "GAME", "GAMING", "PSN", "PLAYSTATION", "XBOX", "STEAM", "NINTENDO"]
     };
 
-    function safe(v){ return (v === null || v === undefined) ? "" : String(v); }
-    function up(v){ return safe(v).trim().toUpperCase(); }
-    function escHtml(str){ return safe(str).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
-    function escAttr(str){ return safe(str).replace(/["']/g, ""); }
-    function pName(p){ return safe(p.nom || p.name || p.title); }
-    function pCat(p){ return safe(p.cat || p.category || p.categorie); }
-    function pPrice(p){ return safe(p.prix_affiche ?? p.prix_revendeur ?? p.prix ?? p.price ?? p.amount); }
-    function pImg(p){ return safe(p.img || p.image || p.photo || p.image_url || p.cover || p.thumbnail); }
-
-    function getStore(){ return window.vfApi?.storage || window.vfStorage || null; }
-    function getSession_(){
-      const st = getStore();
-      try{ if (st?.getSession) return st.getSession(); }catch(_){}
-      try{ return JSON.parse(localStorage.getItem("vf_session")); }catch(_){ return null; }
+    function safe(v) { return (v === null || v === undefined) ? "" : String(v); }
+    function up(v) { return safe(v).trim().toUpperCase(); }
+    function escHtml(str) {
+      return safe(str).replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[c]));
     }
-    function getToken_(){
+    function escAttr(str) { return safe(str).replace(/["']/g, ""); }
+    function pName(p) { return safe(p.nom || p.name || p.title); }
+    function pCat(p) { return safe(p.cat || p.category || p.categorie); }
+    function pPrice(p) { return safe(p.prix_affiche ?? p.prix_revendeur ?? p.prix ?? p.price ?? p.amount); }
+    function pImg(p) { return safe(p.img || p.image || p.photo || p.image_url || p.cover || p.thumbnail); }
+
+    function getStore() { return window.vfApi?.storage || window.vfStorage || null; }
+
+    function getSession_() {
       const st = getStore();
-      try{ if (st?.getToken) return String(st.getToken()).trim(); }catch(_){}
+      try { if (st?.getSession) return st.getSession(); } catch (_) {}
+      try { return JSON.parse(localStorage.getItem("vf_session")); } catch (_) { return null; }
+    }
+
+    function getToken_() {
+      const st = getStore();
+      try { if (st?.getToken) return String(st.getToken()).trim(); } catch (_) {}
       return localStorage.getItem("vf_token")?.trim() || "";
     }
 
@@ -151,7 +196,7 @@
       input.addEventListener("input", () => { render(); });
     }
 
-    async function loadProducts_(token){
+    async function loadProducts_(token) {
       try {
         const api = window.vfApi;
         let payload;
@@ -166,40 +211,51 @@
         }
 
         const list = Array.isArray(payload) ? payload : (payload.products || []);
-        ALL_PRODUCTS = list.map((p, i) => ({ ...p, __vf_id: (p.id || p.ID || "p-"+i) }));
+        ALL_PRODUCTS = list.map((p, i) => ({ ...p, __vf_id: (p.id || p.ID || "p-" + i) }));
         _isFirstLoad = false;
-        document.getElementById("loadError").classList.add("hidden");
+
+        const errBox = document.getElementById("loadError");
+        if (errBox) errBox.classList.add("hidden");
+
         render();
       } catch (err) {
         console.error("Load Error:", err);
         if (_isFirstLoad) {
-          document.getElementById("loadError").textContent = "Problème de connexion aux services. Veuillez rafraîchir.";
-          document.getElementById("loadError").classList.remove("hidden");
+          const errBox = document.getElementById("loadError");
+          if (errBox) {
+            errBox.textContent = "Problème de connexion aux services. Veuillez rafraîchir.";
+            errBox.classList.remove("hidden");
+          }
         }
       }
     }
 
-    function render(){
+    function render() {
       const grid = document.getElementById("product-grid");
       const input = document.getElementById("searchInput");
       if (!grid) return;
 
       const query = (input?.value || "").toLowerCase().trim();
-      const filtered = ALL_PRODUCTS.filter(p=>{
+
+      const filtered = ALL_PRODUCTS.filter((p) => {
         const catU = up(pCat(p));
         const nameL = pName(p).toLowerCase();
-        const matchCat = CURRENT_FILTER === "all" || (FILTER_MAP[CURRENT_FILTER]?.some(a => catU.includes(up(a)))) || catU === up(CURRENT_FILTER);
+        const matchCat =
+          CURRENT_FILTER === "all" ||
+          (FILTER_MAP[CURRENT_FILTER]?.some((a) => catU.includes(up(a)))) ||
+          catU === up(CURRENT_FILTER);
+
         return matchCat && (!query || nameL.includes(query));
       });
 
-      if (filtered.length === 0 && !_isFirstLoad){
+      if (filtered.length === 0 && !_isFirstLoad) {
         grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-300 font-bold uppercase tracking-widest">Aucun produit trouvé</div>';
         return;
       }
 
       if (_isFirstLoad) return;
 
-      grid.innerHTML = filtered.map(p=>{
+      grid.innerHTML = filtered.map((p) => {
         const img = pImg(p) || FALLBACK_IMG;
         const priceNum = parseFloat(String(pPrice(p)).replace(",", "."));
         const priceTxt = isNaN(priceNum) ? "0.00" : priceNum.toFixed(2);
@@ -207,15 +263,15 @@
 
         return `<a href="/p/${pid}/" class="hover-card group bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col shadow-sm">
           <div class="aspect-square bg-[#F8FAFC] rounded-[22px] mb-4 flex items-center justify-center p-6 overflow-hidden">
-            <img src="${escAttr(img)}" class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" onerror="this.src='${FALLBACK_IMG}'">
+            <img src="${escAttr(img)}" class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" onerror="this.src='${FALLBACK_IMG}'" alt="${escHtml(pName(p))}">
           </div>
           <div class="px-1">
             <span class="text-[9px] font-black text-[#F07E13] uppercase tracking-tighter mb-1 block">${escHtml(pCat(p))}</span>
             <h3 class="text-[13px] font-bold text-gray-900 leading-tight mb-4 h-8 overflow-hidden line-clamp-2">${escHtml(pName(p))}</h3>
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between gap-2">
               <span class="text-gray-900 font-black text-lg tracking-tighter">${priceTxt} $</span>
               <div class="bg-gray-900 text-white p-1.5 rounded-lg group-hover:brand-gradient transition-all">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16m8-8H4"></path></svg>
               </div>
             </div>
           </div>
@@ -223,28 +279,31 @@
       }).join("");
     }
 
-    function filterCat(cat, btn){
-      document.querySelectorAll(".cat-btn").forEach(b=>{
-        b.classList.remove("text-white","brand-gradient","active");
-        b.classList.add("bg-white","text-gray-500");
+    function filterCat(cat, btn) {
+      document.querySelectorAll(".cat-btn").forEach((b) => {
+        b.classList.remove("text-white", "brand-gradient", "active");
+        b.classList.add("bg-white", "text-gray-500");
       });
-      btn.classList.add("text-white","brand-gradient","active");
+
+      btn.classList.add("text-white", "brand-gradient", "active");
       CURRENT_FILTER = cat;
       render();
     }
 
-    function renderAccountUI_(){
+    function renderAccountUI_() {
       const area = document.getElementById("accountArea");
       const sideArea = document.getElementById("sideAccountArea");
       const s = getSession_();
       const token = getToken_();
 
-      document.getElementById("priceMode").textContent = token ? "Mode: REVENDEUR" : "Mode: CLIENT";
+      const modeEl = document.getElementById("priceMode");
+      if (modeEl) modeEl.textContent = token ? "Mode: REVENDEUR" : "Mode: CLIENT";
 
       if (area) {
         area.innerHTML = "";
         area.classList.remove("hidden");
-        if (!s){
+
+        if (!s) {
           area.innerHTML = `<a href="/login.html" class="btn-auth btn-auth-outline">Connexion</a>`;
         } else {
           area.innerHTML = `<div class="text-[11px] font-black text-gray-900 mr-2">${escHtml(s.username || s.email)}</div>`;
@@ -252,18 +311,20 @@
       }
 
       if (sideArea) {
-        if (!s){
+        if (!s) {
           sideArea.innerHTML = `<a href="/login.html" class="btn brand-gradient w-full text-white">Connexion / Inscription</a>`;
         } else {
           sideArea.innerHTML = `
-            <div class="text-sm font-bold text-gray-900 mb-4 truncate">Connecté en tant que<br><span class="text-[#F07E13]">${escHtml(s.email)}</span></div>
+            <div class="text-sm font-bold text-gray-900 mb-4 truncate">
+              Connecté en tant que<br><span class="text-[#F07E13]">${escHtml(s.email)}</span>
+            </div>
             <button onclick="localStorage.clear();location.reload();" class="btn btn-outline w-full bg-white">Se déconnecter</button>
           `;
         }
       }
     }
 
-    async function start_(){
+    async function start_() {
       bindSearchInput_();
       renderAccountUI_();
       await loadProducts_(getToken_());
