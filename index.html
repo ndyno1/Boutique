@@ -23,24 +23,18 @@
       try {
         const guard = JSON.parse(sessionStorage.getItem(GUARD_KEY) || "null");
         if (guard && (now - guard.ts) < 15000) return;
-        sessionStorage.setItem(
-          GUARD_KEY,
-          JSON.stringify({ ts: now, from: host, to: CANON_HOST })
-        );
+        sessionStorage.setItem(GUARD_KEY, JSON.stringify({ ts: now, from: host, to: CANON_HOST }));
       } catch (_) {}
 
-      location.replace(
-        "https://" + CANON_HOST + location.pathname + location.search + location.hash
-      );
+      location.replace("https://" + CANON_HOST + location.pathname + location.search + location.hash);
     })();
   </script>
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>ViralFlowr | Boutique Officielle</title>
-  <meta name="description" content="Services Elite, Déblocage IMEI et Matériel High-Tech garantis." />
-  <meta name="theme-color" content="#111827" />
 
+  <meta name="theme-color" content="#111827" />
   <link rel="icon" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
 
@@ -48,7 +42,6 @@
   <meta property="og:description" content="Services Elite, Déblocage IMEI et Matériel High-Tech garantis." />
   <meta property="og:image" content="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png" />
   <meta property="og:type" content="website" />
-  <meta property="og:locale" content="fr_FR" />
 
   <script>
     const inAppsScriptPanel =
@@ -69,31 +62,10 @@
 
   <script src="/vf_api.js?v=200" defer></script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
-    rel="stylesheet"
-  />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
-    :root{
-      --vf-orange:#F07E13;
-      --vf-orange-soft:#FFB26B;
-      --vf-bg:#F8FAFC;
-      --vf-text:#111827;
-      --vf-muted:#6B7280;
-      --vf-border:#E5E7EB;
-      --vf-panel:#FFFFFF;
-      --vf-success:#25D366;
-      --vf-shadow:0 10px 30px rgba(15, 23, 42, 0.06);
-    }
-
-    *{ box-sizing:border-box; }
-
-    html, body{
-      width:100%;
-      max-width:100%;
-      overflow-x:hidden;
-    }
+    html, body { width:100%; max-width:100%; overflow-x:hidden; }
 
     body{
       font-family:'Inter',sans-serif;
@@ -104,26 +76,16 @@
       touch-action:pan-y;
       -webkit-text-size-adjust:100%;
       padding-bottom:env(safe-area-inset-bottom);
-      background:var(--vf-bg);
-      color:var(--vf-text);
+      background:#F8FAFC;
     }
 
-    img{
-      display:block;
-      max-width:100%;
+    body.menu-open{
+      overflow:hidden;
+      touch-action:none;
     }
 
-    button, a, input{
-      -webkit-tap-highlight-color:transparent;
-    }
-
-    .no-scrollbar{
-      -ms-overflow-style:none;
-      scrollbar-width:none;
-    }
-    .no-scrollbar::-webkit-scrollbar{
-      display:none;
-    }
+    .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
+    .no-scrollbar::-webkit-scrollbar{ display:none; }
 
     @keyframes placeholderAnimate{
       0%{opacity:0;transform:translateY(8px)}
@@ -131,242 +93,249 @@
       85%{opacity:1;transform:translateY(0)}
       100%{opacity:0;transform:translateY(-8px)}
     }
+    .animate-text{ animation:placeholderAnimate 4s infinite; }
 
-    .animate-text{
-      animation:placeholderAnimate 4s infinite;
-    }
-
-    .brand-gradient{
-      background:linear-gradient(135deg,var(--vf-orange) 0%,var(--vf-orange-soft) 100%);
-    }
-
-    .hover-card{
-      transition:transform .3s cubic-bezier(.4,0,.2,1), box-shadow .3s cubic-bezier(.4,0,.2,1), border-color .3s cubic-bezier(.4,0,.2,1);
-    }
-    .hover-card:hover{
-      transform:translateY(-6px);
-      box-shadow:0 20px 25px -5px rgba(0,0,0,.05);
-      border-color:var(--vf-orange);
-    }
+    .brand-gradient{ background:linear-gradient(135deg,#F07E13 0%,#FFB26B 100%); }
+    .hover-card{ transition:all .3s cubic-bezier(.4,0,.2,1); }
+    .hover-card:hover{ transform:translateY(-6px); box-shadow:0 20px 25px -5px rgba(0,0,0,.05); border-color:#F07E13; }
 
     .btn-support{
-      background:var(--vf-success);
-      color:#fff;
-      padding:8px 16px;
-      border-radius:12px;
-      font-weight:800;
-      font-size:12px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      line-height:1;
-      transition:transform .25s ease, box-shadow .25s ease, opacity .2s ease;
-      flex-shrink:0;
-      white-space:nowrap;
-      max-width:100%;
-      box-shadow:0 8px 20px rgba(37,211,102,.18);
+      background:#25D366;color:#fff;padding:8px 16px;border-radius:12px;font-weight:800;
+      font-size:12px;display:inline-flex;align-items:center;justify-content:center;gap:8px;line-height:1;
+      transition:.3s;-webkit-tap-highlight-color:transparent;flex-shrink:0;white-space:nowrap;max-width:100%;
     }
-    .btn-support:hover{
-      transform:scale(1.05);
-      box-shadow:0 10px 15px -3px rgba(37,211,102,.3);
-    }
+    .btn-support:hover{ transform:scale(1.05); box-shadow:0 10px 15px -3px rgba(37,211,102,.3); }
 
     .btn-auth{
-      padding:9px 14px;
-      border-radius:14px;
-      font-weight:900;
-      font-size:11px;
-      text-transform:uppercase;
-      letter-spacing:.12em;
-      transition:all .25s ease;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      white-space:nowrap;
-      flex-shrink:0;
+      padding:9px 14px;border-radius:14px;font-weight:900;font-size:11px;text-transform:uppercase;
+      letter-spacing:.12em;transition:.25s;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;
+      -webkit-tap-highlight-color:transparent;flex-shrink:0;
     }
-    .btn-auth:hover{
-      transform:translateY(-1px);
-    }
-    .btn-auth-outline{
-      background:#fff;
-      border:1px solid var(--vf-border);
-      color:var(--vf-text);
-    }
-    .btn-auth-outline:hover{
-      border-color:var(--vf-orange);
-      color:var(--vf-orange);
-    }
+    .btn-auth:hover{ transform:translateY(-1px); }
+    .btn-auth-outline{ background:#fff;border:1px solid #E5E7EB;color:#111827; }
+    .btn-auth-outline:hover{ border-color:#F07E13;color:#F07E13; }
 
-    .line-clamp-2{
-      display:-webkit-box;
-      -webkit-line-clamp:2;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
-    }
+    .line-clamp-2{ display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden; }
 
     .icon-btn{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      width:40px;
-      height:40px;
-      border-radius:14px;
-      background:#fff;
-      border:1px solid var(--vf-border);
-      color:#374151;
-      transition:border-color .2s ease, color .2s ease, transform .2s ease, background .2s ease;
-      flex-shrink:0;
-      cursor:pointer;
+      display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:14px;
+      background:#fff;border:1px solid #E5E7EB;color:#374151;transition:.2s;-webkit-tap-highlight-color:transparent;
+      flex-shrink:0;cursor:pointer;
     }
-    .icon-btn:hover{
-      border-color:var(--vf-orange);
-      color:var(--vf-orange);
-      transform:translateY(-1px);
+    .icon-btn:hover{ border-color:#F07E13;color:#F07E13;transform:translateY(-1px); }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .skeleton-box {
+      background: linear-gradient(90deg, #f0f4f8 25%, #f8fafc 50%, #f0f4f8 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite linear;
     }
 
-    .focus-ring:focus-visible,
-    .icon-btn:focus-visible,
-    .menu-link:focus-visible,
-    .cat-btn:focus-visible,
-    .btn-support:focus-visible,
-    .btn-auth:focus-visible,
-    input:focus-visible,
-    button:focus-visible,
-    a:focus-visible{
-      outline:none;
-      box-shadow:0 0 0 3px rgba(240,126,19,.18);
-    }
-
-    @keyframes shimmer{
-      0%{ background-position:-200% 0; }
-      100%{ background-position:200% 0; }
-    }
-    .skeleton-box{
-      background:linear-gradient(90deg, #f0f4f8 25%, #f8fafc 50%, #f0f4f8 75%);
-      background-size:200% 100%;
-      animation:shimmer 1.5s infinite linear;
-    }
-
+    /* Drawer menu gauche amélioré */
     #sideMenu{
-      transition:transform .3s cubic-bezier(0.4, 0, 0.2, 1);
-      transform:translateX(-100%);
+      position:fixed;
+      top:0;
+      left:0;
+      height:100dvh;
+      width:min(86vw,320px);
+      max-width:320px;
+      background:rgba(255,255,255,.96);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+      box-shadow:0 24px 60px rgba(15,23,42,.18);
+      border-right:1px solid rgba(229,231,235,.9);
+      z-index:70;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      transform:translate3d(-104%,0,0);
+      transition:transform .34s cubic-bezier(.22,1,.36,1);
       will-change:transform;
     }
     #sideMenu.open{
-      transform:translateX(0);
+      transform:translate3d(0,0,0);
     }
 
     #menuOverlay{
-      transition:opacity .3s ease;
+      position:fixed;
+      inset:0;
+      z-index:60;
+      background:rgba(2,6,23,.42);
+      backdrop-filter:blur(4px);
+      -webkit-backdrop-filter:blur(4px);
       opacity:0;
+      visibility:hidden;
       pointer-events:none;
+      transition:opacity .28s ease, visibility .28s ease;
     }
     #menuOverlay.open{
       opacity:1;
+      visibility:visible;
       pointer-events:auto;
+    }
+
+    .menu-header{
+      position:sticky;
+      top:0;
+      z-index:2;
+      background:rgba(255,255,255,.92);
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
+      border-bottom:1px solid #F1F5F9;
+    }
+
+    .menu-body{
+      flex:1;
+      overflow-y:auto;
+      overflow-x:hidden;
+      padding:14px;
+      -webkit-overflow-scrolling:touch;
+      overscroll-behavior:contain;
+    }
+
+    .menu-footer{
+      border-top:1px solid #F1F5F9;
+      background:linear-gradient(to top, #F8FAFC, #FFFFFF);
+      padding:18px;
+      padding-bottom:calc(18px + env(safe-area-inset-bottom));
+    }
+
+    .menu-section-title{
+      font-size:10px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.16em;
+      color:#9CA3AF;
+      padding:10px 14px 8px;
     }
 
     .menu-link{
       display:flex;
       align-items:center;
       gap:14px;
-      padding:16px;
-      border-radius:16px;
-      color:#1f2937;
-      font-weight:700;
-      font-size:15px;
-      transition:all .2s ease;
+      padding:14px 14px;
+      min-height:54px;
+      border-radius:18px;
+      color:#111827;
+      font-weight:800;
+      font-size:14px;
+      line-height:1.1;
+      transition:
+        transform .22s ease,
+        background-color .22s ease,
+        color .22s ease,
+        box-shadow .22s ease;
+      position:relative;
     }
+
     .menu-link svg{
-      color:#9ca3af;
-      transition:color .2s ease;
+      color:#9CA3AF;
+      transition:color .22s ease, transform .22s ease;
       flex-shrink:0;
     }
+
     .menu-link:hover{
-      background:#f8fafc;
-      color:var(--vf-orange);
+      background:#F8FAFC;
+      color:#F07E13;
       transform:translateX(4px);
+      box-shadow:inset 0 0 0 1px #FDE7D1;
     }
+
     .menu-link:hover svg{
-      color:var(--vf-orange);
+      color:#F07E13;
+      transform:scale(1.04);
+    }
+
+    .menu-link:active{
+      transform:scale(.985);
+    }
+
+    .menu-close-btn{
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:#F8FAFC;
+      color:#6B7280;
+      transition:all .2s ease;
+      border:1px solid #EEF2F7;
+      cursor:pointer;
+    }
+
+    .menu-close-btn:hover{
+      background:#FFF7ED;
+      color:#F07E13;
+      border-color:#FED7AA;
+      transform:rotate(90deg);
     }
 
     .cat-btn{
+      transition:all .2s ease;
       border:1px solid transparent;
-      transition:all .25s ease;
     }
     .cat-btn:hover{
-      color:var(--vf-orange);
+      color:#F07E13;
       border-color:#FDE7D1;
-      transform:translateY(-1px);
     }
     .cat-btn.active{
-      background:linear-gradient(135deg, #111827 0%, #1f2937 100%);
+      background:#111827;
       color:#fff;
-      box-shadow:0 10px 20px rgba(17,24,39,.10);
-    }
-
-    .hero-title{
-      text-wrap:balance;
-    }
-
-    @media (max-width:768px){
-      #sideMenu{
-        width:min(88vw, 320px);
-      }
+      border-color:#111827;
+      box-shadow:0 10px 20px -8px rgba(17,24,39,.35);
     }
 
     @media (max-width:420px){
-      .icon-btn{
-        width:36px;
-        height:36px;
-        border-radius:12px;
+      .icon-btn{ width:36px;height:36px;border-radius:12px; }
+      .btn-support .btn-support-text{ display:none; }
+      .btn-auth{ padding:8px 10px;border-radius:12px;font-size:10px; }
+      .vf-brand-text{ font-size:22px; }
+
+      #sideMenu{
+        width:min(90vw,300px);
       }
 
-      .btn-support .btn-support-text{
-        display:none;
-      }
-
-      .btn-auth{
-        padding:8px 10px;
-        border-radius:12px;
-        font-size:10px;
-      }
-
-      .vf-brand-text{
-        font-size:22px;
+      .menu-link{
+        min-height:50px;
+        padding:13px 13px;
+        border-radius:16px;
+        font-size:13px;
       }
     }
   </style>
 </head>
 
 <body>
+
   <div class="bg-gray-900 text-white py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-center">
-    Marketplace professionnelle • Livraison internationale • Paiement sécurisé
+    MARKETPLACE PROFESSIONNELLE • LIVRAISON INTERNATIONALE • PAIEMENT SÉCURISÉ
   </div>
 
   <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-100 shadow-sm backdrop-blur-md bg-white/95">
     <div class="max-w-[1280px] mx-auto px-4 h-16 flex items-center justify-between gap-2 sm:gap-4">
-      <div class="flex items-center gap-3 min-w-0">
+      
+      <div class="flex items-center gap-3">
         <button
           type="button"
           onclick="toggleMenu()"
           class="icon-btn border-none bg-transparent hover:bg-gray-50 !shadow-none"
-          aria-label="Ouvrir le menu"
-          aria-controls="sideMenu"
+          aria-label="Menu"
           aria-expanded="false"
-          id="menuToggleBtn"
+          aria-controls="sideMenu"
+          id="menuTrigger"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="3" y1="12" x2="21" y2="12"></line>
             <line x1="3" y1="6" x2="21" y2="6"></line>
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
 
-        <a href="/index.html" class="flex items-center gap-2 shrink-0 vf-brand-wrap" aria-label="Accueil ViralFlowr">
+        <a href="/index.html" class="flex items-center gap-2 shrink-0 vf-brand-wrap" aria-label="ViralFlowr">
           <div class="text-2xl font-black tracking-tighter text-gray-900 vf-brand-text">
             Viral<span class="text-[#F07E13]">Flowr</span>
           </div>
@@ -374,127 +343,105 @@
       </div>
 
       <div class="relative flex-1 max-w-[600px] hidden md:flex items-center">
-        <label for="searchInput" class="sr-only">Rechercher un produit ou service</label>
-        <input
-          type="text"
-          id="searchInput"
-          autocomplete="off"
-          class="w-full h-11 pl-5 pr-12 rounded-xl bg-[#F1F5F9] text-sm font-semibold focus:ring-2 focus:ring-[#F07E13] outline-none transition-all border-none"
-          aria-describedby="animated-placeholder"
-        />
+        <input type="text" id="searchInput" class="w-full h-11 pl-5 pr-12 rounded-xl bg-[#F1F5F9] text-sm font-semibold focus:ring-2 focus:ring-[#F07E13] outline-none transition-all border-none">
         <div id="placeholder-box" class="absolute left-5 pointer-events-none text-gray-400 text-sm font-semibold">
-          <span id="animated-placeholder" class="inline-block animate-text">
-            Que cherchez-vous ? (SMM, iPhone, IMEI, Netflix...)
-          </span>
+          <span id="animated-placeholder" class="inline-block animate-text">Que cherchez-vous ? (SMM, iPhone, IMEI, Netflix...)</span>
         </div>
       </div>
 
       <div class="flex items-center gap-2 sm:gap-3">
         <div id="accountArea" class="hidden sm:flex items-center gap-2"></div>
-
-        <a
-          href="https://wa.me/243850373991"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="btn-support"
-          aria-label="Contacter le support WhatsApp"
-        >
-          <svg width="18" height="18" fill="white" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
-          </svg>
+        <a href="https://wa.me/243850373991" target="_blank" rel="noopener noreferrer" class="btn-support">
+          <svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/></svg>
           <span class="btn-support-text">Aide</span>
         </a>
       </div>
     </div>
   </header>
 
-  <div
-    id="menuOverlay"
-    onclick="toggleMenu()"
-    class="fixed inset-0 bg-black/40 z-[60] backdrop-blur-sm"
-    aria-hidden="true"
-  ></div>
+  <div id="menuOverlay" onclick="toggleMenu(false)"></div>
 
-  <aside
-    id="sideMenu"
-    class="fixed top-0 left-0 h-full w-[300px] bg-white shadow-2xl z-[70] flex flex-col overflow-y-auto"
-    aria-hidden="true"
-  >
-    <div class="p-6 flex items-center justify-between border-b border-gray-100">
-      <div class="text-2xl font-black tracking-tighter text-gray-900">
-        Viral<span class="text-[#F07E13]">Flowr</span>
+  <aside id="sideMenu" aria-hidden="true">
+    <div class="menu-header p-5 flex items-center justify-between">
+      <div>
+        <div class="text-2xl font-black tracking-tighter text-gray-900">
+          Viral<span class="text-[#F07E13]">Flowr</span>
+        </div>
+        <p class="text-[11px] font-bold text-gray-400 uppercase tracking-[0.18em] mt-1">
+          Navigation
+        </p>
       </div>
 
       <button
         type="button"
-        onclick="toggleMenu()"
-        class="text-gray-400 hover:text-gray-900 transition-colors bg-gray-50 p-2 rounded-xl"
+        onclick="toggleMenu(false)"
+        class="menu-close-btn"
         aria-label="Fermer le menu"
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"></line>
           <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
       </button>
     </div>
 
-    <nav class="flex-1 p-4 flex flex-col gap-1" aria-label="Navigation principale">
-      <div class="text-[10px] font-black uppercase tracking-widest text-gray-400 px-4 mb-2 mt-2">Général</div>
+    <div class="menu-body">
+      <nav class="flex flex-col gap-1">
+        <div class="menu-section-title">Général</div>
+        
+        <a href="/index.html" class="menu-link">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Boutique</span>
+        </a>
 
-      <a href="/index.html" class="menu-link">
-        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-          <polyline points="9 22 9 12 15 12 15 22"></polyline>
-        </svg>
-        Boutique
-      </a>
+        <a href="/wallet.html" class="menu-link">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2ZM16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2M20 12h-4a2 2 0 0 0 0 4h4"/>
+          </svg>
+          <span>Mon Portefeuille</span>
+        </a>
 
-      <a href="/wallet.html" class="menu-link">
-        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2ZM16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2M20 12h-4a2 2 0 0 0 0 4h4"/>
-        </svg>
-        Mon Portefeuille
-      </a>
+        <a href="/commandes.html" class="menu-link">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/>
+          </svg>
+          <span>Mes Commandes</span>
+        </a>
+        
+        <div class="h-px bg-gray-100 my-4 mx-2"></div>
+        
+        <div class="menu-section-title">Développeurs & Infos</div>
 
-      <a href="/commandes.html" class="menu-link">
-        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/>
-        </svg>
-        Mes Commandes
-      </a>
+        <a href="/api-access.html" class="menu-link">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+          <span>Accès API (Revendeurs)</span>
+        </a>
+        
+        <a href="/politique.html" class="menu-link">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+          <span>Politique de règlement</span>
+        </a>
 
-      <div class="h-px bg-gray-100 my-4 mx-4"></div>
+        <a href="/about.html" class="menu-link">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>À propos de nous</span>
+        </a>
+      </nav>
+    </div>
 
-      <div class="text-[10px] font-black uppercase tracking-widest text-gray-400 px-4 mb-2">
-        Développeurs & Infos
-      </div>
-
-      <a href="/api-access.html" class="menu-link">
-        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polyline points="16 18 22 12 16 6"></polyline>
-          <polyline points="8 6 2 12 8 18"></polyline>
-        </svg>
-        Accès API (Revendeurs)
-      </a>
-
-      <a href="/politique.html" class="menu-link">
-        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-        </svg>
-        Politique de règlement
-      </a>
-
-      <a href="/about.html" class="menu-link">
-        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="16" x2="12" y2="12"></line>
-          <line x1="12" y1="8" x2="12.01" y2="8"></line>
-        </svg>
-        À propos de nous
-      </a>
-    </nav>
-
-    <div class="p-6 border-t border-gray-100 bg-gray-50">
+    <div class="menu-footer">
       <div id="sideAccountArea"></div>
     </div>
   </aside>
@@ -502,167 +449,109 @@
   <main class="max-w-[1280px] mx-auto px-4 py-8">
     <section class="mb-10">
       <article class="relative w-full h-[250px] md:h-[400px] rounded-[32px] overflow-hidden shadow-2xl group border-4 border-white">
-        <img
-          src="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png"
-          class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
-          alt="Bannière ViralFlowr"
-        />
+        <img src="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" alt="ViralFlowr">
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"></div>
-
         <div class="relative z-10 p-8 md:p-16 flex flex-col justify-end h-full text-white">
-          <h1 class="hero-title text-3xl md:text-6xl font-black max-w-2xl leading-[0.95] mb-4 tracking-tighter uppercase italic">
-            L'Univers Digital <br />
-            & Matériel.
-          </h1>
-
-          <p class="text-xs md:text-lg font-medium opacity-90 max-w-md">
-            Services Elite, Déblocage IMEI et Matériel High-Tech garantis.
-          </p>
-
-          <div id="priceMode" class="mt-4 text-[10px] font-black uppercase tracking-[0.18em] opacity-90">
-            Mode: ...
-          </div>
+          <h1 class="text-3xl md:text-6xl font-black max-w-2xl leading-[0.95] mb-4 tracking-tighter uppercase italic">L'Univers Digital <br>& Matériel.</h1>
+          <p class="text-xs md:text-lg font-medium opacity-90 max-w-md">Services Elite, Déblocage IMEI et Matériel High-Tech garantis.</p>
+          <div id="priceMode" class="mt-4 text-[10px] font-black uppercase tracking-[0.18em] opacity-90">Mode: ...</div>
         </div>
       </article>
     </section>
 
-    <section aria-label="Catégories">
-      <div class="flex items-center gap-3 overflow-x-auto no-scrollbar pb-6 mb-10 border-b border-gray-100" id="catNav">
-        <button type="button" onclick="filterCat('all', this)" class="cat-btn active bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap uppercase">
-          Tous
-        </button>
-        <button type="button" onclick="filterCat('Materiel', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap uppercase">
-          Matériel & Gadgets
-        </button>
-        <button type="button" onclick="filterCat('Abonnement', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap uppercase">
-          Abonnements
-        </button>
-        <button type="button" onclick="filterCat('Carte2', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap uppercase">
-          Cartes cadeaux
-        </button>
-        <button type="button" onclick="filterCat('IMEI', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap uppercase">
-          IMEI & Réseau
-        </button>
-        <button type="button" onclick="filterCat('Boost', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap uppercase">
-          Boost SMM
-        </button>
-        <button type="button" onclick="filterCat('Jeux', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap uppercase">
-          Jeux
-        </button>
-      </div>
-    </section>
+    <div class="flex items-center gap-3 overflow-x-auto no-scrollbar pb-6 mb-10 border-b border-gray-100" id="catNav">
+      <button onclick="filterCat('all', this)" class="cat-btn active bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Tous</button>
+      <button onclick="filterCat('Materiel', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Matériel & Gadgets</button>
+      <button onclick="filterCat('Abonnement', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Abonnements</button>
+      <button onclick="filterCat('Carte2', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Cartes cadeaux</button>
+      <button onclick="filterCat('IMEI', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">IMEI & Réseau</button>
+      <button onclick="filterCat('Boost', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Boost SMM</button>
+      <button onclick="filterCat('Jeux', this)" class="cat-btn bg-white px-8 py-3 rounded-2xl text-[12px] font-black text-gray-500 shadow-sm whitespace-nowrap transition-all uppercase">Jeux</button>
+    </div>
 
-    <div
-      id="loadError"
-      class="hidden mb-6 bg-red-50 border border-red-200 text-red-700 font-bold text-xs rounded-2xl px-4 py-3"
-      role="alert"
-      aria-live="polite"
-    ></div>
+    <div id="loadError" class="hidden mb-6 bg-red-50 border border-red-200 text-red-700 font-bold text-xs rounded-2xl px-4 py-3"></div>
 
-    <section aria-label="Liste des produits">
-      <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 mb-24">
-        <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm">
-          <div class="aspect-square skeleton-box rounded-[22px] mb-4"></div>
-          <div class="h-4 skeleton-box rounded mb-2 w-3/4"></div>
-          <div class="h-3 skeleton-box rounded w-1/2"></div>
-        </div>
-        <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm">
-          <div class="aspect-square skeleton-box rounded-[22px] mb-4"></div>
-          <div class="h-4 skeleton-box rounded mb-2 w-3/4"></div>
-          <div class="h-3 skeleton-box rounded w-1/2"></div>
-        </div>
-        <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm">
-          <div class="aspect-square skeleton-box rounded-[22px] mb-4"></div>
-          <div class="h-4 skeleton-box rounded mb-2 w-3/4"></div>
-          <div class="h-3 skeleton-box rounded w-1/2"></div>
-        </div>
-        <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm">
-          <div class="aspect-square skeleton-box rounded-[22px] mb-4"></div>
-          <div class="h-4 skeleton-box rounded mb-2 w-3/4"></div>
-          <div class="h-3 skeleton-box rounded w-1/2"></div>
-        </div>
-        <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm">
-          <div class="aspect-square skeleton-box rounded-[22px] mb-4"></div>
-          <div class="h-4 skeleton-box rounded mb-2 w-3/4"></div>
-          <div class="h-3 skeleton-box rounded w-1/2"></div>
-        </div>
-        <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm">
-          <div class="aspect-square skeleton-box rounded-[22px] mb-4"></div>
-          <div class="h-4 skeleton-box rounded mb-2 w-3/4"></div>
-          <div class="h-3 skeleton-box rounded w-1/2"></div>
-        </div>
-      </div>
-    </section>
+    <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 mb-24">
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
+    </div>
   </main>
 
   <footer class="bg-white border-t border-gray-100 py-12">
     <div class="max-w-[1280px] mx-auto px-4 flex flex-col items-center">
-      <div class="text-2xl font-black tracking-tighter mb-6">
-        Viral<span class="text-[#F07E13]">Flowr</span>
-      </div>
-      <p class="text-[9px] text-gray-300 text-center max-w-lg leading-relaxed uppercase">
-        © 2026 ViralFlowr Enterprise. Livraison garantie.
-      </p>
+      <div class="text-2xl font-black tracking-tighter mb-6">Viral<span class="text-[#F07E13]">Flowr</span></div>
+      <p class="text-[9px] text-gray-300 text-center max-w-lg leading-relaxed uppercase">© 2026 ViralFlowr Enterprise. Livraison garantie.</p>
     </div>
   </footer>
 
   <script>
-    function toggleMenu(forceState) {
-      const sideMenu = document.getElementById("sideMenu");
+    function toggleMenu(force) {
+      const menu = document.getElementById("sideMenu");
       const overlay = document.getElementById("menuOverlay");
-      const btn = document.getElementById("menuToggleBtn");
+      const trigger = document.getElementById("menuTrigger");
 
-      if (!sideMenu || !overlay) return;
+      if (!menu || !overlay) return;
 
-      const willOpen =
-        typeof forceState === "boolean"
-          ? forceState
-          : !sideMenu.classList.contains("open");
+      const isOpen = menu.classList.contains("open");
+      const shouldOpen = typeof force === "boolean" ? force : !isOpen;
 
-      sideMenu.classList.toggle("open", willOpen);
-      overlay.classList.toggle("open", willOpen);
+      menu.classList.toggle("open", shouldOpen);
+      overlay.classList.toggle("open", shouldOpen);
+      document.body.classList.toggle("menu-open", shouldOpen);
 
-      sideMenu.setAttribute("aria-hidden", String(!willOpen));
-      if (btn) btn.setAttribute("aria-expanded", String(willOpen));
-
-      document.body.style.overflow = willOpen ? "hidden" : "";
-    }
-
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") toggleMenu(false);
-    });
-
-    function filterCat(category, btn) {
-      document.querySelectorAll(".cat-btn").forEach((el) => el.classList.remove("active"));
-      if (btn) btn.classList.add("active");
-
-      if (typeof window.applyCategoryFilter === "function") {
-        window.applyCategoryFilter(category);
-      } else {
-        console.log("Category selected:", category);
+      menu.setAttribute("aria-hidden", shouldOpen ? "false" : "true");
+      if (trigger) {
+        trigger.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
       }
     }
 
-    (function setupSearchPlaceholder() {
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        toggleMenu(false);
+      }
+    });
+
+    document.querySelectorAll("#sideMenu a").forEach(function(link) {
+      link.addEventListener("click", function() {
+        toggleMenu(false);
+      });
+    });
+
+    function filterCat(category, el) {
+      document.querySelectorAll(".cat-btn").forEach(btn => {
+        btn.classList.remove("active");
+      });
+      if (el) el.classList.add("active");
+
+      if (window.renderProducts && typeof window.renderProducts === "function") {
+        window.renderProducts(category);
+      }
+    }
+
+    (function initSearchPlaceholder() {
       const input = document.getElementById("searchInput");
       const box = document.getElementById("placeholder-box");
+
       if (!input || !box) return;
 
-      input.addEventListener("focus", () => {
-        box.style.opacity = "0";
-      });
-
-      input.addEventListener("blur", () => {
-        if (!input.value.trim()) box.style.opacity = "1";
-      });
-
-      input.addEventListener("input", () => {
+      function syncPlaceholder() {
         box.style.opacity = input.value.trim() ? "0" : "1";
-      });
+      }
+
+      input.addEventListener("focus", syncPlaceholder);
+      input.addEventListener("input", syncPlaceholder);
+      input.addEventListener("blur", syncPlaceholder);
+
+      syncPlaceholder();
     })();
   </script>
 </body>
 </html>
+
 
 
   <script>
