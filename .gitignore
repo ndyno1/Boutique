@@ -1,0 +1,14 @@
+# Fichiers sensibles
+.env
+secret_keys.json
+
+# Bases de données locales / fichiers de données
+*.sqlite3
+presences.xlsx
+etudiants.csv
+
+# Environnements virtuels Python
+venv/
+
+# Cache Python
+__pycache__/
