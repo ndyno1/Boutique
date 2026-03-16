@@ -11,7 +11,8 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
+  
+  <script src="/styles/vf_config.js?v=1"></script>
   <script src="/styles/vf_menu.js?v=2" defer></script>
   <script src="/styles/vf_footer.js?v=2" defer></script>
   <link rel="stylesheet" href="/styles/vf_theme.css?v=2">
@@ -225,7 +226,7 @@
   </div>
 
   <script>
-    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
+    const GOOGLE_URL = window.VF_CONFIG.scriptUrl;
     const DEBUG = new URLSearchParams(location.search).has("debug");
 
     const debugBox = document.getElementById("debugBox");
