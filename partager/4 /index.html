@@ -1,15 +1,17 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" class="font-inter">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+  <meta name="theme-color" content="#111827" />
+  <link rel="icon" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/favicon.png" />
 
   <!-- ====== CONFIG (générée) ====== -->
   <meta name="vf:id" content="1234" />
   <title>Produit 1234 | ViralFlowr</title>
   <meta name="description" content="Paiement sécurisé • Livraison rapide • Support WhatsApp" />
-
-  <!-- (optionnel) évite d’indexer les pages share si tu veux garder le SEO sur la page produit -->
   <meta name="robots" content="noindex,follow" />
 
   <!-- ====== Open Graph ====== -->
@@ -27,44 +29,123 @@
   <meta name="twitter:description" content="Paiement sécurisé • Livraison rapide • Support WhatsApp" />
   <meta name="twitter:image" content="https://viralflowr.com/assets/og/1234.jpg" />
 
-  <!-- ====== Canonical (optionnel) ====== -->
+  <!-- ====== Canonical ====== -->
   <link rel="canonical" href="https://viralflowr.com/share/1234" />
 
-  <!-- ====== Redirect (garde la logique) ====== -->
-  <!-- JS rapide + meta refresh fallback pour anciens navigateurs -->
   <script>
     (function () {
-      var target = "/paiement.html?id=1234";
-      try { window.location.replace(target); }
-      catch (e) { window.location.href = target; }
+      var PRODUCT_ID = "1234";
+      var target = "/paiement.html?id=" + encodeURIComponent(PRODUCT_ID);
+
+      try {
+        window.location.replace(target);
+      } catch (e) {
+        window.location.href = target;
+      }
     })();
   </script>
 
   <meta http-equiv="refresh" content="0;url=/paiement.html?id=1234" />
 
   <style>
-    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:#f3f3f3;color:#111827}
-    .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:20px}
-    .card{max-width:520px;width:100%;background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:18px;box-shadow:0 10px 25px rgba(0,0,0,.06)}
-    .t{font-weight:900;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:#6b7280}
-    .p{margin-top:8px;font-weight:800}
-    a{color:#f07e13;font-weight:900;text-decoration:none}
-    a:hover{text-decoration:underline}
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #f3f3f3;
+      color: #111827;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .wrap {
+      min-height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card {
+      max-width: 520px;
+      width: 100%;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 22px;
+      padding: 22px;
+      box-shadow: 0 10px 25px rgba(0,0,0,.06);
+      text-align: center;
+    }
+
+    .brand {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      color: #111827;
+      margin-bottom: 12px;
+    }
+
+    .brand span {
+      color: #F07E13;
+    }
+
+    .label {
+      font-weight: 900;
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: #9ca3af;
+    }
+
+    .text {
+      margin-top: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #374151;
+      line-height: 1.5;
+    }
+
+    .link {
+      display: inline-block;
+      margin-top: 14px;
+      color: #F07E13;
+      font-weight: 900;
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .link:hover {
+      text-decoration: underline;
+    }
+
+    .note {
+      margin-top: 12px;
+      font-size: 12px;
+      color: #9ca3af;
+      font-weight: 700;
+    }
   </style>
 </head>
 
 <body>
   <div class="wrap">
     <div class="card">
-      <div class="t">Redirection</div>
-      <div class="p">
-        Si rien ne se passe, ouvre le produit :
-        <a href="/paiement.html?id=1234">paiement.html?id=1234</a>
+      <div class="brand">Viral<span>Flowr</span></div>
+      <div class="label">Redirection produit</div>
+
+      <div class="text">
+        Redirection vers la page de paiement sécurisée du produit.
       </div>
 
+      <a class="link" href="/paiement.html?id=1234">
+        Ouvrir le produit : /paiement.html?id=1234
+      </a>
+
       <noscript>
-        <div class="p" style="margin-top:12px;color:#6b7280">
-          JavaScript est désactivé. Clique sur le lien ci-dessus.
+        <div class="note">
+          JavaScript est désactivé. Utilisez le lien ci-dessus.
         </div>
       </noscript>
     </div>
