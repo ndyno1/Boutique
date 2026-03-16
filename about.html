@@ -9,24 +9,355 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #F3F3F3; color: #201B16; }
+        html, body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F3F3F3;
+            color: #201B16;
+        }
+
         .text-orange-bsv { color: #F07E13; }
         .bg-orange-bsv { background-color: #F07E13; }
         .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
-        .hover-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); transition: all 0.3s ease; }
+        .hover-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .hover-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
+
+        body.vf-menu-open {
+            overflow: hidden;
+        }
+
+        .vf-menu-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            background: transparent;
+            border: none;
+            color: #374151;
+            cursor: pointer;
+            transition: .2s;
+            flex-shrink: 0;
+        }
+
+        .vf-menu-toggle:hover {
+            background: #F9FAFB;
+            color: #F07E13;
+            transform: translateY(-1px);
+        }
+
+        .vf-menu-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 60;
+            background: rgba(2, 6, 23, 0.42);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity .28s ease, visibility .28s ease;
+        }
+
+        .vf-menu-overlay.open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .vf-side-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: min(86vw, 320px);
+            max-width: 320px;
+            height: 100dvh;
+            z-index: 70;
+            background: rgba(255,255,255,.97);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-right: 1px solid rgba(229,231,235,.95);
+            box-shadow: 0 24px 60px rgba(15,23,42,.18);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: translate3d(-104%, 0, 0);
+            transition: transform .34s cubic-bezier(.22,1,.36,1);
+            will-change: transform;
+        }
+
+        .vf-side-menu.open {
+            transform: translate3d(0, 0, 0);
+        }
+
+        .vf-side-menu__header {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            padding: 20px;
+            background: rgba(255,255,255,.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid #F1F5F9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .vf-side-menu__brand {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            color: #111827;
+            line-height: 1;
+        }
+
+        .vf-side-menu__brand span {
+            color: #F07E13;
+        }
+
+        .vf-side-menu__sub {
+            margin-top: 6px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .18em;
+            color: #9CA3AF;
+        }
+
+        .vf-side-menu__close {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #EEF2F7;
+            border-radius: 14px;
+            background: #F8FAFC;
+            color: #6B7280;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all .2s ease;
+            flex-shrink: 0;
+        }
+
+        .vf-side-menu__close:hover {
+            background: #FFF7ED;
+            color: #F07E13;
+            border-color: #FED7AA;
+            transform: rotate(90deg);
+        }
+
+        .vf-side-menu__body {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 14px;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+
+        .vf-side-menu__footer {
+            border-top: 1px solid #F1F5F9;
+            background: linear-gradient(to top, #F8FAFC, #FFFFFF);
+            padding: 18px;
+            padding-bottom: calc(18px + env(safe-area-inset-bottom));
+        }
+
+        .vf-side-menu__section {
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .16em;
+            color: #9CA3AF;
+            padding: 10px 14px 8px;
+        }
+
+        .vf-side-menu__sep {
+            height: 1px;
+            background: #F1F5F9;
+            margin: 14px 8px;
+        }
+
+        .vf-menu-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-height: 54px;
+            padding: 14px;
+            border-radius: 18px;
+            color: #111827;
+            font-size: 14px;
+            font-weight: 800;
+            line-height: 1.1;
+            text-decoration: none;
+            transition: transform .22s ease, background-color .22s ease, color .22s ease, box-shadow .22s ease;
+        }
+
+        .vf-menu-link svg {
+            flex-shrink: 0;
+            color: #9CA3AF;
+            transition: color .22s ease, transform .22s ease;
+        }
+
+        .vf-menu-link:hover {
+            background: #F8FAFC;
+            color: #F07E13;
+            transform: translateX(4px);
+            box-shadow: inset 0 0 0 1px #FDE7D1;
+        }
+
+        .vf-menu-link:hover svg {
+            color: #F07E13;
+            transform: scale(1.04);
+        }
+
+        .vf-menu-link.active {
+            background: linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 100%);
+            color: #F07E13;
+            box-shadow: inset 0 0 0 1px #FDE7D1;
+        }
+
+        .vf-menu-link.active svg {
+            color: #F07E13;
+        }
+
+        @media (max-width: 640px) {
+            .vf-menu-toggle {
+                width: 38px;
+                height: 38px;
+                border-radius: 12px;
+            }
+
+            .vf-side-menu {
+                width: min(90vw, 300px);
+            }
+
+            .vf-menu-link {
+                min-height: 50px;
+                padding: 13px;
+                border-radius: 16px;
+                font-size: 13px;
+            }
+        }
     </style>
 </head>
 
 <body class="flex flex-col min-h-screen">
 
+    <div id="vfMenuOverlay" class="vf-menu-overlay" aria-hidden="true"></div>
+
+    <aside id="vfSideMenu" class="vf-side-menu" aria-hidden="true">
+        <div class="vf-side-menu__header">
+            <div>
+                <div class="vf-side-menu__brand">Viral<span>Flowr</span></div>
+                <div class="vf-side-menu__sub">Navigation</div>
+            </div>
+
+            <button type="button" class="vf-side-menu__close" aria-label="Fermer le menu" id="vfMenuClose">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <div class="vf-side-menu__body">
+            <nav class="flex flex-col gap-1" aria-label="Navigation principale">
+                <div class="vf-side-menu__section">Général</div>
+
+                <a href="index.html" class="vf-menu-link" data-page="index.html">
+                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    <span>Boutique</span>
+                </a>
+
+                <a href="wallet.html" class="vf-menu-link" data-page="wallet.html">
+                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2ZM16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2M20 12h-4a2 2 0 0 0 0 4h4"/>
+                    </svg>
+                    <span>Mon Portefeuille</span>
+                </a>
+
+                <a href="commandes.html" class="vf-menu-link" data-page="commandes.html">
+                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/>
+                    </svg>
+                    <span>Mes Commandes</span>
+                </a>
+
+                <div class="vf-side-menu__sep"></div>
+
+                <div class="vf-side-menu__section">Développeurs & Infos</div>
+
+                <a href="api-access.html" class="vf-menu-link" data-page="api-access.html">
+                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="16 18 22 12 16 6"></polyline>
+                        <polyline points="8 6 2 12 8 18"></polyline>
+                    </svg>
+                    <span>Accès API (Revendeurs)</span>
+                </a>
+
+                <a href="politique.html" class="vf-menu-link" data-page="politique.html">
+                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                    <span>Politique de règlement</span>
+                </a>
+
+                <a href="about.html" class="vf-menu-link" data-page="about.html">
+                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                    <span>À propos de nous</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="vf-side-menu__footer">
+            <a href="https://wa.me/+243850373991" class="inline-flex items-center gap-2 text-sm font-bold text-green-600 hover:text-green-700">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
+                </svg>
+                <span>Contacter le support</span>
+            </a>
+        </div>
+    </aside>
+
     <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-200 shadow-sm">
         <div class="max-w-[1240px] mx-auto h-16 px-4 flex items-center justify-between gap-4">
             
-            <a class="flex items-center gap-2" href="index.html">
-                <div class="text-2xl font-black tracking-tighter">
-                    Viral<span class="text-orange-bsv">Flowr</span>
-                </div>
-            </a>
+            <div class="flex items-center gap-3">
+                <button
+                    type="button"
+                    class="vf-menu-toggle"
+                    aria-label="Menu"
+                    aria-expanded="false"
+                    aria-controls="vfSideMenu"
+                    id="vfMenuTrigger"
+                >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+
+                <a class="flex items-center gap-2" href="index.html">
+                    <div class="text-2xl font-black tracking-tighter">
+                        Viral<span class="text-orange-bsv">Flowr</span>
+                    </div>
+                </a>
+            </div>
 
             <div class="hidden md:flex items-center gap-8 font-bold text-sm text-[#767676]">
                 <a href="index.html" class="hover:text-[#F07E13] transition-colors">Accueil</a>
@@ -48,7 +379,6 @@
 
     <main class="flex-1">
         
-        <!-- HERO -->
         <section class="bg-white border-b border-gray-200 pb-16 pt-12">
             <div class="max-w-[1000px] mx-auto px-4 text-center">
                 <span class="inline-block px-3 py-1 bg-orange-100 text-[#F07E13] rounded-full text-[10px] font-black uppercase tracking-widest mb-4">
@@ -64,7 +394,6 @@
             </div>
         </section>
 
-        <!-- STATS -->
         <section class="max-w-[1240px] mx-auto px-4 -mt-8 mb-16">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="bg-[#121417] text-white p-8 rounded-2xl shadow-xl flex flex-col items-center justify-center text-center">
@@ -82,7 +411,6 @@
             </div>
         </section>
 
-        <!-- QUI SOMMES-NOUS -->
         <section class="max-w-[1240px] mx-auto px-4 mb-20">
             <div class="bg-white rounded-[32px] p-8 md:p-12 border border-gray-100 shadow-lg">
                 <div class="flex items-start gap-3 mb-6">
@@ -125,7 +453,6 @@
             </div>
         </section>
 
-        <!-- POURQUOI -->
         <section class="max-w-[1240px] mx-auto px-4 mb-20">
             <h2 class="text-2xl font-bold text-[#18181B] mb-8">Pourquoi choisir ViralFlowr ?</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -173,7 +500,6 @@
             </div>
         </section>
 
-        <!-- CTA -->
         <section class="max-w-[1240px] mx-auto px-4 mb-20">
             <div class="bg-gray-900 rounded-[32px] p-8 md:p-12 relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-64 h-64 bg-[#F07E13] rounded-full blur-[100px] opacity-20 transform translate-x-1/2 -translate-y-1/2"></div>
@@ -217,6 +543,105 @@
             </p>
         </div>
     </footer>
+
+    <script>
+        (function () {
+            const body = document.body;
+            const menu = document.getElementById("vfSideMenu");
+            const overlay = document.getElementById("vfMenuOverlay");
+            const trigger = document.getElementById("vfMenuTrigger");
+            const closeBtn = document.getElementById("vfMenuClose");
+            const links = document.querySelectorAll("#vfSideMenu a.vf-menu-link");
+
+            let savedScrollY = 0;
+
+            function openMenu() {
+                if (!menu || !overlay) return;
+
+                savedScrollY = window.scrollY || window.pageYOffset || 0;
+
+                body.classList.add("vf-menu-open");
+                body.style.position = "fixed";
+                body.style.top = "-" + savedScrollY + "px";
+                body.style.left = "0";
+                body.style.right = "0";
+                body.style.width = "100%";
+
+                menu.classList.add("open");
+                overlay.classList.add("open");
+                menu.setAttribute("aria-hidden", "false");
+                overlay.setAttribute("aria-hidden", "false");
+                trigger.setAttribute("aria-expanded", "true");
+            }
+
+            function closeMenu() {
+                if (!menu || !overlay) return;
+
+                menu.classList.remove("open");
+                overlay.classList.remove("open");
+                menu.setAttribute("aria-hidden", "true");
+                overlay.setAttribute("aria-hidden", "true");
+
+                body.classList.remove("vf-menu-open");
+                body.style.position = "";
+                body.style.top = "";
+                body.style.left = "";
+                body.style.right = "";
+                body.style.width = "";
+
+                window.scrollTo(0, savedScrollY);
+                trigger.setAttribute("aria-expanded", "false");
+            }
+
+            function toggleMenu() {
+                if (menu.classList.contains("open")) {
+                    closeMenu();
+                } else {
+                    openMenu();
+                }
+            }
+
+            function setActiveMenuLink() {
+                const currentPath = (window.location.pathname.split("/").pop() || "about.html").toLowerCase();
+
+                links.forEach(function (link) {
+                    const page = (link.getAttribute("data-page") || "").toLowerCase();
+                    if (page === currentPath) {
+                        link.classList.add("active");
+                    } else {
+                        link.classList.remove("active");
+                    }
+                });
+            }
+
+            trigger.addEventListener("click", function (e) {
+                e.preventDefault();
+                toggleMenu();
+            });
+
+            closeBtn.addEventListener("click", function () {
+                closeMenu();
+            });
+
+            overlay.addEventListener("click", function () {
+                closeMenu();
+            });
+
+            links.forEach(function (link) {
+                link.addEventListener("click", function () {
+                    closeMenu();
+                });
+            });
+
+            document.addEventListener("keydown", function (e) {
+                if (e.key === "Escape") {
+                    closeMenu();
+                }
+            });
+
+            setActiveMenuLink();
+        })();
+    </script>
 
 </body>
 </html>
