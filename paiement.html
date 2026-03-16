@@ -2,30 +2,25 @@
 <html lang="fr" class="font-inter">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>ViralFlowr | Paiement Sécurisé</title>
+
+  <meta name="theme-color" content="#111827" />
+  <link rel="icon" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/favicon.png" />
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-  <style>
-    html, body{
-      width:100%;
-      max-width:100%;
-      overflow-x:hidden;
-    }
+  <script src="/styles/vf_menu.js?v=2" defer></script>
+  <script src="/styles/vf_footer.js?v=2" defer></script>
+  <link rel="stylesheet" href="/styles/vf_theme.css?v=2">
 
+  <style>
     body{
-      font-family:'Inter',sans-serif;
       background:#F3F3F3;
       color:#201B16;
-      overflow-x:hidden;
-    }
-
-    body.menu-open{
-      overflow:hidden;
-      touch-action:none;
     }
 
     .text-orange-bsv { color:#F07E13; }
@@ -37,16 +32,6 @@
       border:1px solid #e5e7eb !important;
     }
     input:focus, textarea:focus { border-color:#F07E13 !important; }
-
-    .brand-wrap{ min-width:0; max-width:100%; }
-    .brand-text{
-      display:block;
-      max-width:100%;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      line-height:1;
-    }
 
     .btn-mini{
       height:40px;
@@ -73,50 +58,6 @@
       color:#F07E13;
     }
 
-    .btn-support{
-      background:#25D366;
-      color:#fff;
-      padding:8px 16px;
-      border-radius:12px;
-      font-weight:800;
-      font-size:12px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      line-height:1;
-      transition:.3s;
-      -webkit-tap-highlight-color:transparent;
-      flex-shrink:0;
-      white-space:nowrap;
-      max-width:100%;
-      text-decoration:none;
-    }
-    .btn-support:hover{
-      transform:scale(1.05);
-      box-shadow:0 10px 15px -3px rgba(37,211,102,.3);
-    }
-
-    .icon-btn{
-      width:40px;
-      height:40px;
-      border-radius:12px;
-      border:1px solid #E5E7EB;
-      background:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      transition:.2s;
-      color:#374151;
-      flex:0 0 auto;
-      cursor:pointer;
-    }
-    .icon-btn:hover{
-      transform:translateY(-1px);
-      border-color:#F07E13;
-      color:#F07E13;
-    }
-
     .mono {
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     }
@@ -139,180 +80,6 @@
       padding:18px;
       box-shadow:0 20px 60px rgba(0,0,0,.2);
     }
-
-    /* Menu stable */
-    #menuOverlay{
-      position:fixed;
-      inset:0;
-      z-index:60;
-      background:rgba(2,6,23,.42);
-      backdrop-filter:blur(4px);
-      -webkit-backdrop-filter:blur(4px);
-      opacity:0;
-      visibility:hidden;
-      pointer-events:none;
-      transition:opacity .28s ease, visibility .28s ease;
-    }
-    #menuOverlay.open{
-      opacity:1;
-      visibility:visible;
-      pointer-events:auto;
-    }
-
-    #sideMenu{
-      position:fixed;
-      top:0;
-      left:0;
-      width:min(86vw,320px);
-      max-width:320px;
-      height:100dvh;
-      z-index:70;
-      background:rgba(255,255,255,.97);
-      backdrop-filter:blur(18px);
-      -webkit-backdrop-filter:blur(18px);
-      border-right:1px solid rgba(229,231,235,.95);
-      box-shadow:0 24px 60px rgba(15,23,42,.18);
-      display:flex;
-      flex-direction:column;
-      overflow:hidden;
-      transform:translate3d(-104%,0,0);
-      transition:transform .34s cubic-bezier(.22,1,.36,1);
-      will-change:transform;
-    }
-    #sideMenu.open{
-      transform:translate3d(0,0,0);
-    }
-
-    .menu-header{
-      position:sticky;
-      top:0;
-      z-index:2;
-      padding:20px;
-      background:rgba(255,255,255,.92);
-      backdrop-filter:blur(16px);
-      -webkit-backdrop-filter:blur(16px);
-      border-bottom:1px solid #F1F5F9;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-    }
-
-    .menu-body{
-      flex:1;
-      overflow-y:auto;
-      overflow-x:hidden;
-      padding:14px;
-      -webkit-overflow-scrolling:touch;
-      overscroll-behavior:contain;
-    }
-
-    .menu-footer{
-      border-top:1px solid #F1F5F9;
-      background:linear-gradient(to top, #F8FAFC, #FFFFFF);
-      padding:18px;
-      padding-bottom:calc(18px + env(safe-area-inset-bottom));
-    }
-
-    .menu-section-title{
-      font-size:10px;
-      font-weight:900;
-      text-transform:uppercase;
-      letter-spacing:.16em;
-      color:#9CA3AF;
-      padding:10px 14px 8px;
-    }
-
-    .menu-link{
-      display:flex;
-      align-items:center;
-      gap:14px;
-      padding:14px;
-      min-height:54px;
-      border-radius:18px;
-      color:#111827;
-      font-weight:800;
-      font-size:14px;
-      line-height:1.1;
-      transition:
-        transform .22s ease,
-        background-color .22s ease,
-        color .22s ease,
-        box-shadow .22s ease;
-      position:relative;
-      text-decoration:none;
-    }
-
-    .menu-link svg{
-      color:#9CA3AF;
-      transition:color .22s ease, transform .22s ease;
-      flex-shrink:0;
-    }
-
-    .menu-link:hover{
-      background:#F8FAFC;
-      color:#F07E13;
-      transform:translateX(4px);
-      box-shadow:inset 0 0 0 1px #FDE7D1;
-    }
-
-    .menu-link:hover svg{
-      color:#F07E13;
-      transform:scale(1.04);
-    }
-
-    .menu-link.active{
-      background:linear-gradient(135deg,#FFF7ED 0%,#FFFFFF 100%);
-      color:#F07E13;
-      box-shadow:inset 0 0 0 1px #FDE7D1;
-    }
-    .menu-link.active svg{
-      color:#F07E13;
-    }
-
-    .menu-close-btn{
-      width:40px;
-      height:40px;
-      border-radius:14px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      background:#F8FAFC;
-      color:#6B7280;
-      transition:all .2s ease;
-      border:1px solid #EEF2F7;
-      cursor:pointer;
-      flex-shrink:0;
-    }
-
-    .menu-close-btn:hover{
-      background:#FFF7ED;
-      color:#F07E13;
-      border-color:#FED7AA;
-      transform:rotate(90deg);
-    }
-
-    @media (max-width:420px){
-      .icon-btn{
-        width:36px;
-        height:36px;
-        border-radius:12px;
-      }
-
-      .btn-support .btn-support-text{
-        display:none;
-      }
-
-      #sideMenu{
-        width:min(90vw,300px);
-      }
-
-      .menu-link{
-        min-height:50px;
-        padding:13px;
-        border-radius:16px;
-        font-size:13px;
-      }
-    }
   </style>
 </head>
 
@@ -334,427 +101,212 @@
     </div>
   </div>
 
-  <div id="menuOverlay" onclick="toggleMenu(false)" aria-hidden="true"></div>
-
-  <aside id="sideMenu" aria-hidden="true">
-    <div class="menu-header">
-      <div>
-        <div class="text-2xl font-black tracking-tighter text-gray-900">
-          Viral<span class="text-[#F07E13]">Flowr</span>
-        </div>
-        <p class="text-[11px] font-bold text-gray-400 uppercase tracking-[0.18em] mt-1">
-          Navigation
-        </p>
-      </div>
-
-      <button
-        type="button"
-        onclick="toggleMenu(false)"
-        class="menu-close-btn"
-        aria-label="Fermer le menu"
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
-    </div>
-
-    <div class="menu-body">
-      <nav class="flex flex-col gap-1" aria-label="Navigation principale">
-        <div class="menu-section-title">Général</div>
-
-        <a href="/index.html" class="menu-link" data-page="index.html">
-          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-          </svg>
-          <span>Boutique</span>
-        </a>
-
-        <a href="/wallet.html" class="menu-link" data-page="wallet.html">
-          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"></path>
-            <path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"></path>
-            <path d="M20 12h-4a2 2 0 0 0 0 4h4"></path>
-          </svg>
-          <span>Mon Portefeuille</span>
-        </a>
-
-        <a href="/commandes.html" class="menu-link" data-page="commandes.html">
-          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"></path>
-          </svg>
-          <span>Mes Commandes</span>
-        </a>
-
-        <div class="h-px bg-gray-100 my-4 mx-2"></div>
-
-        <div class="menu-section-title">Développeurs & Infos</div>
-
-        <a href="/api-access.html" class="menu-link" data-page="api-access.html">
-          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="16 18 22 12 16 6"></polyline>
-            <polyline points="8 6 2 12 8 18"></polyline>
-          </svg>
-          <span>Accès API (Revendeurs)</span>
-        </a>
-
-        <a href="/politique.html" class="menu-link" data-page="politique.html">
-          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-          </svg>
-          <span>Politique de règlement</span>
-        </a>
-
-        <a href="/about.html" class="menu-link" data-page="about.html">
-          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="16" x2="12" y2="12"></line>
-            <line x1="12" y1="8" x2="12.01" y2="8"></line>
-          </svg>
-          <span>À propos de nous</span>
-        </a>
-      </nav>
-    </div>
-
-    <div class="menu-footer">
-      <a href="https://wa.me/243838694889" target="_blank" rel="noopener noreferrer" class="btn-support w-full justify-center">
-        <svg width="18" height="18" fill="white" viewBox="0 0 24 24">
-          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
-        </svg>
-        <span>Assistance</span>
-      </a>
-    </div>
-  </aside>
-
-  <div class="checkout-container">
-
-    <div class="flex items-center justify-between gap-3 mb-6">
-      <div class="flex items-center gap-3">
-        <button
-          id="menuTrigger"
-          type="button"
-          onclick="toggleMenu()"
-          class="icon-btn"
-          aria-label="Menu"
-          aria-expanded="false"
-          aria-controls="sideMenu"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
-
-        <a href="index.html" class="inline-flex items-center gap-2 brand-wrap" aria-label="Aller à la boutique">
-          <span class="text-2xl font-black tracking-tighter brand-text">
-            Viral<span class="text-orange-bsv">Flowr</span>
-          </span>
-        </a>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <a href="index.html" class="icon-btn" title="Boutique" aria-label="Retour à la boutique">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 11l9-8 9 8"></path>
-            <path d="M9 22V12h6v10"></path>
-          </svg>
-        </a>
-        <a href="index.html" class="btn-mini hidden sm:inline-flex">Boutique</a>
-        <a href="wallet.html" class="icon-btn" title="Portefeuille" aria-label="Portefeuille">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
-            <path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/>
-            <path d="M20 12h-4a2 2 0 0 0 0 4h4"/>
-            <circle cx="16" cy="14" r="0.5" />
-          </svg>
-        </a>
-      </div>
-    </div>
-
-    <div class="text-center mb-6">
-      <p class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Paiement sécurisé</p>
-      <p class="text-gray-500 text-[12px] font-bold mt-2">
-        Suivez les étapes ci-dessous pour finaliser votre commande.
-      </p>
-    </div>
-
-    <div class="bg-white rounded-[32px] shadow-lg border border-gray-100 p-6 md:p-8">
-
-      <div id="form-container">
-        <h2 id="service-name" class="text-xl font-extrabold text-center mb-2 leading-tight">Chargement...</h2>
-        <div class="text-center mb-6">
-          <span id="cat-badge" class="bg-gray-100 text-gray-500 text-[10px] font-bold px-3 py-1 rounded-full uppercase">—</span>
-        </div>
-
-        <div id="description-section" class="hidden mb-6 space-y-3">
-          <div id="long-box" class="hidden bg-blue-50 border border-blue-100 rounded-2xl p-4">
-            <h3 class="text-blue-800 text-xs font-black uppercase mb-2">Détails du produit</h3>
-            <p id="long-text" class="text-xs text-blue-900 leading-relaxed whitespace-pre-line font-medium"></p>
-          </div>
-          <div id="desc-box" class="hidden bg-green-50 border border-green-100 rounded-2xl p-4">
-            <h3 class="text-green-800 text-xs font-black uppercase mb-2">Informations à fournir</h3>
-            <p id="desc-text" class="text-xs text-green-900 leading-relaxed whitespace-pre-line font-medium"></p>
-          </div>
-        </div>
-
-        <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-4 text-center mb-8">
-          <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">
-            Numéro de Commande
-          </span>
-          <span id="live-order-id" class="block text-2xl font-black text-gray-900 tracking-tight cursor-pointer" onclick="copyText(this.innerText)">...</span>
-        </div>
-
-        <form id="orderForm" class="space-y-5">
-
-          <div id="section-smm" class="hidden space-y-4">
-            <div>
-              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Lien à booster (obligatoire)</label>
-              <input type="text" id="boost-link" placeholder="https://..." class="w-full bg-white rounded-xl p-3 text-sm font-medium">
-              <p class="text-[11px] text-gray-500 font-bold mt-2">
-                Exemple : lien Instagram / TikTok / YouTube.
-              </p>
-            </div>
-
-            <div>
-              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Quantité</label>
-              <input type="number" id="qty" value="1000" class="w-full bg-white rounded-xl p-3 text-sm font-black">
-              <div id="qty-hint" class="text-[11px] text-gray-500 font-bold mt-2 hidden"></div>
-            </div>
-          </div>
-
-          <div id="section-abonnement" class="hidden space-y-4">
-            <div>
-              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Identifiants du compte (obligatoire)</label>
-              <textarea id="creds" class="w-full bg-white rounded-xl p-3 text-sm font-medium h-28 resize-none"
-                placeholder="mail : votre@email.com&#10;mot de passe : votre_mdp"></textarea>
-              <p class="text-[11px] text-gray-500 font-bold mt-2">
-                Exemple : mail : oto@gmail.com / mot de passe : toto123
-              </p>
-            </div>
-            <div>
-              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact de livraison (obligatoire)</label>
-              <input type="text" id="delivery-contact-abo" placeholder="WhatsApp ou Email"
-                class="w-full bg-white rounded-xl p-3 text-sm font-medium">
-              <p class="text-[11px] text-gray-500 font-bold mt-2">
-                Utile pour OTP / confirmation / assistance.
-              </p>
-            </div>
-          </div>
-
-          <div id="section-carte" class="hidden space-y-4">
-            <div>
-              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact de livraison (obligatoire)</label>
-              <input type="text" id="card-delivery" placeholder="WhatsApp ou Email"
-                class="w-full bg-white rounded-xl p-3 text-sm font-medium">
-              <p class="text-[11px] text-gray-500 font-bold mt-2">
-                Nous envoyons le code / compte / accès sur ce contact.
-              </p>
-            </div>
-          </div>
-
-          <div id="section-default" class="hidden space-y-4">
-            <div>
-              <label id="default-label" class="text-[11px] font-bold text-gray-900 uppercase ml-1">Information requise</label>
-              <input type="text" id="main-input" placeholder="Ex : IMEI 15 chiffres / lien / etc."
-                class="w-full bg-white rounded-xl p-3 text-sm font-medium">
-            </div>
-            <div>
-              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Email (optionnel)</label>
-              <input type="email" id="email-client" placeholder="client@gmail.com"
-                class="w-full bg-white rounded-xl p-3 text-sm font-medium">
-            </div>
-          </div>
-
-          <div class="py-2 text-center">
-            <span class="text-[10px] text-gray-400 uppercase font-bold">Total à payer</span>
-            <div id="display-price" class="text-4xl font-black text-gray-900 tracking-tighter">0.00 $</div>
-            <p class="text-[11px] text-gray-500 font-bold mt-2">
-              Paiement = traitement immédiat.
-            </p>
-          </div>
-
-          <div id="walletBox" class="hidden mt-4 rounded-2xl border border-gray-800 bg-gray-900 p-4 shadow-xl">
-            <div class="flex items-center justify-between gap-3">
-              <div>
-                <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Paiement Wallet</div>
-                <div class="text-[13px] font-bold text-white mt-1">
-                  Solde : <span id="walletBalance" class="font-black">—</span> <span class="text-gray-400">$</span>
-                </div>
-                <div class="text-[11px] font-bold text-gray-400 mt-1">
-                  Compte : <span id="walletEmail" class="font-black text-gray-300">—</span>
-                </div>
-                <div id="walletHint" class="text-[11px] font-bold mt-2 text-gray-400">
-                  Vérification du solde...
-                </div>
-              </div>
-              <div class="flex flex-col gap-2 w-[160px]">
-                <button type="button" id="walletPayBtn"
-                  class="w-full bg-white text-black py-3 rounded-2xl font-black text-[11px] uppercase shadow-lg hover:scale-[1.02] transition-transform">
-                  Payer avec Wallet
-                </button>
-              </div>
-            </div>
-
-            <div class="bg-gray-800 border border-gray-700 rounded-xl p-3 mt-4 text-center">
-              <p class="text-[10px] text-gray-400 font-medium leading-relaxed">
-                En cliquant sur "Payer avec Wallet", vous acceptez notre 
-                <a href="politique.html" class="text-white font-black underline decoration-2 underline-offset-2 hover:opacity-80">
-                  Politique de règlement
-                </a>. 
-                Tout achat est définitif. Pour en savoir plus sur notre plateforme, découvrez 
-                <a href="about.html" class="text-white font-black underline decoration-2 underline-offset-2 hover:opacity-80">
-                  qui nous sommes
-                </a>.
-              </p>
-            </div>
-          </div>
-
-        </form>
-      </div>
-
-      <div id="success-msg" class="hidden text-center py-12">
-        <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
-          <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24">
-            <path d="M5 13l4 4L19 7"></path>
-          </svg>
-        </div>
-        <h3 class="text-3xl font-black text-gray-900 mb-2">Paiement réussi</h3>
-        <p class="text-gray-500 text-sm mb-8 font-medium">
-          Votre commande <strong id="final-id" class="text-gray-900"></strong> a été payée avec succès via votre Wallet.
-        </p>
-
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="startNewOrder_(true)"
-            class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-xs uppercase hover:bg-gray-800 transition-colors">
-            Nouvelle commande
-          </button>
-          <button onclick="location.href='index.html'"
-            class="w-full bg-white border border-gray-200 py-4 rounded-2xl font-black text-xs uppercase hover:border-[#F07E13] hover:text-[#F07E13] transition-colors">
-            Boutique
-          </button>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="mt-8 text-center">
-      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Paiement sécurisé • ViralFlowr</p>
-    </div>
+  <div class="bg-gray-900 text-white py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-center">
+    MARKETPLACE PROFESSIONNELLE • LIVRAISON INTERNATIONALE • PAIEMENT SÉCURISÉ
   </div>
+
+  <main class="p-4 md:p-8">
+    <div class="checkout-container">
+
+      <div class="flex items-center justify-between gap-3 mb-6">
+        <div class="flex items-center gap-3 min-w-0">
+          <a href="index.html" class="inline-flex items-center gap-2 min-w-0" aria-label="Aller à la boutique">
+            <span class="text-2xl font-black tracking-tighter whitespace-nowrap">
+              Viral<span class="text-orange-bsv">Flowr</span>
+            </span>
+          </a>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <a href="index.html" class="btn-mini hidden sm:inline-flex">Boutique</a>
+          <a href="wallet.html" class="btn-mini hidden sm:inline-flex">Portefeuille</a>
+        </div>
+      </div>
+
+      <div class="text-center mb-6">
+        <p class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Paiement sécurisé</p>
+        <p class="text-gray-500 text-[12px] font-bold mt-2">
+          Suivez les étapes ci-dessous pour finaliser votre commande.
+        </p>
+      </div>
+
+      <div class="bg-white rounded-[32px] shadow-lg border border-gray-100 p-6 md:p-8">
+
+        <div id="form-container">
+          <h2 id="service-name" class="text-xl font-extrabold text-center mb-2 leading-tight">Chargement...</h2>
+          <div class="text-center mb-6">
+            <span id="cat-badge" class="bg-gray-100 text-gray-500 text-[10px] font-bold px-3 py-1 rounded-full uppercase">—</span>
+          </div>
+
+          <div id="description-section" class="hidden mb-6 space-y-3">
+            <div id="long-box" class="hidden bg-blue-50 border border-blue-100 rounded-2xl p-4">
+              <h3 class="text-blue-800 text-xs font-black uppercase mb-2">Détails du produit</h3>
+              <p id="long-text" class="text-xs text-blue-900 leading-relaxed whitespace-pre-line font-medium"></p>
+            </div>
+            <div id="desc-box" class="hidden bg-green-50 border border-green-100 rounded-2xl p-4">
+              <h3 class="text-green-800 text-xs font-black uppercase mb-2">Informations à fournir</h3>
+              <p id="desc-text" class="text-xs text-green-900 leading-relaxed whitespace-pre-line font-medium"></p>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-4 text-center mb-8">
+            <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">
+              Numéro de Commande
+            </span>
+            <span id="live-order-id" class="block text-2xl font-black text-gray-900 tracking-tight cursor-pointer" onclick="copyText(this.innerText)">...</span>
+          </div>
+
+          <form id="orderForm" class="space-y-5">
+
+            <div id="section-smm" class="hidden space-y-4">
+              <div>
+                <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Lien à booster (obligatoire)</label>
+                <input type="text" id="boost-link" placeholder="https://..." class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+                <p class="text-[11px] text-gray-500 font-bold mt-2">
+                  Exemple : lien Instagram / TikTok / YouTube.
+                </p>
+              </div>
+
+              <div>
+                <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Quantité</label>
+                <input type="number" id="qty" value="1000" class="w-full bg-white rounded-xl p-3 text-sm font-black">
+                <div id="qty-hint" class="text-[11px] text-gray-500 font-bold mt-2 hidden"></div>
+              </div>
+            </div>
+
+            <div id="section-abonnement" class="hidden space-y-4">
+              <div>
+                <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Identifiants du compte (obligatoire)</label>
+                <textarea id="creds" class="w-full bg-white rounded-xl p-3 text-sm font-medium h-28 resize-none"
+                  placeholder="mail : votre@email.com&#10;mot de passe : votre_mdp"></textarea>
+                <p class="text-[11px] text-gray-500 font-bold mt-2">
+                  Exemple : mail : oto@gmail.com / mot de passe : toto123
+                </p>
+              </div>
+              <div>
+                <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact de livraison (obligatoire)</label>
+                <input type="text" id="delivery-contact-abo" placeholder="WhatsApp ou Email"
+                  class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+                <p class="text-[11px] text-gray-500 font-bold mt-2">
+                  Utile pour OTP / confirmation / assistance.
+                </p>
+              </div>
+            </div>
+
+            <div id="section-carte" class="hidden space-y-4">
+              <div>
+                <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact de livraison (obligatoire)</label>
+                <input type="text" id="card-delivery" placeholder="WhatsApp ou Email"
+                  class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+                <p class="text-[11px] text-gray-500 font-bold mt-2">
+                  Nous envoyons le code / compte / accès sur ce contact.
+                </p>
+              </div>
+            </div>
+
+            <div id="section-default" class="hidden space-y-4">
+              <div>
+                <label id="default-label" class="text-[11px] font-bold text-gray-900 uppercase ml-1">Information requise</label>
+                <input type="text" id="main-input" placeholder="Ex : IMEI 15 chiffres / lien / etc."
+                  class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+              </div>
+              <div>
+                <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Email (optionnel)</label>
+                <input type="email" id="email-client" placeholder="client@gmail.com"
+                  class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+              </div>
+            </div>
+
+            <div class="py-2 text-center">
+              <span class="text-[10px] text-gray-400 uppercase font-bold">Total à payer</span>
+              <div id="display-price" class="text-4xl font-black text-gray-900 tracking-tighter">0.00 $</div>
+              <p class="text-[11px] text-gray-500 font-bold mt-2">
+                Paiement = traitement immédiat.
+              </p>
+            </div>
+
+            <div id="walletBox" class="hidden mt-4 rounded-2xl border border-gray-800 bg-gray-900 p-4 shadow-xl">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Paiement Wallet</div>
+                  <div class="text-[13px] font-bold text-white mt-1">
+                    Solde : <span id="walletBalance" class="font-black">—</span> <span class="text-gray-400">$</span>
+                  </div>
+                  <div class="text-[11px] font-bold text-gray-400 mt-1">
+                    Compte : <span id="walletEmail" class="font-black text-gray-300">—</span>
+                  </div>
+                  <div id="walletHint" class="text-[11px] font-bold mt-2 text-gray-400">
+                    Vérification du solde...
+                  </div>
+                </div>
+                <div class="flex flex-col gap-2 w-[160px]">
+                  <button type="button" id="walletPayBtn"
+                    class="w-full bg-white text-black py-3 rounded-2xl font-black text-[11px] uppercase shadow-lg hover:scale-[1.02] transition-transform">
+                    Payer avec Wallet
+                  </button>
+                </div>
+              </div>
+
+              <div class="bg-gray-800 border border-gray-700 rounded-xl p-3 mt-4 text-center">
+                <p class="text-[10px] text-gray-400 font-medium leading-relaxed">
+                  En cliquant sur "Payer avec Wallet", vous acceptez notre
+                  <a href="politique.html" class="text-white font-black underline decoration-2 underline-offset-2 hover:opacity-80">
+                    Politique de règlement
+                  </a>.
+                  Tout achat est définitif. Pour en savoir plus sur notre plateforme, découvrez
+                  <a href="about.html" class="text-white font-black underline decoration-2 underline-offset-2 hover:opacity-80">
+                    qui nous sommes
+                  </a>.
+                </p>
+              </div>
+            </div>
+
+          </form>
+        </div>
+
+        <div id="success-msg" class="hidden text-center py-12">
+          <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
+            <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24">
+              <path d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
+          <h3 class="text-3xl font-black text-gray-900 mb-2">Paiement réussi</h3>
+          <p class="text-gray-500 text-sm mb-8 font-medium">
+            Votre commande <strong id="final-id" class="text-gray-900"></strong> a été payée avec succès via votre Wallet.
+          </p>
+
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="startNewOrder_(true)"
+              class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-xs uppercase hover:bg-gray-800 transition-colors">
+              Nouvelle commande
+            </button>
+            <button onclick="location.href='index.html'"
+              class="w-full bg-white border border-gray-200 py-4 rounded-2xl font-black text-xs uppercase hover:border-[#F07E13] hover:text-[#F07E13] transition-colors">
+              Boutique
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="mt-8 text-center">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Paiement sécurisé • ViralFlowr</p>
+      </div>
+    </div>
+  </main>
 
   <script>
     const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
     const BOT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbylffBPr9m8Y26asnlPuVDizwS5xOUe9zpUIt3NrbUZlVsMgNkh9bOcANYbkvTZbpL9/exec";
 
-    let __vfSavedScrollY = 0;
-
-    function openMenu() {
-      const menu = document.getElementById("sideMenu");
-      const overlay = document.getElementById("menuOverlay");
-      const trigger = document.getElementById("menuTrigger");
-      if (!menu || !overlay) return;
-
-      __vfSavedScrollY = window.scrollY || window.pageYOffset || 0;
-
-      document.body.classList.add("menu-open");
-      document.body.style.position = "fixed";
-      document.body.style.top = "-" + __vfSavedScrollY + "px";
-      document.body.style.left = "0";
-      document.body.style.right = "0";
-      document.body.style.width = "100%";
-
-      menu.classList.add("open");
-      overlay.classList.add("open");
-      menu.setAttribute("aria-hidden", "false");
-      overlay.setAttribute("aria-hidden", "false");
-      if (trigger) trigger.setAttribute("aria-expanded", "true");
-    }
-
-    function closeMenu() {
-      const menu = document.getElementById("sideMenu");
-      const overlay = document.getElementById("menuOverlay");
-      const trigger = document.getElementById("menuTrigger");
-      if (!menu || !overlay) return;
-
-      menu.classList.remove("open");
-      overlay.classList.remove("open");
-      menu.setAttribute("aria-hidden", "true");
-      overlay.setAttribute("aria-hidden", "true");
-
-      document.body.classList.remove("menu-open");
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.left = "";
-      document.body.style.right = "";
-      document.body.style.width = "";
-
-      window.scrollTo(0, __vfSavedScrollY);
-      if (trigger) trigger.setAttribute("aria-expanded", "false");
-    }
-
-    function toggleMenu(force) {
-      const menu = document.getElementById("sideMenu");
-      if (!menu) return;
-      const shouldOpen = typeof force === "boolean" ? force : !menu.classList.contains("open");
-      if (shouldOpen) openMenu();
-      else closeMenu();
-    }
-
-    function setActiveMenuLink() {
+    function setActiveMenuLinkFallback_() {
       const currentPath = (window.location.pathname.split("/").pop() || "paiement.html").toLowerCase();
-      document.querySelectorAll("#sideMenu .menu-link").forEach(function(link) {
-        const page = (link.getAttribute("data-page") || "").toLowerCase();
-        link.classList.toggle("active", page === currentPath);
+      document.querySelectorAll(".vf-menu-link").forEach(function(link) {
+        const path = (link.getAttribute("data-path") || "").toLowerCase();
+        const file = path.split("/").pop();
+        link.classList.toggle("active", file === currentPath);
       });
     }
-
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") {
-        closeMenu();
-      }
-    });
-
-    document.querySelectorAll("#sideMenu .menu-link").forEach(function(link) {
-      link.addEventListener("click", function() {
-        closeMenu();
-      });
-    });
-
-    (function autoFillFromId(){
-      const p = new URLSearchParams(location.search);
-      const id = (p.get("id") || "").trim();
-      const hasBasics = (p.get("nom") && p.get("prix") && p.get("cat"));
-
-      if (!id || hasBasics) return;
-
-      const cb = "VF_PROD_" + Date.now();
-      window[cb] = function(list){
-        try{
-          const arr = Array.isArray(list) ? list : [];
-          const prod = arr.find(x => String(x.id || "").trim() === id);
-          if (!prod) return;
-
-          const qp = new URLSearchParams();
-          qp.set("id", prod.id || id);
-          qp.set("nom", prod.nom || "");
-          qp.set("prix", prod.prix || "");
-          qp.set("cat", prod.cat || "");
-          qp.set("img", prod.img || "");
-          qp.set("min", prod.min ?? "");
-          qp.set("max", prod.max ?? "");
-          qp.set("desc", prod.desc || "");
-          qp.set("long", prod.long_desc || prod.long || "");
-
-          location.replace("paiement.html?" + qp.toString());
-        } catch(e){}
-      };
-      const s = document.createElement("script");
-      s.src = `${GOOGLE_URL}?action=get_products&callback=${cb}&t=${Date.now()}`;
-      document.body.appendChild(s);
-    })();
 
     function copyText(txt){
       navigator.clipboard.writeText(String(txt || ""));
@@ -1115,7 +667,7 @@
 
     initWallet_();
     updateWalletUI_();
-    setActiveMenuLink();
+    setActiveMenuLinkFallback_();
 
     document.getElementById("orderForm").onsubmit = async (e) => {
       e.preventDefault();
@@ -1317,6 +869,39 @@
         }
       }
     };
+
+    (function autoFillFromId(){
+      const p = new URLSearchParams(location.search);
+      const id = (p.get("id") || "").trim();
+      const hasBasics = (p.get("nom") && p.get("prix") && p.get("cat"));
+
+      if (!id || hasBasics) return;
+
+      const cb = "VF_PROD_" + Date.now();
+      window[cb] = function(list){
+        try{
+          const arr = Array.isArray(list) ? list : [];
+          const prod = arr.find(x => String(x.id || "").trim() === id);
+          if (!prod) return;
+
+          const qp = new URLSearchParams();
+          qp.set("id", prod.id || id);
+          qp.set("nom", prod.nom || "");
+          qp.set("prix", prod.prix || "");
+          qp.set("cat", prod.cat || "");
+          qp.set("img", prod.img || "");
+          qp.set("min", prod.min ?? "");
+          qp.set("max", prod.max ?? "");
+          qp.set("desc", prod.desc || "");
+          qp.set("long", prod.long_desc || prod.long || "");
+
+          location.replace("paiement.html?" + qp.toString());
+        } catch(e){}
+      };
+      const s = document.createElement("script");
+      s.src = `${GOOGLE_URL}?action=get_products&callback=${cb}&t=${Date.now()}`;
+      document.body.appendChild(s);
+    })();
   </script>
 </body>
 </html>
