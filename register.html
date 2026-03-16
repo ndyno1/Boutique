@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#111827" />
   <link rel="icon" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
-
+  <script src="/styles/vf_config.js?v=1"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
@@ -163,7 +163,7 @@
   </main>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
+    const SCRIPT_URL = window.VF_CONFIG.scriptUrl;
 
     const msgBox = document.getElementById("msgBox");
     const btn = document.getElementById("submitBtn");
