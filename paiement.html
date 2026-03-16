@@ -8,7 +8,8 @@
   <meta name="theme-color" content="#111827" />
   <link rel="icon" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
-
+  
+  <script src="/styles/vf_config.js?v=1"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -296,8 +297,8 @@
   </main>
 
   <script>
-    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
-    const BOT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbylffBPr9m8Y26asnlPuVDizwS5xOUe9zpUIt3NrbUZlVsMgNkh9bOcANYbkvTZbpL9/exec";
+    const GOOGLE_URL = window.VF_CONFIG.orderScriptUrl;
+    const BOT_WEBHOOK_URL = window.VF_CONFIG.avisScriptUrl;
 
     function setActiveMenuLinkFallback_() {
       const currentPath = (window.location.pathname.split("/").pop() || "paiement.html").toLowerCase();
