@@ -103,6 +103,7 @@
       background:#25D366;color:#fff;padding:8px 16px;border-radius:12px;font-weight:800;
       font-size:12px;display:inline-flex;align-items:center;justify-content:center;gap:8px;line-height:1;
       transition:.3s;-webkit-tap-highlight-color:transparent;flex-shrink:0;white-space:nowrap;max-width:100%;
+      text-decoration:none;
     }
     .btn-support:hover{ transform:scale(1.05); box-shadow:0 10px 15px -3px rgba(37,211,102,.3); }
 
@@ -114,6 +115,27 @@
     .btn-auth:hover{ transform:translateY(-1px); }
     .btn-auth-outline{ background:#fff;border:1px solid #E5E7EB;color:#111827; }
     .btn-auth-outline:hover{ border-color:#F07E13;color:#F07E13; }
+
+    .btn{
+      height:44px;
+      border-radius:16px;
+      font-weight:900;
+      font-size:12px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:0 14px;
+      max-width:100%;
+      white-space:nowrap;
+      flex:0 0 auto;
+      -webkit-tap-highlight-color:transparent;
+      transition:.2s;
+      text-decoration:none;
+    }
+    .btn-outline{ border:1px solid #E5E7EB; background:#fff; color:#111827; }
+    .btn-outline:hover{ border-color:#F07E13; color:#F07E13; }
 
     .line-clamp-2{ display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden; }
 
@@ -134,7 +156,6 @@
       animation: shimmer 1.5s infinite linear;
     }
 
-    /* Drawer menu gauche amélioré */
     #sideMenu{
       position:fixed;
       top:0;
@@ -229,6 +250,7 @@
         color .22s ease,
         box-shadow .22s ease;
       position:relative;
+      text-decoration:none;
     }
 
     .menu-link svg{
@@ -251,6 +273,15 @@
 
     .menu-link:active{
       transform:scale(.985);
+    }
+
+    .menu-link.active{
+      background:linear-gradient(135deg,#FFF7ED 0%,#FFFFFF 100%);
+      color:#F07E13;
+      box-shadow:inset 0 0 0 1px #FDE7D1;
+    }
+    .menu-link.active svg{
+      color:#F07E13;
     }
 
     .menu-close-btn{
@@ -310,14 +341,12 @@
 </head>
 
 <body>
-
   <div class="bg-gray-900 text-white py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-center">
     MARKETPLACE PROFESSIONNELLE • LIVRAISON INTERNATIONALE • PAIEMENT SÉCURISÉ
   </div>
 
   <header class="bg-white sticky top-0 w-full z-50 border-b border-gray-100 shadow-sm backdrop-blur-md bg-white/95">
     <div class="max-w-[1280px] mx-auto px-4 h-16 flex items-center justify-between gap-2 sm:gap-4">
-      
       <div class="flex items-center gap-3">
         <button
           type="button"
@@ -351,7 +380,7 @@
 
       <div class="flex items-center gap-2 sm:gap-3">
         <div id="accountArea" class="hidden sm:flex items-center gap-2"></div>
-        <a href="https://wa.me/243850373991" target="_blank" rel="noopener noreferrer" class="btn-support">
+        <a href="https://wa.me/243838694889" target="_blank" rel="noopener noreferrer" class="btn-support">
           <svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/></svg>
           <span class="btn-support-text">Aide</span>
         </a>
@@ -359,7 +388,7 @@
     </div>
   </header>
 
-  <div id="menuOverlay" onclick="toggleMenu(false)"></div>
+  <div id="menuOverlay" onclick="toggleMenu(false)" aria-hidden="true"></div>
 
   <aside id="sideMenu" aria-hidden="true">
     <div class="menu-header p-5 flex items-center justify-between">
@@ -386,10 +415,10 @@
     </div>
 
     <div class="menu-body">
-      <nav class="flex flex-col gap-1">
+      <nav class="flex flex-col gap-1" aria-label="Navigation principale">
         <div class="menu-section-title">Général</div>
         
-        <a href="/index.html" class="menu-link">
+        <a href="/index.html" class="menu-link" data-page="index.html">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
@@ -397,14 +426,14 @@
           <span>Boutique</span>
         </a>
 
-        <a href="/wallet.html" class="menu-link">
+        <a href="/wallet.html" class="menu-link" data-page="wallet.html">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2ZM16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2M20 12h-4a2 2 0 0 0 0 4h4"/>
           </svg>
           <span>Mon Portefeuille</span>
         </a>
 
-        <a href="/commandes.html" class="menu-link">
+        <a href="/commandes.html" class="menu-link" data-page="commandes.html">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/>
           </svg>
@@ -415,7 +444,7 @@
         
         <div class="menu-section-title">Développeurs & Infos</div>
 
-        <a href="/api-access.html" class="menu-link">
+        <a href="/api-access.html" class="menu-link" data-page="api-access.html">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="16 18 22 12 16 6"></polyline>
             <polyline points="8 6 2 12 8 18"></polyline>
@@ -423,14 +452,14 @@
           <span>Accès API (Revendeurs)</span>
         </a>
         
-        <a href="/politique.html" class="menu-link">
+        <a href="/politique.html" class="menu-link" data-page="politique.html">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
           </svg>
           <span>Politique de règlement</span>
         </a>
 
-        <a href="/about.html" class="menu-link">
+        <a href="/about.html" class="menu-link" data-page="about.html">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="16" x2="12" y2="12"></line>
@@ -443,6 +472,10 @@
 
     <div class="menu-footer">
       <div id="sideAccountArea"></div>
+      <a href="https://wa.me/243838694889" target="_blank" rel="noopener noreferrer" class="btn-support w-full justify-center mt-4">
+        <svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/></svg>
+        <span>Assistance</span>
+      </a>
     </div>
   </aside>
 
@@ -489,76 +522,11 @@
   </footer>
 
   <script>
-    function toggleMenu(force) {
-      const menu = document.getElementById("sideMenu");
-      const overlay = document.getElementById("menuOverlay");
-      const trigger = document.getElementById("menuTrigger");
-
-      if (!menu || !overlay) return;
-
-      const isOpen = menu.classList.contains("open");
-      const shouldOpen = typeof force === "boolean" ? force : !isOpen;
-
-      menu.classList.toggle("open", shouldOpen);
-      overlay.classList.toggle("open", shouldOpen);
-      document.body.classList.toggle("menu-open", shouldOpen);
-
-      menu.setAttribute("aria-hidden", shouldOpen ? "false" : "true");
-      if (trigger) {
-        trigger.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
-      }
-    }
-
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") {
-        toggleMenu(false);
-      }
-    });
-
-    document.querySelectorAll("#sideMenu a").forEach(function(link) {
-      link.addEventListener("click", function() {
-        toggleMenu(false);
-      });
-    });
-
-    function filterCat(category, el) {
-      document.querySelectorAll(".cat-btn").forEach(btn => {
-        btn.classList.remove("active");
-      });
-      if (el) el.classList.add("active");
-
-      if (window.renderProducts && typeof window.renderProducts === "function") {
-        window.renderProducts(category);
-      }
-    }
-
-    (function initSearchPlaceholder() {
-      const input = document.getElementById("searchInput");
-      const box = document.getElementById("placeholder-box");
-
-      if (!input || !box) return;
-
-      function syncPlaceholder() {
-        box.style.opacity = input.value.trim() ? "0" : "1";
-      }
-
-      input.addEventListener("focus", syncPlaceholder);
-      input.addEventListener("input", syncPlaceholder);
-      input.addEventListener("blur", syncPlaceholder);
-
-      syncPlaceholder();
-    })();
-  </script>
-</body>
-</html>
-
-
-
-  <script>
     const FALLBACK_IMG = "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
     let ALL_PRODUCTS = [];
     let CURRENT_FILTER = "all";
     let _isFirstLoad = true;
+    let __vfSavedScrollY = 0;
 
     const FILTER_MAP = {
       "Abonnement": ["ABONNEMENT","CARTE"],
@@ -569,12 +537,64 @@
       "Jeux": ["JEUX","JEU","GAME","GAMING","PSN","PLAYSTATION","XBOX","STEAM","NINTENDO"]
     };
 
-    // --- Fonction d'ouverture/fermeture du Menu ---
-    function toggleMenu() {
-      const menu = document.getElementById('sideMenu');
-      const overlay = document.getElementById('menuOverlay');
-      menu.classList.toggle('open');
-      overlay.classList.toggle('open');
+    function openMenu() {
+      const menu = document.getElementById("sideMenu");
+      const overlay = document.getElementById("menuOverlay");
+      const trigger = document.getElementById("menuTrigger");
+      if (!menu || !overlay) return;
+
+      __vfSavedScrollY = window.scrollY || window.pageYOffset || 0;
+
+      document.body.classList.add("menu-open");
+      document.body.style.position = "fixed";
+      document.body.style.top = "-" + __vfSavedScrollY + "px";
+      document.body.style.left = "0";
+      document.body.style.right = "0";
+      document.body.style.width = "100%";
+
+      menu.classList.add("open");
+      overlay.classList.add("open");
+      menu.setAttribute("aria-hidden", "false");
+      overlay.setAttribute("aria-hidden", "false");
+      if (trigger) trigger.setAttribute("aria-expanded", "true");
+    }
+
+    function closeMenu() {
+      const menu = document.getElementById("sideMenu");
+      const overlay = document.getElementById("menuOverlay");
+      const trigger = document.getElementById("menuTrigger");
+      if (!menu || !overlay) return;
+
+      menu.classList.remove("open");
+      overlay.classList.remove("open");
+      menu.setAttribute("aria-hidden", "true");
+      overlay.setAttribute("aria-hidden", "true");
+
+      document.body.classList.remove("menu-open");
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.width = "";
+
+      window.scrollTo(0, __vfSavedScrollY);
+      if (trigger) trigger.setAttribute("aria-expanded", "false");
+    }
+
+    function toggleMenu(force) {
+      const menu = document.getElementById("sideMenu");
+      if (!menu) return;
+      const shouldOpen = typeof force === "boolean" ? force : !menu.classList.contains("open");
+      if (shouldOpen) openMenu();
+      else closeMenu();
+    }
+
+    function setActiveMenuLink() {
+      const currentPath = (window.location.pathname.split("/").pop() || "index.html").toLowerCase();
+      document.querySelectorAll("#sideMenu .menu-link").forEach(function(link) {
+        const page = (link.getAttribute("data-page") || "").toLowerCase();
+        link.classList.toggle("active", page === currentPath);
+      });
     }
 
     const input = document.getElementById("searchInput");
@@ -614,6 +634,7 @@
       try {
         const api = window.vfApi;
         let payload;
+
         if (api && typeof api.getProducts === "function") {
           payload = await api.getProducts({ cat: "all", token: token || "" });
         } else if (window.vfJsonp) {
@@ -631,8 +652,8 @@
       } catch (err) {
         console.error("Load Error:", err);
         if (_isFirstLoad) {
-           document.getElementById("loadError").textContent = "Problème de connexion aux services. Veuillez rafraîchir.";
-           document.getElementById("loadError").classList.remove("hidden");
+          document.getElementById("loadError").textContent = "Problème de connexion aux services. Veuillez rafraîchir.";
+          document.getElementById("loadError").classList.remove("hidden");
         }
       }
     }
@@ -654,7 +675,7 @@
         return;
       }
 
-      if (_isFirstLoad) return; 
+      if (_isFirstLoad) return;
 
       grid.innerHTML = filtered.map(p=>{
         const img = pImg(p) || FALLBACK_IMG;
@@ -698,7 +719,6 @@
       
       document.getElementById("priceMode").textContent = token ? "Mode: REVENDEUR" : "Mode: CLIENT";
 
-      // Header UI (Desktop login rapide si besoin)
       if (area) {
         area.innerHTML = "";
         area.classList.remove("hidden");
@@ -709,7 +729,6 @@
         }
       }
 
-      // Sidebar UI (Compte complet)
       if (sideArea) {
         if (!s){
           sideArea.innerHTML = `<a href="/login.html" class="btn brand-gradient w-full text-white">Connexion / Inscription</a>`;
@@ -723,9 +742,39 @@
     }
 
     async function start_(){
+      setActiveMenuLink();
       renderAccountUI_();
       await loadProducts_(getToken_());
     }
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        toggleMenu(false);
+      }
+    });
+
+    document.querySelectorAll("#sideMenu a").forEach(function(link) {
+      link.addEventListener("click", function() {
+        toggleMenu(false);
+      });
+    });
+
+    (function initSearchPlaceholder() {
+      const inputEl = document.getElementById("searchInput");
+      const box = document.getElementById("placeholder-box");
+
+      if (!inputEl || !box) return;
+
+      function syncPlaceholder() {
+        box.style.opacity = inputEl.value.trim() ? "0" : "1";
+      }
+
+      inputEl.addEventListener("focus", syncPlaceholder);
+      inputEl.addEventListener("input", syncPlaceholder);
+      inputEl.addEventListener("blur", syncPlaceholder);
+
+      syncPlaceholder();
+    })();
 
     window.addEventListener("load", start_);
   </script>
