@@ -1,58 +1,542 @@
 <!DOCTYPE html>
 <html lang="fr" class="font-inter">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Marketplace Professionnelle</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
   <style>
-    /* Supprime TOUT le CSS lié au menu (#sideMenu, .menu-link, etc.) */
-    /* Ne garde QUE le CSS spécifique à la page (body, .brand-gradient, .btn, etc.) */
-    
-    html, body { width:100%; max-width:100%; overflow-x:hidden; }
-    body{ font-family:'Inter',sans-serif; scroll-behavior:smooth; min-height:100svh; background:#F8FAFC; }
-    /* ... tes autres styles (boutons, squelettes, grid, etc.) ... */
+    html, body {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      scroll-behavior: smooth;
+      min-height: 100svh;
+      background: #F8FAFC;
+      color: #0F172A;
+    }
+
+    .brand-gradient {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      border-radius: 14px;
+      padding: .85rem 1.1rem;
+      font-weight: 600;
+      transition: all .2s ease;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #0f172a;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #1e293b;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #0f172a;
+      border: 1px solid #e2e8f0;
+    }
+
+    .btn-secondary:hover {
+      background: #f8fafc;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(15, 23, 42, 0.04);
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    @media (min-width: 640px) {
+      .product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .product-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 1280px) {
+      .product-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    .skeleton {
+      position: relative;
+      overflow: hidden;
+      background: #e2e8f0;
+    }
+
+    .skeleton::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,0.6),
+        transparent
+      );
+      animation: shimmer 1.2s infinite;
+    }
+
+    @keyframes shimmer {
+      100% {
+        transform: translateX(100%);
+      }
+    }
+
+    .chip {
+      border: 1px solid #cbd5e1;
+      background: white;
+      color: #334155;
+      padding: .55rem .9rem;
+      border-radius: 999px;
+      font-size: .875rem;
+      font-weight: 600;
+      transition: .2s ease;
+      cursor: pointer;
+    }
+
+    .chip:hover {
+      background: #f1f5f9;
+    }
+
+    .chip.active {
+      background: #0f172a;
+      color: white;
+      border-color: #0f172a;
+    }
+
+    .price {
+      font-size: 1.125rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .muted {
+      color: #64748b;
+    }
   </style>
 </head>
 
 <body>
+  <!-- Topbar -->
   <div class="bg-gray-900 text-white py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-center">
     MARKETPLACE PROFESSIONNELLE • LIVRAISON INTERNATIONALE • PAIEMENT SÉCURISÉ
   </div>
 
+  <!-- Menu externalisé -->
   <script src="/vf_menu.js"></script>
 
-  <main class="max-w-[1280px] mx-auto px-4 py-8">
-    </main>
+  <!-- Hero -->
+  <section class="brand-gradient text-white">
+    <div class="max-w-[1280px] mx-auto px-4 py-10 md:py-14">
+      <div class="max-w-3xl">
+        <p class="text-xs uppercase tracking-[0.25em] font-bold text-slate-300">
+          Catalogue B2B
+        </p>
+        <h1 class="mt-3 text-3xl md:text-5xl font-extrabold leading-tight">
+          Marketplace professionnelle pour vos achats internationaux
+        </h1>
+        <p class="mt-4 text-slate-300 text-sm md:text-base max-w-2xl">
+          Découvrez une sélection de produits fiables, comparez rapidement les offres
+          et gérez votre session client depuis une interface simple et rapide.
+        </p>
 
-  <footer class="bg-white border-t border-gray-100 py-12">
-    </footer>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a href="#catalogue" class="btn btn-primary">Voir le catalogue</a>
+          <a href="#footer" class="btn btn-secondary">En savoir plus</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="max-w-[1280px] mx-auto px-4 py-8" id="catalogue">
+    <!-- Bandeau compte -->
+    <section class="mb-6">
+      <div id="accountBox" class="card p-4 md:p-5">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold">Mon espace</h2>
+            <p id="accountText" class="muted text-sm">
+              Vérification de votre session...
+            </p>
+          </div>
+          <div id="accountActions" class="flex flex-wrap gap-3"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recherche + filtres -->
+    <section class="mb-8">
+      <div class="card p-4 md:p-5">
+        <div class="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
+          <div class="w-full lg:max-w-xl">
+            <label for="searchInput" class="block text-sm font-semibold mb-2">
+              Rechercher un produit
+            </label>
+            <input
+              id="searchInput"
+              type="text"
+              placeholder="Nom, catégorie, mot-clé..."
+              class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-slate-400"
+            />
+          </div>
+
+          <div class="flex flex-wrap gap-2" id="filterBar">
+            <button class="chip active" data-filter="all">Tous</button>
+            <button class="chip" data-filter="electronics">Électronique</button>
+            <button class="chip" data-filter="fashion">Mode</button>
+            <button class="chip" data-filter="home">Maison</button>
+            <button class="chip" data-filter="beauty">Beauté</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Résultats -->
+    <section>
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-2xl font-extrabold">Produits</h2>
+          <p id="resultsCount" class="muted text-sm mt-1">Chargement...</p>
+        </div>
+      </div>
+
+      <div id="productsGrid" class="product-grid"></div>
+    </section>
+  </main>
+
+  <footer id="footer" class="bg-white border-t border-gray-100 py-12">
+    <div class="max-w-[1280px] mx-auto px-4">
+      <div class="grid md:grid-cols-3 gap-8">
+        <div>
+          <h3 class="font-extrabold text-lg">Marketplace Pro</h3>
+          <p class="muted text-sm mt-3">
+            Une interface claire pour consulter, filtrer et commander vos produits
+            en toute confiance.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="font-bold">Services</h4>
+          <ul class="mt-3 space-y-2 text-sm muted">
+            <li>Catalogue international</li>
+            <li>Paiement sécurisé</li>
+            <li>Support client</li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-bold">Contact</h4>
+          <ul class="mt-3 space-y-2 text-sm muted">
+            <li>Email : contact@marketplace-pro.com</li>
+            <li>Support : 24/7</li>
+            <li>Livraison internationale</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
 
   <script>
-    // ✅ NETTOYAGE IMPORTANT ICI !
-    // Tu peux SUPPRIMER les fonctions suivantes car elles sont maintenant dans vf_menu.js :
-    // - openMenu()
-    // - closeMenu()
-    // - toggleMenu()
-    // - setActiveMenuLink()
-    // - document.addEventListener("keydown"...)
-    // - initSearchPlaceholder()
+    // =========================
+    // Logique métier uniquement
+    // =========================
 
-    // GARDE uniquement ta logique métier pour les produits et la session :
     const FALLBACK_IMG = "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
+
     let ALL_PRODUCTS = [];
     let CURRENT_FILTER = "all";
     let _isFirstLoad = true;
-    const FILTER_MAP = { /* ... */ };
 
-    // [Garde loadProducts_, render(), filterCat(), renderAccountUI_() etc...]
+    const FILTER_MAP = {
+      all: () => true,
+      electronics: (p) => {
+        const v = `${p.category || ""} ${p.name || ""}`.toLowerCase();
+        return v.includes("electronics") || v.includes("électronique") || v.includes("tech");
+      },
+      fashion: (p) => {
+        const v = `${p.category || ""} ${p.name || ""}`.toLowerCase();
+        return v.includes("fashion") || v.includes("mode") || v.includes("clothing");
+      },
+      home: (p) => {
+        const v = `${p.category || ""} ${p.name || ""}`.toLowerCase();
+        return v.includes("home") || v.includes("maison") || v.includes("furniture");
+      },
+      beauty: (p) => {
+        const v = `${p.category || ""} ${p.name || ""}`.toLowerCase();
+        return v.includes("beauty") || v.includes("beauté") || v.includes("cosmetic");
+      }
+    };
 
-    async function start_(){
-      // setActiveMenuLink() se lance tout seul depuis le nouveau fichier maintenant !
+    function getToken_() {
+      return localStorage.getItem("token") || "";
+    }
+
+    function getUser_() {
+      try {
+        return JSON.parse(localStorage.getItem("user") || "null");
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function logout_() {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      renderAccountUI_();
+    }
+
+    function renderAccountUI_() {
+      const user = getUser_();
+      const token = getToken_();
+
+      const accountText = document.getElementById("accountText");
+      const accountActions = document.getElementById("accountActions");
+
+      if (!accountText || !accountActions) return;
+
+      if (token && user) {
+        accountText.textContent = `Connecté en tant que ${user.name || user.email || "utilisateur"}.`;
+        accountActions.innerHTML = `
+          <a href="/account.html" class="btn btn-secondary">Mon compte</a>
+          <button class="btn btn-primary" onclick="logout_()">Déconnexion</button>
+        `;
+      } else {
+        accountText.textContent = "Vous n'êtes pas connecté. Connectez-vous pour accéder à votre espace client.";
+        accountActions.innerHTML = `
+          <a href="/login.html" class="btn btn-primary">Connexion</a>
+          <a href="/register.html" class="btn btn-secondary">Créer un compte</a>
+        `;
+      }
+    }
+
+    function renderSkeletons_(count = 8) {
+      const grid = document.getElementById("productsGrid");
+      if (!grid) return;
+
+      grid.innerHTML = Array.from({ length: count }).map(() => `
+        <article class="card">
+          <div class="skeleton h-52 w-full"></div>
+          <div class="p-4">
+            <div class="skeleton h-4 w-3/4 rounded mb-3"></div>
+            <div class="skeleton h-3 w-1/2 rounded mb-4"></div>
+            <div class="skeleton h-4 w-1/3 rounded"></div>
+          </div>
+        </article>
+      `).join("");
+
+      const countEl = document.getElementById("resultsCount");
+      if (countEl) countEl.textContent = "Chargement des produits...";
+    }
+
+    function escapeHtml_(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function formatPrice_(value) {
+      const n = Number(value || 0);
+      return new Intl.NumberFormat("fr-FR", {
+        style: "currency",
+        currency: "EUR"
+      }).format(n);
+    }
+
+    function normalizeProducts_(data) {
+      if (Array.isArray(data)) return data;
+      if (Array.isArray(data?.products)) return data.products;
+      if (Array.isArray(data?.data)) return data.data;
+      return [];
+    }
+
+    async function loadProducts_(token) {
+      renderSkeletons_();
+
+      try {
+        const res = await fetch("/api/products", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+          }
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        ALL_PRODUCTS = normalizeProducts_(data);
+        render();
+      } catch (err) {
+        console.error("Erreur chargement produits:", err);
+        ALL_PRODUCTS = [];
+        render();
+      } finally {
+        _isFirstLoad = false;
+      }
+    }
+
+    function getFilteredProducts_() {
+      const input = document.getElementById("searchInput");
+      const q = (input?.value || "").trim().toLowerCase();
+
+      const filterFn = FILTER_MAP[CURRENT_FILTER] || FILTER_MAP.all;
+
+      return ALL_PRODUCTS.filter((p) => {
+        const matchesFilter = filterFn(p);
+
+        const haystack = `
+          ${p.name || ""}
+          ${p.category || ""}
+          ${p.description || ""}
+          ${p.brand || ""}
+        `.toLowerCase();
+
+        const matchesSearch = !q || haystack.includes(q);
+        return matchesFilter && matchesSearch;
+      });
+    }
+
+    function render() {
+      const grid = document.getElementById("productsGrid");
+      const countEl = document.getElementById("resultsCount");
+      if (!grid || !countEl) return;
+
+      const products = getFilteredProducts_();
+
+      countEl.textContent = `${products.length} produit(s) affiché(s)`;
+
+      if (!products.length) {
+        grid.innerHTML = `
+          <div class="col-span-full card p-8 text-center">
+            <h3 class="text-lg font-bold">Aucun produit trouvé</h3>
+            <p class="muted mt-2">
+              Essayez un autre mot-clé ou changez le filtre sélectionné.
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = products.map((p) => {
+        const name = escapeHtml_(p.name || "Produit");
+        const category = escapeHtml_(p.category || "Non catégorisé");
+        const description = escapeHtml_(p.description || "Aucune description disponible.");
+        const price = formatPrice_(p.price);
+        const image = escapeHtml_(p.image || p.thumbnail || FALLBACK_IMG);
+        const id = encodeURIComponent(p.id || "");
+
+        return `
+          <article class="card">
+            <div class="aspect-[4/3] bg-slate-100 overflow-hidden">
+              <img
+                src="${image}"
+                alt="${name}"
+                class="w-full h-full object-cover"
+                loading="lazy"
+                onerror="this.onerror=null;this.src='${FALLBACK_IMG}'"
+              />
+            </div>
+
+            <div class="p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">${category}</p>
+                  <h3 class="mt-1 font-extrabold text-lg leading-tight">${name}</h3>
+                </div>
+              </div>
+
+              <p class="muted text-sm mt-3 line-clamp-3">${description}</p>
+
+              <div class="mt-4 flex items-center justify-between gap-3">
+                <span class="price">${price}</span>
+                <a href="/product.html?id=${id}" class="btn btn-primary">
+                  Voir
+                </a>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function filterCat(category) {
+      CURRENT_FILTER = category;
+
+      document.querySelectorAll("#filterBar .chip").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.filter === category);
+      });
+
+      render();
+    }
+
+    async function start_() {
       renderAccountUI_();
       await loadProducts_(getToken_());
     }
 
-    // N'oublie pas de laisser le input de recherche s'actualiser avec "render" si c'est la page boutique
+    // Events
+    document.querySelectorAll("#filterBar .chip").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        filterCat(btn.dataset.filter || "all");
+      });
+    });
+
     const input = document.getElementById("searchInput");
     if (input) {
-      input.addEventListener("input", () => { render(); });
+      input.addEventListener("input", () => {
+        render();
+      });
     }
 
     window.addEventListener("load", start_);
