@@ -21,6 +21,10 @@
       text-rendering:optimizeLegibility;
     }
 
+    body.vf-menu-open{
+      overflow:hidden;
+    }
+
     .page{ width:100%; max-width:980px; margin:0 auto; padding:16px; }
     @media (min-width: 768px){ .page{ padding:32px; } }
 
@@ -37,7 +41,6 @@
       overflow:hidden;
     }
 
-    /* Buttons */
     .btn{
       height:44px;
       border-radius:16px;
@@ -61,7 +64,14 @@
     .btn-primary{ color:#fff; }
     .btn-primary:hover{ filter:brightness(.98); }
 
-    /* Icon buttons (mobile topbar) */
+    .btn-support{
+      background:#25D366;color:#fff;padding:8px 16px;border-radius:12px;font-weight:800;
+      font-size:12px;display:inline-flex;align-items:center;justify-content:center;gap:8px;line-height:1;
+      transition:.3s;-webkit-tap-highlight-color:transparent;flex-shrink:0;white-space:nowrap;max-width:100%;
+      text-decoration:none;
+    }
+    .btn-support:hover{ transform:scale(1.05); box-shadow:0 10px 15px -3px rgba(37,211,102,.3); }
+
     .icon-btn{
       width:44px;
       height:44px;
@@ -75,10 +85,10 @@
       color:#374151;
       flex:0 0 auto;
       -webkit-tap-highlight-color:transparent;
+      cursor:pointer;
     }
     .icon-btn:hover{ transform:translateY(-1px); border-color:#F07E13; color:#F07E13; }
 
-    /* Topbar layout */
     .topbar{
       display:flex;
       align-items:center;
@@ -86,7 +96,7 @@
       gap:12px;
       margin-bottom:18px;
     }
-    .brand-link{ flex:0 0 auto; min-width:0; }
+    .brand-link{ flex:0 0 auto; min-width:0; text-decoration:none; }
     .top-actions{
       display:flex;
       align-items:center;
@@ -145,18 +155,296 @@
       justify-content:center;
       white-space:nowrap;
     }
+
+    /* Menu latéral stable */
+    #menuOverlay{
+      position:fixed;
+      inset:0;
+      z-index:60;
+      background:rgba(2,6,23,.42);
+      backdrop-filter:blur(4px);
+      -webkit-backdrop-filter:blur(4px);
+      opacity:0;
+      visibility:hidden;
+      pointer-events:none;
+      transition:opacity .28s ease, visibility .28s ease;
+    }
+    #menuOverlay.open{
+      opacity:1;
+      visibility:visible;
+      pointer-events:auto;
+    }
+
+    #sideMenu{
+      position:fixed;
+      top:0;
+      left:0;
+      width:min(86vw,320px);
+      max-width:320px;
+      height:100dvh;
+      z-index:70;
+      background:rgba(255,255,255,.97);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+      border-right:1px solid rgba(229,231,235,.95);
+      box-shadow:0 24px 60px rgba(15,23,42,.18);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      transform:translate3d(-104%,0,0);
+      transition:transform .34s cubic-bezier(.22,1,.36,1);
+      will-change:transform;
+    }
+    #sideMenu.open{
+      transform:translate3d(0,0,0);
+    }
+
+    .menu-header{
+      position:sticky;
+      top:0;
+      z-index:2;
+      padding:20px;
+      background:rgba(255,255,255,.92);
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
+      border-bottom:1px solid #F1F5F9;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .menu-body{
+      flex:1;
+      overflow-y:auto;
+      overflow-x:hidden;
+      padding:14px;
+      -webkit-overflow-scrolling:touch;
+      overscroll-behavior:contain;
+    }
+
+    .menu-footer{
+      border-top:1px solid #F1F5F9;
+      background:linear-gradient(to top, #F8FAFC, #FFFFFF);
+      padding:18px;
+      padding-bottom:calc(18px + env(safe-area-inset-bottom));
+    }
+
+    .menu-section-title{
+      font-size:10px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.16em;
+      color:#9CA3AF;
+      padding:10px 14px 8px;
+    }
+
+    .menu-link{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding:14px;
+      min-height:54px;
+      border-radius:18px;
+      color:#111827;
+      font-weight:800;
+      font-size:14px;
+      line-height:1.1;
+      transition:
+        transform .22s ease,
+        background-color .22s ease,
+        color .22s ease,
+        box-shadow .22s ease;
+      position:relative;
+      text-decoration:none;
+    }
+
+    .menu-link svg{
+      color:#9CA3AF;
+      transition:color .22s ease, transform .22s ease;
+      flex-shrink:0;
+    }
+
+    .menu-link:hover{
+      background:#F8FAFC;
+      color:#F07E13;
+      transform:translateX(4px);
+      box-shadow:inset 0 0 0 1px #FDE7D1;
+    }
+
+    .menu-link:hover svg{
+      color:#F07E13;
+      transform:scale(1.04);
+    }
+
+    .menu-link.active{
+      background:linear-gradient(135deg,#FFF7ED 0%,#FFFFFF 100%);
+      color:#F07E13;
+      box-shadow:inset 0 0 0 1px #FDE7D1;
+    }
+    .menu-link.active svg{
+      color:#F07E13;
+    }
+
+    .menu-close-btn{
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:#F8FAFC;
+      color:#6B7280;
+      transition:all .2s ease;
+      border:1px solid #EEF2F7;
+      cursor:pointer;
+      flex-shrink:0;
+    }
+
+    .menu-close-btn:hover{
+      background:#FFF7ED;
+      color:#F07E13;
+      border-color:#FED7AA;
+      transform:rotate(90deg);
+    }
+
+    @media (max-width:420px){
+      .icon-btn{ width:36px;height:36px;border-radius:12px; }
+
+      #sideMenu{
+        width:min(90vw,300px);
+      }
+
+      .menu-link{
+        min-height:50px;
+        padding:13px;
+        border-radius:16px;
+        font-size:13px;
+      }
+    }
   </style>
 </head>
 
 <body>
+  <div id="menuOverlay" onclick="toggleMenu(false)" aria-hidden="true"></div>
+
+  <aside id="sideMenu" aria-hidden="true">
+    <div class="menu-header">
+      <div>
+        <div class="text-2xl font-black tracking-tighter text-gray-900">
+          Viral<span class="text-[#F07E13]">Flowr</span>
+        </div>
+        <p class="text-[11px] font-bold text-gray-400 uppercase tracking-[0.18em] mt-1">
+          Navigation
+        </p>
+      </div>
+
+      <button
+        type="button"
+        onclick="toggleMenu(false)"
+        class="menu-close-btn"
+        aria-label="Fermer le menu"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="menu-body">
+      <nav class="flex flex-col gap-1" aria-label="Navigation principale">
+        <div class="menu-section-title">Général</div>
+
+        <a href="/index.html" class="menu-link" data-page="index.html">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Boutique</span>
+        </a>
+
+        <a href="/wallet.html" class="menu-link" data-page="wallet.html">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
+            <path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/>
+            <path d="M20 12h-4a2 2 0 0 0 0 4h4"/>
+          </svg>
+          <span>Mon Portefeuille</span>
+        </a>
+
+        <a href="/commandes.html" class="menu-link" data-page="commandes.html">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/>
+          </svg>
+          <span>Mes Commandes</span>
+        </a>
+
+        <div class="h-px bg-gray-100 my-4 mx-2"></div>
+
+        <div class="menu-section-title">Développeurs & Infos</div>
+
+        <a href="/api-access.html" class="menu-link" data-page="api-access.html">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+          <span>Accès API (Revendeurs)</span>
+        </a>
+
+        <a href="/politique.html" class="menu-link" data-page="politique.html">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+          <span>Politique de règlement</span>
+        </a>
+
+        <a href="/about.html" class="menu-link" data-page="about.html">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>À propos de nous</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="menu-footer">
+      <a href="https://wa.me/243838694889" target="_blank" rel="noopener noreferrer" class="btn-support w-full justify-center">
+        <svg width="18" height="18" fill="white" viewBox="0 0 24 24">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
+        </svg>
+        <span>Assistance</span>
+      </a>
+    </div>
+  </aside>
+
   <div class="page">
 
     <div class="topbar">
-      <a href="/index.html" class="inline-flex items-center gap-2 brand-link" aria-label="ViralFlowr">
-        <span class="text-2xl font-black tracking-tighter safe-text">
-          Viral<span class="text-orange-bsv">Flowr</span>
-        </span>
-      </a>
+      <div class="flex items-center gap-3">
+        <button
+          id="menuTrigger"
+          type="button"
+          onclick="toggleMenu()"
+          class="icon-btn"
+          aria-label="Menu"
+          aria-expanded="false"
+          aria-controls="sideMenu"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+
+        <a href="/index.html" class="inline-flex items-center gap-2 brand-link" aria-label="ViralFlowr">
+          <span class="text-2xl font-black tracking-tighter safe-text">
+            Viral<span class="text-orange-bsv">Flowr</span>
+          </span>
+        </a>
+      </div>
 
       <div class="top-actions">
         <a href="/index.html" class="icon-btn sm:hidden" title="Boutique" aria-label="Boutique">
@@ -240,15 +528,9 @@
   </div>
 
   <script>
-    // =========================
-    // CONFIG
-    // =========================
     const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
     const DEBUG = new URLSearchParams(location.search).has("debug");
 
-    // =========================
-    // Debug helper
-    // =========================
     const debugBox = document.getElementById("debugBox");
     function dbg(title, obj){
       if(!DEBUG) return;
@@ -257,9 +539,6 @@
       try { console.log(title, obj); } catch(_){}
     }
 
-    // =========================
-    // Toast
-    // =========================
     function toast(msg){
       const el = document.getElementById("toast");
       el.textContent = String(msg || "");
@@ -268,9 +547,6 @@
       window.__vf_toast_t = setTimeout(()=> el.classList.remove("show"), 2200);
     }
 
-    // =========================
-    // Helpers
-    // =========================
     function esc_(s){
       return String(s||"").replace(/[&<>"']/g, (c)=>({
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
@@ -292,43 +568,40 @@
     }
 
     function badgeForStatus_(st){
-  const s = String(st||"").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  
-  if (
-    s.includes("SUCCESS") || s.includes("SUCCES") || s.includes("DONE") ||
-    s.includes("COMPLETE") || s.includes("DELIVER") || s.includes("TERMINE")
-  ) {
-    return ["bg-green-100 text-green-700", "Complet"];
-  }
+      const s = String(st||"").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      
+      if (
+        s.includes("SUCCESS") || s.includes("SUCCES") || s.includes("DONE") ||
+        s.includes("COMPLETE") || s.includes("DELIVER") || s.includes("TERMINE")
+      ) {
+        return ["bg-green-100 text-green-700", "Complet"];
+      }
 
-  if (s.includes("PARTIAL") || s.includes("PARTIEL")) {
-    return ["bg-orange-100 text-orange-700", "Partiel"];
-  }
+      if (s.includes("PARTIAL") || s.includes("PARTIEL")) {
+        return ["bg-orange-100 text-orange-700", "Partiel"];
+      }
 
-  if (s.includes("PENDING") || s.includes("ATTENTE")) {
-    return ["bg-yellow-100 text-yellow-700", "En attente"];
-  }
+      if (s.includes("PENDING") || s.includes("ATTENTE")) {
+        return ["bg-yellow-100 text-yellow-700", "En attente"];
+      }
 
-  if (s.includes("PROCESS") || s.includes("TRAIT") || s.includes("EN COURS")) {
-    return ["bg-purple-100 text-purple-700", "En traitement"];
-  }
+      if (s.includes("PROCESS") || s.includes("TRAIT") || s.includes("EN COURS")) {
+        return ["bg-purple-100 text-purple-700", "En traitement"];
+      }
 
-  if (
-    s.includes("FAIL") || s.includes("ERROR") ||
-    s.includes("REFUND") || s.includes("REMBOURSE") ||
-    s.includes("CANCEL")
-  ) {
-    return ["bg-red-100 text-red-700", "Erreur / remboursement"];
-  }
+      if (
+        s.includes("FAIL") || s.includes("ERROR") ||
+        s.includes("REFUND") || s.includes("REMBOURSE") ||
+        s.includes("CANCEL")
+      ) {
+        return ["bg-red-100 text-red-700", "Erreur / remboursement"];
+      }
 
-  return ["bg-gray-100 text-gray-700", st || "—"];
-}
+      return ["bg-gray-100 text-gray-700", st || "—"];
+    }
 
     function tryParse_(raw){ try { return JSON.parse(raw); } catch { return null; } }
 
-    // =========================
-    // Session robuste
-    // =========================
     function getSession_(){
       const keys = ["vf_session","VF_SESSION","vfSession","VFSession","session","auth","vf_auth"];
       for(const k of keys){
@@ -339,10 +612,12 @@
       }
       return null;
     }
+
     function pickStr_(v){
       const s = String(v||"").trim();
       return s ? s : "";
     }
+
     function getAuth_(s){
       const email =
         pickStr_(s?.email) ||
@@ -362,9 +637,6 @@
       return { email: email.toLowerCase(), token };
     }
 
-    // =========================
-    // Clipboard (robuste)
-    // =========================
     async function copy_(text){
       const t = String(text || "");
       try{
@@ -390,9 +662,6 @@
       return false;
     }
 
-    // =========================
-    // JSONP
-    // =========================
     function jsonp_(params, onOk, onErr, timeoutMs=12000){
       const cb = "VF_CB_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
       let done = false;
@@ -430,7 +699,6 @@
       s.onload = () => setTimeout(() => { try { s.remove(); } catch(_){ } }, 0);
     }
     
-    // Polyfill URLSearchParams if missing
     function newSearchParams(obj) {
       if (typeof URLSearchParams !== "undefined") return new URLSearchParams(obj);
       let res = [];
@@ -440,9 +708,6 @@
       return { toString: () => res.join("&") };
     }
 
-    // =========================
-    // Modal Voir
-    // =========================
     const respModal = document.getElementById("respModal");
     const respOverlay = document.getElementById("respOverlay");
     const respText = document.getElementById("respText");
@@ -465,9 +730,6 @@
       toast(ok ? "Copié." : "Copie impossible.");
     });
 
-    // =========================
-    // Helpers Données
-    // =========================
     function getResponseText_(o){
       const cand = [
         o.colM, o.manualResponse, o.reponse_site, o.reponseSite, o.response_site, o.responseSite,
@@ -490,11 +752,7 @@
       return 0;
     }
 
-    // =========================
-    // NOUVEAU : Extraction intelligente du Lien (Colonne F / input1)
-    // =========================
     function extractLink_(o) {
-      // On cherche dans toutes les variables possibles renvoyées par ton Google Apps Script
       const cand = [
         o.input1, o.link, o.lien, o.colF, o.f, o.F, o.Input1, o.input_1,
         o.information, o.info, o.url
@@ -502,26 +760,19 @@
       
       for(const v of cand){
         let t = String(v || "").trim();
-        
         if (!t) continue;
 
-        // Si le texte commence directement par http ou https, c'est parfait
         if(t.startsWith("http://") || t.startsWith("https://")) {
           return t;
         }
 
-        // AUTO-CORRECTION : Si l'utilisateur a tapé une URL sans https:// (ex: www.tiktok.com/@pseudo ou instagram.com/pseudo)
-        // On vérifie si ça ressemble à un lien web classique
         if (t.includes(".com/") || t.startsWith("www.") || t.includes("tiktok.com") || t.includes("instagram.com") || t.includes("youtube.com")) {
           return "https://" + t;
         }
       }
-      return ""; // Retourne vide si ce n'est pas un lien
+      return "";
     }
 
-    // =========================
-    // Render table
-    // =========================
     function renderTable_(list, title){
       const stateBox = document.getElementById("stateBox");
       const wrap = document.getElementById("txWrap");
@@ -533,7 +784,6 @@
         return;
       }
 
-      // Tri léger: si "ts" est dispo, on met les plus récentes en haut
       const sorted = [...list].sort((a,b)=>{
         const ta = toNumber_(a?.ts || a?.timestamp || 0);
         const tb = toNumber_(b?.ts || b?.timestamp || 0);
@@ -559,7 +809,6 @@
         const hasResp = !!String(resp||"").trim();
         const respEnc = encodeURIComponent(resp || "");
 
-        // Affichage du bouton Lien avec l'extraction intelligente
         const link = extractLink_(o);
         const linkHtml = link 
           ? `<a href="${esc_(link)}" target="_blank" class="btn btn-outline" style="height:32px;padding:0 10px;font-size:10px;text-decoration:none;border-color:#F07E13;color:#F07E13;">Ouvrir</a>` 
@@ -618,9 +867,6 @@
       });
     }
 
-    // =========================
-    // Auth UI (text + icon)
-    // =========================
     function applyAuthUI_(){
       const btnText = document.getElementById("logoutBtn");
       const btnIcon = document.getElementById("logoutBtnIcon");
@@ -664,9 +910,6 @@
       }
     });
 
-    // =========================
-    // Load transactions
-    // =========================
     function extractListFromRes_(res){
       if(Array.isArray(res)) return res;
       if(res && Array.isArray(res.orders)) return res.orders;
@@ -716,7 +959,6 @@
       userEmail.textContent = auth.email || "Utilisateur";
       modeLine.textContent = "API: tentative order_history…";
 
-      // 1) order_history
       jsonp_(
         { action:"order_history", email: auth.email, token: auth.token, limit:"200" },
         (res) => {
@@ -735,7 +977,6 @@
             return;
           }
 
-          // fallback
           modeLine.textContent = "order_history indisponible → fallback purchase_tx…";
 
           jsonp_(
@@ -815,11 +1056,86 @@
       );
     }
 
+    let __vfSavedScrollY = 0;
+
+    function openMenu() {
+      const menu = document.getElementById("sideMenu");
+      const overlay = document.getElementById("menuOverlay");
+      const trigger = document.getElementById("menuTrigger");
+      if (!menu || !overlay) return;
+
+      __vfSavedScrollY = window.scrollY || window.pageYOffset || 0;
+
+      document.body.classList.add("vf-menu-open");
+      document.body.style.position = "fixed";
+      document.body.style.top = "-" + __vfSavedScrollY + "px";
+      document.body.style.left = "0";
+      document.body.style.right = "0";
+      document.body.style.width = "100%";
+
+      menu.classList.add("open");
+      overlay.classList.add("open");
+      menu.setAttribute("aria-hidden", "false");
+      overlay.setAttribute("aria-hidden", "false");
+      if (trigger) trigger.setAttribute("aria-expanded", "true");
+    }
+
+    function closeMenu() {
+      const menu = document.getElementById("sideMenu");
+      const overlay = document.getElementById("menuOverlay");
+      const trigger = document.getElementById("menuTrigger");
+      if (!menu || !overlay) return;
+
+      menu.classList.remove("open");
+      overlay.classList.remove("open");
+      menu.setAttribute("aria-hidden", "true");
+      overlay.setAttribute("aria-hidden", "true");
+
+      document.body.classList.remove("vf-menu-open");
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.width = "";
+
+      window.scrollTo(0, __vfSavedScrollY);
+      if (trigger) trigger.setAttribute("aria-expanded", "false");
+    }
+
+    function toggleMenu(force) {
+      const menu = document.getElementById("sideMenu");
+      if (!menu) return;
+      const shouldOpen = typeof force === "boolean" ? force : !menu.classList.contains("open");
+      if (shouldOpen) openMenu();
+      else closeMenu();
+    }
+
+    function setActiveMenuLink() {
+      const currentPath = (window.location.pathname.split("/").pop() || "commandes.html").toLowerCase();
+      document.querySelectorAll("#sideMenu .menu-link").forEach(function(link) {
+        const page = (link.getAttribute("data-page") || "").toLowerCase();
+        link.classList.toggle("active", page === currentPath);
+      });
+    }
+
     document.getElementById("refreshBtn").addEventListener("click", loadTransactions_);
 
-    // INIT
-    applyAuthUI_();
-    loadTransactions_();
+    document.addEventListener("DOMContentLoaded", function () {
+      setActiveMenuLink();
+
+      document.querySelectorAll("#sideMenu .menu-link").forEach(function(link) {
+        link.addEventListener("click", function() {
+          closeMenu();
+        });
+      });
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") closeMenu();
+      });
+
+      applyAuthUI_();
+      loadTransactions_();
+    });
   </script>
 </body>
 </html>
