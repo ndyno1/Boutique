@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="font-inter">
 <head>
   <script>
-    /* REDIRECTION CANONIQUE & PROTECTION IFRAME */
     (function () {
       const ref = document.referrer || "";
       const inAppsScriptPanel = /script\.googleusercontent\.com|script\.google\.com/i.test(ref);
       window.__VF_IN_APPS_SCRIPT_PANEL = inAppsScriptPanel;
       if (inAppsScriptPanel) return;
+
       const host = (location.hostname || "").toLowerCase();
-      const CANON_HOST = "viralflowr.com"; 
+      const CANON_HOST = "viralflowr.com";
       if (host !== CANON_HOST && (host === "www.viralflowr.com" || host === "viralflowr.com")) {
         location.replace("https://" + CANON_HOST + location.pathname + location.search + location.hash);
       }
@@ -17,77 +17,123 @@
   </script>
 
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>ViralFlowr | Connexion</title>
 
+  <meta name="theme-color" content="#111827" />
+  <link rel="icon" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/favicon.png" />
+
   <script>
-    // CONFIGURATION DE TON BACKEND (Ne pas modifier l'URL)
     window.VF_CONFIG = {
       scriptUrl: "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec",
-      timeoutMs: 30000, // Temps d'attente max réduit à 30 secondes
-      postMode: "iframe" 
+      timeoutMs: 30000,
+      postMode: "iframe"
     };
   </script>
 
   <script src="/vf_api.js?v=105" defer></script>
+  <script src="/styles/vf_menu.js?v=2" defer></script>
+  <script src="/styles/vf_footer.js?v=2" defer></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/vf_theme.css?v=2">
 
   <style>
-    body { font-family: 'Inter', system-ui, sans-serif; background: #F8FAFC; }
-    .brand-gradient { background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%); }
-    .input-field { transition: all 0.2s; border: 1px solid #E5E7EB; }
-    .animate-spin { animation: spin 1s linear infinite; }
-    @keyframes spin { 
-      from { transform: rotate(0deg); } 
-      to { transform: rotate(360deg); } 
+    body {
+      background: #F8FAFC;
+    }
+
+    .brand-gradient {
+      background: linear-gradient(135deg, #F07E13 0%, #FFB26B 100%);
+    }
+
+    .input-field {
+      transition: all 0.2s;
+      border: 1px solid #E5E7EB;
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 28rem;
+      background: white;
+      border: 1px solid #f3f4f6;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06);
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+    }
+
+    .animate-spin {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
 
-<body class="min-h-screen flex items-center justify-center px-4">
-  <div class="w-full max-w-md bg-white border border-gray-100 shadow-sm rounded-3xl p-6">
-    <div class="text-2xl font-black tracking-tight text-gray-900 text-center">
-      Viral<span class="text-[#F07E13]">Flowr</span>
-    </div>
-    <div class="mt-1 text-sm font-semibold text-gray-400 text-center">Ravis de vous revoir !</div>
-
-    <div id="msg" class="mt-4 hidden rounded-2xl border p-3 text-sm font-semibold text-center"></div>
-
-    <form id="loginForm" class="mt-5 space-y-4">
-      <div>
-        <label class="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Email</label>
-        <input id="email" type="email" required 
-          class="input-field mt-1 h-11 w-full px-4 rounded-2xl bg-white text-sm font-semibold outline-none focus:ring-2 focus:ring-[#F07E13]" 
-          placeholder="ex: patrick@gmail.com" />
-      </div>
-
-      <div>
-        <div class="flex justify-between items-center ml-1">
-          <label class="text-xs font-black uppercase tracking-widest text-gray-400">Mot de passe</label>
-          <a href="forgot.html" class="text-[10px] font-bold text-[#F07E13] hover:underline uppercase tracking-tighter">Oublié ?</a>
-        </div>
-        <input id="password" type="password" required 
-          class="input-field mt-1 h-11 w-full px-4 rounded-2xl bg-white text-sm font-semibold outline-none focus:ring-2 focus:ring-[#F07E13]" 
-          placeholder="••••••••" />
-      </div>
-
-      <button id="btn" type="submit" 
-        class="w-full h-11 rounded-2xl brand-gradient text-white font-black uppercase tracking-widest text-[12px] shadow-md hover:opacity-95 transition disabled:opacity-50 flex items-center justify-center">
-        Se connecter
-      </button>
-    </form>
-
-    <div class="mt-4 text-xs font-bold text-gray-400 text-center">
-      Nouveau ici ? <a class="text-gray-900 hover:underline" href="register.html">Créer un compte</a>
-    </div>
+<body class="min-h-screen">
+  <div class="bg-gray-900 text-white py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-center">
+    MARKETPLACE PROFESSIONNELLE • LIVRAISON INTERNATIONALE • PAIEMENT SÉCURISÉ
   </div>
+
+  <main class="min-h-[calc(100svh-32px)] flex items-center justify-center px-4 py-8">
+    <div class="auth-card">
+      <div class="text-2xl font-black tracking-tight text-gray-900 text-center">
+        Viral<span class="text-[#F07E13]">Flowr</span>
+      </div>
+      <div class="mt-1 text-sm font-semibold text-gray-400 text-center">Ravis de vous revoir !</div>
+
+      <div id="msg" class="mt-4 hidden rounded-2xl border p-3 text-sm font-semibold text-center"></div>
+
+      <form id="loginForm" class="mt-5 space-y-4">
+        <div>
+          <label class="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Email</label>
+          <input
+            id="email"
+            type="email"
+            required
+            class="input-field mt-1 h-11 w-full px-4 rounded-2xl bg-white text-sm font-semibold outline-none focus:ring-2 focus:ring-[#F07E13]"
+            placeholder="ex: patrick@gmail.com"
+          />
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center ml-1">
+            <label class="text-xs font-black uppercase tracking-widest text-gray-400">Mot de passe</label>
+            <a href="forgot.html" class="text-[10px] font-bold text-[#F07E13] hover:underline uppercase tracking-tighter">Oublié ?</a>
+          </div>
+          <input
+            id="password"
+            type="password"
+            required
+            class="input-field mt-1 h-11 w-full px-4 rounded-2xl bg-white text-sm font-semibold outline-none focus:ring-2 focus:ring-[#F07E13]"
+            placeholder="••••••••"
+          />
+        </div>
+
+        <button
+          id="btn"
+          type="submit"
+          class="w-full h-11 rounded-2xl brand-gradient text-white font-black uppercase tracking-widest text-[12px] shadow-md hover:opacity-95 transition disabled:opacity-50 flex items-center justify-center"
+        >
+          Se connecter
+        </button>
+      </form>
+
+      <div class="mt-4 text-xs font-bold text-gray-400 text-center">
+        Nouveau ici ? <a class="text-gray-900 hover:underline" href="register.html">Créer un compte</a>
+      </div>
+    </div>
+  </main>
 
   <script>
     const $ = (id) => document.getElementById(id);
-    let cachedIp = "0.0.0.0"; 
+    let cachedIp = "0.0.0.0";
 
-    fetch('https://api.ipify.org?format=json')
+    fetch("https://api.ipify.org?format=json")
       .then(res => res.json())
       .then(data => { cachedIp = data.ip; })
       .catch(() => { cachedIp = "IP_TIMEOUT"; });
@@ -95,15 +141,29 @@
     function showMsg(type, text) {
       const box = $("msg");
       box.classList.remove("hidden");
-      box.className = "mt-4 rounded-2xl border p-3 text-sm font-semibold text-center " + 
-        (type === "ok" ? "border-green-200 bg-green-50 text-green-900" : "border-red-200 bg-red-50 text-red-900");
+      box.className =
+        "mt-4 rounded-2xl border p-3 text-sm font-semibold text-center " +
+        (type === "ok"
+          ? "border-green-200 bg-green-50 text-green-900"
+          : "border-red-200 bg-red-50 text-red-900");
       box.textContent = text;
     }
 
+    function setActiveMenuLinkFallback_() {
+      const currentPath = (window.location.pathname.split("/").pop() || "login.html").toLowerCase();
+      document.querySelectorAll(".vf-menu-link").forEach(function(link) {
+        const path = (link.getAttribute("data-path") || "").toLowerCase();
+        const file = path.split("/").pop();
+        link.classList.toggle("active", file === currentPath);
+      });
+    }
+
     window.addEventListener("DOMContentLoaded", () => {
+      setActiveMenuLinkFallback_();
+
       $("loginForm").addEventListener("submit", async (e) => {
         e.preventDefault();
-        
+
         const btn = $("btn");
         const email = $("email").value.trim();
         const password = $("password").value;
@@ -113,14 +173,13 @@
         $("msg").classList.add("hidden");
 
         try {
-          const res = await window.vfApi.login({ 
-            email: email, 
-            password: password, 
-            user_ip: cachedIp 
+          const res = await window.vfApi.login({
+            email: email,
+            password: password,
+            user_ip: cachedIp
           });
-          
+
           if (res && res.ok === true) {
-            // 🚨 FORCAGE DE LA SAUVEGARDE DE SESSION POUR INDEX.HTML 🚨
             const userData = res.user || {};
             localStorage.setItem("vf_session", JSON.stringify({
               token: res.token || userData.token || "TOKEN_OK",
@@ -131,14 +190,14 @@
 
             showMsg("ok", "Succès ! Redirection...");
             localStorage.removeItem("vf_login_redirect_guard");
-            
+
             setTimeout(() => location.replace("index.html"), 150);
           } else {
             showMsg("err", res?.error || "Identifiants incorrects ou compte inexistant.");
             btn.disabled = false;
             btn.textContent = "Se connecter";
           }
-        } catch(err) {
+        } catch (err) {
           console.error("Erreur de connexion :", err);
           showMsg("err", "Le serveur est très sollicité. Réessayez dans un instant.");
           btn.disabled = false;
@@ -147,3 +206,5 @@
       });
     });
   </script>
+</body>
+</html>
