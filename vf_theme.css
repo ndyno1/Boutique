@@ -236,4 +236,85 @@ body{
   align-items: center;
   justify-content: space-between;
 }
-.vf-side-menu__brand { font-size
+.vf-side-menu__brand { font-size: 24px; font-weight: 900; letter-spacing: -0.05em; color: #111827; }
+.vf-side-menu__brand span { color: #F07E13; }
+.vf-side-menu__sub {
+  font-size: 11px;
+  font-weight: 700;
+  color: #9CA3AF;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  margin-top: 4px;
+}
+.vf-side-menu__close {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #F8FAFC;
+  color: #6B7280;
+  border: 1px solid #EEF2F7;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.vf-side-menu__close:hover {
+  background: #FFF7ED;
+  color: #F07E13;
+  border-color: #FED7AA;
+  transform: rotate(90deg);
+}
+
+.vf-side-menu__body { flex: 1; overflow-y: auto; padding: 14px; }
+.vf-side-menu__section {
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: #9CA3AF;
+  padding: 10px 14px 8px;
+}
+.vf-menu-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  min-height: 54px;
+  border-radius: 18px;
+  color: #111827;
+  font-weight: 800;
+  font-size: 14px;
+  line-height: 1.1;
+  text-decoration: none;
+  transition: all 0.22s ease;
+  position: relative;
+}
+.vf-menu-link svg { color: #9CA3AF; transition: all 0.22s ease; flex-shrink: 0; }
+.vf-menu-link:hover {
+  background: #F8FAFC;
+  color: #F07E13;
+  transform: translateX(4px);
+  box-shadow: inset 0 0 0 1px #FDE7D1;
+}
+.vf-menu-link:hover svg { color: #F07E13; transform: scale(1.04); }
+.vf-menu-link.active {
+  background: linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 100%);
+  color: #F07E13;
+  box-shadow: inset 0 0 0 1px #FDE7D1;
+}
+.vf-menu-link.active svg { color: #F07E13; }
+
+.vf-side-menu__sep { height: 1px; background: #F1F5F9; margin: 16px 8px; }
+.vf-side-menu__footer {
+  border-top: 1px solid #F1F5F9;
+  background: linear-gradient(to top, #F8FAFC, #FFFFFF);
+  padding: 18px;
+  padding-bottom: calc(18px + env(safe-area-inset-bottom));
+}
+
+@media (max-width:420px){
+  .vf-brand-text { font-size:22px; }
+  .vf-btn-support span { display:none; }
+  .vf-btn-support { padding:8px 10px; border-radius:12px; }
+}
