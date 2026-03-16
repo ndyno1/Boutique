@@ -2,468 +2,152 @@
 <html lang="fr" class="font-inter">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Portefeuille | ViralFlowr</title>
+
+  <meta name="theme-color" content="#111827" />
+  <link rel="icon" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/favicon.png" />
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
+  <script src="/styles/vf_menu.js?v=2" defer></script>
+  <script src="/styles/vf_footer.js?v=2" defer></script>
+  <link rel="stylesheet" href="/styles/vf_theme.css?v=2">
+
   <style>
-    :root{ color-scheme: light; }
-    html, body{ width:100%; max-width:100%; overflow-x:hidden; overscroll-behavior-x:none; }
-    *{ box-sizing:border-box; }
+    :root { color-scheme: light; }
 
-    body{
-      font-family:'Inter',sans-serif;
-      background:#F3F3F3;
-      color:#201B16;
-      -webkit-text-size-adjust:100%;
-      text-rendering:optimizeLegibility;
+    body {
+      background: #F3F3F3;
+      color: #201B16;
+      text-rendering: optimizeLegibility;
     }
 
-    body.menu-open{
-      overflow:hidden;
-      touch-action:none;
-    }
+    .text-orange-bsv { color: #F07E13; }
 
-    .text-orange-bsv{ color:#F07E13; }
-    .brand-gradient{ background: linear-gradient(90deg, #F07E13 0%, #FFB26B 100%); }
-
-    .card{
-      background:#fff;
-      border:1px solid #eee;
-      border-radius:24px;
+    .wallet-card {
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 24px;
       box-shadow: 0 12px 25px rgba(0,0,0,.06);
-      overflow:hidden;
+      overflow: hidden;
     }
 
-    .btn{
-      height:44px;
-      padding:0 16px;
-      border-radius:14px;
-      font-weight:900;
-      font-size:12px;
-      text-transform:uppercase;
-      transition:.2s;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-      white-space:nowrap;
-      -webkit-tap-highlight-color:transparent;
-      cursor:pointer;
-      text-decoration:none;
+    .wallet-btn {
+      height: 44px;
+      padding: 0 16px;
+      border-radius: 14px;
+      font-weight: 900;
+      font-size: 12px;
+      text-transform: uppercase;
+      transition: .2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+      cursor: pointer;
+      text-decoration: none;
     }
 
-    .btn-outline{ background:#fff; border:1px solid #E5E7EB; color:#111827; }
-    .btn-outline:hover{ border-color:#F07E13; color:#F07E13; }
-
-    .btn-primary{ color:#fff; border:none; }
-
-    .btn-support{
-      background:#25D366;
-      color:#fff;
-      padding:8px 16px;
-      border-radius:12px;
-      font-weight:800;
-      font-size:12px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      line-height:1;
-      transition:.3s;
-      -webkit-tap-highlight-color:transparent;
-      flex-shrink:0;
-      white-space:nowrap;
-      max-width:100%;
-      text-decoration:none;
+    .wallet-btn-outline {
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      color: #111827;
     }
-    .btn-support:hover{
-      transform:scale(1.05);
-      box-shadow:0 10px 15px -3px rgba(37,211,102,.3);
+    .wallet-btn-outline:hover {
+      border-color: #F07E13;
+      color: #F07E13;
     }
 
-    .icon-btn{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      width:44px;
-      height:44px;
-      border-radius:14px;
-      background:#fff;
-      border:1px solid #E5E7EB;
-      color:#374151;
-      transition:.2s;
-      flex: 0 0 auto;
-      cursor:pointer;
-    }
-    .icon-btn:hover{
-      transform:translateY(-1px);
-      border-color:#F07E13;
-      color:#F07E13;
+    .wallet-btn-primary {
+      color: #fff;
+      border: none;
     }
 
-    .input{
-      width:100%;
-      height:44px;
-      padding:0 14px;
-      border-radius:14px;
-      background:#fff;
-      border:1px solid #E5E7EB;
-      outline:none;
-      font-weight:800;
-      font-size:13px;
-      transition:.2s;
+    .wallet-input {
+      width: 100%;
+      height: 44px;
+      padding: 0 14px;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      outline: none;
+      font-weight: 800;
+      font-size: 13px;
+      transition: .2s;
     }
-    .input:focus{
-      border-color:#F07E13;
-      box-shadow:0 6px 16px rgba(240,126,19,.10);
+    .wallet-input:focus {
+      border-color: #F07E13;
+      box-shadow: 0 6px 16px rgba(240,126,19,.10);
     }
 
-    .tx-row { border-bottom: 1px solid #F3F3F3; padding: 16px; }
-    .tx-row:last-child { border: none; }
+    .tx-row {
+      border-bottom: 1px solid #F3F3F3;
+      padding: 16px;
+    }
+    .tx-row:last-child {
+      border: none;
+    }
 
-    .toast{
-      position:fixed;
-      left:50%;
-      bottom:20px;
-      transform:translateX(-50%);
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%);
       background: rgba(17,24,39,.95);
-      color:#fff;
-      padding:12px 14px;
-      border-radius:16px;
-      font-weight:900;
-      font-size:12px;
-      z-index:9999;
-      display:none;
+      color: #fff;
+      padding: 12px 14px;
+      border-radius: 16px;
+      font-weight: 900;
+      font-size: 12px;
+      z-index: 9999;
+      display: none;
     }
-    .toast.show{ display:block; }
-
-    /* Drawer stable */
-    #menuOverlay{
-      position:fixed;
-      inset:0;
-      z-index:60;
-      background:rgba(2,6,23,.42);
-      backdrop-filter:blur(4px);
-      -webkit-backdrop-filter:blur(4px);
-      opacity:0;
-      visibility:hidden;
-      pointer-events:none;
-      transition:opacity .28s ease, visibility .28s ease;
-    }
-    #menuOverlay.open{
-      opacity:1;
-      visibility:visible;
-      pointer-events:auto;
+    .toast.show {
+      display: block;
     }
 
-    #sideMenu{
-      position:fixed;
-      top:0;
-      left:0;
-      width:min(86vw,320px);
-      max-width:320px;
-      height:100dvh;
-      z-index:70;
-      background:rgba(255,255,255,.97);
-      backdrop-filter:blur(18px);
-      -webkit-backdrop-filter:blur(18px);
-      border-right:1px solid rgba(229,231,235,.95);
-      box-shadow:0 24px 60px rgba(15,23,42,.18);
-      display:flex;
-      flex-direction:column;
-      overflow:hidden;
-      transform:translate3d(-104%,0,0);
-      transition:transform .34s cubic-bezier(.22,1,.36,1);
-      will-change:transform;
-    }
-    #sideMenu.open{
-      transform:translate3d(0,0,0);
-    }
-
-    .menu-header{
-      position:sticky;
-      top:0;
-      z-index:2;
-      padding:20px;
-      background:rgba(255,255,255,.92);
-      backdrop-filter:blur(16px);
-      -webkit-backdrop-filter:blur(16px);
-      border-bottom:1px solid #F1F5F9;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-    }
-
-    .menu-body{
-      flex:1;
-      overflow-y:auto;
-      overflow-x:hidden;
-      padding:14px;
-      -webkit-overflow-scrolling:touch;
-      overscroll-behavior:contain;
-    }
-
-    .menu-footer{
-      border-top:1px solid #F1F5F9;
-      background:linear-gradient(to top, #F8FAFC, #FFFFFF);
-      padding:18px;
-      padding-bottom:calc(18px + env(safe-area-inset-bottom));
-    }
-
-    .menu-section-title{
-      font-size:10px;
-      font-weight:900;
-      text-transform:uppercase;
-      letter-spacing:.16em;
-      color:#9CA3AF;
-      padding:10px 14px 8px;
-    }
-
-    .menu-link{
-      display:flex;
-      align-items:center;
-      gap:14px;
-      padding:14px;
-      min-height:54px;
-      border-radius:18px;
-      color:#111827;
-      font-weight:800;
-      font-size:14px;
-      line-height:1.1;
-      transition:
-        transform .22s ease,
-        background-color .22s ease,
-        color .22s ease,
-        box-shadow .22s ease;
-      position:relative;
-      text-decoration:none;
-    }
-
-    .menu-link svg{
-      color:#9CA3AF;
-      transition:color .22s ease, transform .22s ease;
-      flex-shrink:0;
-    }
-
-    .menu-link:hover{
-      background:#F8FAFC;
-      color:#F07E13;
-      transform:translateX(4px);
-      box-shadow:inset 0 0 0 1px #FDE7D1;
-    }
-
-    .menu-link:hover svg{
-      color:#F07E13;
-      transform:scale(1.04);
-    }
-
-    .menu-link.active{
-      background:linear-gradient(135deg,#FFF7ED 0%,#FFFFFF 100%);
-      color:#F07E13;
-      box-shadow:inset 0 0 0 1px #FDE7D1;
-    }
-    .menu-link.active svg{
-      color:#F07E13;
-    }
-
-    .menu-close-btn{
-      width:40px;
-      height:40px;
-      border-radius:14px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      background:#F8FAFC;
-      color:#6B7280;
-      transition:all .2s ease;
-      border:1px solid #EEF2F7;
-      cursor:pointer;
-      flex-shrink:0;
-    }
-
-    .menu-close-btn:hover{
-      background:#FFF7ED;
-      color:#F07E13;
-      border-color:#FED7AA;
-      transform:rotate(90deg);
-    }
-
-    @media (max-width:420px){
-      .icon-btn{
-        width:36px;
-        height:36px;
-        border-radius:12px;
-      }
-
-      .btn-support .btn-support-text{
-        display:none;
-      }
-
-      #sideMenu{
-        width:min(90vw,300px);
-      }
-
-      .menu-link{
-        min-height:50px;
-        padding:13px;
-        border-radius:16px;
-        font-size:13px;
+    @media (max-width: 767px) {
+      .wallet-card {
+        border-radius: 20px;
       }
     }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-  <div id="menuOverlay" onclick="toggleMenu(false)" aria-hidden="true"></div>
-
-  <aside id="sideMenu" aria-hidden="true">
-    <div class="menu-header">
-      <div>
-        <div class="text-2xl font-black tracking-tighter text-gray-900">
-          Viral<span class="text-orange-bsv">Flowr</span>
-        </div>
-        <p class="text-[11px] font-bold text-gray-400 uppercase tracking-[0.18em] mt-1">
-          Navigation
-        </p>
-      </div>
-
-      <button
-        type="button"
-        onclick="toggleMenu(false)"
-        class="menu-close-btn"
-        aria-label="Fermer le menu"
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
-    </div>
-
-    <div class="menu-body">
-      <nav class="flex flex-col gap-1" aria-label="Navigation principale">
-        <div class="menu-section-title">Général</div>
-
-        <a href="/index.html" class="menu-link" data-page="index.html">
-          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-          </svg>
-          <span>Boutique</span>
-        </a>
-
-        <a href="/wallet.html" class="menu-link" data-page="wallet.html">
-          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"></path>
-            <path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"></path>
-            <path d="M20 12h-4a2 2 0 0 0 0 4h4"></path>
-          </svg>
-          <span>Mon Portefeuille</span>
-        </a>
-
-        <a href="/commandes.html" class="menu-link" data-page="commandes.html">
-          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"></path>
-          </svg>
-          <span>Mes Commandes</span>
-        </a>
-
-        <div class="h-px bg-gray-100 my-4 mx-2"></div>
-
-        <div class="menu-section-title">Développeurs & Infos</div>
-
-        <a href="/api-access.html" class="menu-link" data-page="api-access.html">
-          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="16 18 22 12 16 6"></polyline>
-            <polyline points="8 6 2 12 8 18"></polyline>
-          </svg>
-          <span>Accès API (Revendeurs)</span>
-        </a>
-
-        <a href="/politique.html" class="menu-link" data-page="politique.html">
-          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-          </svg>
-          <span>Politique de règlement</span>
-        </a>
-
-        <a href="/about.html" class="menu-link" data-page="about.html">
-          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="16" x2="12" y2="12"></line>
-            <line x1="12" y1="8" x2="12.01" y2="8"></line>
-          </svg>
-          <span>À propos de nous</span>
-        </a>
-      </nav>
-    </div>
-
-    <div class="menu-footer">
-      <a href="https://wa.me/243838694889" target="_blank" rel="noopener noreferrer" class="btn-support w-full justify-center">
-        <svg width="18" height="18" fill="white" viewBox="0 0 24 24">
-          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
-        </svg>
-        <span>Assistance</span>
-      </a>
-    </div>
-  </aside>
-
-  <header class="bg-white sticky top-0 z-50 border-b border-gray-200 shadow-sm">
-    <div class="max-w-[1240px] mx-auto h-16 px-4 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <button
-          id="menuTrigger"
-          type="button"
-          onclick="toggleMenu()"
-          class="icon-btn"
-          aria-label="Menu"
-          aria-expanded="false"
-          aria-controls="sideMenu"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
-
-        <a class="flex items-center gap-2" href="index.html">
-          <div class="text-2xl font-black tracking-tighter">Viral<span class="text-orange-bsv">Flowr</span></div>
-        </a>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <a href="about.html" class="btn btn-outline hidden sm:inline-flex">A propos</a>
-        <a href="index.html" class="icon-btn" title="Boutique" aria-label="Boutique">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M3 11l9-8 9 8"></path>
-            <path d="M9 22V12h6v10"></path>
-          </svg>
-        </a>
-      </div>
-    </div>
-  </header>
+  <div class="bg-gray-900 text-white py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-center">
+    MARKETPLACE PROFESSIONNELLE • LIVRAISON INTERNATIONALE • PAIEMENT SÉCURISÉ
+  </div>
 
   <main class="flex-1 p-4">
     <div class="max-w-[860px] mx-auto">
-      
+
       <div class="text-center mt-6 mb-4">
-        <div class="text-3xl font-black tracking-tighter">Mon <span class="text-orange-bsv">Portefeuille</span></div>
+        <div class="text-3xl font-black tracking-tighter">
+          Mon <span class="text-orange-bsv">Portefeuille</span>
+        </div>
       </div>
 
       <div id="alertBox" class="hidden mb-4 px-4 py-3 rounded-2xl border text-sm font-bold"></div>
 
-      <section class="card p-6 md:p-8">
+      <section class="wallet-card p-6 md:p-8">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-300">Solde Actuel</div>
-            <div class="text-4xl font-black mt-1"><span id="balanceValue">0.00</span><span class="text-gray-300 ml-1">$</span></div>
-            <div class="mt-2 text-xs font-bold text-gray-500">Utilisateur : <span id="userLabel" class="text-gray-900">Chargement...</span></div>
+            <div class="text-4xl font-black mt-1">
+              <span id="balanceValue">0.00</span><span class="text-gray-300 ml-1">$</span>
+            </div>
+            <div class="mt-2 text-xs font-bold text-gray-500">
+              Utilisateur : <span id="userLabel" class="text-gray-900">Chargement...</span>
+            </div>
           </div>
-          <button id="refreshBtn" class="btn btn-outline">Actualiser</button>
+
+          <button id="refreshBtn" class="wallet-btn wallet-btn-outline">Actualiser</button>
         </div>
 
         <div class="mt-6 p-4 rounded-2xl bg-[#FFF7EE] border border-[#FFD7B0]">
@@ -477,11 +161,12 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="text-[10px] font-black uppercase text-gray-400">Montant a ajouter (USD)</label>
-              <input id="amountInp" type="number" class="input mt-1" placeholder="0.00">
+              <input id="amountInp" type="number" class="wallet-input mt-1" placeholder="0.00">
             </div>
+
             <div>
               <label class="text-[10px] font-black uppercase text-gray-400">Methode</label>
-              <select id="methodSel" class="input mt-1">
+              <select id="methodSel" class="wallet-input mt-1">
                 <option value="BINANCE_PAY">Binance Pay (Validation Auto)</option>
                 <option value="MOBILE_MONEY">Mobile Money (WhatsApp)</option>
                 <option value="USDT">USDT TRC-20</option>
@@ -490,20 +175,33 @@
           </div>
 
           <div id="binanceField" class="mt-4 p-4 bg-[#121417] rounded-2xl text-white">
-            <div class="flex justify-between items-center mb-3">
+            <div class="flex justify-between items-center mb-3 gap-3">
               <span class="text-[10px] font-bold text-orange-400">ID BINANCE : 744370418</span>
-              <button onclick="navigator.clipboard.writeText('744370418')" class="text-[9px] bg-white/10 px-2 py-1 rounded">Copier ID</button>
+              <button id="copyBinanceIdBtn" class="text-[9px] bg-white/10 px-2 py-1 rounded">Copier ID</button>
             </div>
-            <input id="txidInp" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none focus:border-orange-500" placeholder="Transaction ID (TXID) apres transfert">
+
+            <input
+              id="txidInp"
+              type="text"
+              class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none focus:border-orange-500"
+              placeholder="Transaction ID (TXID) apres transfert"
+            >
           </div>
 
-          <button id="paidBtn" class="btn brand-gradient btn-primary w-full mt-6 shadow-lg">Confirmer le depot</button>
+          <button id="paidBtn" class="wallet-btn brand-gradient wallet-btn-primary w-full mt-6 shadow-lg">
+            Confirmer le depot
+          </button>
         </div>
 
         <div class="mt-10">
-          <div class="text-[11px] font-black uppercase text-gray-300 mb-4 tracking-widest">Historique des transactions</div>
+          <div class="text-[11px] font-black uppercase text-gray-300 mb-4 tracking-widest">
+            Historique des transactions
+          </div>
+
           <div id="txBox" class="rounded-2xl border border-gray-100 bg-white">
-            <div class="p-8 text-center text-gray-400 text-sm font-bold">Chargement de l'historique...</div>
+            <div class="p-8 text-center text-gray-400 text-sm font-bold">
+              Chargement de l'historique...
+            </div>
           </div>
         </div>
       </section>
@@ -516,86 +214,56 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec";
     const WA_NUMBER = "243838694889";
     const $ = (id) => document.getElementById(id);
-    let __vfSavedScrollY = 0;
 
     function getSession_() {
       return JSON.parse(localStorage.getItem("vf_session") || "null");
     }
 
-    function openMenu() {
-      const menu = document.getElementById("sideMenu");
-      const overlay = document.getElementById("menuOverlay");
-      const trigger = document.getElementById("menuTrigger");
-      if (!menu || !overlay) return;
-
-      __vfSavedScrollY = window.scrollY || window.pageYOffset || 0;
-
-      document.body.classList.add("menu-open");
-      document.body.style.position = "fixed";
-      document.body.style.top = "-" + __vfSavedScrollY + "px";
-      document.body.style.left = "0";
-      document.body.style.right = "0";
-      document.body.style.width = "100%";
-
-      menu.classList.add("open");
-      overlay.classList.add("open");
-      menu.setAttribute("aria-hidden", "false");
-      overlay.setAttribute("aria-hidden", "false");
-      if (trigger) trigger.setAttribute("aria-expanded", "true");
+    function showToast(message) {
+      const t = $("toast");
+      if (!t) return;
+      t.textContent = message;
+      t.classList.add("show");
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => t.classList.remove("show"), 2200);
     }
 
-    function closeMenu() {
-      const menu = document.getElementById("sideMenu");
-      const overlay = document.getElementById("menuOverlay");
-      const trigger = document.getElementById("menuTrigger");
-      if (!menu || !overlay) return;
-
-      menu.classList.remove("open");
-      overlay.classList.remove("open");
-      menu.setAttribute("aria-hidden", "true");
-      overlay.setAttribute("aria-hidden", "true");
-
-      document.body.classList.remove("menu-open");
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.left = "";
-      document.body.style.right = "";
-      document.body.style.width = "";
-
-      window.scrollTo(0, __vfSavedScrollY);
-      if (trigger) trigger.setAttribute("aria-expanded", "false");
-    }
-
-    function toggleMenu(force) {
-      const menu = document.getElementById("sideMenu");
-      if (!menu) return;
-      const shouldOpen = typeof force === "boolean" ? force : !menu.classList.contains("open");
-      if (shouldOpen) openMenu();
-      else closeMenu();
-    }
-
-    function setActiveMenuLink() {
+    function setActiveMenuLinkFallback_() {
       const currentPath = (window.location.pathname.split("/").pop() || "wallet.html").toLowerCase();
-      document.querySelectorAll("#sideMenu .menu-link").forEach(function(link) {
-        const page = (link.getAttribute("data-page") || "").toLowerCase();
-        link.classList.toggle("active", page === currentPath);
+      document.querySelectorAll(".vf-menu-link").forEach(function(link) {
+        const path = (link.getAttribute("data-path") || "").toLowerCase();
+        const file = path.split("/").pop();
+        link.classList.toggle("active", file === currentPath);
       });
     }
 
-    $("methodSel").onchange = function() {
-      const val = this.value;
-      $("binanceField").style.display = (val === "BINANCE_PAY") ? "block" : "none";
-      $("paidBtn").textContent = (val === "MOBILE_MONEY") ? "Payer via WhatsApp" : "Confirmer le depot";
-    };
+    function syncMethodUI_() {
+      const methodSel = $("methodSel");
+      const binanceField = $("binanceField");
+      const paidBtn = $("paidBtn");
+      if (!methodSel || !binanceField || !paidBtn) return;
+
+      const val = methodSel.value;
+      binanceField.style.display = (val === "BINANCE_PAY") ? "block" : "none";
+      paidBtn.textContent = (val === "MOBILE_MONEY") ? "Payer via WhatsApp" : "Confirmer le depot";
+    }
 
     function loadWallet() {
       const s = getSession_();
-      if(!s) return window.location.href="login.html";
-      $("userLabel").textContent = s.email;
+      if (!s) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      const userLabel = $("userLabel");
+      if (userLabel) userLabel.textContent = s.email;
 
       const cbBal = "bal_" + Date.now();
       window[cbBal] = (res) => {
-        if(res.ok) $("balanceValue").textContent = parseFloat(res.balance).toFixed(2);
+        if (res && res.ok) {
+          $("balanceValue").textContent = parseFloat(res.balance || 0).toFixed(2);
+        }
+        try { delete window[cbBal]; } catch (_) {}
       };
 
       const scrBal = document.createElement("script");
@@ -607,13 +275,19 @@
 
     function loadTx(email) {
       const cb = "tx_" + Date.now();
+
       window[cb] = (res) => {
         const box = $("txBox");
+        if (!box) return;
 
-        if(res.ok && res.items && res.items.length > 0) {
+        if (res && res.ok && res.items && res.items.length > 0) {
           box.innerHTML = res.items.map(tx => {
             const typeText = String(tx.type || "TX").toUpperCase();
-            const isCredit = typeText.includes("CREDIT") || typeText.includes("DEPOT") || typeText.includes("TOPUP");
+            const isCredit =
+              typeText.includes("CREDIT") ||
+              typeText.includes("DEPOT") ||
+              typeText.includes("TOPUP");
+
             const sign = isCredit ? "+" : "-";
             const colorClass = isCredit ? "text-green-600" : "text-gray-900";
 
@@ -622,31 +296,41 @@
               const d = new Date(tx.created_at);
               if (!isNaN(d.getTime())) {
                 dateFmt = d.toLocaleString("fr-FR", {
-                  day:"2-digit",
-                  month:"2-digit",
-                  year:"numeric",
-                  hour:"2-digit",
-                  minute:"2-digit"
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit"
                 });
               }
-            } catch(e) {}
+            } catch (_) {}
 
             return `
-            <div class="tx-row flex justify-between items-center">
-              <div>
-                <div class="font-black text-gray-900 uppercase text-[11px]">${typeText} <span class="text-[9px] text-gray-400 font-medium ml-1">(${tx.ref || "-"})</span></div>
-                <div class="text-[10px] text-gray-400 mt-1">${dateFmt}</div>
+              <div class="tx-row flex justify-between items-center gap-4">
+                <div class="min-w-0">
+                  <div class="font-black text-gray-900 uppercase text-[11px]">
+                    ${typeText}
+                    <span class="text-[9px] text-gray-400 font-medium ml-1">(${tx.ref || "-"})</span>
+                  </div>
+                  <div class="text-[10px] text-gray-400 mt-1">${dateFmt}</div>
+                </div>
+
+                <div class="text-right shrink-0">
+                  <div class="font-black ${colorClass}">
+                    ${sign}${parseFloat(tx.amount || 0).toFixed(2)} ${tx.currency || "$"}
+                  </div>
+                  <div class="text-[9px] font-bold text-gray-400 uppercase mt-1">
+                    ${tx.status || "OK"}
+                  </div>
+                </div>
               </div>
-              <div class="text-right">
-                <div class="font-black ${colorClass}">${sign}${parseFloat(tx.amount || 0).toFixed(2)} ${tx.currency || "$"}</div>
-                <div class="text-[9px] font-bold text-gray-400 uppercase mt-1">${tx.status || "OK"}</div>
-              </div>
-            </div>
             `;
           }).join("");
         } else {
           box.innerHTML = `<div class="p-10 text-center text-gray-400 font-bold text-sm">Aucune transaction trouvée.</div>`;
         }
+
+        try { delete window[cb]; } catch (_) {}
       };
 
       const scr = document.createElement("script");
@@ -654,15 +338,24 @@
       document.body.appendChild(scr);
     }
 
-    $("paidBtn").onclick = async function() {
+    async function submitTopup_() {
       const s = getSession_();
-      const amount = $("amountInp").value;
-      const method = $("methodSel").value;
-      const txid = $("txidInp").value.trim();
+      if (!s) {
+        window.location.href = "login.html";
+        return;
+      }
 
-      if(!amount || amount <= 0) return alert("Montant invalide");
+      const amount = $("amountInp")?.value;
+      const method = $("methodSel")?.value;
+      const txid = $("txidInp")?.value.trim() || "";
+      const btn = $("paidBtn");
 
-      if(method === "MOBILE_MONEY") {
+      if (!amount || Number(amount) <= 0) {
+        alert("Montant invalide");
+        return;
+      }
+
+      if (method === "MOBILE_MONEY") {
         const msg = encodeURIComponent(
           "Bonjour ViralFlowr, je souhaite recharger mon wallet.\nEmail: " +
           s.email +
@@ -674,10 +367,15 @@
         return;
       }
 
-      if(method === "BINANCE_PAY" && !txid) return alert("ID de transaction requis");
+      if (method === "BINANCE_PAY" && !txid) {
+        alert("ID de transaction requis");
+        return;
+      }
 
-      this.disabled = true;
-      this.textContent = "Patientez...";
+      if (!btn) return;
+
+      btn.disabled = true;
+      btn.textContent = "Patientez...";
 
       const payload = {
         action: "wallet_topup_create",
@@ -689,36 +387,63 @@
       };
 
       try {
-        await fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          body: JSON.stringify(payload)
+        });
+
         alert("Demande enregistrée. Vérification en cours.");
         location.reload();
       } catch (e) {
         alert("Erreur de connexion.");
-        this.disabled = false;
-        this.textContent = "Confirmer le depot";
+        btn.disabled = false;
+        syncMethodUI_();
       }
-    };
+    }
 
-    $("refreshBtn").onclick = () => {
-      $("balanceValue").textContent = "...";
-      $("txBox").innerHTML = `<div class="p-8 text-center text-gray-400 text-sm font-bold">Actualisation...</div>`;
+    function bindWalletEvents_() {
+      const methodSel = $("methodSel");
+      const paidBtn = $("paidBtn");
+      const refreshBtn = $("refreshBtn");
+      const copyBinanceIdBtn = $("copyBinanceIdBtn");
+
+      if (methodSel) {
+        methodSel.addEventListener("change", syncMethodUI_);
+      }
+
+      if (paidBtn) {
+        paidBtn.addEventListener("click", submitTopup_);
+      }
+
+      if (refreshBtn) {
+        refreshBtn.addEventListener("click", () => {
+          $("balanceValue").textContent = "...";
+          $("txBox").innerHTML = `<div class="p-8 text-center text-gray-400 text-sm font-bold">Actualisation...</div>`;
+          loadWallet();
+        });
+      }
+
+      if (copyBinanceIdBtn) {
+        copyBinanceIdBtn.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText("744370418");
+            showToast("ID Binance copie");
+          } catch (_) {
+            alert("Copie impossible");
+          }
+        });
+      }
+    }
+
+    function startWallet_() {
+      setActiveMenuLinkFallback_();
+      syncMethodUI_();
+      bindWalletEvents_();
       loadWallet();
-    };
+    }
 
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") closeMenu();
-    });
-
-    document.querySelectorAll("#sideMenu .menu-link").forEach(function(link) {
-      link.addEventListener("click", function() {
-        closeMenu();
-      });
-    });
-
-    window.onload = function () {
-      setActiveMenuLink();
-      loadWallet();
-    };
+    window.addEventListener("load", startWallet_);
   </script>
 </body>
 </html>
