@@ -2,7 +2,7 @@
 <html lang="fr" class="font-inter">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>ViralFlowr | Paiement Sécurisé</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -10,59 +10,313 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
-    body { font-family:'Inter',sans-serif; background:#F3F3F3; color:#201B16; overflow-x:hidden; }
+    html, body{
+      width:100%;
+      max-width:100%;
+      overflow-x:hidden;
+    }
+
+    body{
+      font-family:'Inter',sans-serif;
+      background:#F3F3F3;
+      color:#201B16;
+      overflow-x:hidden;
+    }
+
+    body.menu-open{
+      overflow:hidden;
+      touch-action:none;
+    }
+
     .text-orange-bsv { color:#F07E13; }
     .checkout-container { max-width:500px; width:100%; margin:2rem auto; }
 
-    input, textarea { outline:none; transition:all .2s; border:1px solid #e5e7eb !important; }
+    input, textarea {
+      outline:none;
+      transition:all .2s;
+      border:1px solid #e5e7eb !important;
+    }
     input:focus, textarea:focus { border-color:#F07E13 !important; }
 
     .brand-wrap{ min-width:0; max-width:100%; }
     .brand-text{
-      display:block; max-width:100%;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      display:block;
+      max-width:100%;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
       line-height:1;
     }
 
     .btn-mini{
-      height:40px; padding:0 12px; border-radius:12px;
-      font-weight:900; font-size:11px; letter-spacing:.08em;
+      height:40px;
+      padding:0 12px;
+      border-radius:12px;
+      font-weight:900;
+      font-size:11px;
+      letter-spacing:.08em;
       text-transform:uppercase;
-      display:inline-flex; align-items:center; justify-content:center; gap:8px;
-      border:1px solid #E5E7EB; background:#fff; color:#111827;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      border:1px solid #E5E7EB;
+      background:#fff;
+      color:#111827;
       transition:.2s;
       white-space:nowrap;
+      text-decoration:none;
     }
-    .btn-mini:hover{ transform: translateY(-1px); border-color:#F07E13; color:#F07E13; }
+    .btn-mini:hover{
+      transform: translateY(-1px);
+      border-color:#F07E13;
+      color:#F07E13;
+    }
+
+    .btn-support{
+      background:#25D366;
+      color:#fff;
+      padding:8px 16px;
+      border-radius:12px;
+      font-weight:800;
+      font-size:12px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      line-height:1;
+      transition:.3s;
+      -webkit-tap-highlight-color:transparent;
+      flex-shrink:0;
+      white-space:nowrap;
+      max-width:100%;
+      text-decoration:none;
+    }
+    .btn-support:hover{
+      transform:scale(1.05);
+      box-shadow:0 10px 15px -3px rgba(37,211,102,.3);
+    }
 
     .icon-btn{
-      width:40px; height:40px; border-radius:12px;
-      border:1px solid #E5E7EB; background:#fff;
-      display:flex; align-items:center; justify-content:center;
-      transition:.2s; color:#374151;
-      flex: 0 0 auto;
+      width:40px;
+      height:40px;
+      border-radius:12px;
+      border:1px solid #E5E7EB;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition:.2s;
+      color:#374151;
+      flex:0 0 auto;
+      cursor:pointer;
     }
-    .icon-btn:hover{ transform:translateY(-1px); border-color:#F07E13; color:#F07E13; }
+    .icon-btn:hover{
+      transform:translateY(-1px);
+      border-color:#F07E13;
+      color:#F07E13;
+    }
 
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
 
     .locked-overlay{
-      position:fixed; inset:0; background:rgba(0,0,0,.35);
-      display:none; align-items:center; justify-content:center;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.35);
+      display:none;
+      align-items:center;
+      justify-content:center;
       z-index:9999;
       padding:16px;
     }
     .locked-card{
       width:min(520px, 100%);
-      background:#fff; border:1px solid #eee; border-radius:24px;
+      background:#fff;
+      border:1px solid #eee;
+      border-radius:24px;
       padding:18px;
       box-shadow:0 20px 60px rgba(0,0,0,.2);
+    }
+
+    /* Menu stable */
+    #menuOverlay{
+      position:fixed;
+      inset:0;
+      z-index:60;
+      background:rgba(2,6,23,.42);
+      backdrop-filter:blur(4px);
+      -webkit-backdrop-filter:blur(4px);
+      opacity:0;
+      visibility:hidden;
+      pointer-events:none;
+      transition:opacity .28s ease, visibility .28s ease;
+    }
+    #menuOverlay.open{
+      opacity:1;
+      visibility:visible;
+      pointer-events:auto;
+    }
+
+    #sideMenu{
+      position:fixed;
+      top:0;
+      left:0;
+      width:min(86vw,320px);
+      max-width:320px;
+      height:100dvh;
+      z-index:70;
+      background:rgba(255,255,255,.97);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+      border-right:1px solid rgba(229,231,235,.95);
+      box-shadow:0 24px 60px rgba(15,23,42,.18);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      transform:translate3d(-104%,0,0);
+      transition:transform .34s cubic-bezier(.22,1,.36,1);
+      will-change:transform;
+    }
+    #sideMenu.open{
+      transform:translate3d(0,0,0);
+    }
+
+    .menu-header{
+      position:sticky;
+      top:0;
+      z-index:2;
+      padding:20px;
+      background:rgba(255,255,255,.92);
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
+      border-bottom:1px solid #F1F5F9;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .menu-body{
+      flex:1;
+      overflow-y:auto;
+      overflow-x:hidden;
+      padding:14px;
+      -webkit-overflow-scrolling:touch;
+      overscroll-behavior:contain;
+    }
+
+    .menu-footer{
+      border-top:1px solid #F1F5F9;
+      background:linear-gradient(to top, #F8FAFC, #FFFFFF);
+      padding:18px;
+      padding-bottom:calc(18px + env(safe-area-inset-bottom));
+    }
+
+    .menu-section-title{
+      font-size:10px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.16em;
+      color:#9CA3AF;
+      padding:10px 14px 8px;
+    }
+
+    .menu-link{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding:14px;
+      min-height:54px;
+      border-radius:18px;
+      color:#111827;
+      font-weight:800;
+      font-size:14px;
+      line-height:1.1;
+      transition:
+        transform .22s ease,
+        background-color .22s ease,
+        color .22s ease,
+        box-shadow .22s ease;
+      position:relative;
+      text-decoration:none;
+    }
+
+    .menu-link svg{
+      color:#9CA3AF;
+      transition:color .22s ease, transform .22s ease;
+      flex-shrink:0;
+    }
+
+    .menu-link:hover{
+      background:#F8FAFC;
+      color:#F07E13;
+      transform:translateX(4px);
+      box-shadow:inset 0 0 0 1px #FDE7D1;
+    }
+
+    .menu-link:hover svg{
+      color:#F07E13;
+      transform:scale(1.04);
+    }
+
+    .menu-link.active{
+      background:linear-gradient(135deg,#FFF7ED 0%,#FFFFFF 100%);
+      color:#F07E13;
+      box-shadow:inset 0 0 0 1px #FDE7D1;
+    }
+    .menu-link.active svg{
+      color:#F07E13;
+    }
+
+    .menu-close-btn{
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:#F8FAFC;
+      color:#6B7280;
+      transition:all .2s ease;
+      border:1px solid #EEF2F7;
+      cursor:pointer;
+      flex-shrink:0;
+    }
+
+    .menu-close-btn:hover{
+      background:#FFF7ED;
+      color:#F07E13;
+      border-color:#FED7AA;
+      transform:rotate(90deg);
+    }
+
+    @media (max-width:420px){
+      .icon-btn{
+        width:36px;
+        height:36px;
+        border-radius:12px;
+      }
+
+      .btn-support .btn-support-text{
+        display:none;
+      }
+
+      #sideMenu{
+        width:min(90vw,300px);
+      }
+
+      .menu-link{
+        min-height:50px;
+        padding:13px;
+        border-radius:16px;
+        font-size:13px;
+      }
     }
   </style>
 </head>
 
-<body class="p-4 md:p-8">
-
+<body>
   <div id="lockedOverlay" class="locked-overlay">
     <div class="locked-card">
       <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Commande déjà validée</div>
@@ -80,14 +334,126 @@
     </div>
   </div>
 
+  <div id="menuOverlay" onclick="toggleMenu(false)" aria-hidden="true"></div>
+
+  <aside id="sideMenu" aria-hidden="true">
+    <div class="menu-header">
+      <div>
+        <div class="text-2xl font-black tracking-tighter text-gray-900">
+          Viral<span class="text-[#F07E13]">Flowr</span>
+        </div>
+        <p class="text-[11px] font-bold text-gray-400 uppercase tracking-[0.18em] mt-1">
+          Navigation
+        </p>
+      </div>
+
+      <button
+        type="button"
+        onclick="toggleMenu(false)"
+        class="menu-close-btn"
+        aria-label="Fermer le menu"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="menu-body">
+      <nav class="flex flex-col gap-1" aria-label="Navigation principale">
+        <div class="menu-section-title">Général</div>
+
+        <a href="/index.html" class="menu-link" data-page="index.html">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Boutique</span>
+        </a>
+
+        <a href="/wallet.html" class="menu-link" data-page="wallet.html">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 7H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"></path>
+            <path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"></path>
+            <path d="M20 12h-4a2 2 0 0 0 0 4h4"></path>
+          </svg>
+          <span>Mon Portefeuille</span>
+        </a>
+
+        <a href="/commandes.html" class="menu-link" data-page="commandes.html">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"></path>
+          </svg>
+          <span>Mes Commandes</span>
+        </a>
+
+        <div class="h-px bg-gray-100 my-4 mx-2"></div>
+
+        <div class="menu-section-title">Développeurs & Infos</div>
+
+        <a href="/api-access.html" class="menu-link" data-page="api-access.html">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+          <span>Accès API (Revendeurs)</span>
+        </a>
+
+        <a href="/politique.html" class="menu-link" data-page="politique.html">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+          <span>Politique de règlement</span>
+        </a>
+
+        <a href="/about.html" class="menu-link" data-page="about.html">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>À propos de nous</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="menu-footer">
+      <a href="https://wa.me/243838694889" target="_blank" rel="noopener noreferrer" class="btn-support w-full justify-center">
+        <svg width="18" height="18" fill="white" viewBox="0 0 24 24">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
+        </svg>
+        <span>Assistance</span>
+      </a>
+    </div>
+  </aside>
+
   <div class="checkout-container">
 
     <div class="flex items-center justify-between gap-3 mb-6">
-      <a href="index.html" class="inline-flex items-center gap-2 brand-wrap" aria-label="Aller à la boutique">
-        <span class="text-2xl font-black tracking-tighter brand-text">
-          Viral<span class="text-orange-bsv">Flowr</span>
-        </span>
-      </a>
+      <div class="flex items-center gap-3">
+        <button
+          id="menuTrigger"
+          type="button"
+          onclick="toggleMenu()"
+          class="icon-btn"
+          aria-label="Menu"
+          aria-expanded="false"
+          aria-controls="sideMenu"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+
+        <a href="index.html" class="inline-flex items-center gap-2 brand-wrap" aria-label="Aller à la boutique">
+          <span class="text-2xl font-black tracking-tighter brand-text">
+            Viral<span class="text-orange-bsv">Flowr</span>
+          </span>
+        </a>
+      </div>
 
       <div class="flex items-center gap-2">
         <a href="index.html" class="icon-btn" title="Boutique" aria-label="Retour à la boutique">
@@ -280,14 +646,83 @@
   </div>
 
   <script>
-    // ====== CONFIG ======
-    // Ton Google App Script principal (backend de paiement)
     const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
-    
-    // Ton Google App Script pour le Bot WhatsApp
     const BOT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbylffBPr9m8Y26asnlPuVDizwS5xOUe9zpUIt3NrbUZlVsMgNkh9bOcANYbkvTZbpL9/exec";
 
-    // ====== AUTO-FILL BY ID (depuis Produits) ======
+    let __vfSavedScrollY = 0;
+
+    function openMenu() {
+      const menu = document.getElementById("sideMenu");
+      const overlay = document.getElementById("menuOverlay");
+      const trigger = document.getElementById("menuTrigger");
+      if (!menu || !overlay) return;
+
+      __vfSavedScrollY = window.scrollY || window.pageYOffset || 0;
+
+      document.body.classList.add("menu-open");
+      document.body.style.position = "fixed";
+      document.body.style.top = "-" + __vfSavedScrollY + "px";
+      document.body.style.left = "0";
+      document.body.style.right = "0";
+      document.body.style.width = "100%";
+
+      menu.classList.add("open");
+      overlay.classList.add("open");
+      menu.setAttribute("aria-hidden", "false");
+      overlay.setAttribute("aria-hidden", "false");
+      if (trigger) trigger.setAttribute("aria-expanded", "true");
+    }
+
+    function closeMenu() {
+      const menu = document.getElementById("sideMenu");
+      const overlay = document.getElementById("menuOverlay");
+      const trigger = document.getElementById("menuTrigger");
+      if (!menu || !overlay) return;
+
+      menu.classList.remove("open");
+      overlay.classList.remove("open");
+      menu.setAttribute("aria-hidden", "true");
+      overlay.setAttribute("aria-hidden", "true");
+
+      document.body.classList.remove("menu-open");
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.width = "";
+
+      window.scrollTo(0, __vfSavedScrollY);
+      if (trigger) trigger.setAttribute("aria-expanded", "false");
+    }
+
+    function toggleMenu(force) {
+      const menu = document.getElementById("sideMenu");
+      if (!menu) return;
+      const shouldOpen = typeof force === "boolean" ? force : !menu.classList.contains("open");
+      if (shouldOpen) openMenu();
+      else closeMenu();
+    }
+
+    function setActiveMenuLink() {
+      const currentPath = (window.location.pathname.split("/").pop() || "paiement.html").toLowerCase();
+      document.querySelectorAll("#sideMenu .menu-link").forEach(function(link) {
+        const page = (link.getAttribute("data-page") || "").toLowerCase();
+        link.classList.toggle("active", page === currentPath);
+      });
+    }
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        closeMenu();
+      }
+    });
+
+    document.querySelectorAll("#sideMenu .menu-link").forEach(function(link) {
+      link.addEventListener("click", function() {
+        closeMenu();
+      });
+    });
+
     (function autoFillFromId(){
       const p = new URLSearchParams(location.search);
       const id = (p.get("id") || "").trim();
@@ -336,19 +771,19 @@
 
     function startNewOrder_(goShop){
       try{
-        const old = sessionStorage.getItem('active_order_id');
+        const old = sessionStorage.getItem("active_order_id");
         if (old) {
           sessionStorage.removeItem("vf_order_sent_" + old);
           sessionStorage.removeItem("vf_order_inflight_" + old);
         }
-        sessionStorage.removeItem('active_order_id');
+        sessionStorage.removeItem("active_order_id");
       }catch(_){}
       if (goShop) location.href = "index.html";
       else location.reload();
     }
 
     const params = new URLSearchParams(window.location.search);
-    const idS = (params.get('id') || "").trim();
+    const idS = (params.get("id") || "").trim();
 
     (function ensureFreshOrderIdForService_(){
       try{
@@ -367,12 +802,12 @@
       }catch(_){}
     })();
 
-    let orderId = sessionStorage.getItem('active_order_id');
+    let orderId = sessionStorage.getItem("active_order_id");
     if (!orderId) {
       orderId = makeOrderId();
-      sessionStorage.setItem('active_order_id', orderId);
+      sessionStorage.setItem("active_order_id", orderId);
     }
-    document.getElementById('live-order-id').innerText = orderId;
+    document.getElementById("live-order-id").innerText = orderId;
 
     const SENT_KEY = "vf_order_sent_" + orderId;
     const INFLIGHT_KEY = "vf_order_inflight_" + orderId;
@@ -385,46 +820,51 @@
 
     function hardLockForm_(){
       const wbtn = document.getElementById("walletPayBtn");
-      if (wbtn) { wbtn.disabled = true; wbtn.style.opacity = ".6"; wbtn.style.cursor = "not-allowed"; wbtn.innerText = "Déjà payé"; }
+      if (wbtn) {
+        wbtn.disabled = true;
+        wbtn.style.opacity = ".6";
+        wbtn.style.cursor = "not-allowed";
+        wbtn.innerText = "Déjà payé";
+      }
     }
 
     if (sessionStorage.getItem(SENT_KEY) === "1") {
       hardLockForm_();
-      document.getElementById('form-container').classList.add('hidden');
-      document.getElementById('final-id').innerText = orderId;
-      document.getElementById('success-msg').classList.remove('hidden');
+      document.getElementById("form-container").classList.add("hidden");
+      document.getElementById("final-id").innerText = orderId;
+      document.getElementById("success-msg").classList.remove("hidden");
     }
 
-    const nom      = params.get('nom') || "Service";
-    const prixInit = parseFloat(params.get('prix')) || 0;
-    const cat      = params.get('cat') || "";
+    const nom      = params.get("nom") || "Service";
+    const prixInit = parseFloat(params.get("prix")) || 0;
+    const cat      = params.get("cat") || "";
 
-    const desc     = safeDecode(params.get('desc') || "");
-    const longDesc = safeDecode(params.get('long') || params.get('long_desc') || "");
-    const minParam = parseFloat(params.get('min'));
-    const maxParam = parseFloat(params.get('max'));
+    const desc     = safeDecode(params.get("desc") || "");
+    const longDesc = safeDecode(params.get("long") || params.get("long_desc") || "");
+    const minParam = parseFloat(params.get("min"));
+    const maxParam = parseFloat(params.get("max"));
 
-    document.getElementById('service-name').innerText = nom;
-    document.getElementById('cat-badge').innerText = cat || "Service";
+    document.getElementById("service-name").innerText = nom;
+    document.getElementById("cat-badge").innerText = cat || "Service";
 
-    const descSection = document.getElementById('description-section');
-    const longBox = document.getElementById('long-box');
-    const descBox = document.getElementById('desc-box');
-    const longText = document.getElementById('long-text');
-    const descText = document.getElementById('desc-text');
+    const descSection = document.getElementById("description-section");
+    const longBox = document.getElementById("long-box");
+    const descBox = document.getElementById("desc-box");
+    const longText = document.getElementById("long-text");
+    const descText = document.getElementById("desc-text");
 
     let hasAnyDesc = false;
     if (longDesc && longDesc.trim() !== "") {
       longText.textContent = longDesc;
-      longBox.classList.remove('hidden');
+      longBox.classList.remove("hidden");
       hasAnyDesc = true;
     }
     if (desc && desc.trim() !== "") {
       descText.textContent = desc;
-      descBox.classList.remove('hidden');
+      descBox.classList.remove("hidden");
       hasAnyDesc = true;
     }
-    if (hasAnyDesc) descSection.classList.remove('hidden');
+    if (hasAnyDesc) descSection.classList.remove("hidden");
 
     const catUpper = String(cat || "").trim().toUpperCase();
 
@@ -433,16 +873,15 @@
     const isCarte = (catUpper === "CARTE" || catUpper === "CARTE2" || catUpper === "JEUX" || /\bCARTE2?\b/i.test(catUpper));
     const isIMEI = /IMEI/i.test(catUpper);
 
-    const secSmm = document.getElementById('section-smm');
-    const secAbo = document.getElementById('section-abonnement');
-    const secCarte = document.getElementById('section-carte');
-    const secDef = document.getElementById('section-default');
+    const secSmm = document.getElementById("section-smm");
+    const secAbo = document.getElementById("section-abonnement");
+    const secCarte = document.getElementById("section-carte");
+    const secDef = document.getElementById("section-default");
 
-    const priceEl = document.getElementById('display-price');
-    const qtyInp = document.getElementById('qty');
-    const qtyHint = document.getElementById('qty-hint');
+    const priceEl = document.getElementById("display-price");
+    const qtyInp = document.getElementById("qty");
+    const qtyHint = document.getElementById("qty-hint");
 
-    // ====== WALLET STATE ======
     let WALLET_OK = false;
     let WALLET_BAL = 0;
     let WALLET_EMAIL = "";
@@ -455,7 +894,9 @@
         const s = JSON.parse(raw);
         if(!s || !s.email) return null;
         return s;
-      }catch{ return null; }
+      }catch{
+        return null;
+      }
     }
 
     function fmt2(n){
@@ -469,7 +910,7 @@
       return parseFloat(totalTxt) || 0;
     }
 
-    function jsonp_(params, onOk, onErr){
+    function jsonp_(paramsObj, onOk, onErr){
       const cb = "VF_CB_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
       window[cb] = function(payload){
         try { onOk(payload); }
@@ -477,7 +918,7 @@
       };
 
       const s = document.createElement("script");
-      const qs = new URLSearchParams({ ...params, callback: cb, t: String(Date.now()) });
+      const qs = new URLSearchParams({ ...paramsObj, callback: cb, t: String(Date.now()) });
       s.src = GOOGLE_URL + "?" + qs.toString();
       s.onerror = function(){
         try { delete window[cb]; } catch(_){}
@@ -528,7 +969,9 @@
       const btn = document.getElementById("walletPayBtn");
 
       if (sessionStorage.getItem(SENT_KEY) === "1") {
-        btn.disabled = true; btn.style.opacity = ".6"; btn.style.cursor = "not-allowed";
+        btn.disabled = true;
+        btn.style.opacity = ".6";
+        btn.style.cursor = "not-allowed";
         hint.textContent = "Commande déjà payée.";
         hint.className = "text-[11px] font-black mt-2 text-green-400";
         return;
@@ -537,16 +980,23 @@
       if (WALLET_BAL >= need && need > 0) {
         hint.textContent = "Solde suffisant pour régler l'achat.";
         hint.className = "text-[11px] font-black mt-2 text-green-400";
-        btn.disabled = false; btn.style.opacity = "1"; btn.style.cursor = "pointer";
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        btn.style.cursor = "pointer";
       } else {
         hint.innerHTML = `Solde insuffisant. <a href="wallet.html" class="text-orange-400 underline">Ajoutez du crédit</a>.`;
         hint.className = "text-[11px] font-black mt-2 text-red-400";
-        btn.disabled = true; btn.style.opacity = ".6"; btn.style.cursor = "not-allowed";
+        btn.disabled = true;
+        btn.style.opacity = ".6";
+        btn.style.cursor = "not-allowed";
       }
     }
 
     function refreshWalletBalance_(cb){
-      if(!WALLET_EMAIL) { cb && cb(false); return; }
+      if(!WALLET_EMAIL) {
+        cb && cb(false);
+        return;
+      }
 
       WALLET_LOADING = true;
       showWalletLoadingUI_();
@@ -605,7 +1055,10 @@
 
         refreshWalletBalance_((ok) => {
           const need = getTotalNumber_();
-          if(!ok){ alert("Impossible de charger le solde wallet."); return; }
+          if(!ok){
+            alert("Impossible de charger le solde wallet.");
+            return;
+          }
           if(WALLET_BAL < need || need <= 0){
             alert("Solde insuffisant. Ajoutez du crédit puis réessayez.");
             return;
@@ -615,9 +1068,8 @@
       });
     }
 
-    // ====== PRICE / MIN MAX ======
     if (isSMM) {
-      secSmm.classList.remove('hidden');
+      secSmm.classList.remove("hidden");
 
       const hasMin = Number.isFinite(minParam);
       const hasMax = Number.isFinite(maxParam);
@@ -626,8 +1078,8 @@
       if (hasMax) qtyInp.max = String(parseInt(maxParam, 10));
 
       if (hasMin || hasMax) {
-        qtyHint.classList.remove('hidden');
-        qtyHint.textContent = `Quantité autorisée : ${hasMin ? parseInt(minParam,10) : 0} – ${hasMax ? parseInt(maxParam,10) : '∞'}`;
+        qtyHint.classList.remove("hidden");
+        qtyHint.textContent = `Quantité autorisée : ${hasMin ? parseInt(minParam,10) : 0} – ${hasMax ? parseInt(maxParam,10) : "∞"}`;
       }
 
       function clampQty(q){
@@ -646,26 +1098,26 @@
         updateWalletUI_();
       }
 
-      qtyInp.addEventListener('input', updatePrice);
+      qtyInp.addEventListener("input", updatePrice);
       updatePrice();
 
     } else if (isAbo) {
-      secAbo.classList.remove('hidden');
+      secAbo.classList.remove("hidden");
       priceEl.innerText = prixInit.toFixed(2) + " $";
     } else if (isCarte) {
-      secCarte.classList.remove('hidden');
+      secCarte.classList.remove("hidden");
       priceEl.innerText = prixInit.toFixed(2) + " $";
     } else {
-      secDef.classList.remove('hidden');
+      secDef.classList.remove("hidden");
       priceEl.innerText = prixInit.toFixed(2) + " $";
-      if (isIMEI) document.getElementById('default-label').innerText = "Numéro IMEI (15 chiffres)";
+      if (isIMEI) document.getElementById("default-label").innerText = "Numéro IMEI (15 chiffres)";
     }
 
     initWallet_();
     updateWalletUI_();
+    setActiveMenuLink();
 
-    // ====== SUBMIT VIA WALLET ======
-    document.getElementById('orderForm').onsubmit = async (e) => {
+    document.getElementById("orderForm").onsubmit = async (e) => {
       e.preventDefault();
 
       if (sessionStorage.getItem(SENT_KEY) === "1") { showLocked_(orderId); return; }
@@ -674,10 +1126,10 @@
       SUBMIT_LOCK = true;
       sessionStorage.setItem(INFLIGHT_KEY, "1");
 
-      const btn = document.getElementById('walletPayBtn');
+      const btn = document.getElementById("walletPayBtn");
       if (btn) {
         btn.disabled = true;
-        btn.innerText = "Validation en cours..." ;
+        btn.innerText = "Validation en cours...";
       }
 
       let input1 = "";
@@ -688,7 +1140,10 @@
       const totalNumber = getTotalNumber_();
 
       const resetLockAndBtn = () => {
-        if(btn) { btn.disabled=false; btn.innerText="Payer avec Wallet"; }
+        if(btn) {
+          btn.disabled=false;
+          btn.innerText="Payer avec Wallet";
+        }
         SUBMIT_LOCK = false;
         sessionStorage.removeItem(INFLIGHT_KEY);
       };
@@ -700,7 +1155,7 @@
       }
 
       if (isSMM) {
-        const link = document.getElementById('boost-link').value.trim();
+        const link = document.getElementById("boost-link").value.trim();
         if (!link) {
           alert("Ajoutez le lien à booster.");
           resetLockAndBtn();
@@ -729,8 +1184,8 @@
         contactValue = WALLET_EMAIL;
       }
       else if (isAbo) {
-        const creds = document.getElementById('creds').value.trim();
-        const contact = document.getElementById('delivery-contact-abo').value.trim();
+        const creds = document.getElementById("creds").value.trim();
+        const contact = document.getElementById("delivery-contact-abo").value.trim();
         if (!creds) {
           alert("Ajoutez vos identifiants (mail + mot de passe).");
           resetLockAndBtn();
@@ -748,7 +1203,7 @@
         qtyVal = 1;
       }
       else if (isCarte) {
-        const contact = document.getElementById('card-delivery').value.trim();
+        const contact = document.getElementById("card-delivery").value.trim();
         if (!contact) {
           alert("Ajoutez un contact de livraison (WhatsApp ou Email).");
           resetLockAndBtn();
@@ -761,8 +1216,8 @@
         qtyVal = 1;
       }
       else {
-        const main = document.getElementById('main-input').value.trim();
-        const em = document.getElementById('email-client').value.trim();
+        const main = document.getElementById("main-input").value.trim();
+        const em = document.getElementById("email-client").value.trim();
         if (!main) {
           alert("Remplissez l'information requise.");
           resetLockAndBtn();
@@ -795,41 +1250,34 @@
         produit: nom,
         idService: idS,
         categorie: cat,
-
         input1: input1,
-
         contact: contactValue,
         email: emailForSheet,
-
         quantite: qtyVal,
         total: totalNumber,
-
         payMethod: "WALLET",
         walletEmail: WALLET_EMAIL,
-
-        // Données vides obligatoires pour le backend
         fileData: "",
         fileType: "",
         fileName: "",
-
         idempotencyKey: "IDEMP_" + orderId
       };
 
       try {
-        if (sessionStorage.getItem(SENT_KEY) === "1") { showLocked_(orderId); return; }
+        if (sessionStorage.getItem(SENT_KEY) === "1") {
+          showLocked_(orderId);
+          return;
+        }
 
-        // 1. Envoi au backend de paiement principal (Viralflowr)
         await fetch(GOOGLE_URL, {
-          method:'POST',
-          mode:'no-cors',
+          method:"POST",
+          mode:"no-cors",
           body: JSON.stringify(payload)
         });
 
-       // 🚨 2. NOTIFICATION DIRECTE AU BOT WHATSAPP (TECHNIQUE DU PIXEL INVISIBLE) 🚨
         try {
-          let pseudoNom = WALLET_EMAIL ? WALLET_EMAIL.split('@')[0] : "Client Web";
-          
-          // On prépare les données
+          let pseudoNom = WALLET_EMAIL ? WALLET_EMAIL.split("@")[0] : "Client Web";
+
           const qs = new URLSearchParams({
             source: "website",
             action: "nouvelle_commande",
@@ -838,29 +1286,24 @@
             service: nom || "Service inconnu",
             quantite: qtyVal || 1,
             montant: totalNumber + " $",
-            t: Date.now() // Anti-cache
+            t: Date.now()
           }).toString();
 
-          // 🚀 TECHNIQUE INFAILLIBLE : On charge l'URL comme si c'était une image
-          // Le navigateur ne bloquera pas ça, et le bot recevra le signal instantanément !
           let pingBot = new Image();
           pingBot.src = BOT_WEBHOOK_URL + "?" + qs;
-          
         } catch (botErr) {
           console.log("Erreur préparation Bot:", botErr);
         }
-        // 🚨 FIN DE LA NOTIFICATION BOT 🚨
 
-        // 3. Suite normale (Interface de succès)
         sessionStorage.setItem(SENT_KEY, "1");
         sessionStorage.removeItem(INFLIGHT_KEY);
-        sessionStorage.removeItem('active_order_id');
+        sessionStorage.removeItem("active_order_id");
 
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
 
-        document.getElementById('form-container').classList.add('hidden');
-        document.getElementById('final-id').innerText = orderId;
-        document.getElementById('success-msg').classList.remove('hidden');
+        document.getElementById("form-container").classList.add("hidden");
+        document.getElementById("final-id").innerText = orderId;
+        document.getElementById("success-msg").classList.remove("hidden");
 
       } catch (err) {
         alert("Erreur de connexion. Réessayez.");
