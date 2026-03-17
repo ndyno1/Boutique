@@ -91,6 +91,7 @@
       font-weight:700;
       line-height:1.45;
       border:1px solid transparent;
+      white-space:pre-line;
     }
     .notice.show{ display:block; }
     .notice.error{
@@ -118,6 +119,23 @@
       border-color:#EF4444 !important;
       box-shadow:0 0 0 4px rgba(239,68,68,.08);
     }
+
+    .debug-box{
+      display:none;
+      margin-top:12px;
+      padding:12px;
+      border-radius:14px;
+      background:#111827;
+      color:#E5E7EB;
+      border:1px solid #374151;
+      font-size:12px;
+      line-height:1.45;
+      overflow:auto;
+      max-height:240px;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .debug-box.show{ display:block; }
 
     .success-shell{
       position:relative;
@@ -176,15 +194,9 @@
       animation: successPop .7s cubic-bezier(.2,.9,.2,1);
     }
 
-    .success-title{
-      animation: fadeUp .6s ease-out .15s both;
-    }
-    .success-subtitle{
-      animation: fadeUp .6s ease-out .3s both;
-    }
-    .success-actions{
-      animation: fadeUp .6s ease-out .45s both;
-    }
+    .success-title{ animation: fadeUp .6s ease-out .15s both; }
+    .success-subtitle{ animation: fadeUp .6s ease-out .3s both; }
+    .success-actions{ animation: fadeUp .6s ease-out .45s both; }
 
     @keyframes pulseRing{
       0%{ transform:scale(.78); opacity:0; }
@@ -259,6 +271,7 @@
 
       <div class="bg-white rounded-[32px] shadow-lg border border-gray-100 p-6 md:p-8">
         <div id="noticeBox" class="notice" role="alert" aria-live="polite"></div>
+        <div id="debugBox" class="debug-box mono"></div>
 
         <div id="form-container">
           <h2 id="service-name" class="text-xl font-extrabold text-center mb-2 leading-tight">Chargement...</h2>
@@ -388,49 +401,7 @@
     const WALLET_CACHE_TTL_MS = 60000;
     const WALLET_FRESH_PAY_TTL_MS = 15000;
 
-    function setActiveMenuLinkFallback_() {
-      const currentPath = (window.location.pathname.split("/").pop() || "paiement.html").toLowerCase();
-      document.querySelectorAll(".vf-menu-link").forEach(function(link) {
-        const path = (link.getAttribute("data-path") || "").toLowerCase();
-        const file = path.split("/").pop();
-        link.classList.toggle("active", file === currentPath);
-      });
-    }
-
-    async function copyText(txt){
-      try{
-        await navigator.clipboard.writeText(String(txt || ""));
-        showNotice_("Numéro de commande copié.", "success", 2500);
-      }catch(_){
-        showNotice_("Impossible de copier automatiquement. Copiez le numéro manuellement.", "warn", 3500);
-      }
-    }
-
-    function safeDecode(v){
-      try { return decodeURIComponent(String(v || "")); }
-      catch(e){ return String(v || ""); }
-    }
-
-    function makeOrderId(){
-      return "VF-" + Date.now() + "-" + Math.floor(1000 + Math.random() * 9000);
-    }
-
-    function startNewOrder_(goShop){
-      try{
-        const old = sessionStorage.getItem("active_order_id");
-        if (old) {
-          sessionStorage.removeItem("vf_order_sent_" + old);
-          sessionStorage.removeItem("vf_order_inflight_" + old);
-        }
-        sessionStorage.removeItem("active_order_id");
-      }catch(_){}
-      if (goShop) location.href = "index.html";
-      else location.reload();
-    }
-
-    function getEl_(id){
-      return document.getElementById(id);
-    }
+    function getEl_(id){ return document.getElementById(id); }
 
     function showNotice_(message, type = "error", autoHideMs = 0){
       const box = getEl_("noticeBox");
@@ -438,10 +409,8 @@
       box.className = "notice show " + type;
       box.innerHTML = String(message || "");
       if (autoHideMs > 0) {
-        window.clearTimeout(showNotice_._timer);
-        showNotice_._timer = window.setTimeout(() => {
-          hideNotice_();
-        }, autoHideMs);
+        clearTimeout(showNotice_._timer);
+        showNotice_._timer = setTimeout(hideNotice_, autoHideMs);
       }
     }
 
@@ -450,6 +419,26 @@
       if (!box) return;
       box.className = "notice";
       box.innerHTML = "";
+    }
+
+    function showDebug_(label, data){
+      const box = getEl_("debugBox");
+      if (!box) return;
+      let content = "";
+      try {
+        content = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+      } catch (_) {
+        content = String(data);
+      }
+      box.textContent = label + "\n" + content;
+      box.classList.add("show");
+    }
+
+    function hideDebug_(){
+      const box = getEl_("debugBox");
+      if (!box) return;
+      box.classList.remove("show");
+      box.textContent = "";
     }
 
     function clearFieldErrors_(){
@@ -474,12 +463,137 @@
       return true;
     }
 
+    function setActiveMenuLinkFallback_() {
+      const currentPath = (window.location.pathname.split("/").pop() || "paiement.html").toLowerCase();
+      document.querySelectorAll(".vf-menu-link").forEach(function(link) {
+        const path = (link.getAttribute("data-path") || "").toLowerCase();
+        const file = path.split("/").pop();
+        link.classList.toggle("active", file === currentPath);
+      });
+    }
+
+    async function copyText(txt){
+      try{
+        await navigator.clipboard.writeText(String(txt || ""));
+        showNotice_("Numéro de commande copié.", "success", 2500);
+      }catch(_){
+        showNotice_("Impossible de copier automatiquement. Copiez le numéro manuellement.", "warn", 3500);
+      }
+    }
+
+    function safeDecode(v){
+      try { return decodeURIComponent(String(v || "")); }
+      catch(e){ return String(v || ""); }
+    }
+
+    function makeOrderId(){ return "VF-" + Date.now() + "-" + Math.floor(1000 + Math.random() * 9000); }
+
+    function startNewOrder_(goShop){
+      try{
+        const old = sessionStorage.getItem("active_order_id");
+        if (old) {
+          sessionStorage.removeItem("vf_order_sent_" + old);
+          sessionStorage.removeItem("vf_order_inflight_" + old);
+        }
+        sessionStorage.removeItem("active_order_id");
+      }catch(_){}
+      if (goShop) location.href = "index.html";
+      else location.reload();
+    }
+
     function safeHtml_(txt){
       return String(txt || "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
+    }
+
+    function normalizeBool_(value){
+      if (value === true) return true;
+      if (value === false) return false;
+      if (typeof value === "string") {
+        const v = value.trim().toLowerCase();
+        return v === "true" || v === "1" || v === "ok" || v === "success" || v === "paid";
+      }
+      if (typeof value === "number") return value === 1;
+      return false;
+    }
+
+    function normalizeResponse_(res){
+      const raw = res;
+
+      if (raw == null) {
+        return {
+          ok: false,
+          message: "Réponse vide du serveur.",
+          raw: raw
+        };
+      }
+
+      if (typeof raw === "string") {
+        const trimmed = raw.trim();
+
+        try {
+          const parsed = JSON.parse(trimmed);
+          return normalizeResponse_(parsed);
+        } catch (_) {
+          const low = trimmed.toLowerCase();
+          const looksSuccess =
+            low.includes('"ok":true') ||
+            low.includes('"status":"success"') ||
+            low.includes('"success":true') ||
+            low.includes('already_paid') ||
+            low.includes('paiement réussi') ||
+            low.includes('payment success');
+
+          return {
+            ok: looksSuccess,
+            alreadyPaid: low.includes("already_paid") || low.includes("duplicate"),
+            orderId: "",
+            balance: undefined,
+            message: trimmed || "Réponse texte non reconnue du serveur.",
+            raw: raw
+          };
+        }
+      }
+
+      if (typeof raw !== "object") {
+        return {
+          ok: false,
+          message: "Format de réponse invalide.",
+          raw: raw
+        };
+      }
+
+      const ok =
+        normalizeBool_(raw.ok) ||
+        normalizeBool_(raw.success) ||
+        normalizeBool_(raw.paid) ||
+        String(raw.status || "").toLowerCase() === "success" ||
+        String(raw.result || "").toLowerCase() === "success";
+
+      const alreadyPaid =
+        raw.alreadyPaid === true ||
+        raw.duplicate === true ||
+        String(raw.code || "").toUpperCase() === "ALREADY_PAID" ||
+        String(raw.status || "").toLowerCase() === "already_paid";
+
+      const message =
+        raw.message ||
+        raw.msg ||
+        raw.error ||
+        raw.reason ||
+        (alreadyPaid ? "Commande déjà payée." : (ok ? "Paiement confirmé." : "Paiement refusé ou non confirmé."));
+
+      return {
+        ok,
+        alreadyPaid,
+        orderId: raw.orderId || raw.orderID || raw.idCommande || raw.id || "",
+        balance: typeof raw.balance !== "undefined" ? raw.balance : raw.newBalance,
+        message: String(message || ""),
+        raw: raw
+      };
     }
 
     const params = new URLSearchParams(window.location.search);
@@ -541,6 +655,7 @@
       sessionStorage.removeItem("active_order_id");
       fireSuccessConfetti_();
       hideNotice_();
+      hideDebug_();
       getEl_("form-container").classList.add("hidden");
       getEl_("final-id").innerText = oid || orderId;
       getEl_("success-msg").classList.remove("hidden");
@@ -732,9 +847,7 @@
         jsonp_(
           WALLET_SCRIPT_URL,
           payload,
-          (res) => {
-            resolve(res);
-          },
+          (res) => resolve(res),
           (err) => {
             console.error("Échec du paiement wallet JSONP :", err);
             reject(new Error(
@@ -859,7 +972,7 @@
             WALLET_LOADING = false;
             walletBalancePromise_ = null;
 
-            if(res && res.ok){
+            if(res && (res.ok === true || res.ok === "true")){
               WALLET_OK = true;
               WALLET_BAL = Number(res.balance || 0);
               walletLastFetchAt_ = Date.now();
@@ -967,6 +1080,7 @@
 
       getEl_("walletPayBtn").addEventListener("click", async () => {
         hideNotice_();
+        hideDebug_();
         clearFieldErrors_();
 
         if (SUBMIT_LOCK || sessionStorage.getItem(INFLIGHT_KEY) === "1" || sessionStorage.getItem(SENT_KEY) === "1") {
@@ -1046,6 +1160,7 @@
     getEl_("orderForm").onsubmit = async (e) => {
       e.preventDefault();
       hideNotice_();
+      hideDebug_();
       clearFieldErrors_();
 
       if (!validateConfig_()) return;
@@ -1232,20 +1347,22 @@
           return;
         }
 
-        const res = await walletPayRequest_(payload);
+        const rawRes = await walletPayRequest_(payload);
+        console.log("wallet_pay raw response:", rawRes);
 
-        if (res && (res.alreadyPaid === true || res.duplicate === true || res.code === "ALREADY_PAID")) {
+        const res = normalizeResponse_(rawRes);
+        console.log("wallet_pay normalized response:", res);
+
+        if (res.alreadyPaid) {
           sessionStorage.setItem(SENT_KEY, "1");
           hardLockForm_();
           showLocked_(orderId);
           return;
         }
 
-        if (!res || res.ok !== true) {
-          const msg = (res && res.message)
-            ? String(res.message)
-            : "Paiement refusé ou non confirmé.";
-          showNotice_(safeHtml_(msg), "error");
+        if (!res.ok) {
+          showNotice_(safeHtml_(res.message || "Paiement refusé ou non confirmé."), "error");
+          showDebug_("Réponse brute du serveur wallet_pay :", res.raw);
           resetLockAndBtn();
           return;
         }
@@ -1283,11 +1400,13 @@
       } catch (err) {
         console.error("Erreur paiement wallet :", err);
         showNotice_(
-          safeHtml_(err && err.message
-            ? err.message
-            : "Erreur de connexion. Réessayez."),
+          safeHtml_(err && err.message ? err.message : "Erreur de connexion. Réessayez."),
           "error"
         );
+        showDebug_("Erreur JS attrapée :", {
+          message: err && err.message ? err.message : String(err),
+          stack: err && err.stack ? err.stack : ""
+        });
         resetLockAndBtn();
       } finally {
         if (sessionStorage.getItem(SENT_KEY) === "1") {
