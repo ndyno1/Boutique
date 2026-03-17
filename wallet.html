@@ -212,8 +212,16 @@
 
   <script>
     const SCRIPT_URL = window.VF_CONFIG.scriptUrl;
-const WA_NUMBER = window.VF_CONFIG.whatsappNumber;
+    const WA_NUMBER = window.VF_CONFIG.whatsappNumber;
     const $ = (id) => document.getElementById(id);
+
+    const JSONP_TIMEOUT_MS = 8000;
+    const BALANCE_CACHE_TTL_MS = 60000;
+    const TX_CACHE_TTL_MS = 45000;
+
+    let walletLoadPromise_ = null;
+    let txLoadPromise_ = null;
+    let topupBusy_ = false;
 
     function getSession_() {
       return JSON.parse(localStorage.getItem("vf_session") || "null");
@@ -248,7 +256,233 @@ const WA_NUMBER = window.VF_CONFIG.whatsappNumber;
       paidBtn.textContent = (val === "MOBILE_MONEY") ? "Payer via WhatsApp" : "Confirmer le depot";
     }
 
-    function loadWallet() {
+    function cacheKeyBalance_(email) {
+      return "vf_wallet_balance_cache_" + String(email || "").toLowerCase();
+    }
+
+    function cacheKeyTx_(email) {
+      return "vf_wallet_tx_cache_" + String(email || "").toLowerCase();
+    }
+
+    function saveCache_(key, data) {
+      try {
+        localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data }));
+      } catch (_) {}
+    }
+
+    function loadCache_(key, ttlMs) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+        const obj = JSON.parse(raw);
+        if (!obj || typeof obj.ts === "undefined") return null;
+        if ((Date.now() - Number(obj.ts || 0)) > ttlMs) return null;
+        return obj.data;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function jsonpRequest_(params, timeoutMs = JSONP_TIMEOUT_MS) {
+      return new Promise((resolve, reject) => {
+        const cb = "vf_cb_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
+        const s = document.createElement("script");
+        let finished = false;
+        let timer = null;
+
+        function cleanup_() {
+          finished = true;
+          if (timer) clearTimeout(timer);
+          try { delete window[cb]; } catch (_) {}
+          try { s.remove(); } catch (_) {}
+        }
+
+        window[cb] = (payload) => {
+          if (finished) return;
+          cleanup_();
+          resolve(payload);
+        };
+
+        timer = setTimeout(() => {
+          if (finished) return;
+          cleanup_();
+          reject(new Error("TIMEOUT"));
+        }, timeoutMs);
+
+        const cleanParams = {};
+        Object.keys(params || {}).forEach((k) => {
+          const v = params[k];
+          cleanParams[k] = v == null ? "" : String(v);
+        });
+
+        const qs = new URLSearchParams({
+          ...cleanParams,
+          callback: cb,
+          t: String(Date.now())
+        });
+
+        s.src = `${SCRIPT_URL}?${qs.toString()}`;
+        s.onerror = () => {
+          if (finished) return;
+          cleanup_();
+          reject(new Error("NETWORK_ERROR"));
+        };
+
+        document.body.appendChild(s);
+      });
+    }
+
+    function renderBalance_(balance) {
+      const el = $("balanceValue");
+      if (el) el.textContent = parseFloat(balance || 0).toFixed(2);
+    }
+
+    function renderTx_(items) {
+      const box = $("txBox");
+      if (!box) return;
+
+      if (Array.isArray(items) && items.length > 0) {
+        box.innerHTML = items.map(tx => {
+          const typeText = String(tx.type || "TX").toUpperCase();
+          const isCredit =
+            typeText.includes("CREDIT") ||
+            typeText.includes("DEPOT") ||
+            typeText.includes("TOPUP");
+
+          const sign = isCredit ? "+" : "-";
+          const colorClass = isCredit ? "text-green-600" : "text-gray-900";
+
+          let dateFmt = tx.created_at;
+          try {
+            const d = new Date(tx.created_at);
+            if (!isNaN(d.getTime())) {
+              dateFmt = d.toLocaleString("fr-FR", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+              });
+            }
+          } catch (_) {}
+
+          return `
+            <div class="tx-row flex justify-between items-center gap-4">
+              <div class="min-w-0">
+                <div class="font-black text-gray-900 uppercase text-[11px]">
+                  ${typeText}
+                  <span class="text-[9px] text-gray-400 font-medium ml-1">(${tx.ref || "-"})</span>
+                </div>
+                <div class="text-[10px] text-gray-400 mt-1">${dateFmt}</div>
+              </div>
+
+              <div class="text-right shrink-0">
+                <div class="font-black ${colorClass}">
+                  ${sign}${parseFloat(tx.amount || 0).toFixed(2)} ${tx.currency || "$"}
+                </div>
+                <div class="text-[9px] font-bold text-gray-400 uppercase mt-1">
+                  ${tx.status || "OK"}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("");
+      } else {
+        box.innerHTML = `<div class="p-10 text-center text-gray-400 font-bold text-sm">Aucune transaction trouvée.</div>`;
+      }
+    }
+
+    async function fetchBalance_(email, force = false) {
+      const key = cacheKeyBalance_(email);
+
+      if (!force) {
+        const cached = loadCache_(key, BALANCE_CACHE_TTL_MS);
+        if (cached && typeof cached.balance !== "undefined") {
+          renderBalance_(cached.balance);
+          return { ok: true, balance: Number(cached.balance || 0), cached: true };
+        }
+      }
+
+      const res = await jsonpRequest_({
+        action: "wallet_balance",
+        email: email
+      });
+
+      if (res && res.ok) {
+        saveCache_(key, { balance: Number(res.balance || 0) });
+      }
+
+      return res;
+    }
+
+    async function fetchTx_(email, force = false) {
+      const key = cacheKeyTx_(email);
+
+      if (!force) {
+        const cached = loadCache_(key, TX_CACHE_TTL_MS);
+        if (cached && Array.isArray(cached.items)) {
+          renderTx_(cached.items);
+          return { ok: true, items: cached.items, cached: true };
+        }
+      }
+
+      const res = await jsonpRequest_({
+        action: "wallet_tx",
+        email: email
+      });
+
+      if (res && res.ok && Array.isArray(res.items)) {
+        saveCache_(key, { items: res.items });
+      }
+
+      return res;
+    }
+
+    async function loadBalance_(email, force = false) {
+      const res = await fetchBalance_(email, force);
+      if (res && res.ok) {
+        renderBalance_(res.balance || 0);
+      } else if (force) {
+        renderBalance_(0);
+      }
+      return !!(res && res.ok);
+    }
+
+    async function loadTx_(email, force = false) {
+      const res = await fetchTx_(email, force);
+      if (res && res.ok) {
+        renderTx_(res.items || []);
+      } else if (force) {
+        renderTx_([]);
+      }
+      return !!(res && res.ok);
+    }
+
+    async function loadWallet_(force = false) {
+      const s = getSession_();
+      if (!s) {
+        window.location.href = "login.html";
+        return false;
+      }
+
+      const userLabel = $("userLabel");
+      if (userLabel) userLabel.textContent = s.email;
+
+      if (!force && walletLoadPromise_) return walletLoadPromise_;
+
+      walletLoadPromise_ = (async () => {
+        const balanceOk = await loadBalance_(s.email, force);
+        return balanceOk;
+      })();
+
+      try {
+        return await walletLoadPromise_;
+      } finally {
+        walletLoadPromise_ = null;
+      }
+    }
+
+    async function loadWalletAndTx_(force = false) {
       const s = getSession_();
       if (!s) {
         window.location.href = "login.html";
@@ -258,87 +492,27 @@ const WA_NUMBER = window.VF_CONFIG.whatsappNumber;
       const userLabel = $("userLabel");
       if (userLabel) userLabel.textContent = s.email;
 
-      const cbBal = "bal_" + Date.now();
-      window[cbBal] = (res) => {
-        if (res && res.ok) {
-          $("balanceValue").textContent = parseFloat(res.balance || 0).toFixed(2);
-        }
-        try { delete window[cbBal]; } catch (_) {}
-      };
+      const balancePromise = loadWallet_(force);
 
-      const scrBal = document.createElement("script");
-      scrBal.src = `${SCRIPT_URL}?action=wallet_balance&email=${encodeURIComponent(s.email)}&callback=${cbBal}`;
-      document.body.appendChild(scrBal);
+      if (!force && txLoadPromise_) {
+        await Promise.allSettled([balancePromise, txLoadPromise_]);
+        return;
+      }
 
-      loadTx(s.email);
-    }
+      txLoadPromise_ = (async () => {
+        return await loadTx_(s.email, force);
+      })();
 
-    function loadTx(email) {
-      const cb = "tx_" + Date.now();
-
-      window[cb] = (res) => {
-        const box = $("txBox");
-        if (!box) return;
-
-        if (res && res.ok && res.items && res.items.length > 0) {
-          box.innerHTML = res.items.map(tx => {
-            const typeText = String(tx.type || "TX").toUpperCase();
-            const isCredit =
-              typeText.includes("CREDIT") ||
-              typeText.includes("DEPOT") ||
-              typeText.includes("TOPUP");
-
-            const sign = isCredit ? "+" : "-";
-            const colorClass = isCredit ? "text-green-600" : "text-gray-900";
-
-            let dateFmt = tx.created_at;
-            try {
-              const d = new Date(tx.created_at);
-              if (!isNaN(d.getTime())) {
-                dateFmt = d.toLocaleString("fr-FR", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit"
-                });
-              }
-            } catch (_) {}
-
-            return `
-              <div class="tx-row flex justify-between items-center gap-4">
-                <div class="min-w-0">
-                  <div class="font-black text-gray-900 uppercase text-[11px]">
-                    ${typeText}
-                    <span class="text-[9px] text-gray-400 font-medium ml-1">(${tx.ref || "-"})</span>
-                  </div>
-                  <div class="text-[10px] text-gray-400 mt-1">${dateFmt}</div>
-                </div>
-
-                <div class="text-right shrink-0">
-                  <div class="font-black ${colorClass}">
-                    ${sign}${parseFloat(tx.amount || 0).toFixed(2)} ${tx.currency || "$"}
-                  </div>
-                  <div class="text-[9px] font-bold text-gray-400 uppercase mt-1">
-                    ${tx.status || "OK"}
-                  </div>
-                </div>
-              </div>
-            `;
-          }).join("");
-        } else {
-          box.innerHTML = `<div class="p-10 text-center text-gray-400 font-bold text-sm">Aucune transaction trouvée.</div>`;
-        }
-
-        try { delete window[cb]; } catch (_) {}
-      };
-
-      const scr = document.createElement("script");
-      scr.src = `${SCRIPT_URL}?action=wallet_tx&email=${encodeURIComponent(email)}&callback=${cb}`;
-      document.body.appendChild(scr);
+      try {
+        await Promise.allSettled([balancePromise, txLoadPromise_]);
+      } finally {
+        txLoadPromise_ = null;
+      }
     }
 
     async function submitTopup_() {
+      if (topupBusy_) return;
+
       const s = getSession_();
       if (!s) {
         window.location.href = "login.html";
@@ -374,6 +548,7 @@ const WA_NUMBER = window.VF_CONFIG.whatsappNumber;
 
       if (!btn) return;
 
+      topupBusy_ = true;
       btn.disabled = true;
       btn.textContent = "Patientez...";
 
@@ -393,10 +568,17 @@ const WA_NUMBER = window.VF_CONFIG.whatsappNumber;
           body: JSON.stringify(payload)
         });
 
-        alert("Demande enregistrée. Vérification en cours.");
-        location.reload();
+        showToast("Demande enregistree");
+        $("amountInp").value = "";
+        $("txidInp").value = "";
+
+        localStorage.removeItem(cacheKeyTx_(s.email));
+        await loadTx_(s.email, true);
+
       } catch (e) {
         alert("Erreur de connexion.");
+      } finally {
+        topupBusy_ = false;
         btn.disabled = false;
         syncMethodUI_();
       }
@@ -417,10 +599,21 @@ const WA_NUMBER = window.VF_CONFIG.whatsappNumber;
       }
 
       if (refreshBtn) {
-        refreshBtn.addEventListener("click", () => {
+        refreshBtn.addEventListener("click", async () => {
+          const s = getSession_();
+          if (!s) {
+            window.location.href = "login.html";
+            return;
+          }
+
           $("balanceValue").textContent = "...";
           $("txBox").innerHTML = `<div class="p-8 text-center text-gray-400 text-sm font-bold">Actualisation...</div>`;
-          loadWallet();
+
+          localStorage.removeItem(cacheKeyBalance_(s.email));
+          localStorage.removeItem(cacheKeyTx_(s.email));
+
+          await loadWalletAndTx_(true);
+          showToast("Portefeuille actualise");
         });
       }
 
@@ -440,7 +633,7 @@ const WA_NUMBER = window.VF_CONFIG.whatsappNumber;
       setActiveMenuLinkFallback_();
       syncMethodUI_();
       bindWalletEvents_();
-      loadWallet();
+      loadWalletAndTx_(false);
     }
 
     window.addEventListener("load", startWallet_);
