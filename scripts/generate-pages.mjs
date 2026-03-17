@@ -1,10 +1,13 @@
 // scripts/generate-pages.mjs
 import fs from "fs/promises";
 import path from "path";
-import { VF_SHARED_CONFIG } from "../styles/vf_config.js";
+
+// 1. IMPORTATION PROPRE DEPUIS TON FICHIER UNIQUE
+import VF_SHARED_CONFIG from "../styles/vf_config.js";
 
 const ROOT = process.cwd();
 
+// 2. ON UTILISE DIRECTEMENT LA CONFIGURATION SANS FALLBACK BIZARRE
 const SITE_BASE = String(
   process.env.SITE_BASE || VF_SHARED_CONFIG.SITE_BASE || "https://viralflowr.com"
 ).replace(/\/+$/, "");
