@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>ViralFlowr | Paiement Sécurisé</title>
 
+  <script src="/styles/vf_config.js?v=2"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -123,17 +124,6 @@
           <span id="cat-badge" class="bg-gray-100 text-gray-500 text-[10px] font-bold px-3 py-1 rounded-full uppercase">—</span>
         </div>
 
-        <div id="description-section" class="hidden mb-6 space-y-3">
-          <div id="long-box" class="hidden bg-blue-50 border border-blue-100 rounded-2xl p-4">
-            <h3 class="text-blue-800 text-xs font-black uppercase mb-2">Détails du produit</h3>
-            <p id="long-text" class="text-xs text-blue-900 leading-relaxed whitespace-pre-line font-medium"></p>
-          </div>
-          <div id="desc-box" class="hidden bg-green-50 border border-green-100 rounded-2xl p-4">
-            <h3 class="text-green-800 text-xs font-black uppercase mb-2">Informations à fournir</h3>
-            <p id="desc-text" class="text-xs text-green-900 leading-relaxed whitespace-pre-line font-medium"></p>
-          </div>
-        </div>
-
         <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-4 text-center mb-8">
           <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">
             Numéro de Commande
@@ -147,7 +137,11 @@
             <div>
               <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Lien à booster (obligatoire)</label>
               <input type="text" id="boost-link" placeholder="https://..." class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+              <p class="text-[11px] text-gray-500 font-bold mt-2">
+                Exemple : lien Instagram / TikTok / YouTube.
+              </p>
             </div>
+
             <div>
               <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Quantité</label>
               <input type="number" id="qty" value="1000" class="w-full bg-white rounded-xl p-3 text-sm font-black">
@@ -160,11 +154,17 @@
               <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Identifiants du compte (obligatoire)</label>
               <textarea id="creds" class="w-full bg-white rounded-xl p-3 text-sm font-medium h-28 resize-none"
                 placeholder="mail : votre@email.com&#10;mot de passe : votre_mdp"></textarea>
+              <p class="text-[11px] text-gray-500 font-bold mt-2">
+                Exemple : mail : oto@gmail.com / mot de passe : toto123
+              </p>
             </div>
             <div>
               <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact de livraison (obligatoire)</label>
               <input type="text" id="delivery-contact-abo" placeholder="WhatsApp ou Email"
                 class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+              <p class="text-[11px] text-gray-500 font-bold mt-2">
+                Utile pour OTP / confirmation / assistance.
+              </p>
             </div>
           </div>
 
@@ -173,6 +173,9 @@
               <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact de livraison (obligatoire)</label>
               <input type="text" id="card-delivery" placeholder="WhatsApp ou Email"
                 class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+              <p class="text-[11px] text-gray-500 font-bold mt-2">
+                Nous envoyons le code / compte / accès sur ce contact.
+              </p>
             </div>
           </div>
 
@@ -192,6 +195,9 @@
           <div class="py-2 text-center">
             <span class="text-[10px] text-gray-400 uppercase font-bold">Total à payer</span>
             <div id="display-price" class="text-4xl font-black text-gray-900 tracking-tighter">0.00 $</div>
+            <p class="text-[11px] text-gray-500 font-bold mt-2">
+              Paiement = traitement immédiat.
+            </p>
           </div>
 
           <div id="walletBox" class="hidden mt-4 rounded-2xl border border-gray-800 bg-gray-900 p-4 shadow-xl">
@@ -214,6 +220,19 @@
                   Payer avec Wallet
                 </button>
               </div>
+            </div>
+
+            <div class="bg-gray-800 border border-gray-700 rounded-xl p-3 mt-4 text-center">
+              <p class="text-[10px] text-gray-400 font-medium leading-relaxed">
+                En cliquant sur "Payer avec Wallet", vous acceptez notre 
+                <a href="politique.html" class="text-white font-black underline decoration-2 underline-offset-2 hover:opacity-80">
+                  Politique de règlement
+                </a>. 
+                Tout achat est définitif. Pour en savoir plus sur notre plateforme, découvrez 
+                <a href="about.html" class="text-white font-black underline decoration-2 underline-offset-2 hover:opacity-80">
+                  qui nous sommes
+                </a>.
+              </p>
             </div>
           </div>
 
@@ -244,14 +263,18 @@
       </div>
 
     </div>
+
+    <div class="mt-8 text-center">
+      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Paiement sécurisé • ViralFlowr</p>
+    </div>
   </div>
 
   <script>
     // ====== CONFIGURATION ======
     const CONFIG = window.VF_CONFIG || {};
-    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
-    const WALLET_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec"; 
-    const BOT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbylffBPr9m8Y26asnlPuVDizwS5xOUe9zpUIt3NrbUZlVsMgNkh9bOcANYbkvTZbpL9/exec";
+    const GOOGLE_URL = CONFIG.orderScriptUrl || "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
+    const WALLET_SCRIPT_URL = CONFIG.scriptUrl || "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec"; 
+    const BOT_WEBHOOK_URL = CONFIG.avisScriptUrl || "https://script.google.com/macros/s/AKfycbylffBPr9m8Y26asnlPuVDizwS5xOUe9zpUIt3NrbUZlVsMgNkh9bOcANYbkvTZbpL9/exec";
     
     const JSONP_TIMEOUT_MS = 25000;
 
@@ -275,11 +298,8 @@
           qp.set("nom", prod.nom || "");
           qp.set("prix", prod.prix || "");
           qp.set("cat", prod.cat || "");
-          qp.set("img", prod.img || "");
           qp.set("min", prod.min ?? "");
           qp.set("max", prod.max ?? "");
-          qp.set("desc", prod.desc || "");
-          qp.set("long", prod.long_desc || prod.long || "");
 
           location.replace("paiement.html?" + qp.toString());
         } catch(e){}
@@ -379,32 +399,11 @@
     const prixInit = parseFloat(cleanPrix) || 0;
     const cat      = params.get('cat') || "";
 
-    const desc     = safeDecode(params.get('desc') || "");
-    const longDesc = safeDecode(params.get('long') || params.get('long_desc') || "");
     const minParam = parseFloat(params.get('min'));
     const maxParam = parseFloat(params.get('max'));
 
     document.getElementById('service-name').innerText = nom;
     document.getElementById('cat-badge').innerText = cat || "Service";
-
-    const descSection = document.getElementById('description-section');
-    const longBox = document.getElementById('long-box');
-    const descBox = document.getElementById('desc-box');
-    const longText = document.getElementById('long-text');
-    const descText = document.getElementById('desc-text');
-
-    let hasAnyDesc = false;
-    if (longDesc && longDesc.trim() !== "") {
-      longText.textContent = longDesc;
-      longBox.classList.remove('hidden');
-      hasAnyDesc = true;
-    }
-    if (desc && desc.trim() !== "") {
-      descText.textContent = desc;
-      descBox.classList.remove('hidden');
-      hasAnyDesc = true;
-    }
-    if (hasAnyDesc) descSection.classList.remove('hidden');
 
     const catUpper = String(cat || "").trim().toUpperCase();
 
@@ -449,7 +448,7 @@
       return parseFloat(txt) || 0;
     }
 
-    // ====== JSONP POUR ÉVITER LES ERREURS CORS ======
+    // JSONP Reste uniquement pour charger le solde (doGet le supporte)
     function jsonp_(targetUrl, paramsObj, onOk, onErr, timeoutMs = JSONP_TIMEOUT_MS){
       if (!targetUrl) return onErr(new Error("URL manquante"));
       const cb = "VF_CB_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
@@ -591,7 +590,7 @@
 
     initWallet_(); updateWalletUI_();
 
-    // ====== SOUMISSION DU PAIEMENT ET ALERTE BOT ======
+    // ====== SOUMISSION DU PAIEMENT EN POST (Le site se plie au Noyau) ======
     document.getElementById("orderForm").onsubmit = async (e) => {
       e.preventDefault();
       if (sessionStorage.getItem(SENT_KEY) === "1") { showLocked_(orderId); return; }
@@ -602,7 +601,7 @@
       const btn = document.getElementById("walletPayBtn");
       if (btn) { btn.disabled = true; btn.innerText = "Validation en cours..."; }
 
-      let input1 = ""; let contactValue = ""; let qtyVal = 1;
+      let input1 = ""; let emailForSheet = ""; let contactValue = ""; let qtyVal = 1;
       const totalNumber = getTotalNumber_();
 
       const resetLockAndBtn = () => {
@@ -615,82 +614,70 @@
       if (isSMM) {
         const link = document.getElementById("boost-link").value.trim();
         if (!link) { alert("Ajoutez le lien à booster."); resetLockAndBtn(); return; }
-        qtyVal = parseInt(String(qtyInp.value || "0").replace(/[^\d]/g,""), 10);
-        input1 = link; contactValue = WALLET_EMAIL;
+        const q = parseInt(String(qtyInp.value || "0").replace(/[^\d]/g,""), 10);
+        input1 = link; qtyVal = q; emailForSheet = WALLET_EMAIL; contactValue = WALLET_EMAIL;
       }
       else if (isAbo) {
         const creds = document.getElementById("creds").value.trim();
         const contact = document.getElementById("delivery-contact-abo").value.trim();
         if (!creds || !contact) { alert("Champs obligatoires manquants."); resetLockAndBtn(); return; }
-        input1 = creds; contactValue = contact; qtyVal = 1;
+        input1 = creds; contactValue = contact; emailForSheet = contact; qtyVal = 1;
       }
       else if (isCarte) {
         const contact = document.getElementById("card-delivery").value.trim();
         if (!contact) { alert("Contact manquant."); resetLockAndBtn(); return; }
-        input1 = "CONTACT: voir colonne Email Client"; contactValue = contact; qtyVal = 1;
+        input1 = "CONTACT: voir colonne Email Client"; contactValue = contact; emailForSheet = contact; qtyVal = 1;
       }
       else {
         const main = document.getElementById("main-input").value.trim();
         const em = document.getElementById("email-client").value.trim();
         if (!main) { alert("Information requise."); resetLockAndBtn(); return; }
-        input1 = main; qtyVal = 1; if (em) { contactValue = em; }
+        input1 = main; qtyVal = 1; if (em) { contactValue = em; emailForSheet = em; }
       }
 
-      if (!contactValue) contactValue = WALLET_EMAIL;
+      if (!emailForSheet && WALLET_EMAIL) { emailForSheet = WALLET_EMAIL; if (!contactValue) contactValue = WALLET_EMAIL; }
 
-      // LE VRAI PAYLOAD CORRIGÉ POUR GOOGLE SCRIPT
+      // 🚨 Préparation des données pour le POST vers le Noyau 🚨
       const payload = {
-        action: "wallet_pay", 
-        orderId: orderId, 
-        email: WALLET_EMAIL, // Le script a besoin de savoir qui débiter
-        total: totalNumber,
-        produit: nom, 
-        idService: idS, 
-        categorie: cat,
-        input1: input1, 
-        contact: contactValue, 
-        quantite: qtyVal, 
-        payMethod: "WALLET", 
-        walletEmail: WALLET_EMAIL, 
-        idempotencyKey: "IDEMP_" + orderId
+        action: "wallet_pay", orderId: orderId, produit: nom, idService: idS, categorie: cat,
+        input1: input1, contact: contactValue, email: emailForSheet, quantite: qtyVal, total: totalNumber,
+        payMethod: "WALLET", walletEmail: WALLET_EMAIL, idempotencyKey: "IDEMP_" + orderId
       };
 
-      // ENVOI DU PAIEMENT AU SCRIPT WALLET VIA JSONP
-      jsonp_(GOOGLE_URL, payload, 
-        (res) => {
-          if (res && res.ok) {
-            // --- ALERTE BOT ADMIN (WBA) EN ARRIÈRE-PLAN ---
-            try {
-              const pseudoNom = WALLET_EMAIL ? WALLET_EMAIL.split("@")[0] : "Client";
-              const qs = new URLSearchParams({ 
-                source: "website", 
-                action: "nouvelle_commande", 
-                nom: pseudoNom, 
-                contact: contactValue || "N/A", 
-                service: nom || "Service inconnu", 
-                quantite: qtyVal || 1, 
-                montant: totalNumber + " $", 
-                t: Date.now() 
-              }).toString();
-              
-              // Le pingBot contacte ton script avisScriptUrl
-              const pingBot = new Image(); 
-              pingBot.src = BOT_WEBHOOK_URL + "?" + qs;
-            } catch (e) { console.log("Erreur Bot:", e); }
+      // 🚨 ENVOI AVEUGLE (Le Noyau reçoit via doPost sans bloquer le site)
+      fetch(WALLET_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(payload).toString()
+      })
+      .then(() => {
+        // Le paiement a été envoyé au Noyau avec succès.
+        // --- ALERTE BOT ADMIN ---
+        try {
+          const pseudoNom = WALLET_EMAIL ? WALLET_EMAIL.split("@")[0] : "Client";
+          const qs = new URLSearchParams({ 
+            source: "website", action: "nouvelle_commande", 
+            nom: pseudoNom, contact: contactValue || "N/A", 
+            service: nom || "Service inconnu", quantite: qtyVal || 1, 
+            montant: totalNumber + " $", t: Date.now() 
+          }).toString();
+          
+          const pingBot = new Image(); 
+          pingBot.src = BOT_WEBHOOK_URL + "?" + qs;
+        } catch (e) { console.log("Erreur Bot:", e); }
 
-            if (typeof res.balance !== "undefined") { WALLET_BAL = Number(res.balance || 0); updateWalletUI_(); }
-            showSuccess_(res.orderId || orderId);
-          } else {
-            // LE MOUCHARD : Affiche le vrai message de Google si ça plante
-            alert("Refusé par le serveur : " + (res.message || JSON.stringify(res))); 
-            resetLockAndBtn();
-          }
-        },
-        (err) => { 
-          alert("Erreur réseau : Impossible de joindre Google."); 
-          resetLockAndBtn(); 
-        }
-      );
+        // Déduction visuelle locale
+        WALLET_BAL = WALLET_BAL - totalNumber;
+        if(WALLET_BAL < 0) WALLET_BAL = 0;
+        updateWalletUI_();
+
+        showSuccess_(orderId);
+      })
+      .catch((err) => {
+        alert("Erreur de connexion serveur."); 
+        resetLockAndBtn();
+      });
     };
   </script>
 </body>
