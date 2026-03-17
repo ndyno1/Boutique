@@ -5,230 +5,198 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>ViralFlowr | Paiement Sécurisé</title>
 
-  <meta name="theme-color" content="#111827" />
-  <link rel="icon" href="/favicon.png" />
-  <link rel="apple-touch-icon" href="/favicon.png" />
-
   <script src="/styles/vf_config.js?v=2"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-  <script src="/styles/vf_menu.js?v=2" defer></script>
-  <script src="/styles/vf_footer.js?v=2" defer></script>
-  <link rel="stylesheet" href="/styles/vf_theme.css?v=2">
-
   <style>
-    body{ background:#F3F3F3; color:#201B16; }
+    body{ background:#F3F3F3; color:#201B16; font-family:'Inter', sans-serif; }
     .text-orange-bsv { color:#F07E13; }
-    .checkout-container { max-width:500px; width:100%; margin:2rem auto; }
-    input, textarea { outline:none; transition:all .2s; border:1px solid #e5e7eb !important; }
-    input:focus, textarea:focus { border-color:#F07E13 !important; box-shadow:0 0 0 4px rgba(240,126,19,.12); }
-    .btn-mini{ height:40px; padding:0 12px; border-radius:12px; font-weight:900; font-size:11px; letter-spacing:.08em; text-transform:uppercase; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:1px solid #E5E7EB; background:#fff; color:#111827; transition:.2s; white-space:nowrap; text-decoration:none; }
-    .btn-mini:hover{ transform: translateY(-1px); border-color:#F07E13; color:#F07E13; }
-    .notice{ display:none; border-radius:18px; padding:14px 16px; margin-bottom:16px; font-size:13px; font-weight:700; border:1px solid transparent; }
-    .notice.show{ display:block; }
-    .notice.error{ background:#FEF2F2; border-color:#FECACA; color:#991B1B; }
-    .notice.success{ background:#ECFDF5; border-color:#A7F3D0; color:#065F46; }
-    .success-shell{ position:relative; overflow:hidden; border-radius:28px; background: white; border:1px solid #E5E7EB; box-shadow:0 20px 60px rgba(15,23,42,.08); }
-    .success-badge-wrap{ position:relative; width:100px; height:100px; margin:0 auto 20px auto; }
-    .success-ring{ position:absolute; inset:0; border-radius:999px; border:2px solid rgba(34,197,94,.18); animation: pulseRing 2s ease-out infinite; }
-    .success-icon{ position:absolute; inset:15px; border-radius:999px; display:flex; align-items:center; justify-content:center; background:#DCFCE7; color:#16A34A; }
-    @keyframes pulseRing{ 0%{ transform:scale(.8); opacity:0; } 50%{ opacity:.5; } 100%{ transform:scale(1.2); opacity:0; } }
-    .pay-spinner{ width:16px; height:16px; border-radius:999px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; animation:spin .7s linear infinite; display:inline-block; margin-right:8px; }
-    @keyframes spin{ to{ transform:rotate(360deg); } }
+    .checkout-container { max-width:500px; margin:2rem auto; padding:0 1rem; }
+    .btn-pay { width:100%; background:#000; color:#fff; padding:1rem; border-radius:18px; font-weight:900; text-transform:uppercase; transition:0.2s; }
+    .btn-pay:disabled { opacity:0.5; cursor:not-allowed; }
+    .input-field { width:100%; border:1px solid #E5E7EB; border-radius:12px; padding:0.75rem; margin-top:0.5rem; outline:none; }
+    .input-field:focus { border-color:#F07E13; }
+    .notice { display:none; padding:1rem; border-radius:12px; margin-bottom:1rem; font-size:13px; font-weight:700; }
+    .notice.error { background:#FEF2F2; color:#991B1B; border:1px solid #FECACA; }
+    .notice.show { display:block; }
   </style>
 </head>
 
 <body>
-  <div class="bg-gray-900 text-white py-2 text-[10px] font-bold uppercase text-center">
-    MARKETPLACE PROFESSIONNELLE • PAIEMENT SÉCURISÉ • VIRALFLOWR
-  </div>
+  <main class="checkout-container">
+    <div class="flex justify-between items-center mb-8">
+      <a href="index.html" class="text-2xl font-black italic">Viral<span class="text-orange-bsv">Flowr</span></a>
+      <div id="walletDisplay" class="bg-black text-white px-4 py-2 rounded-full text-xs font-bold hidden">
+        Solde: <span id="balanceVal">...</span> $
+      </div>
+    </div>
 
-  <main class="p-4 md:p-8">
-    <div class="checkout-container">
-      <div class="flex items-center justify-between mb-6">
-        <a href="index.html" class="text-2xl font-black tracking-tighter">Viral<span class="text-orange-bsv">Flowr</span></a>
-        <a href="wallet.html" class="btn-mini">Portefeuille</a>
+    <div id="noticeBox" class="notice"></div>
+
+    <div id="form-container" class="bg-white rounded-[32px] p-6 shadow-xl border border-gray-100">
+      <h1 id="serviceName" class="text-xl font-black text-center mb-1">Chargement...</h1>
+      <p id="catBadge" class="text-[10px] text-gray-400 font-bold uppercase text-center mb-6">—</p>
+
+      <div class="bg-gray-50 rounded-2xl p-4 text-center mb-6 border-2 border-dashed border-gray-200">
+        <span class="text-[9px] font-black text-gray-400 uppercase">Commande ID</span>
+        <div id="orderIdDisp" class="text-lg font-black">...</div>
       </div>
 
-      <div class="bg-white rounded-[32px] shadow-lg border border-gray-100 p-6 md:p-8">
-        <div id="noticeBox" class="notice"></div>
-
-        <div id="form-container">
-          <h2 id="service-name" class="text-xl font-extrabold text-center mb-2">Chargement...</h2>
-          <div class="text-center mb-6">
-            <span id="cat-badge" class="bg-gray-100 text-gray-500 text-[10px] font-bold px-3 py-1 rounded-full uppercase">—</span>
-          </div>
-
-          <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-4 text-center mb-6">
-            <span class="text-[9px] font-black text-gray-400 uppercase block">ID Commande</span>
-            <span id="live-order-id" class="text-xl font-black text-gray-900">...</span>
-          </div>
-
-          <form id="orderForm" class="space-y-5" novalidate>
-            <div id="section-smm" class="hidden space-y-4">
-              <label class="text-[11px] font-bold uppercase">Lien à booster</label>
-              <input type="text" id="boost-link" placeholder="https://..." class="w-full rounded-xl p-3 text-sm">
-              <label class="text-[11px] font-bold uppercase">Quantité</label>
-              <input type="number" id="qty" value="1000" class="w-full rounded-xl p-3 text-sm font-black">
-            </div>
-
-            <div id="section-abonnement" class="hidden space-y-4">
-              <label class="text-[11px] font-bold uppercase">Identifiants</label>
-              <textarea id="creds" class="w-full rounded-xl p-3 text-sm h-24" placeholder="Email / Mot de passe"></textarea>
-              <input type="text" id="delivery-contact-abo" placeholder="WhatsApp ou Email de contact" class="w-full rounded-xl p-3 text-sm">
-            </div>
-
-            <div id="section-default" class="hidden space-y-4">
-              <label id="default-label" class="text-[11px] font-bold uppercase">Info requise</label>
-              <input type="text" id="main-input" class="w-full rounded-xl p-3 text-sm">
-              <input type="email" id="email-client" placeholder="Email (Optionnel)" class="w-full rounded-xl p-3 text-sm">
-            </div>
-
-            <div class="py-4 text-center">
-              <span class="text-gray-400 text-[10px] uppercase font-bold">Total</span>
-              <div id="display-price" class="text-4xl font-black text-gray-900 tracking-tighter">0.00 $</div>
-            </div>
-
-            <div id="walletBox" class="hidden rounded-2xl bg-gray-900 p-5 text-white shadow-xl">
-              <div class="flex justify-between items-center">
-                <div>
-                  <div class="text-[10px] uppercase text-gray-400">Solde Wallet</div>
-                  <div class="text-lg font-black"><span id="walletBalance">—</span> $</div>
-                  <div id="walletHint" class="text-[10px] text-gray-400 mt-1">Vérification...</div>
-                </div>
-                <button type="button" id="walletPayBtn" class="bg-white text-black px-6 py-3 rounded-xl font-black text-[11px] uppercase">
-                  Payer
-                </button>
-              </div>
-            </div>
-          </form>
+      <form id="payForm" class="space-y-4">
+        <div id="sec-smm" class="hidden">
+          <label class="text-[11px] font-black uppercase">Lien (URL)</label>
+          <input type="text" id="input-link" class="input-field" placeholder="https://instagram.com/...">
+          <label class="text-[11px] font-black uppercase mt-4 block">Quantité</label>
+          <input type="number" id="input-qty" class="input-field" value="1000">
         </div>
 
-        <div id="success-msg" class="hidden success-shell text-center py-10">
-          <div class="success-badge-wrap"><div class="success-ring"></div><div class="success-icon"><svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg></div></div>
-          <h3 class="text-2xl font-black mb-2">Paiement Réussi</h3>
-          <p class="text-sm text-gray-500 mb-6">Commande <strong id="final-id"></strong> validée.</p>
-          <button onclick="location.href='index.html'" class="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold uppercase text-xs">Retour Boutique</button>
+        <div id="sec-abo" class="hidden">
+          <label class="text-[11px] font-black uppercase">Identifiants (Mail:Pass)</label>
+          <textarea id="input-creds" class="input-field h-24" placeholder="Compte : ...&#10;Passe : ..."></textarea>
         </div>
+
+        <div id="sec-def" class="hidden">
+          <label id="def-label" class="text-[11px] font-black uppercase">Information requise</label>
+          <input type="text" id="input-def" class="input-field">
+        </div>
+
+        <div class="py-4 border-t border-b border-gray-50 my-6 text-center">
+          <span class="text-[10px] text-gray-400 font-black uppercase">Total à payer</span>
+          <div id="totalPrice" class="text-4xl font-black text-gray-900">0.00 $</div>
+        </div>
+
+        <button type="button" id="btnSubmit" class="btn-pay">Chargement du Wallet...</button>
+      </form>
+    </div>
+
+    <div id="success-screen" class="hidden bg-white rounded-[32px] p-8 text-center shadow-xl border border-gray-100">
+      <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+        <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
       </div>
+      <h2 class="text-2xl font-black mb-2">Paiement Réussi</h2>
+      <p class="text-gray-500 text-sm mb-8">Votre commande est en cours de traitement.</p>
+      <button onclick="location.href='index.html'" class="w-full bg-black text-white py-4 rounded-2xl font-bold uppercase text-xs">Retour Boutique</button>
     </div>
   </main>
 
   <script>
     const CONFIG = window.VF_CONFIG || {};
-    const GOOGLE_URL = CONFIG.orderScriptUrl; // Script Commandes
-    const WALLET_URL = CONFIG.scriptUrl;      // Script Wallet
-    const BOT_URL = CONFIG.avisScriptUrl;     // Bot Webhook (WBA)
-
-    const params = new URLSearchParams(window.location.search);
-    const idS = params.get("id");
-    const nom = params.get("nom") || "Service";
-    const prixInit = parseFloat(params.get("prix") || "0");
-    const cat = params.get("cat") || "";
+    const params = new URLSearchParams(location.search);
     const orderId = "VF-" + Date.now();
+    
+    // Éléments UI
+    const btn = document.getElementById("btnSubmit");
+    const totalDisp = document.getElementById("totalPrice");
+    const balanceVal = document.getElementById("balanceVal");
 
-    let WALLET_BAL = 0;
-    let WALLET_EMAIL = "";
+    // Données du service
+    const serviceId = params.get("id");
+    const serviceNom = params.get("nom") || "Service";
+    const servicePrix = parseFloat(params.get("prix") || "0");
+    const serviceCat = (params.get("cat") || "").toUpperCase();
 
-    function showNotice_(msg, type="error") {
-      const b = document.getElementById("noticeBox");
-      b.className = "notice show " + type;
-      b.innerText = msg;
+    let userBalance = 0;
+    let userEmail = "";
+
+    // 1. Initialisation de la page
+    document.getElementById("serviceName").innerText = serviceNom;
+    document.getElementById("catBadge").innerText = serviceCat;
+    document.getElementById("orderIdDisp").innerText = orderId;
+
+    if(/SMM|BOOST/.test(serviceCat)) document.getElementById("sec-smm").classList.remove("hidden");
+    else if(/ABO/.test(serviceCat)) document.getElementById("sec-abo").classList.remove("hidden");
+    else document.getElementById("sec-def").classList.remove("hidden");
+
+    function calculateTotal() {
+      const qty = document.getElementById("input-qty")?.value || 1000;
+      const isSmm = /SMM|BOOST/.test(serviceCat);
+      const final = isSmm ? (servicePrix / 1000) * qty : servicePrix;
+      totalDisp.innerText = final.toFixed(2) + " $";
+      return final;
     }
 
-    function updatePrice() {
-      const qty = document.getElementById("qty")?.value || 1000;
-      const total = isSMM ? (prixInit / 1000) * qty : prixInit;
-      document.getElementById("display-price").innerText = total.toFixed(2) + " $";
-      return total;
-    }
+    document.getElementById("input-qty")?.addEventListener("input", calculateTotal);
+    const totalFinal = calculateTotal();
 
-    // --- LOGIQUE WALLET ---
-    async function loadWallet() {
-      const s = JSON.parse(localStorage.getItem("vf_session") || "null");
-      if(!s) return;
-      WALLET_EMAIL = s.email;
-      const cb = "CB_" + Date.now();
-      const script = document.createElement("script");
-      script.src = `${WALLET_URL}?action=wallet_balance&email=${s.email}&callback=${cb}`;
+    // 2. Récupération du solde (JSONP vers scriptUrl)
+    function fetchBalance() {
+      const session = JSON.parse(localStorage.getItem("vf_session") || "{}");
+      if(!session.email) {
+        btn.innerText = "Connectez-vous pour payer";
+        btn.onclick = () => location.href = "wallet.html";
+        return;
+      }
+      userEmail = session.email;
+      const cb = "CB_BAL_" + Date.now();
       window[cb] = (res) => {
         if(res.ok) {
-          WALLET_BAL = res.balance;
-          document.getElementById("walletBalance").innerText = WALLET_BAL.toFixed(2);
-          document.getElementById("walletBox").classList.remove("hidden");
-          document.getElementById("walletHint").innerText = "Prêt au paiement.";
+          userBalance = res.balance;
+          balanceVal.innerText = userBalance.toFixed(2);
+          document.getElementById("walletDisplay").classList.remove("hidden");
+          btn.innerText = userBalance >= calculateTotal() ? "Confirmer le paiement" : "Solde insuffisant";
+          btn.disabled = userBalance < calculateTotal();
         }
       };
-      document.body.appendChild(script);
+      const s = document.createElement("script");
+      s.src = `${CONFIG.scriptUrl}?action=wallet_balance&email=${userEmail}&callback=${cb}`;
+      document.body.appendChild(s);
     }
 
-    // --- ENVOI COMMANDE + BOT ---
-    document.getElementById("walletPayBtn").onclick = async () => {
-      const total = updatePrice();
-      if(WALLET_BAL < total) return showNotice_("Solde insuffisant.");
-
-      const btn = document.getElementById("walletPayBtn");
+    // 3. Exécution du paiement + ALERTE BOT (avisScriptUrl)
+    btn.onclick = () => {
       btn.disabled = true;
-      btn.innerHTML = `<span class="pay-spinner"></span>`;
+      btn.innerText = "Traitement...";
+
+      const inputData = document.getElementById("input-link")?.value || 
+                        document.getElementById("input-creds")?.value || 
+                        document.getElementById("input-def")?.value || "N/A";
 
       const payload = {
         action: "wallet_pay",
         orderId: orderId,
-        produit: nom,
-        email: WALLET_EMAIL,
-        total: total,
-        idService: idS,
-        contact: WALLET_EMAIL // Par défaut
+        email: userEmail,
+        total: calculateTotal(),
+        produit: serviceNom,
+        idService: serviceId,
+        input1: inputData
       };
 
-      // 1. Appel Google Script
-      const cb = "PAY_" + Date.now();
-      const script = document.createElement("script");
-      script.src = `${WALLET_URL}?${new URLSearchParams(payload)}&callback=${cb}`;
-      
+      const cb = "CB_PAY_" + Date.now();
       window[cb] = (res) => {
         if(res.ok) {
-          // 2. ALERT BOT (WBA)
-          try {
-            const botParams = new URLSearchParams({
-              source: "website",
-              action: "nouvelle_commande",
-              nom: WALLET_EMAIL.split('@')[0],
-              contact: WALLET_EMAIL,
-              service: nom,
-              montant: total + " $"
-            });
-            const img = new Image();
-            img.src = `${BOT_URL}?${botParams.toString()}`;
-          } catch(e) {}
+          // --- ALERTE BOT WBA (La vraie partie "Avis") ---
+          const botData = {
+            source: "website",
+            action: "nouvelle_commande",
+            nom: userEmail.split('@')[0],
+            contact: userEmail,
+            service: serviceNom,
+            montant: calculateTotal() + " $"
+          };
+          const img = new Image();
+          img.src = `${CONFIG.avisScriptUrl}?${new URLSearchParams(botData).toString()}`;
 
-          // 3. SUCCÈS
+          // UI Succès
           confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
           document.getElementById("form-container").classList.add("hidden");
-          document.getElementById("success-msg").classList.remove("hidden");
-          document.getElementById("final-id").innerText = orderId;
+          document.getElementById("success-screen").classList.remove("hidden");
         } else {
-          showNotice_(res.message || "Erreur serveur.");
+          document.getElementById("noticeBox").innerText = res.message || "Erreur de paiement";
+          document.getElementById("noticeBox").classList.add("show", "error");
           btn.disabled = false;
-          btn.innerText = "Payer";
+          btn.innerText = "Réessayer";
         }
       };
-      document.body.appendChild(script);
+
+      const s = document.createElement("script");
+      s.src = `${CONFIG.scriptUrl}?${new URLSearchParams(payload).toString()}&callback=${cb}`;
+      document.body.appendChild(s);
     };
 
-    // Initialisation UI
-    document.getElementById("service-name").innerText = nom;
-    document.getElementById("cat-badge").innerText = cat;
-    document.getElementById("live-order-id").innerText = orderId;
-    const isSMM = /(SMM|BOOST)/i.test(cat);
-    if(isSMM) document.getElementById("section-smm").classList.remove("hidden");
-    else if(/ABO/i.test(cat)) document.getElementById("section-abonnement").classList.remove("hidden");
-    else document.getElementById("section-default").classList.remove("hidden");
-
-    loadWallet();
-    updatePrice();
+    fetchBalance();
+    calculateTotal();
   </script>
 </body>
 </html>
