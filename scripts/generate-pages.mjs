@@ -2,22 +2,28 @@
 import fs from "fs/promises";
 import path from "path";
 
-// 1. IMPORTATION PROPRE DEPUIS TON FICHIER UNIQUE
-import VF_SHARED_CONFIG from "../styles/vf_config.js";
-
 const ROOT = process.cwd();
 
-// 2. ON UTILISE DIRECTEMENT LA CONFIGURATION SANS FALLBACK BIZARRE
-const SITE_BASE = String(
-  process.env.SITE_BASE || VF_SHARED_CONFIG.SITE_BASE || "https://viralflowr.com"
-).replace(/\/+$/, "");
+// --- LA SOLUTION PROPRE : LECTURE DIRECTE (REGEX) ---
+// On lit le fichier vf_config.js comme un document texte 
+// pour extraire les liens sans créer de conflit d'importation !
+const configPath = path.join(ROOT, "styles", "vf_config.js");
+let configText = "";
 
-const VF_SCRIPT_URL = String(
-  process.env.VF_SCRIPT_URL || VF_SHARED_CONFIG.VF_SCRIPT_URL || ""
-).trim();
+try {
+  configText = await fs.readFile(configPath, "utf-8");
+} catch (err) {
+  console.error("⚠️ Impossible de lire styles/vf_config.js, utilisation des valeurs par défaut.");
+}
+
+const matchSite = configText.match(/SITE_BASE:\s*["']([^"']+)["']/);
+const matchScript = configText.match(/VF_SCRIPT_URL:\s*["']([^"']+)["']/);
+
+const SITE_BASE = matchSite ? matchSite[1].replace(/\/+$/, "") : "https://viralflowr.com";
+const VF_SCRIPT_URL = matchScript ? matchScript[1].trim() : process.env.VF_SCRIPT_URL || "";
 
 if (!VF_SCRIPT_URL) {
-  throw new Error("VF_SCRIPT_URL manquant dans styles/vf_config.js");
+  throw new Error("❌ VF_SCRIPT_URL introuvable. Vérifie ton fichier styles/vf_config.js !");
 }
 
 const TIMEOUT_MS = parseInt(process.env.FETCH_TIMEOUT_MS || "25000", 10);
