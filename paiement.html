@@ -719,6 +719,12 @@
     const raw = await postToAppsScriptIframe_(GOOGLE_URL, finalPayload, IFRAME_TIMEOUT_MS);
     const res = normalizeResponse_(raw);
     return { raw: raw, res: res };
+
+    const finalPayload = Object.assign({}, payload, {
+  action: "wallet_pay",
+  request_id: requestId,
+  email_client_source: payload.email || ""
+});
   }
 
   function initWallet_(){
