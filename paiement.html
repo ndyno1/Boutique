@@ -9,7 +9,7 @@
   <link rel="icon" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
   
-  <script src="/styles/vf_config.js?v=1"></script>
+  <script src="/styles/vf_config.js?v=2"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -182,10 +182,13 @@
   </main>
 
   <script>
-    const GOOGLE_URL = window.VF_CONFIG.orderScriptUrl;
-    const BOT_WEBHOOK_URL = window.VF_CONFIG.avisScriptUrl;
+    // SÉCURITÉ : On définit bien les URLs séparées pour les commandes et pour le wallet
+    const CONFIG = window.VF_CONFIG || {};
+    const GOOGLE_URL = CONFIG.orderScriptUrl;
+    const WALLET_SCRIPT_URL = CONFIG.scriptUrl; // Nouveau ! C'est l'URL qui sait gérer le wallet
+    const BOT_WEBHOOK_URL = CONFIG.avisScriptUrl;
 
-    const JSONP_TIMEOUT_MS = 8000;
+    const JSONP_TIMEOUT_MS = 15000; // Augmenté à 15s pour correspondre au wallet
     const WALLET_CACHE_TTL_MS = 60000;
     const WALLET_FRESH_PAY_TTL_MS = 15000;
 
@@ -278,15 +281,13 @@
       document.getElementById("success-msg").classList.remove("hidden");
     }
 
-    const nom      = params.get("nom") || "Service";
-    
-    // CORRECTION : On sécurise l'extraction du prix pour éviter les bugs si URL contient une virgule ou vide
+    const nom = params.get("nom") || "Service";
     const rawPrix = params.get("prix");
     let cleanPrix = String(rawPrix || "0").replace(/,/g, ".");
     const prixInit = parseFloat(cleanPrix) || 0;
     
-    const cat      = params.get("cat") || "";
-    const desc     = safeDecode(params.get("desc") || "");
+    const cat = params.get("cat") || "";
+    const desc = safeDecode(params.get("desc") || "");
     const longDesc = safeDecode(params.get("long") || params.get("long_desc") || "");
     const minParam = parseFloat(params.get("min"));
     const maxParam = parseFloat(params.get("max"));
@@ -343,7 +344,6 @@
       return x.toFixed(2);
     }
 
-    // CORRECTION MAJEURE : On récupère proprement le prix, même si y'a des espaces bizarres ou symboles
     function getTotalNumber_(){
       let txt = String(priceEl.textContent || "0");
       txt = txt.replace(/,/g, ".").replace(/[^0-9.]/g, "");
@@ -352,21 +352,24 @@
 
     function walletCacheKey_(){ return WALLET_EMAIL ? "vf_wallet_balance_cache_" + WALLET_EMAIL : ""; }
 
+    // CORRECTION CACHE 1 : On sauvegarde au même format que la page wallet.html
     function saveWalletCache_(balance){
       try{
         if (!WALLET_EMAIL) return;
-        localStorage.setItem(walletCacheKey_(), JSON.stringify({ balance: Number(balance || 0), ts: Date.now() }));
+        localStorage.setItem(walletCacheKey_(), JSON.stringify({ ts: Date.now(), data: { balance: Number(balance || 0) } }));
       }catch(_){}
     }
 
+    // CORRECTION CACHE 2 : On lit le format de la page wallet.html pour que le solde apparaisse instantanément !
     function loadWalletCache_(){
       try{
         if (!WALLET_EMAIL) return null;
         const raw = localStorage.getItem(walletCacheKey_());
         if (!raw) return null;
         const obj = JSON.parse(raw);
-        if (!obj || typeof obj.balance === "undefined" || !obj.ts) return null;
-        return obj;
+        const bal = (obj.data && typeof obj.data.balance !== "undefined") ? obj.data.balance : obj.balance;
+        if (typeof bal === "undefined" || !obj.ts) return null;
+        return { balance: bal, ts: obj.ts };
       }catch(_){ return null; }
     }
 
@@ -376,7 +379,9 @@
       return (Date.now() - Number(c.ts || 0)) <= maxAgeMs;
     }
 
-    function jsonp_(paramsObj, onOk, onErr, timeoutMs = JSONP_TIMEOUT_MS){
+    // CORRECTION URL : jsonp_ accepte maintenant une targetUrl spécifique
+    function jsonp_(targetUrl, paramsObj, onOk, onErr, timeoutMs = JSONP_TIMEOUT_MS){
+      if (!targetUrl) return onErr(new Error("URL manquante"));
       const cb = "VF_CB_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
       const s = document.createElement("script");
       let done = false; let timer = null;
@@ -389,14 +394,15 @@
       Object.keys(paramsObj || {}).forEach((k) => { cleanParams[k] = paramsObj[k] == null ? "" : String(paramsObj[k]); });
       timer = setTimeout(() => { if (done) return; cleanup_(); onErr && onErr(new Error("TIMEOUT")); }, timeoutMs);
       const qs = new URLSearchParams({ ...cleanParams, callback: cb, t: String(Date.now()) });
-      s.src = GOOGLE_URL + "?" + qs.toString();
+      s.src = targetUrl + "?" + qs.toString();
       s.onerror = function(){ if (done) return; cleanup_(); onErr && onErr(new Error("NETWORK_ERROR")); };
       document.body.appendChild(s);
     }
 
     function walletPayRequest_(payload){
       return new Promise((resolve, reject) => {
-        jsonp_(payload, (res) => resolve(res), (err) => reject(err || new Error("NETWORK_ERROR")));
+        // Le paiement s'envoie vers le script des commandes (GOOGLE_URL)
+        jsonp_(GOOGLE_URL, payload, (res) => resolve(res), (err) => reject(err || new Error("NETWORK_ERROR")));
       });
     }
 
@@ -415,7 +421,6 @@
       }
     }
 
-    // CORRECTION : On gère mieux l'affichage pour comprendre pourquoi ça bloque
     function updateWalletUI_(){
       const box = document.getElementById("walletBox");
       if(!box) return;
@@ -473,7 +478,8 @@
       WALLET_LOADING = true;
       if (!silent) showWalletLoadingUI_(WALLET_OK);
       walletBalancePromise_ = new Promise((resolve) => {
-        jsonp_({ action:"wallet_balance", email: WALLET_EMAIL, currency:"USD" },
+        // CORRECTION URL : On demande le solde au bon script (WALLET_SCRIPT_URL)
+        jsonp_(WALLET_SCRIPT_URL, { action:"wallet_balance", email: WALLET_EMAIL, currency:"USD" },
           (res) => {
             WALLET_LOADING = false; walletBalancePromise_ = null;
             if(res && res.ok){
@@ -684,6 +690,7 @@
         } catch(e){}
       };
       const s = document.createElement("script");
+      // Attention ici : on garde GOOGLE_URL pour récupérer les produits car ils sont dans le script Order
       s.src = `${GOOGLE_URL}?action=get_products&callback=${cb}&t=${Date.now()}`;
       document.body.appendChild(s);
     })();
