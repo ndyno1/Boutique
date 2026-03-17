@@ -43,7 +43,7 @@
   <meta property="og:image" content="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png" />
   <meta property="og:type" content="website" />
 
-  <script src="/styles/vf_config.js?v=1"></script>
+  <script src="/styles/vf_config.js?v=2"></script>
   <script src="/vf_api.js?v=200" defer></script>
   <script src="/styles/vf_menu.js?v=2" defer></script>
   <script src="/styles/vf_footer.js?v=2" defer></script>
@@ -94,36 +94,10 @@
     <div id="loadError" class="hidden mb-6 bg-red-50 border border-red-200 text-red-700 font-bold text-xs rounded-2xl px-4 py-3"></div>
 
     <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 mb-24">
-      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm">
-        <div class="aspect-square skeleton-box rounded-[22px] mb-4"></div>
-        <div class="h-4 skeleton-box rounded mb-2 w-3/4"></div>
-        <div class="h-3 skeleton-box rounded w-1/2"></div>
-      </div>
-      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm">
-        <div class="aspect-square skeleton-box rounded-[22px] mb-4"></div>
-        <div class="h-4 skeleton-box rounded mb-2 w-3/4"></div>
-        <div class="h-3 skeleton-box rounded w-1/2"></div>
-      </div>
-      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm">
-        <div class="aspect-square skeleton-box rounded-[22px] mb-4"></div>
-        <div class="h-4 skeleton-box rounded mb-2 w-3/4"></div>
-        <div class="h-3 skeleton-box rounded w-1/2"></div>
-      </div>
-      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm">
-        <div class="aspect-square skeleton-box rounded-[22px] mb-4"></div>
-        <div class="h-4 skeleton-box rounded mb-2 w-3/4"></div>
-        <div class="h-3 skeleton-box rounded w-1/2"></div>
-      </div>
-      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm">
-        <div class="aspect-square skeleton-box rounded-[22px] mb-4"></div>
-        <div class="h-4 skeleton-box rounded mb-2 w-3/4"></div>
-        <div class="h-3 skeleton-box rounded w-1/2"></div>
-      </div>
-      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm">
-        <div class="aspect-square skeleton-box rounded-[22px] mb-4"></div>
-        <div class="h-4 skeleton-box rounded mb-2 w-3/4"></div>
-        <div class="h-3 skeleton-box rounded w-1/2"></div>
-      </div>
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
+      <div class="bg-white rounded-[30px] p-4 flex flex-col shadow-sm"><div class="aspect-square skeleton-box rounded-[22px] mb-4"></div><div class="h-4 skeleton-box rounded mb-2 w-3/4"></div><div class="h-3 skeleton-box rounded w-1/2"></div></div>
     </div>
   </main>
 
@@ -142,84 +116,41 @@
       "Jeux": ["JEUX", "JEU", "GAME", "GAMING", "PSN", "PLAYSTATION", "XBOX", "STEAM", "NINTENDO"]
     };
 
-    function safe(v) {
-      return (v === null || v === undefined) ? "" : String(v);
-    }
-
-    function up(v) {
-      return safe(v).trim().toUpperCase();
-    }
+    function safe(v) { return (v === null || v === undefined) ? "" : String(v); }
+    function up(v) { return safe(v).trim().toUpperCase(); }
 
     function escHtml(str) {
       return safe(str).replace(/[&<>"']/g, function (c) {
-        return {
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#39;"
-        }[c];
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
       });
     }
 
-    function escAttr(str) {
-      return safe(str).replace(/["']/g, "");
-    }
+    function escAttr(str) { return safe(str).replace(/["']/g, ""); }
+    function pName(p) { return safe(p.nom || p.name || p.title); }
+    function pCat(p) { return safe(p.cat || p.category || p.categorie); }
+    function pPrice(p) { return safe(p.prix_affiche ?? p.prix_revendeur ?? p.prix ?? p.price ?? p.amount); }
+    function pImg(p) { return safe(p.img || p.image || p.photo || p.image_url || p.cover || p.thumbnail); }
+    function pStableId(p) { return safe(p.__vf_id || p.id || p.ID).trim(); }
 
-    function pName(p) {
-      return safe(p.nom || p.name || p.title);
-    }
-
-    function pCat(p) {
-      return safe(p.cat || p.category || p.categorie);
-    }
-
-    function pPrice(p) {
-      return safe(p.prix_affiche ?? p.prix_revendeur ?? p.prix ?? p.price ?? p.amount);
-    }
-
-    function pImg(p) {
-      return safe(p.img || p.image || p.photo || p.image_url || p.cover || p.thumbnail);
-    }
-
-    function pStableId(p) {
-      return safe(p.__vf_id || p.id || p.ID).trim();
-    }
-
-    function getStore() {
-      return window.vfApi?.storage || window.vfStorage || null;
-    }
+    function getStore() { return window.vfApi?.storage || window.vfStorage || null; }
 
     function getSession_() {
       const st = getStore();
-      try {
-        if (st?.getSession) return st.getSession();
-      } catch (_) {}
-
-      try {
-        return JSON.parse(localStorage.getItem("vf_session"));
-      } catch (_) {
-        return null;
-      }
+      try { if (st?.getSession) return st.getSession(); } catch (_) {}
+      try { return JSON.parse(localStorage.getItem("vf_session")); } catch (_) { return null; }
     }
 
     function getToken_() {
       const st = getStore();
-      try {
-        if (st?.getToken) return String(st.getToken()).trim();
-      } catch (_) {}
-
+      try { if (st?.getToken) return String(st.getToken()).trim(); } catch (_) {}
       return localStorage.getItem("vf_token")?.trim() || "";
     }
 
     function bindSearchInput_() {
       const input = document.getElementById("searchInput");
       if (!input || input.dataset.vfBound === "1") return;
-
       input.dataset.vfBound = "1";
-      input.addEventListener("input", function () {
-        render();
-      });
+      input.addEventListener("input", function () { render(); });
     }
 
     async function loadProducts_(token) {
@@ -232,32 +163,28 @@
         } else if (window.vfJsonp) {
           payload = await window.vfJsonp("get_products", { cat: "all", token: token || "" });
         } else {
-          const resp = await fetch(`${window.VF_CONFIG.scriptUrl}?action=get_products&token=${token || ""}`);
+          // SÉCURITÉ : Vérifie que le CONFIG est bien là pour éviter un crash
+          const scriptUrl = window.VF_CONFIG?.scriptUrl || "";
+          if (!scriptUrl) throw new Error("URL de script manquante");
+          const resp = await fetch(`${scriptUrl}?action=get_products&token=${token || ""}`);
           payload = await resp.json();
         }
 
         const list = Array.isArray(payload) ? payload : (payload.products || []);
 
         ALL_PRODUCTS = list
-          .filter(function (p) {
-            return String(p.id || p.ID || "").trim() !== "";
-          })
+          .filter(function (p) { return String(p.id || p.ID || "").trim() !== ""; })
           .map(function (p) {
-            return {
-              ...p,
-              __vf_id: String(p.id || p.ID).trim()
-            };
+            return { ...p, __vf_id: String(p.id || p.ID).trim() };
           });
 
         _isFirstLoad = false;
-
         const errBox = document.getElementById("loadError");
         if (errBox) errBox.classList.add("hidden");
 
         render();
       } catch (err) {
         console.error("Load Error:", err);
-
         if (_isFirstLoad) {
           const errBox = document.getElementById("loadError");
           if (errBox) {
@@ -267,6 +194,14 @@
         }
       }
     }
+
+    // FONCTION DE SÉCURITÉ : Forcer la mémoire avant de changer de page
+    window.saveProductClick = function(id) {
+      try {
+        sessionStorage.setItem("vf_service_id", id);
+        sessionStorage.removeItem("active_order_id"); // Reset l'ancienne commande
+      } catch(e) {}
+    };
 
     function render() {
       const grid = document.getElementById("product-grid");
@@ -278,14 +213,7 @@
       const filtered = ALL_PRODUCTS.filter(function (p) {
         const catU = up(pCat(p));
         const nameL = pName(p).toLowerCase();
-
-        const matchCat =
-          CURRENT_FILTER === "all" ||
-          (FILTER_MAP[CURRENT_FILTER]?.some(function (a) {
-            return catU.includes(up(a));
-          })) ||
-          catU === up(CURRENT_FILTER);
-
+        const matchCat = CURRENT_FILTER === "all" || (FILTER_MAP[CURRENT_FILTER]?.some(function (a) { return catU.includes(up(a)); })) || catU === up(CURRENT_FILTER);
         return matchCat && (!query || nameL.includes(query));
       });
 
@@ -300,14 +228,18 @@
         const img = pImg(p) || FALLBACK_IMG;
         const priceNum = parseFloat(String(pPrice(p)).replace(",", "."));
         const priceTxt = isNaN(priceNum) ? "0.00" : priceNum.toFixed(2);
-
         const stableId = pStableId(p);
+        
         if (!stableId) return "";
 
         const pid = encodeURIComponent(stableId);
+        
+        // CORRECTION MAJEURE ICI : Format d'URL standardisé + Sauvegarde forcée au clic
+        // Note: Si ta page de destination s'appelle "paiement.html", remplace "produit.html" par "paiement.html" ci-dessous.
+        const targetUrl = `produit.html?id=${pid}`;
 
         return `
-          <a href="/p/${pid}/" class="hover-card group bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col shadow-sm">
+          <a href="${targetUrl}" onclick="window.saveProductClick('${escAttr(stableId)}')" class="hover-card group bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col shadow-sm">
             <div class="aspect-square bg-[#F8FAFC] rounded-[22px] mb-4 flex items-center justify-center p-6 overflow-hidden">
               <img
                 src="${escAttr(img)}"
@@ -345,7 +277,6 @@
         b.classList.remove("text-white", "brand-gradient", "active");
         b.classList.add("bg-white", "text-gray-500");
       });
-
       btn.classList.add("text-white", "brand-gradient", "active");
       CURRENT_FILTER = cat;
       render();
@@ -363,7 +294,6 @@
       if (area) {
         area.innerHTML = "";
         area.classList.remove("hidden");
-
         if (!s) {
           area.innerHTML = `<a href="/login.html" class="btn-auth btn-auth-outline">Connexion</a>`;
         } else {
