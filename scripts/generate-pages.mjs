@@ -243,20 +243,20 @@ function renderProductPage(prod) {
     (function(){
       const currentId = ${JSON.stringify(id)};
       const lastId = sessionStorage.getItem("vf_last_pid");
-      if(lastId && lastId !== currentId){
+      if (lastId && lastId !== currentId) {
         sessionStorage.removeItem("vf_p_cache_" + lastId);
       }
       sessionStorage.setItem("vf_last_pid", currentId);
     })();
 
-    function getSession_(){
+    function getSession_() {
       try { return JSON.parse(localStorage.getItem("vf_session")); }
-      catch(e){ return null; }
+      catch(e) { return null; }
     }
 
-    function renderAccountUI_(){
+    function renderAccountUI_() {
       const s = getSession_();
-      if(s) console.log("Utilisateur connecté:", s.username || s.email);
+      if (s) console.log("Utilisateur connecté:", s.username || s.email);
     }
 
     renderAccountUI_();
@@ -306,7 +306,7 @@ async function main() {
     written++;
   }
 
-  console.log(\`Pages générées avec succès. Total: \${written}\`);
+  console.log(`Pages générées avec succès. Total: ${written}`);
 }
 
 main().catch((e) => {
