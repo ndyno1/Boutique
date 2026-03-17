@@ -247,16 +247,60 @@
   </div>
 
   <script>
-    // 1. CONFIGURATION
+    // ====== CONFIGURATION ======
     const CONFIG = window.VF_CONFIG || {};
     const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
     const WALLET_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec"; 
     const BOT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbylffBPr9m8Y26asnlPuVDizwS5xOUe9zpUIt3NrbUZlVsMgNkh9bOcANYbkvTZbpL9/exec";
+    
     const JSONP_TIMEOUT_MS = 25000;
 
-    function copyText(txt){ navigator.clipboard.writeText(String(txt || "")); alert("Copié."); }
-    function safeDecode(v){ try { return decodeURIComponent(String(v || "")); } catch(e){ return String(v || ""); } }
-    function makeOrderId(){ return "VF-" + Date.now() + "-" + Math.floor(1000 + Math.random()*9000); }
+    // ====== AUTO-FILL BY ID ======
+    (function autoFillFromId(){
+      const p = new URLSearchParams(location.search);
+      const id = (p.get("id") || "").trim();
+      const hasBasics = (p.get("nom") && p.get("prix") && p.get("cat"));
+
+      if (!id || hasBasics) return;
+
+      const cb = "VF_PROD_" + Date.now();
+      window[cb] = function(list){
+        try{
+          const arr = Array.isArray(list) ? list : [];
+          const prod = arr.find(x => String(x.id || "").trim() === id);
+          if (!prod) return;
+
+          const qp = new URLSearchParams();
+          qp.set("id", prod.id || id);
+          qp.set("nom", prod.nom || "");
+          qp.set("prix", prod.prix || "");
+          qp.set("cat", prod.cat || "");
+          qp.set("img", prod.img || "");
+          qp.set("min", prod.min ?? "");
+          qp.set("max", prod.max ?? "");
+          qp.set("desc", prod.desc || "");
+          qp.set("long", prod.long_desc || prod.long || "");
+
+          location.replace("paiement.html?" + qp.toString());
+        } catch(e){}
+      };
+      const s = document.createElement("script");
+      s.src = `${GOOGLE_URL}?action=get_products&callback=${cb}&t=${Date.now()}`;
+      document.body.appendChild(s);
+    })();
+
+    function copyText(txt){
+      navigator.clipboard.writeText(String(txt || ""));
+      alert("Copié.");
+    }
+
+    function safeDecode(v){
+      try { return decodeURIComponent(String(v || "")); } catch(e){ return String(v || ""); }
+    }
+
+    function makeOrderId(){
+      return "VF-" + Date.now() + "-" + Math.floor(1000 + Math.random()*9000);
+    }
 
     function startNewOrder_(goShop){
       try{
@@ -272,8 +316,30 @@
     }
 
     const params = new URLSearchParams(window.location.search);
+    const idS = (params.get('id') || "").trim();
+
+    (function ensureFreshOrderIdForService_(){
+      try{
+        const prevServiceId = sessionStorage.getItem("vf_service_id") || "";
+        const active = sessionStorage.getItem("active_order_id") || "";
+
+        if (idS && prevServiceId && idS !== prevServiceId) {
+          if (active) {
+            sessionStorage.removeItem("vf_order_sent_" + active);
+            sessionStorage.removeItem("vf_order_inflight_" + active);
+          }
+          sessionStorage.removeItem("active_order_id");
+        }
+
+        if (idS) sessionStorage.setItem("vf_service_id", idS);
+      }catch(_){}
+    })();
+
     let orderId = sessionStorage.getItem('active_order_id');
-    if (!orderId) { orderId = makeOrderId(); sessionStorage.setItem('active_order_id', orderId); }
+    if (!orderId) {
+      orderId = makeOrderId();
+      sessionStorage.setItem('active_order_id', orderId);
+    }
     document.getElementById('live-order-id').innerText = orderId;
 
     const SENT_KEY = "vf_order_sent_" + orderId;
@@ -308,11 +374,11 @@
       document.getElementById('success-msg').classList.remove('hidden');
     }
 
-    // 2. RÉCUPÉRATION DES PARAMÈTRES (Exactement ta version)
-    const idS      = (params.get('id') || "").trim();
     const nom      = params.get('nom') || "Service";
-    const prixInit = parseFloat(String(params.get('prix') || "0").replace(/,/g, ".")) || 0;
+    let cleanPrix  = String(params.get('prix') || "0").replace(/,/g, ".");
+    const prixInit = parseFloat(cleanPrix) || 0;
     const cat      = params.get('cat') || "";
+
     const desc     = safeDecode(params.get('desc') || "");
     const longDesc = safeDecode(params.get('long') || params.get('long_desc') || "");
     const minParam = parseFloat(params.get('min'));
@@ -341,12 +407,12 @@
     if (hasAnyDesc) descSection.classList.remove('hidden');
 
     const catUpper = String(cat || "").trim().toUpperCase();
+
     const isSMM  = /(SMM|BOOST|BOOST2|PEAK|PEAKERR)/i.test(catUpper);
     const isAbo  = (catUpper === "ABONNEMENT" || /\bABONNEMENT\b/i.test(catUpper));
     const isCarte = (catUpper === "CARTE" || catUpper === "CARTE2" || catUpper === "JEUX" || /\bCARTE2?\b/i.test(catUpper));
     const isIMEI = /IMEI/i.test(catUpper);
 
-    // 3. AFFICHAGE DES CHAMPS (Exactement là où ça a coupé)
     const secSmm = document.getElementById('section-smm');
     const secAbo = document.getElementById('section-abonnement');
     const secCarte = document.getElementById('section-carte');
@@ -362,7 +428,19 @@
     let WALLET_LOADING = false;
 
     function getSession_(){
-      try{ const raw = localStorage.getItem("vf_session"); if(!raw) return null; const s = JSON.parse(raw); if(!s || !s.email) return null; return s; }catch{ return null; }
+      try{
+        const raw = localStorage.getItem("vf_session");
+        if(!raw) return null;
+        const s = JSON.parse(raw);
+        if(!s || !s.email) return null;
+        return s;
+      }catch{ return null; }
+    }
+
+    function fmt2(n){
+      const x = Number(n || 0);
+      if(!isFinite(x)) return "0.00";
+      return x.toFixed(2);
     }
 
     function getTotalNumber_(){
@@ -371,13 +449,16 @@
       return parseFloat(txt) || 0;
     }
 
-    // 4. JSONP FONCTIONNEL
+    // ====== JSONP POUR ÉVITER LES ERREURS CORS ======
     function jsonp_(targetUrl, paramsObj, onOk, onErr, timeoutMs = JSONP_TIMEOUT_MS){
       if (!targetUrl) return onErr(new Error("URL manquante"));
       const cb = "VF_CB_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
       const s = document.createElement("script");
       let done = false; let timer = null;
-      function cleanup_(){ done = true; if (timer) clearTimeout(timer); try { delete window[cb]; } catch(_){} try { s.remove(); } catch(_){} }
+      function cleanup_(){
+        done = true; if (timer) clearTimeout(timer);
+        try { delete window[cb]; } catch(_){} try { s.remove(); } catch(_){}
+      }
       window[cb] = function(payload){ if (done) return; cleanup_(); onOk && onOk(payload); };
       const cleanParams = {};
       Object.keys(paramsObj || {}).forEach((k) => { cleanParams[k] = paramsObj[k] == null ? "" : String(paramsObj[k]); });
@@ -401,22 +482,25 @@
       if (WALLET_LOADING && !WALLET_OK) { 
         document.getElementById("walletBalance").textContent = "...";
         hint.textContent = "Vérification du solde wallet...";
-        btn.disabled = true; btn.style.opacity = ".6"; return; 
+        btn.disabled = true; btn.style.opacity = ".6";
+        return; 
       }
 
       if (!WALLET_OK) {
         document.getElementById("walletBalance").textContent = "—";
         hint.textContent = "Impossible de charger le solde.";
         hint.className = "text-[11px] font-black mt-2 text-red-400";
-        btn.disabled = true; btn.style.opacity = ".6"; return;
+        btn.disabled = true; btn.style.opacity = ".6";
+        return;
       }
 
-      document.getElementById("walletBalance").textContent = Number(WALLET_BAL).toFixed(2);
+      document.getElementById("walletBalance").textContent = fmt2(WALLET_BAL);
 
       if (sessionStorage.getItem(SENT_KEY) === "1") {
         btn.disabled = true; btn.style.opacity = ".6";
         hint.textContent = "Commande déjà payée.";
-        hint.className = "text-[11px] font-black mt-2 text-green-400"; return;
+        hint.className = "text-[11px] font-black mt-2 text-green-400";
+        return;
       }
 
       if (need <= 0) {
@@ -442,9 +526,9 @@
           <div class="flex items-center justify-between gap-3">
             <div>
               <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Paiement Wallet</div>
-              <div class="text-[12px] font-bold text-white mt-1">Connectez-vous pour payer.</div>
+              <div class="text-[12px] font-bold text-white mt-1">Vous devez vous connecter pour payer.</div>
             </div>
-            <a href="wallet.html" class="bg-white text-black py-3 px-5 rounded-2xl font-black text-[11px] uppercase">Se connecter</a>
+            <a href="wallet.html" class="bg-white text-black py-3 px-5 rounded-2xl font-black text-[11px] uppercase shadow-lg">Se connecter</a>
           </div>`;
         return;
       }
@@ -462,15 +546,16 @@
         () => { WALLET_LOADING = false; WALLET_OK = false; updateWalletUI_(); }
       );
 
-      document.getElementById("walletPayBtn").addEventListener("click", () => {
+      document.getElementById("walletPayBtn").addEventListener("click", async () => {
         if (SUBMIT_LOCK || sessionStorage.getItem(INFLIGHT_KEY) === "1" || sessionStorage.getItem(SENT_KEY) === "1") { showLocked_(orderId); return; }
+        
         const need = getTotalNumber_();
         if(WALLET_BAL < need){ alert("Solde insuffisant."); return; }
+
         document.getElementById("orderForm").requestSubmit();
       });
     }
 
-    // Gestion de l'affichage de la quantité selon la catégorie
     if (isSMM) {
       secSmm.classList.remove("hidden");
       const hasMin = Number.isFinite(minParam); const hasMax = Number.isFinite(maxParam);
@@ -480,9 +565,16 @@
         qtyHint.classList.remove("hidden");
         qtyHint.textContent = `Quantité autorisée : ${hasMin ? parseInt(minParam,10) : 0} – ${hasMax ? parseInt(maxParam,10) : "∞"}`;
       }
+      function clampQty(q){
+        let x = parseInt(String(q || "0").replace(/[^\d]/g,""), 10);
+        if (!Number.isFinite(x) || x <= 0) x = hasMin ? parseInt(minParam,10) : 1;
+        if (hasMin && x < parseInt(minParam,10)) x = parseInt(minParam,10);
+        if (hasMax && x > parseInt(maxParam,10)) x = parseInt(maxParam,10);
+        return x;
+      }
       function updatePrice(){
-        let q = parseInt(String(qtyInp.value || "0").replace(/[^\d]/g,""), 10);
-        if (!Number.isFinite(q) || q <= 0) q = hasMin ? parseInt(minParam,10) : 1;
+        const q = clampQty(qtyInp.value);
+        if (String(qtyInp.value) !== String(q)) qtyInp.value = q;
         const total = ((prixInit / 1000) * q);
         priceEl.textContent = (Number.isFinite(total) ? total.toFixed(2) : "0.00") + " $";
         updateWalletUI_();
@@ -499,7 +591,7 @@
 
     initWallet_(); updateWalletUI_();
 
-    // 5. PAIEMENT ET ALERTE BOT
+    // ====== SOUMISSION DU PAIEMENT ET ALERTE BOT ======
     document.getElementById("orderForm").onsubmit = async (e) => {
       e.preventDefault();
       if (sessionStorage.getItem(SENT_KEY) === "1") { showLocked_(orderId); return; }
@@ -546,6 +638,7 @@
 
       if (!contactValue) contactValue = WALLET_EMAIL;
 
+      // LE VRAI PAYLOAD CORRIGÉ POUR GOOGLE SCRIPT
       const payload = {
         action: "wallet_pay", 
         orderId: orderId, 
@@ -562,10 +655,11 @@
         idempotencyKey: "IDEMP_" + orderId
       };
 
+      // ENVOI DU PAIEMENT AU SCRIPT WALLET VIA JSONP
       jsonp_(WALLET_SCRIPT_URL, payload, 
         (res) => {
           if (res && res.ok) {
-            // --- LE PING BOT EST ICI ---
+            // --- ALERTE BOT ADMIN (WBA) EN ARRIÈRE-PLAN ---
             try {
               const pseudoNom = WALLET_EMAIL ? WALLET_EMAIL.split("@")[0] : "Client";
               const qs = new URLSearchParams({ 
@@ -578,6 +672,8 @@
                 montant: totalNumber + " $", 
                 t: Date.now() 
               }).toString();
+              
+              // Le pingBot contacte ton script avisScriptUrl
               const pingBot = new Image(); 
               pingBot.src = BOT_WEBHOOK_URL + "?" + qs;
             } catch (e) { console.log("Erreur Bot:", e); }
@@ -585,12 +681,13 @@
             if (typeof res.balance !== "undefined") { WALLET_BAL = Number(res.balance || 0); updateWalletUI_(); }
             showSuccess_(res.orderId || orderId);
           } else {
-            alert("Refusé par le serveur : " + (res.message || "Erreur inconnue.")); 
+            // LE MOUCHARD : Affiche le vrai message de Google si ça plante
+            alert("Refusé par le serveur : " + (res.message || JSON.stringify(res))); 
             resetLockAndBtn();
           }
         },
         (err) => { 
-          alert("Erreur de connexion serveur."); 
+          alert("Erreur réseau : Impossible de joindre Google."); 
           resetLockAndBtn(); 
         }
       );
