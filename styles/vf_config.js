@@ -34,5 +34,3 @@ const VF_SHARED_CONFIG = {
     postMessageTargetOrigin: inAppsScriptPanel ? "*" : location.origin
   };
 })();
-
-export { VF_SHARED_CONFIG };
