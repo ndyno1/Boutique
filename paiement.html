@@ -300,6 +300,10 @@
     const GOOGLE_URL = window.VF_CONFIG.orderScriptUrl;
     const BOT_WEBHOOK_URL = window.VF_CONFIG.avisScriptUrl;
 
+    const JSONP_TIMEOUT_MS = 8000;
+    const WALLET_CACHE_TTL_MS = 60000;
+    const WALLET_FRESH_PAY_TTL_MS = 15000;
+
     function setActiveMenuLinkFallback_() {
       const currentPath = (window.location.pathname.split("/").pop() || "paiement.html").toLowerCase();
       document.querySelectorAll(".vf-menu-link").forEach(function(link) {
@@ -458,6 +462,8 @@
     let WALLET_BAL = 0;
     let WALLET_EMAIL = "";
     let WALLET_LOADING = false;
+    let walletBalancePromise_ = null;
+    let walletLastFetchAt_ = 0;
 
     function getSession_(){
       try{
@@ -482,16 +488,56 @@
       return parseFloat(totalTxt) || 0;
     }
 
-    function jsonp_(paramsObj, onOk, onErr){
+    function walletCacheKey_(){
+      return WALLET_EMAIL ? "vf_wallet_balance_cache_" + WALLET_EMAIL : "";
+    }
+
+    function saveWalletCache_(balance){
+      try{
+        if (!WALLET_EMAIL) return;
+        localStorage.setItem(walletCacheKey_(), JSON.stringify({
+          balance: Number(balance || 0),
+          ts: Date.now()
+        }));
+      }catch(_){}
+    }
+
+    function loadWalletCache_(){
+      try{
+        if (!WALLET_EMAIL) return null;
+        const raw = localStorage.getItem(walletCacheKey_());
+        if (!raw) return null;
+        const obj = JSON.parse(raw);
+        if (!obj || typeof obj.balance === "undefined" || !obj.ts) return null;
+        return obj;
+      }catch(_){
+        return null;
+      }
+    }
+
+    function isWalletCacheFresh_(maxAgeMs){
+      const c = loadWalletCache_();
+      if (!c) return false;
+      return (Date.now() - Number(c.ts || 0)) <= maxAgeMs;
+    }
+
+    function jsonp_(paramsObj, onOk, onErr, timeoutMs = JSONP_TIMEOUT_MS){
       const cb = "VF_CB_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
       const s = document.createElement("script");
+      let done = false;
+      let timer = null;
+
+      function cleanup_(){
+        done = true;
+        if (timer) clearTimeout(timer);
+        try { delete window[cb]; } catch(_){}
+        try { s.remove(); } catch(_){}
+      }
 
       window[cb] = function(payload){
-        try { onOk(payload); }
-        finally {
-          try { delete window[cb]; } catch(_){}
-          try { s.remove(); } catch(_){}
-        }
+        if (done) return;
+        cleanup_();
+        onOk && onOk(payload);
       };
 
       const cleanParams = {};
@@ -500,12 +546,18 @@
         cleanParams[k] = v == null ? "" : String(v);
       });
 
+      timer = setTimeout(() => {
+        if (done) return;
+        cleanup_();
+        onErr && onErr(new Error("TIMEOUT"));
+      }, timeoutMs);
+
       const qs = new URLSearchParams({ ...cleanParams, callback: cb, t: String(Date.now()) });
       s.src = GOOGLE_URL + "?" + qs.toString();
       s.onerror = function(){
-        try { delete window[cb]; } catch(_){}
-        try { s.remove(); } catch(_){}
-        onErr && onErr();
+        if (done) return;
+        cleanup_();
+        onErr && onErr(new Error("NETWORK_ERROR"));
       };
       document.body.appendChild(s);
     }
@@ -515,28 +567,30 @@
         jsonp_(
           payload,
           (res) => resolve(res),
-          () => reject(new Error("NETWORK_ERROR"))
+          (err) => reject(err || new Error("NETWORK_ERROR"))
         );
       });
     }
 
-    function showWalletLoadingUI_(){
+    function showWalletLoadingUI_(keepButtonState){
       const box = document.getElementById("walletBox");
       if(!box) return;
 
       box.classList.remove("hidden");
-      document.getElementById("walletBalance").textContent = "...";
+      document.getElementById("walletBalance").textContent = WALLET_OK ? fmt2(WALLET_BAL) : "...";
       document.getElementById("walletEmail").textContent = WALLET_EMAIL || "—";
 
       const hint = document.getElementById("walletHint");
       hint.textContent = "Vérification du solde wallet...";
       hint.className = "text-[11px] font-black mt-2 text-gray-400";
 
-      const btn = document.getElementById("walletPayBtn");
-      if (btn){
-        btn.disabled = true;
-        btn.style.opacity = ".6";
-        btn.style.cursor = "not-allowed";
+      if (!keepButtonState) {
+        const btn = document.getElementById("walletPayBtn");
+        if (btn){
+          btn.disabled = true;
+          btn.style.opacity = ".6";
+          btn.style.cursor = "not-allowed";
+        }
       }
     }
 
@@ -544,22 +598,29 @@
       const box = document.getElementById("walletBox");
       if(!box) return;
 
-      if (WALLET_LOADING) {
-        showWalletLoadingUI_();
-        return;
-      }
-
-      if(!WALLET_OK){
-        return;
-      }
-
       box.classList.remove("hidden");
-      document.getElementById("walletBalance").textContent = fmt2(WALLET_BAL);
       document.getElementById("walletEmail").textContent = WALLET_EMAIL || "—";
 
-      const need = getTotalNumber_();
       const hint = document.getElementById("walletHint");
       const btn = document.getElementById("walletPayBtn");
+      const need = getTotalNumber_();
+
+      if (WALLET_LOADING && !WALLET_OK) {
+        showWalletLoadingUI_(false);
+        return;
+      }
+
+      if (!WALLET_OK) {
+        document.getElementById("walletBalance").textContent = "—";
+        hint.textContent = "Impossible de charger le solde pour le moment.";
+        hint.className = "text-[11px] font-black mt-2 text-red-400";
+        btn.disabled = true;
+        btn.style.opacity = ".6";
+        btn.style.cursor = "not-allowed";
+        return;
+      }
+
+      document.getElementById("walletBalance").textContent = fmt2(WALLET_BAL);
 
       if (sessionStorage.getItem(SENT_KEY) === "1") {
         btn.disabled = true;
@@ -571,7 +632,9 @@
       }
 
       if (WALLET_BAL >= need && need > 0) {
-        hint.textContent = "Solde suffisant pour régler l'achat.";
+        hint.textContent = WALLET_LOADING
+          ? "Solde disponible. Actualisation en arrière-plan..."
+          : "Solde suffisant pour régler l'achat.";
         hint.className = "text-[11px] font-black mt-2 text-green-400";
         btn.disabled = false;
         btn.style.opacity = "1";
@@ -585,37 +648,94 @@
       }
     }
 
-    function refreshWalletBalance_(cb){
+    function refreshWalletBalance_(opts = {}){
+      const force = !!opts.force;
+      const silent = !!opts.silent;
+
       if(!WALLET_EMAIL) {
-        cb && cb(false);
-        return;
+        return Promise.resolve(false);
+      }
+
+      const now = Date.now();
+      if (!force && walletBalancePromise_) {
+        return walletBalancePromise_;
+      }
+
+      const cached = loadWalletCache_();
+      if (!force && cached && (now - Number(cached.ts || 0)) <= WALLET_CACHE_TTL_MS) {
+        WALLET_OK = true;
+        WALLET_BAL = Number(cached.balance || 0);
+        walletLastFetchAt_ = Number(cached.ts || 0);
+        updateWalletUI_();
+        return Promise.resolve(true);
       }
 
       WALLET_LOADING = true;
-      showWalletLoadingUI_();
+      if (!silent) showWalletLoadingUI_(WALLET_OK);
 
-      jsonp_(
-        { action:"wallet_balance", email: WALLET_EMAIL, currency:"USD" },
-        (res) => {
-          WALLET_LOADING = false;
-          if(res && res.ok){
-            WALLET_OK = true;
-            WALLET_BAL = Number(res.balance || 0);
+      walletBalancePromise_ = new Promise((resolve) => {
+        jsonp_(
+          { action:"wallet_balance", email: WALLET_EMAIL, currency:"USD" },
+          (res) => {
+            WALLET_LOADING = false;
+            walletBalancePromise_ = null;
+
+            if(res && res.ok){
+              WALLET_OK = true;
+              WALLET_BAL = Number(res.balance || 0);
+              walletLastFetchAt_ = Date.now();
+              saveWalletCache_(WALLET_BAL);
+              updateWalletUI_();
+              resolve(true);
+            }else{
+              if (cached) {
+                WALLET_OK = true;
+                WALLET_BAL = Number(cached.balance || 0);
+                walletLastFetchAt_ = Number(cached.ts || 0);
+              } else {
+                WALLET_OK = false;
+              }
+              updateWalletUI_();
+              resolve(false);
+            }
+          },
+          () => {
+            WALLET_LOADING = false;
+            walletBalancePromise_ = null;
+
+            if (cached) {
+              WALLET_OK = true;
+              WALLET_BAL = Number(cached.balance || 0);
+              walletLastFetchAt_ = Number(cached.ts || 0);
+            } else {
+              WALLET_OK = false;
+            }
             updateWalletUI_();
-            cb && cb(true);
-          }else{
-            WALLET_OK = false;
-            updateWalletUI_();
-            cb && cb(false);
+            resolve(false);
           }
-        },
-        () => {
-          WALLET_LOADING = false;
-          WALLET_OK = false;
-          updateWalletUI_();
-          cb && cb(false);
-        }
-      );
+        );
+      });
+
+      return walletBalancePromise_;
+    }
+
+    async function ensureFreshWalletBeforePay_(){
+      const now = Date.now();
+
+      if (WALLET_OK && (now - walletLastFetchAt_) <= WALLET_FRESH_PAY_TTL_MS) {
+        return true;
+      }
+
+      if (isWalletCacheFresh_(WALLET_FRESH_PAY_TTL_MS)) {
+        const c = loadWalletCache_();
+        WALLET_OK = true;
+        WALLET_BAL = Number(c.balance || 0);
+        walletLastFetchAt_ = Number(c.ts || 0);
+        updateWalletUI_();
+        return true;
+      }
+
+      return await refreshWalletBalance_({ force:true, silent:false });
     }
 
     function initWallet_(){
@@ -636,28 +756,40 @@
       }
 
       WALLET_EMAIL = String(s.email || "").trim().toLowerCase();
-      WALLET_LOADING = true;
-      showWalletLoadingUI_();
-      refreshWalletBalance_();
 
-      document.getElementById("walletPayBtn").addEventListener("click", () => {
+      const cached = loadWalletCache_();
+      if (cached) {
+        WALLET_OK = true;
+        WALLET_BAL = Number(cached.balance || 0);
+        walletLastFetchAt_ = Number(cached.ts || 0);
+        updateWalletUI_();
+        refreshWalletBalance_({ force:false, silent:true });
+      } else {
+        WALLET_LOADING = true;
+        showWalletLoadingUI_(false);
+        refreshWalletBalance_({ force:true, silent:false });
+      }
+
+      document.getElementById("walletPayBtn").addEventListener("click", async () => {
         if (SUBMIT_LOCK || sessionStorage.getItem(INFLIGHT_KEY) === "1" || sessionStorage.getItem(SENT_KEY) === "1") {
           showLocked_(orderId);
           return;
         }
 
-        refreshWalletBalance_((ok) => {
-          const need = getTotalNumber_();
-          if(!ok){
-            alert("Impossible de charger le solde wallet.");
-            return;
-          }
-          if(WALLET_BAL < need || need <= 0){
-            alert("Solde insuffisant. Ajoutez du crédit puis réessayez.");
-            return;
-          }
-          document.getElementById("orderForm").requestSubmit();
-        });
+        const ok = await ensureFreshWalletBeforePay_();
+        const need = getTotalNumber_();
+
+        if(!ok && !WALLET_OK){
+          alert("Impossible de charger le solde wallet.");
+          return;
+        }
+
+        if(WALLET_BAL < need || need <= 0){
+          alert("Solde insuffisant. Ajoutez du crédit puis réessayez.");
+          return;
+        }
+
+        document.getElementById("orderForm").requestSubmit();
       });
     }
 
@@ -885,9 +1017,9 @@
         if (typeof res.balance !== "undefined") {
           WALLET_BAL = Number(res.balance || 0);
           WALLET_OK = true;
+          walletLastFetchAt_ = Date.now();
+          saveWalletCache_(WALLET_BAL);
           updateWalletUI_();
-        } else {
-          refreshWalletBalance_();
         }
 
         try {
