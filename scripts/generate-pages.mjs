@@ -288,6 +288,16 @@ async function writeFile(filePath, content) {
 }
 
 async function main() {
+  console.log("🧹 Étape 1 : Nettoyage automatique des anciens dossiers...");
+  try {
+    // Supprime complètement les dossiers "p" et "share" pour repartir à zéro
+    await fs.rm(OUT_P, { recursive: true, force: true });
+    await fs.rm(OUT_SHARE, { recursive: true, force: true });
+  } catch (err) {
+    console.log("Dossiers déjà propres, on continue !");
+  }
+
+  console.log("📥 Étape 2 : Téléchargement des produits depuis Google Script...");
   const txt = await fetchText(`${VF_SCRIPT_URL}?action=get_products&t=${Date.now()}`);
   const rawList = extractList(parseJsonOrJsonp(txt));
 
@@ -296,6 +306,7 @@ async function main() {
 
   let written = 0;
 
+  console.log("⚙️ Étape 3 : Création des nouvelles pages HTML...");
   for (const raw of rawList) {
     const prod = normalizeProduct(raw);
     if (!prod.id) continue;
@@ -306,10 +317,10 @@ async function main() {
     written++;
   }
 
-  console.log(`Pages générées avec succès. Total: ${written}`);
+  console.log(`✅ SUCCÈS : Base nettoyée et ${written} pages fraîchement générées !`);
 }
 
 main().catch((e) => {
-  console.error(e);
+  console.error("❌ ERREUR LORS DE LA GÉNÉRATION :", e);
   process.exit(1);
 });
