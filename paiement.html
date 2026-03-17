@@ -5,198 +5,1662 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>ViralFlowr | Paiement Sécurisé</title>
 
+  <meta name="theme-color" content="#111827" />
+  <link rel="icon" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/favicon.png" />
+
   <script src="/styles/vf_config.js?v=2"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
+  <script src="/styles/vf_menu.js?v=2" defer></script>
+  <script src="/styles/vf_footer.js?v=2" defer></script>
+  <link rel="stylesheet" href="/styles/vf_theme.css?v=2">
+
   <style>
-    body{ background:#F3F3F3; color:#201B16; font-family:'Inter', sans-serif; }
+    body{ background:#F3F3F3; color:#201B16; }
     .text-orange-bsv { color:#F07E13; }
-    .checkout-container { max-width:500px; margin:2rem auto; padding:0 1rem; }
-    .btn-pay { width:100%; background:#000; color:#fff; padding:1rem; border-radius:18px; font-weight:900; text-transform:uppercase; transition:0.2s; }
-    .btn-pay:disabled { opacity:0.5; cursor:not-allowed; }
-    .input-field { width:100%; border:1px solid #E5E7EB; border-radius:12px; padding:0.75rem; margin-top:0.5rem; outline:none; }
-    .input-field:focus { border-color:#F07E13; }
-    .notice { display:none; padding:1rem; border-radius:12px; margin-bottom:1rem; font-size:13px; font-weight:700; }
-    .notice.error { background:#FEF2F2; color:#991B1B; border:1px solid #FECACA; }
-    .notice.show { display:block; }
+    .checkout-container { max-width:500px; width:100%; margin:2rem auto; }
+
+    input, textarea {
+      outline:none;
+      transition:all .2s;
+      border:1px solid #e5e7eb !important;
+    }
+    input:focus, textarea:focus {
+      border-color:#F07E13 !important;
+      box-shadow:0 0 0 4px rgba(240,126,19,.12);
+    }
+
+    .btn-mini{
+      height:40px;
+      padding:0 12px;
+      border-radius:12px;
+      font-weight:900;
+      font-size:11px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      border:1px solid #E5E7EB;
+      background:#fff;
+      color:#111827;
+      transition:.2s;
+      white-space:nowrap;
+      text-decoration:none;
+    }
+    .btn-mini:hover{
+      transform: translateY(-1px);
+      border-color:#F07E13;
+      color:#F07E13;
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    .locked-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.35);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
+      padding:16px;
+    }
+
+    .locked-card{
+      width:min(520px, 100%);
+      background:#fff;
+      border:1px solid #eee;
+      border-radius:24px;
+      padding:18px;
+      box-shadow:0 20px 60px rgba(0,0,0,.2);
+    }
+
+    .success-shell{
+      position:relative;
+      overflow:hidden;
+      border-radius:28px;
+      background:
+        radial-gradient(circle at top, rgba(34,197,94,.12), transparent 35%),
+        linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      border:1px solid #E5E7EB;
+      box-shadow:0 20px 60px rgba(15,23,42,.08);
+    }
+
+    .success-glow{
+      position:absolute;
+      inset:auto auto 70% 50%;
+      width:280px;
+      height:280px;
+      transform:translateX(-50%);
+      background:radial-gradient(circle, rgba(34,197,94,.18) 0%, rgba(34,197,94,0) 70%);
+      pointer-events:none;
+      filter:blur(6px);
+    }
+
+    .success-badge-wrap{
+      position:relative;
+      width:132px;
+      height:132px;
+      margin:0 auto 20px auto;
+    }
+
+    .success-ring,
+    .success-ring-2{
+      position:absolute;
+      inset:0;
+      border-radius:999px;
+      border:2px solid rgba(34,197,94,.18);
+      animation: pulseRing 2.2s ease-out infinite;
+    }
+
+    .success-ring-2{ animation-delay:.7s; }
+
+    .success-icon{
+      position:absolute;
+      inset:18px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(180deg,#DCFCE7 0%, #BBF7D0 100%);
+      color:#16A34A;
+      box-shadow:
+        0 10px 30px rgba(34,197,94,.22),
+        inset 0 1px 0 rgba(255,255,255,.9);
+      animation: successPop .7s cubic-bezier(.2,.9,.2,1);
+    }
+
+    .success-title{ animation: fadeUp .6s ease-out .15s both; }
+    .success-subtitle{ animation: fadeUp .6s ease-out .3s both; }
+    .success-actions{ animation: fadeUp .6s ease-out .45s both; }
+
+    @keyframes pulseRing{
+      0%{ transform:scale(.78); opacity:0; }
+      30%{ opacity:.7; }
+      100%{ transform:scale(1.18); opacity:0; }
+    }
+
+    @keyframes successPop{
+      0%{ transform:scale(.55) rotate(-8deg); opacity:0; }
+      70%{ transform:scale(1.08) rotate(2deg); opacity:1; }
+      100%{ transform:scale(1) rotate(0deg); opacity:1; }
+    }
+
+    @keyframes fadeUp{
+      from{ opacity:0; transform:translateY(12px); }
+      to{ opacity:1; transform:translateY(0); }
+    }
+
+    .pay-spinner{
+      width:16px;
+      height:16px;
+      border-radius:999px;
+      border:2px solid rgba(0,0,0,.2);
+      border-top-color:#000;
+      display:inline-block;
+      animation:spin .7s linear infinite;
+      vertical-align:middle;
+    }
+    @keyframes spin{ to{ transform:rotate(360deg); } }
+
+    .journal-line + .journal-line { margin-top: 6px; }
   </style>
 </head>
 
 <body>
-  <main class="checkout-container">
-    <div class="flex justify-between items-center mb-8">
-      <a href="index.html" class="text-2xl font-black italic">Viral<span class="text-orange-bsv">Flowr</span></a>
-      <div id="walletDisplay" class="bg-black text-white px-4 py-2 rounded-full text-xs font-bold hidden">
-        Solde: <span id="balanceVal">...</span> $
+  <div id="lockedOverlay" class="locked-overlay">
+    <div class="locked-card">
+      <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Commande déjà validée</div>
+      <div class="mt-2 text-lg font-black text-gray-900">Cette commande a déjà été envoyée</div>
+      <div class="mt-2 text-sm text-gray-600 font-medium">
+        ID : <span id="lockedId" class="font-black text-gray-900"></span><br/>
+        Pour éviter un double envoi, le formulaire est bloqué.
+      </div>
+      <div class="mt-4 grid grid-cols-2 gap-2">
+        <button class="w-full bg-gray-900 text-white py-3 rounded-2xl font-black text-[11px] uppercase" onclick="location.href='index.html'">Boutique</button>
+        <button class="w-full bg-white border border-gray-200 py-3 rounded-2xl font-black text-[11px] uppercase hover:border-[#F07E13] hover:text-[#F07E13]" onclick="document.getElementById('lockedOverlay').style.display='none'">OK</button>
       </div>
     </div>
+  </div>
 
-    <div id="noticeBox" class="notice"></div>
+  <div class="bg-gray-900 text-white py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-center">
+    MARKETPLACE PROFESSIONNELLE • LIVRAISON INTERNATIONALE • PAIEMENT SÉCURISÉ
+  </div>
 
-    <div id="form-container" class="bg-white rounded-[32px] p-6 shadow-xl border border-gray-100">
-      <h1 id="serviceName" class="text-xl font-black text-center mb-1">Chargement...</h1>
-      <p id="catBadge" class="text-[10px] text-gray-400 font-bold uppercase text-center mb-6">—</p>
-
-      <div class="bg-gray-50 rounded-2xl p-4 text-center mb-6 border-2 border-dashed border-gray-200">
-        <span class="text-[9px] font-black text-gray-400 uppercase">Commande ID</span>
-        <div id="orderIdDisp" class="text-lg font-black">...</div>
+  <main class="p-4 md:p-8">
+    <div class="checkout-container">
+      <div class="flex items-center justify-between gap-3 mb-6">
+        <div class="flex items-center gap-3 min-w-0">
+          <a href="index.html" class="inline-flex items-center gap-2 min-w-0" aria-label="Aller à la boutique">
+            <span class="text-2xl font-black tracking-tighter whitespace-nowrap">Viral<span class="text-orange-bsv">Flowr</span></span>
+          </a>
+        </div>
+        <div class="flex items-center gap-2">
+          <a href="index.html" class="btn-mini hidden sm:inline-flex">Boutique</a>
+          <a href="wallet.html" class="btn-mini hidden sm:inline-flex">Portefeuille</a>
+        </div>
       </div>
 
-      <form id="payForm" class="space-y-4">
-        <div id="sec-smm" class="hidden">
-          <label class="text-[11px] font-black uppercase">Lien (URL)</label>
-          <input type="text" id="input-link" class="input-field" placeholder="https://instagram.com/...">
-          <label class="text-[11px] font-black uppercase mt-4 block">Quantité</label>
-          <input type="number" id="input-qty" class="input-field" value="1000">
-        </div>
-
-        <div id="sec-abo" class="hidden">
-          <label class="text-[11px] font-black uppercase">Identifiants (Mail:Pass)</label>
-          <textarea id="input-creds" class="input-field h-24" placeholder="Compte : ...&#10;Passe : ..."></textarea>
-        </div>
-
-        <div id="sec-def" class="hidden">
-          <label id="def-label" class="text-[11px] font-black uppercase">Information requise</label>
-          <input type="text" id="input-def" class="input-field">
-        </div>
-
-        <div class="py-4 border-t border-b border-gray-50 my-6 text-center">
-          <span class="text-[10px] text-gray-400 font-black uppercase">Total à payer</span>
-          <div id="totalPrice" class="text-4xl font-black text-gray-900">0.00 $</div>
-        </div>
-
-        <button type="button" id="btnSubmit" class="btn-pay">Chargement du Wallet...</button>
-      </form>
-    </div>
-
-    <div id="success-screen" class="hidden bg-white rounded-[32px] p-8 text-center shadow-xl border border-gray-100">
-      <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-        <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
+      <div class="text-center mb-6">
+        <p class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Paiement sécurisé</p>
+        <p class="text-gray-500 text-[12px] font-bold mt-2">Suivez les étapes ci-dessous pour finaliser votre commande.</p>
       </div>
-      <h2 class="text-2xl font-black mb-2">Paiement Réussi</h2>
-      <p class="text-gray-500 text-sm mb-8">Votre commande est en cours de traitement.</p>
-      <button onclick="location.href='index.html'" class="w-full bg-black text-white py-4 rounded-2xl font-bold uppercase text-xs">Retour Boutique</button>
+
+      <div class="bg-white rounded-[32px] shadow-lg border border-gray-100 p-6 md:p-8">
+        <div id="form-container">
+          <h2 id="service-name" class="text-xl font-extrabold text-center mb-2 leading-tight">Chargement...</h2>
+          <div class="text-center mb-6">
+            <span id="cat-badge" class="bg-gray-100 text-gray-500 text-[10px] font-bold px-3 py-1 rounded-full uppercase">—</span>
+          </div>
+
+          <div id="description-section" class="hidden mb-6 space-y-3">
+            <div id="long-box" class="hidden bg-blue-50 border border-blue-100 rounded-2xl p-4">
+              <h3 class="text-blue-800 text-xs font-black uppercase mb-2">Détails du produit</h3>
+              <p id="long-text" class="text-xs text-blue-900 leading-relaxed whitespace-pre-line font-medium"></p>
+            </div>
+            <div id="desc-box" class="hidden bg-green-50 border border-green-100 rounded-2xl p-4">
+              <h3 class="text-green-800 text-xs font-black uppercase mb-2">Informations à fournir</h3>
+              <p id="desc-text" class="text-xs text-green-900 leading-relaxed whitespace-pre-line font-medium"></p>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-4 text-center mb-8">
+            <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">Numéro de Commande</span>
+            <span id="live-order-id" class="block text-2xl font-black text-gray-900 tracking-tight cursor-pointer" onclick="copyText(this.innerText)">...</span>
+          </div>
+
+          <form id="orderForm" class="space-y-5" novalidate>
+            <div id="section-smm" class="hidden space-y-4">
+              <div>
+                <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Lien à booster (obligatoire)</label>
+                <input type="text" id="boost-link" placeholder="https://..." class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+              </div>
+              <div>
+                <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Quantité</label>
+                <input type="number" id="qty" value="1000" class="w-full bg-white rounded-xl p-3 text-sm font-black">
+                <div id="qty-hint" class="text-[11px] text-gray-500 font-bold mt-2 hidden"></div>
+              </div>
+            </div>
+
+            <div id="section-abonnement" class="hidden space-y-4">
+              <div>
+                <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Identifiants du compte (obligatoire)</label>
+                <textarea id="creds" class="w-full bg-white rounded-xl p-3 text-sm font-medium h-28 resize-none" placeholder="mail : votre@email.com&#10;mot de passe : votre_mdp"></textarea>
+              </div>
+              <div>
+                <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact de livraison (obligatoire)</label>
+                <input type="text" id="delivery-contact-abo" placeholder="WhatsApp ou Email" class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+              </div>
+            </div>
+
+            <div id="section-carte" class="hidden space-y-4">
+              <div>
+                <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact de livraison (obligatoire)</label>
+                <input type="text" id="card-delivery" placeholder="WhatsApp ou Email" class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+              </div>
+            </div>
+
+            <div id="section-default" class="hidden space-y-4">
+              <div>
+                <label id="default-label" class="text-[11px] font-bold text-gray-900 uppercase ml-1">Information requise</label>
+                <input type="text" id="main-input" placeholder="Ex : IMEI 15 chiffres / lien / etc." class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+              </div>
+              <div>
+                <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Email (optionnel)</label>
+                <input type="email" id="email-client" placeholder="client@gmail.com" class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+              </div>
+            </div>
+
+            <div class="py-2 text-center">
+              <span class="text-[10px] text-gray-400 uppercase font-bold">Total à payer</span>
+              <div id="display-price" class="text-4xl font-black text-gray-900 tracking-tighter">0.00 $</div>
+            </div>
+
+            <div id="walletBox" class="hidden mt-4 rounded-2xl border border-gray-800 bg-gray-900 p-4 shadow-xl">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Paiement Wallet</div>
+                  <div class="text-[13px] font-bold text-white mt-1">
+                    Solde : <span id="walletBalance" class="font-black">—</span> <span class="text-gray-400">$</span>
+                  </div>
+                  <div class="text-[11px] font-bold text-gray-400 mt-1">
+                    Compte : <span id="walletEmail" class="font-black text-gray-300">—</span>
+                  </div>
+                  <div id="walletHint" class="text-[11px] font-bold mt-2 text-gray-400">Vérification du solde...</div>
+                </div>
+                <div class="flex flex-col gap-2 w-[180px]">
+                  <button type="button" id="walletPayBtn" class="w-full bg-white text-black py-3 rounded-2xl font-black text-[11px] uppercase shadow-lg hover:scale-[1.02] transition-transform">
+                    Payer avec Wallet
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div id="success-msg" class="hidden success-shell text-center py-12 px-6">
+          <div class="success-glow"></div>
+
+          <div class="success-badge-wrap">
+            <div class="success-ring"></div>
+            <div class="success-ring-2"></div>
+            <div class="success-icon">
+              <svg width="46" height="46" fill="none" stroke="currentColor" stroke-width="3.5" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+          </div>
+
+          <h3 class="success-title text-3xl font-black text-gray-900 mb-2">Paiement réussi</h3>
+          <p class="success-subtitle text-gray-500 text-sm mb-8 font-medium">
+            Votre commande <strong id="final-id" class="text-gray-900"></strong> a été payée avec succès via votre Wallet.
+          </p>
+
+          <div class="success-actions grid grid-cols-2 gap-2">
+            <button onclick="startNewOrder_(true)" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-xs uppercase hover:bg-gray-800 transition-colors">Nouvelle commande</button>
+            <button onclick="location.href='index.html'" class="w-full bg-white border border-gray-200 py-4 rounded-2xl font-black text-xs uppercase hover:border-[#F07E13] hover:text-[#F07E13] transition-colors">Boutique</button>
+          </div>
+        </div>
+      </div>
     </div>
   </main>
 
   <script>
     const CONFIG = window.VF_CONFIG || {};
-    const params = new URLSearchParams(location.search);
-    const orderId = "VF-" + Date.now();
-    
-    // Éléments UI
-    const btn = document.getElementById("btnSubmit");
-    const totalDisp = document.getElementById("totalPrice");
-    const balanceVal = document.getElementById("balanceVal");
+    const GOOGLE_URL = String(CONFIG.orderScriptUrl || "").trim();
+    const WALLET_SCRIPT_URL = String(CONFIG.scriptUrl || "").trim();
+    const BOT_WEBHOOK_URL = String(CONFIG.avisScriptUrl || "").trim();
 
-    // Données du service
-    const serviceId = params.get("id");
-    const serviceNom = params.get("nom") || "Service";
-    const servicePrix = parseFloat(params.get("prix") || "0");
-    const serviceCat = (params.get("cat") || "").toUpperCase();
+    const JSONP_TIMEOUT_MS = 15000;
+    const IFRAME_TIMEOUT_MS = 30000;
+    const WALLET_CACHE_TTL_MS = 60000;
+    const WALLET_FRESH_PAY_TTL_MS = 15000;
+    const JOURNAL_KEY_PREFIX = "vf_payment_journal_";
+    const JOURNAL_LIMIT = 120;
 
-    let userBalance = 0;
-    let userEmail = "";
+    function getEl_(id){ return document.getElementById(id); }
 
-    // 1. Initialisation de la page
-    document.getElementById("serviceName").innerText = serviceNom;
-    document.getElementById("catBadge").innerText = serviceCat;
-    document.getElementById("orderIdDisp").innerText = orderId;
+    function ensureUiHelpers_(){
+      const card = document.querySelector(".bg-white.rounded-\\[32px\\]") || document.querySelector(".bg-white");
+      if (!card) return;
 
-    if(/SMM|BOOST/.test(serviceCat)) document.getElementById("sec-smm").classList.remove("hidden");
-    else if(/ABO/.test(serviceCat)) document.getElementById("sec-abo").classList.remove("hidden");
-    else document.getElementById("sec-def").classList.remove("hidden");
+      if (!getEl_("noticeBox")) {
+        const notice = document.createElement("div");
+        notice.id = "noticeBox";
+        notice.className = "hidden mb-4 rounded-2xl border px-4 py-3 text-sm font-bold";
+        card.insertBefore(notice, card.firstChild);
+      }
 
-    function calculateTotal() {
-      const qty = document.getElementById("input-qty")?.value || 1000;
-      const isSmm = /SMM|BOOST/.test(serviceCat);
-      const final = isSmm ? (servicePrix / 1000) * qty : servicePrix;
-      totalDisp.innerText = final.toFixed(2) + " $";
-      return final;
+      if (!getEl_("debugBox")) {
+        const dbg = document.createElement("pre");
+        dbg.id = "debugBox";
+        dbg.className = "hidden mt-3 rounded-2xl bg-gray-900 text-gray-100 p-4 text-xs overflow-auto whitespace-pre-wrap";
+        const notice = getEl_("noticeBox");
+        if (notice) notice.insertAdjacentElement("afterend", dbg);
+      }
+
+      if (!getEl_("journalWrap")) {
+        const wrap = document.createElement("div");
+        wrap.id = "journalWrap";
+        wrap.className = "mt-4 rounded-2xl border border-gray-200 bg-gray-50 p-4";
+
+        wrap.innerHTML = `
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Journal de paiement</div>
+              <div class="text-[12px] font-bold text-gray-700 mt-1">Trace locale des vérifications, erreurs et validations.</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" id="copyJournalBtn" class="bg-white border border-gray-200 px-3 py-2 rounded-xl font-black text-[10px] uppercase hover:border-[#F07E13] hover:text-[#F07E13]">Copier</button>
+              <button type="button" id="clearJournalBtn" class="bg-gray-900 text-white px-3 py-2 rounded-xl font-black text-[10px] uppercase">Vider</button>
+            </div>
+          </div>
+          <div id="journalBox" class="mt-3 max-h-56 overflow-auto rounded-xl bg-white border border-gray-200 p-3 text-[11px] text-gray-700"></div>
+        `;
+
+        const debugBox = getEl_("debugBox");
+        if (debugBox) debugBox.insertAdjacentElement("afterend", wrap);
+
+        getEl_("copyJournalBtn").addEventListener("click", async function(){
+          try{
+            await navigator.clipboard.writeText(getJournalText_());
+            showNotice_("Journal copié.", "success");
+            setTimeout(hideNotice_, 1500);
+          }catch(_){
+            showNotice_("Impossible de copier le journal.", "warn");
+          }
+        });
+
+        getEl_("clearJournalBtn").addEventListener("click", function(){
+          clearJournal_();
+          renderJournal_();
+          showNotice_("Journal vidé.", "info");
+          setTimeout(hideNotice_, 1200);
+        });
+      }
     }
 
-    document.getElementById("input-qty")?.addEventListener("input", calculateTotal);
-    const totalFinal = calculateTotal();
+    function showNotice_(message, type){
+      const box = getEl_("noticeBox");
+      if (!box) return;
 
-    // 2. Récupération du solde (JSONP vers scriptUrl)
-    function fetchBalance() {
-      const session = JSON.parse(localStorage.getItem("vf_session") || "{}");
-      if(!session.email) {
-        btn.innerText = "Connectez-vous pour payer";
-        btn.onclick = () => location.href = "wallet.html";
+      const map = {
+        error: "bg-red-50 border-red-200 text-red-700",
+        success: "bg-green-50 border-green-200 text-green-700",
+        warn: "bg-orange-50 border-orange-200 text-orange-700",
+        info: "bg-blue-50 border-blue-200 text-blue-700"
+      };
+
+      box.className = "mb-4 rounded-2xl border px-4 py-3 text-sm font-bold " + (map[type] || map.info);
+      box.innerHTML = String(message || "");
+    }
+
+    function hideNotice_(){
+      const box = getEl_("noticeBox");
+      if (!box) return;
+      box.className = "hidden mb-4 rounded-2xl border px-4 py-3 text-sm font-bold";
+      box.innerHTML = "";
+    }
+
+    function showDebug_(label, data){
+      const box = getEl_("debugBox");
+      if (!box) return;
+      let txt = "";
+      try {
+        txt = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+      } catch (_) {
+        txt = String(data);
+      }
+      box.textContent = label + "\n" + txt;
+      box.classList.remove("hidden");
+    }
+
+    function hideDebug_(){
+      const box = getEl_("debugBox");
+      if (!box) return;
+      box.textContent = "";
+      box.classList.add("hidden");
+    }
+
+    function clearFieldErrors_(){
+      document.querySelectorAll(".field-error").forEach(function(el){
+        el.classList.remove("field-error");
+        el.style.borderColor = "";
+        el.style.boxShadow = "";
+      });
+    }
+
+    function markFieldError_(id){
+      const el = getEl_(id);
+      if (!el) return;
+      el.classList.add("field-error");
+      el.style.borderColor = "#ef4444";
+      el.style.boxShadow = "0 0 0 4px rgba(239,68,68,.08)";
+      try { el.focus(); } catch (_) {}
+    }
+
+    function safeDecode(v){
+      try { return decodeURIComponent(String(v || "")); }
+      catch (_) { return String(v || ""); }
+    }
+
+    function safeHtml_(txt){
+      return String(txt || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    async function copyText(txt){
+      try{
+        await navigator.clipboard.writeText(String(txt || ""));
+        showNotice_("Numéro de commande copié.", "success");
+        setTimeout(hideNotice_, 1800);
+      }catch(_){
+        showNotice_("Impossible de copier automatiquement.", "warn");
+      }
+    }
+
+    function setActiveMenuLinkFallback_() {
+      const currentPath = (window.location.pathname.split("/").pop() || "paiement.html").toLowerCase();
+      document.querySelectorAll(".vf-menu-link").forEach(function(link) {
+        const path = (link.getAttribute("data-path") || "").toLowerCase();
+        const file = path.split("/").pop();
+        link.classList.toggle("active", file === currentPath);
+      });
+    }
+
+    function makeOrderId(){
+      return "VF-" + Date.now() + "-" + Math.floor(1000 + Math.random() * 9000);
+    }
+
+    function startNewOrder_(goShop){
+      try{
+        const old = sessionStorage.getItem("active_order_id");
+        if (old) {
+          sessionStorage.removeItem("vf_order_sent_" + old);
+          sessionStorage.removeItem("vf_order_inflight_" + old);
+        }
+        sessionStorage.removeItem("active_order_id");
+      }catch(_){}
+      if (goShop) location.href = "index.html";
+      else location.reload();
+    }
+
+    function getSession_(){
+      try{
+        const raw = localStorage.getItem("vf_session");
+        if (!raw) return null;
+        const s = JSON.parse(raw);
+        if (!s) return null;
+        return s;
+      }catch(_){
+        return null;
+      }
+    }
+
+    function getSessionToken_(){
+      const s = getSession_();
+      if (!s) return "";
+      return String(s.token || (s.user && s.user.token) || "").trim();
+    }
+
+    function getSessionEmail_(){
+      const s = getSession_();
+      if (!s) return "";
+      return String(s.email || (s.user && s.user.email) || "").trim().toLowerCase();
+    }
+
+    function fmt2(n){
+      const x = Number(n || 0);
+      if (!isFinite(x)) return "0.00";
+      return x.toFixed(2);
+    }
+
+    function getTotalNumber_(){
+      const priceEl = getEl_("display-price");
+      let txt = String(priceEl ? priceEl.textContent : "0");
+      txt = txt.replace(/,/g, ".").replace(/[^0-9.]/g, "");
+      return parseFloat(txt) || 0;
+    }
+
+    function normalizeBool_(value){
+      if (value === true) return true;
+      if (value === false) return false;
+      if (typeof value === "string") {
+        const v = value.trim().toLowerCase();
+        return v === "true" || v === "1" || v === "ok" || v === "success";
+      }
+      if (typeof value === "number") return value === 1;
+      return false;
+    }
+
+    function normalizeResponse_(raw){
+      if (raw == null) {
+        return { ok:false, message:"Réponse vide du serveur.", raw:raw };
+      }
+
+      if (typeof raw === "string") {
+        try {
+          return normalizeResponse_(JSON.parse(raw));
+        } catch (_) {
+          return {
+            ok: /success|ok|valid/i.test(raw),
+            alreadyPaid: /already|duplicate/i.test(raw),
+            message: raw,
+            raw: raw
+          };
+        }
+      }
+
+      const ok =
+        normalizeBool_(raw.ok) ||
+        normalizeBool_(raw.success) ||
+        normalizeBool_(raw.paid) ||
+        String(raw.status || "").trim().toLowerCase() === "success";
+
+      const alreadyPaid =
+        raw.alreadyPaid === true ||
+        raw.duplicate === true ||
+        String(raw.code || "").toUpperCase() === "ALREADY_PAID";
+
+      const balance =
+        raw.wallet && typeof raw.wallet.balance !== "undefined"
+          ? raw.wallet.balance
+          : (typeof raw.balance !== "undefined" ? raw.balance : undefined);
+
+      return {
+        ok: ok,
+        alreadyPaid: alreadyPaid,
+        balance: balance,
+        orderId: raw.order || raw.orderId || raw.order_id || "",
+        auto: raw.auto || null,
+        message: String(raw.message || raw.error || raw.details || (ok ? "Paiement confirmé." : "Paiement refusé ou non confirmé.")),
+        raw: raw
+      };
+    }
+
+    function journalKey_(){
+      return JOURNAL_KEY_PREFIX + orderId;
+    }
+
+    function getJournal_(){
+      try{
+        const raw = sessionStorage.getItem(journalKey_());
+        const arr = raw ? JSON.parse(raw) : [];
+        return Array.isArray(arr) ? arr : [];
+      }catch(_){
+        return [];
+      }
+    }
+
+    function saveJournal_(arr){
+      try{
+        sessionStorage.setItem(journalKey_(), JSON.stringify(arr.slice(-JOURNAL_LIMIT)));
+      }catch(_){}
+    }
+
+    function logJournal_(level, message, extra){
+      const arr = getJournal_();
+      arr.push({
+        at: new Date().toISOString(),
+        level: String(level || "INFO").toUpperCase(),
+        message: String(message || ""),
+        extra: typeof extra === "undefined" ? null : extra
+      });
+      saveJournal_(arr);
+      renderJournal_();
+    }
+
+    function clearJournal_(){
+      try{ sessionStorage.removeItem(journalKey_()); }catch(_){}
+    }
+
+    function getJournalText_(){
+      return getJournal_().map(function(item){
+        let line = `[${item.at}] [${item.level}] ${item.message}`;
+        if (item.extra !== null && typeof item.extra !== "undefined") {
+          try {
+            line += "\n" + JSON.stringify(item.extra, null, 2);
+          } catch (_) {
+            line += "\n" + String(item.extra);
+          }
+        }
+        return line;
+      }).join("\n\n");
+    }
+
+    function renderJournal_(){
+      const box = getEl_("journalBox");
+      if (!box) return;
+      const arr = getJournal_();
+      if (!arr.length) {
+        box.innerHTML = '<div class="text-gray-400 font-bold">Aucun événement pour le moment.</div>';
         return;
       }
-      userEmail = session.email;
-      const cb = "CB_BAL_" + Date.now();
-      window[cb] = (res) => {
-        if(res.ok) {
-          userBalance = res.balance;
-          balanceVal.innerText = userBalance.toFixed(2);
-          document.getElementById("walletDisplay").classList.remove("hidden");
-          btn.innerText = userBalance >= calculateTotal() ? "Confirmer le paiement" : "Solde insuffisant";
-          btn.disabled = userBalance < calculateTotal();
+
+      box.innerHTML = arr.slice().reverse().map(function(item){
+        let extraHtml = "";
+        if (item.extra !== null && typeof item.extra !== "undefined") {
+          let txt = "";
+          try {
+            txt = JSON.stringify(item.extra, null, 2);
+          } catch (_) {
+            txt = String(item.extra);
+          }
+          extraHtml = `<pre class="mt-1 text-[10px] text-gray-500 whitespace-pre-wrap overflow-auto">${safeHtml_(txt)}</pre>`;
         }
-      };
+
+        const levelColor =
+          item.level === "ERROR" ? "text-red-600" :
+          item.level === "WARN" ? "text-orange-600" :
+          item.level === "SUCCESS" ? "text-green-600" :
+          "text-gray-700";
+
+        return `
+          <div class="journal-line border-b border-gray-100 pb-2">
+            <div class="flex items-start justify-between gap-2">
+              <div class="font-black ${levelColor}">${safeHtml_(item.level)}</div>
+              <div class="text-[10px] text-gray-400 font-bold">${safeHtml_(item.at)}</div>
+            </div>
+            <div class="mt-1 text-[11px] font-medium text-gray-700">${safeHtml_(item.message)}</div>
+            ${extraHtml}
+          </div>
+        `;
+      }).join("");
+    }
+
+    function jsonp_(targetUrl, paramsObj, onOk, onErr, timeoutMs){
+      if (!targetUrl) {
+        onErr && onErr(new Error("URL manquante"));
+        return;
+      }
+
+      const cb = "VF_CB_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
       const s = document.createElement("script");
-      s.src = `${CONFIG.scriptUrl}?action=wallet_balance&email=${userEmail}&callback=${cb}`;
+      let done = false;
+
+      const timer = setTimeout(function(){
+        if (done) return;
+        done = true;
+        try { delete window[cb]; } catch (_) {}
+        try { s.remove(); } catch (_) {}
+        onErr && onErr(new Error("TIMEOUT"));
+      }, timeoutMs || JSONP_TIMEOUT_MS);
+
+      window[cb] = function(payload){
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        try { delete window[cb]; } catch (_) {}
+        try { s.remove(); } catch (_) {}
+        onOk && onOk(payload);
+      };
+
+      const qs = new URLSearchParams();
+      Object.keys(paramsObj || {}).forEach(function(k){
+        qs.set(k, paramsObj[k] == null ? "" : String(paramsObj[k]));
+      });
+      qs.set("callback", cb);
+      qs.set("t", String(Date.now()));
+
+      s.src = targetUrl + (targetUrl.includes("?") ? "&" : "?") + qs.toString();
+      s.async = true;
+      s.onerror = function(){
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        try { delete window[cb]; } catch (_) {}
+        try { s.remove(); } catch (_) {}
+        onErr && onErr(new Error("NETWORK_ERROR"));
+      };
+
       document.body.appendChild(s);
     }
 
-    // 3. Exécution du paiement + ALERTE BOT (avisScriptUrl)
-    btn.onclick = () => {
-      btn.disabled = true;
-      btn.innerText = "Traitement...";
+    function requestJsonp_(url, params, timeoutMs){
+      return new Promise(function(resolve, reject){
+        jsonp_(url, params, resolve, reject, timeoutMs || JSONP_TIMEOUT_MS);
+      });
+    }
 
-      const inputData = document.getElementById("input-link")?.value || 
-                        document.getElementById("input-creds")?.value || 
-                        document.getElementById("input-def")?.value || "N/A";
+    function postToAppsScriptIframe_(url, payload, timeoutMs){
+      return new Promise(function(resolve, reject){
+        if (!url) {
+          reject(new Error("URL de paiement manquante."));
+          return;
+        }
 
-      const payload = {
+        const frameName = "vfPayFrame_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
+        const iframe = document.createElement("iframe");
+        iframe.name = frameName;
+        iframe.style.display = "none";
+
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = url;
+        form.target = frameName;
+        form.style.display = "none";
+
+        const finalPayload = Object.assign({}, payload || {}, { transport: "iframe" });
+
+        Object.keys(finalPayload).forEach(function(key){
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = key;
+          input.value = finalPayload[key] == null ? "" : String(finalPayload[key]);
+          form.appendChild(input);
+        });
+
+        let done = false;
+
+        function cleanup_(){
+          done = true;
+          window.removeEventListener("message", onMessage_);
+          clearTimeout(timer);
+          try { form.remove(); } catch (_) {}
+          try { iframe.remove(); } catch (_) {}
+        }
+
+        function onMessage_(ev){
+          if (done) return;
+          const data = ev.data;
+          if (!data || typeof data !== "object") return;
+          if (payload.request_id && data.request_id !== payload.request_id) return;
+
+          cleanup_();
+          resolve(data);
+        }
+
+        const timer = setTimeout(function(){
+          if (done) return;
+          cleanup_();
+          reject(new Error("TIMEOUT_IFRAME"));
+        }, timeoutMs || IFRAME_TIMEOUT_MS);
+
+        window.addEventListener("message", onMessage_);
+        document.body.appendChild(iframe);
+        document.body.appendChild(form);
+        form.submit();
+      });
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const idS = (params.get("id") || "").trim();
+
+    (function ensureFreshOrderIdForService_(){
+      try{
+        const prevServiceId = sessionStorage.getItem("vf_service_id") || "";
+        const active = sessionStorage.getItem("active_order_id") || "";
+        if (idS && prevServiceId && idS !== prevServiceId) {
+          if (active) {
+            sessionStorage.removeItem("vf_order_sent_" + active);
+            sessionStorage.removeItem("vf_order_inflight_" + active);
+          }
+          sessionStorage.removeItem("active_order_id");
+        }
+        if (idS) sessionStorage.setItem("vf_service_id", idS);
+      }catch(_){}
+    })();
+
+    let orderId = sessionStorage.getItem("active_order_id");
+    if (!orderId) {
+      orderId = makeOrderId();
+      sessionStorage.setItem("active_order_id", orderId);
+    }
+    getEl_("live-order-id").innerText = orderId;
+
+    const SENT_KEY = "vf_order_sent_" + orderId;
+    const INFLIGHT_KEY = "vf_order_inflight_" + orderId;
+    let SUBMIT_LOCK = false;
+
+    function showLocked_(oid){
+      getEl_("lockedId").textContent = String(oid || "");
+      getEl_("lockedOverlay").style.display = "flex";
+      logJournal_("WARN", "Tentative bloquée : commande déjà validée.", { orderId: oid || orderId });
+    }
+
+    function hardLockForm_(){
+      const wbtn = getEl_("walletPayBtn");
+      if (wbtn) {
+        wbtn.disabled = true;
+        wbtn.style.opacity = ".6";
+        wbtn.style.cursor = "not-allowed";
+        wbtn.innerText = "Déjà payé";
+      }
+    }
+
+    function fireSuccessConfetti_(){
+      try{
+        const defaults = { spread: 70, ticks: 220, gravity: 0.9, decay: 0.94, startVelocity: 32 };
+        confetti({ ...defaults, particleCount: 110, origin: { x: 0.5, y: 0.55 } });
+        setTimeout(function(){ confetti({ ...defaults, particleCount: 70, angle: 60, origin: { x: 0.05, y: 0.7 } }); }, 180);
+        setTimeout(function(){ confetti({ ...defaults, particleCount: 70, angle: 120, origin: { x: 0.95, y: 0.7 } }); }, 320);
+      } catch(_){}
+    }
+
+    function showSuccess_(oid){
+      sessionStorage.setItem(SENT_KEY, "1");
+      sessionStorage.removeItem(INFLIGHT_KEY);
+      sessionStorage.removeItem("active_order_id");
+      fireSuccessConfetti_();
+      hideNotice_();
+      hideDebug_();
+      getEl_("form-container").classList.add("hidden");
+      getEl_("final-id").innerText = oid || orderId;
+      getEl_("success-msg").classList.remove("hidden");
+      hardLockForm_();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      logJournal_("SUCCESS", "Paiement confirmé et écran de succès affiché.", { orderId: oid || orderId });
+    }
+
+    if (sessionStorage.getItem(SENT_KEY) === "1") {
+      hardLockForm_();
+      getEl_("form-container").classList.add("hidden");
+      getEl_("final-id").innerText = orderId;
+      getEl_("success-msg").classList.remove("hidden");
+    }
+
+    const nom = params.get("nom") || "Service";
+    const rawPrix = params.get("prix");
+    let cleanPrix = String(rawPrix || "0").replace(/,/g, ".");
+    const prixInit = parseFloat(cleanPrix) || 0;
+
+    const cat = params.get("cat") || "";
+    const desc = safeDecode(params.get("desc") || "");
+    const longDesc = safeDecode(params.get("long") || params.get("long_desc") || "");
+    const minParam = parseFloat(params.get("min"));
+    const maxParam = parseFloat(params.get("max"));
+
+    getEl_("service-name").innerText = nom;
+    getEl_("cat-badge").innerText = cat || "Service";
+
+    const descSection = getEl_("description-section");
+    const longBox = getEl_("long-box");
+    const descBox = getEl_("desc-box");
+    const longText = getEl_("long-text");
+    const descText = getEl_("desc-text");
+
+    let hasAnyDesc = false;
+    if (longDesc && longDesc.trim() !== "") {
+      longText.textContent = longDesc;
+      longBox.classList.remove("hidden");
+      hasAnyDesc = true;
+    }
+    if (desc && desc.trim() !== "") {
+      descText.textContent = desc;
+      descBox.classList.remove("hidden");
+      hasAnyDesc = true;
+    }
+    if (hasAnyDesc) descSection.classList.remove("hidden");
+
+    const catUpper = String(cat || "").trim().toUpperCase();
+    const isSMM  = /(SMM|BOOST|BOOST2|PEAK|PEAKERR)/i.test(catUpper);
+    const isAbo  = (catUpper === "ABONNEMENT" || /\bABONNEMENT\b/i.test(catUpper));
+    const isCarte = (catUpper === "CARTE" || catUpper === "CARTE2" || catUpper === "JEUX" || /\bCARTE2?\b/i.test(catUpper));
+    const isIMEI = /IMEI/i.test(catUpper);
+
+    const secSmm = getEl_("section-smm");
+    const secAbo = getEl_("section-abonnement");
+    const secCarte = getEl_("section-carte");
+    const secDef = getEl_("section-default");
+
+    const priceEl = getEl_("display-price");
+    const qtyInp = getEl_("qty");
+    const qtyHint = getEl_("qty-hint");
+
+    let WALLET_OK = false;
+    let WALLET_BAL = 0;
+    let WALLET_EMAIL = "";
+    let WALLET_LOADING = false;
+    let walletBalancePromise_ = null;
+    let walletLastFetchAt_ = 0;
+
+    function walletCacheKey_(){ return WALLET_EMAIL ? "vf_wallet_balance_cache_" + WALLET_EMAIL : ""; }
+
+    function saveWalletCache_(balance){
+      try{
+        if (!WALLET_EMAIL) return;
+        localStorage.setItem(walletCacheKey_(), JSON.stringify({
+          ts: Date.now(),
+          data: { balance: Number(balance || 0) }
+        }));
+      }catch(_){}
+    }
+
+    function loadWalletCache_(){
+      try{
+        if (!WALLET_EMAIL) return null;
+        const raw = localStorage.getItem(walletCacheKey_());
+        if (!raw) return null;
+        const obj = JSON.parse(raw);
+        const bal = (obj.data && typeof obj.data.balance !== "undefined") ? obj.data.balance : obj.balance;
+        if (typeof bal === "undefined" || !obj.ts) return null;
+        return { balance: bal, ts: obj.ts };
+      }catch(_){
+        return null;
+      }
+    }
+
+    function isWalletCacheFresh_(maxAgeMs){
+      const c = loadWalletCache_();
+      if (!c) return false;
+      return (Date.now() - Number(c.ts || 0)) <= maxAgeMs;
+    }
+
+    function showWalletLoadingUI_(keepButtonState){
+      const box = getEl_("walletBox");
+      if(!box) return;
+
+      box.classList.remove("hidden");
+      getEl_("walletBalance").textContent = WALLET_OK ? fmt2(WALLET_BAL) : "...";
+      getEl_("walletEmail").textContent = WALLET_EMAIL || "—";
+
+      const hint = getEl_("walletHint");
+      hint.textContent = "Vérification du solde wallet...";
+      hint.className = "text-[11px] font-black mt-2 text-gray-400";
+
+      if (!keepButtonState) {
+        const btn = getEl_("walletPayBtn");
+        if (btn){
+          btn.disabled = true;
+          btn.style.opacity = ".6";
+          btn.style.cursor = "not-allowed";
+        }
+      }
+    }
+
+    function updateWalletUI_(){
+      const box = getEl_("walletBox");
+      if(!box) return;
+
+      box.classList.remove("hidden");
+      getEl_("walletEmail").textContent = WALLET_EMAIL || "—";
+
+      const hint = getEl_("walletHint");
+      const btn = getEl_("walletPayBtn");
+      const need = getTotalNumber_();
+
+      if (WALLET_LOADING && !WALLET_OK) {
+        showWalletLoadingUI_(false);
+        return;
+      }
+
+      if (!WALLET_OK) {
+        getEl_("walletBalance").textContent = "—";
+        hint.textContent = "Impossible de charger le solde pour le moment.";
+        hint.className = "text-[11px] font-black mt-2 text-red-400";
+        btn.disabled = true;
+        btn.style.opacity = ".6";
+        btn.style.cursor = "not-allowed";
+        return;
+      }
+
+      getEl_("walletBalance").textContent = fmt2(WALLET_BAL);
+
+      if (sessionStorage.getItem(SENT_KEY) === "1") {
+        btn.disabled = true;
+        btn.style.opacity = ".6";
+        btn.style.cursor = "not-allowed";
+        hint.textContent = "Commande déjà payée.";
+        hint.className = "text-[11px] font-black mt-2 text-green-400";
+        return;
+      }
+
+      if (need <= 0) {
+        hint.textContent = "Montant invalide (0$). Vérifiez le produit.";
+        hint.className = "text-[11px] font-black mt-2 text-red-400";
+        btn.disabled = true;
+        btn.style.opacity = ".6";
+        btn.style.cursor = "not-allowed";
+      } else if (WALLET_BAL >= need) {
+        hint.textContent = "Solde suffisant pour régler l'achat.";
+        hint.className = "text-[11px] font-black mt-2 text-green-400";
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        btn.style.cursor = "pointer";
+      } else {
+        hint.innerHTML = `Solde insuffisant. <a href="wallet.html" class="text-orange-400 underline">Ajoutez du crédit</a>.`;
+        hint.className = "text-[11px] font-black mt-2 text-red-400";
+        btn.disabled = true;
+        btn.style.opacity = ".6";
+        btn.style.cursor = "not-allowed";
+      }
+    }
+
+    async function fetchWalletBalance_(){
+      const token = getSessionToken_();
+      const email = WALLET_EMAIL || getSessionEmail_();
+
+      const tries = [
+        { url: GOOGLE_URL, params: { action: "wallet_balance", token: token, email: email, currency: "USD" } },
+        { url: GOOGLE_URL, params: { action: "db_wallet_balance", token: token, email: email, currency: "USD" } },
+        { url: WALLET_SCRIPT_URL, params: { action: "wallet_balance", token: token, email: email, currency: "USD" } }
+      ];
+
+      const traces = [];
+
+      for (const t of tries) {
+        if (!t.url) continue;
+        try {
+          logJournal_("INFO", "Tentative de lecture du solde wallet.", t);
+          const raw = await requestJsonp_(t.url, t.params, 12000);
+          const res = normalizeResponse_(raw);
+          const bal =
+            raw && typeof raw.balance !== "undefined" ? Number(raw.balance) :
+            (typeof res.balance !== "undefined" ? Number(res.balance) : NaN);
+
+          traces.push({ try: t, raw: raw });
+
+          if ((res.ok || raw && normalizeBool_(raw.ok)) && isFinite(bal)) {
+            logJournal_("SUCCESS", "Solde wallet récupéré.", { balance: bal, source: t.url, action: t.params.action });
+            return { ok: true, balance: bal, traces: traces };
+          }
+        } catch (err) {
+          traces.push({ try: t, error: err.message || String(err) });
+          logJournal_("WARN", "Échec de lecture du solde sur une source.", { try: t, error: err.message || String(err) });
+        }
+      }
+
+      logJournal_("ERROR", "Impossible de récupérer le solde wallet.", traces);
+      return { ok: false, traces: traces };
+    }
+
+    function refreshWalletBalance_(opts){
+      opts = opts || {};
+      const force = !!opts.force;
+      const silent = !!opts.silent;
+
+      if(!WALLET_EMAIL) return Promise.resolve(false);
+      const now = Date.now();
+
+      if (!force && walletBalancePromise_) return walletBalancePromise_;
+
+      const cached = loadWalletCache_();
+      if (!force && cached && (now - Number(cached.ts || 0)) <= WALLET_CACHE_TTL_MS) {
+        WALLET_OK = true;
+        WALLET_BAL = Number(cached.balance || 0);
+        walletLastFetchAt_ = Number(cached.ts || 0);
+        updateWalletUI_();
+        logJournal_("INFO", "Solde wallet lu depuis le cache local.", { balance: WALLET_BAL });
+        return Promise.resolve(true);
+      }
+
+      WALLET_LOADING = true;
+      if (!silent) showWalletLoadingUI_(WALLET_OK);
+
+      walletBalancePromise_ = new Promise(async function(resolve){
+        const result = await fetchWalletBalance_();
+
+        WALLET_LOADING = false;
+        walletBalancePromise_ = null;
+
+        if (result.ok) {
+          WALLET_OK = true;
+          WALLET_BAL = Number(result.balance || 0);
+          walletLastFetchAt_ = Date.now();
+          saveWalletCache_(WALLET_BAL);
+          updateWalletUI_();
+          resolve(true);
+          return;
+        }
+
+        if (cached) {
+          WALLET_OK = true;
+          WALLET_BAL = Number(cached.balance || 0);
+          walletLastFetchAt_ = Number(cached.ts || 0);
+          logJournal_("WARN", "Échec réseau, repli sur le cache wallet.", { balance: WALLET_BAL });
+        } else {
+          WALLET_OK = false;
+        }
+
+        updateWalletUI_();
+        resolve(false);
+      });
+
+      return walletBalancePromise_;
+    }
+
+    async function ensureFreshWalletBeforePay_(){
+      const now = Date.now();
+
+      if (WALLET_OK && (now - walletLastFetchAt_) <= WALLET_FRESH_PAY_TTL_MS) return true;
+
+      if (isWalletCacheFresh_(WALLET_FRESH_PAY_TTL_MS)) {
+        const c = loadWalletCache_();
+        WALLET_OK = true;
+        WALLET_BAL = Number(c.balance || 0);
+        walletLastFetchAt_ = Number(c.ts || 0);
+        updateWalletUI_();
+        logJournal_("INFO", "Solde wallet frais récupéré depuis le cache.", { balance: WALLET_BAL });
+        return true;
+      }
+
+      return await refreshWalletBalance_({ force:true, silent:false });
+    }
+
+    function setPayButtonLoading_(loading){
+      const btn = getEl_("walletPayBtn");
+      if (!btn) return;
+
+      if (loading) {
+        btn.disabled = true;
+        btn.style.opacity = "1";
+        btn.style.cursor = "progress";
+        btn.innerHTML = `<span class="pay-spinner"></span><span class="ml-2">Validation en cours...</span>`;
+      } else {
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        btn.style.cursor = "pointer";
+        btn.innerText = "Payer avec Wallet";
+      }
+    }
+
+    async function walletPayRequest_(payload){
+      const requestId = "REQ_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+      const finalPayload = Object.assign({}, payload, {
         action: "wallet_pay",
-        orderId: orderId,
-        email: userEmail,
-        total: calculateTotal(),
-        produit: serviceNom,
-        idService: serviceId,
-        input1: inputData
+        request_id: requestId,
+        email_client_source: payload.email || ""
+      });
+
+      logJournal_("INFO", "Envoi du paiement wallet via iframe.", {
+        request_id: requestId,
+        orderId: finalPayload.orderId,
+        idService: finalPayload.idService,
+        total: finalPayload.total,
+        qty: finalPayload.quantite
+      });
+
+      const raw = await postToAppsScriptIframe_(GOOGLE_URL, finalPayload, IFRAME_TIMEOUT_MS);
+      const res = normalizeResponse_(raw);
+
+      logJournal_(res.ok ? "SUCCESS" : "ERROR", "Réponse du paiement wallet reçue.", raw);
+
+      return { raw: raw, res: res };
+    }
+
+    function initWallet_(){
+      const s = getSession_();
+
+      if(!s) {
+        const box = getEl_("walletBox");
+        box.classList.remove("hidden");
+        box.innerHTML = `
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Paiement Wallet</div>
+              <div class="text-[12px] font-bold text-white mt-1">Vous devez vous connecter pour payer.</div>
+            </div>
+            <a href="wallet.html" class="bg-white text-black py-3 px-5 rounded-2xl font-black text-[11px] uppercase shadow-lg hover:scale-[1.02] transition-transform text-center whitespace-nowrap">Se connecter</a>
+          </div>`;
+        logJournal_("WARN", "Utilisateur non connecté : wallet indisponible.");
+        return;
+      }
+
+      WALLET_EMAIL = getSessionEmail_();
+      logJournal_("INFO", "Session wallet détectée.", { email: WALLET_EMAIL });
+
+      const cached = loadWalletCache_();
+      if (cached) {
+        WALLET_OK = true;
+        WALLET_BAL = Number(cached.balance || 0);
+        walletLastFetchAt_ = Number(cached.ts || 0);
+        updateWalletUI_();
+        logJournal_("INFO", "Cache wallet initial chargé.", { balance: WALLET_BAL });
+        refreshWalletBalance_({ force:false, silent:true });
+      } else {
+        WALLET_LOADING = true;
+        showWalletLoadingUI_(false);
+        refreshWalletBalance_({ force:true, silent:false });
+      }
+
+      getEl_("walletPayBtn").addEventListener("click", async function(){
+        hideNotice_();
+        hideDebug_();
+        clearFieldErrors_();
+
+        if (SUBMIT_LOCK || sessionStorage.getItem(INFLIGHT_KEY) === "1" || sessionStorage.getItem(SENT_KEY) === "1") {
+          showLocked_(orderId);
+          return;
+        }
+
+        const ok = await ensureFreshWalletBeforePay_();
+        const need = getTotalNumber_();
+
+        if(!ok && !WALLET_OK){
+          showNotice_("Impossible de charger le solde wallet pour le moment.", "error");
+          logJournal_("ERROR", "Paiement bloqué : solde wallet introuvable.");
+          return;
+        }
+
+        if (need <= 0) {
+          showNotice_("Montant de la commande invalide (0$). Vérifiez le produit.", "error");
+          logJournal_("ERROR", "Paiement bloqué : montant invalide.", { total: need });
+          return;
+        }
+
+        if(WALLET_BAL < need){
+          showNotice_("Solde insuffisant. Ajoutez du crédit puis réessayez.", "warn");
+          logJournal_("WARN", "Paiement bloqué : solde insuffisant.", { balance: WALLET_BAL, need: need });
+          return;
+        }
+
+        logJournal_("INFO", "Pré-validation wallet OK, soumission du formulaire.");
+        getEl_("orderForm").requestSubmit();
+      });
+    }
+
+    if (isSMM) {
+      secSmm.classList.remove("hidden");
+      const hasMin = Number.isFinite(minParam);
+      const hasMax = Number.isFinite(maxParam);
+
+      if (hasMin) qtyInp.min = String(parseInt(minParam, 10));
+      if (hasMax) qtyInp.max = String(parseInt(maxParam, 10));
+
+      if (hasMin || hasMax) {
+        qtyHint.classList.remove("hidden");
+        qtyHint.textContent = `Quantité autorisée : ${hasMin ? parseInt(minParam,10) : 0} – ${hasMax ? parseInt(maxParam,10) : "∞"}`;
+      }
+
+      function clampQty(q){
+        let x = parseInt(String(q || "0").replace(/[^\d]/g,""), 10);
+        if (!Number.isFinite(x) || x <= 0) x = hasMin ? parseInt(minParam,10) : 1;
+        if (hasMin && x < parseInt(minParam,10)) x = parseInt(minParam,10);
+        if (hasMax && x > parseInt(maxParam,10)) x = parseInt(maxParam,10);
+        return x;
+      }
+
+      function updatePrice(){
+        const q = clampQty(qtyInp.value);
+        if (String(qtyInp.value) !== String(q)) qtyInp.value = q;
+        const total = ((prixInit / 1000) * q);
+        priceEl.textContent = (Number.isFinite(total) ? total.toFixed(2) : "0.00") + " $";
+        updateWalletUI_();
+      }
+
+      qtyInp.addEventListener("input", updatePrice);
+      updatePrice();
+    } else if (isAbo) {
+      secAbo.classList.remove("hidden");
+      priceEl.textContent = prixInit.toFixed(2) + " $";
+    } else if (isCarte) {
+      secCarte.classList.remove("hidden");
+      priceEl.textContent = prixInit.toFixed(2) + " $";
+    } else {
+      secDef.classList.remove("hidden");
+      priceEl.textContent = prixInit.toFixed(2) + " $";
+      if (isIMEI) getEl_("default-label").innerText = "Numéro IMEI (15 chiffres)";
+    }
+
+    getEl_("orderForm").onsubmit = async function(e){
+      e.preventDefault();
+      hideNotice_();
+      hideDebug_();
+      clearFieldErrors_();
+
+      if (!GOOGLE_URL) {
+        showNotice_("Configuration manquante : orderScriptUrl est vide dans vf_config.js.", "error");
+        logJournal_("ERROR", "Configuration invalide : orderScriptUrl manquant.");
+        return;
+      }
+
+      if (sessionStorage.getItem(SENT_KEY) === "1") {
+        showLocked_(orderId);
+        return;
+      }
+
+      if (SUBMIT_LOCK || sessionStorage.getItem(INFLIGHT_KEY) === "1") return;
+
+      SUBMIT_LOCK = true;
+      sessionStorage.setItem(INFLIGHT_KEY, "1");
+      setPayButtonLoading_(true);
+
+      let input1 = "";
+      let emailForSheet = "";
+      let contactValue = "";
+      let qtyVal = 1;
+      const totalNumber = getTotalNumber_();
+
+      const resetLockAndBtn = function(){
+        SUBMIT_LOCK = false;
+        sessionStorage.removeItem(INFLIGHT_KEY);
+        setPayButtonLoading_(false);
+        updateWalletUI_();
       };
 
-      const cb = "CB_PAY_" + Date.now();
-      window[cb] = (res) => {
-        if(res.ok) {
-          // --- ALERTE BOT WBA (La vraie partie "Avis") ---
-          const botData = {
-            source: "website",
-            action: "nouvelle_commande",
-            nom: userEmail.split('@')[0],
-            contact: userEmail,
-            service: serviceNom,
-            montant: calculateTotal() + " $"
-          };
-          const img = new Image();
-          img.src = `${CONFIG.avisScriptUrl}?${new URLSearchParams(botData).toString()}`;
+      if (!navigator.onLine) {
+        showNotice_("Aucune connexion Internet détectée. Reconnectez-vous puis réessayez.", "error");
+        logJournal_("ERROR", "Paiement annulé : navigateur hors ligne.");
+        resetLockAndBtn();
+        return;
+      }
 
-          // UI Succès
-          confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-          document.getElementById("form-container").classList.add("hidden");
-          document.getElementById("success-screen").classList.remove("hidden");
-        } else {
-          document.getElementById("noticeBox").innerText = res.message || "Erreur de paiement";
-          document.getElementById("noticeBox").classList.add("show", "error");
-          btn.disabled = false;
-          btn.innerText = "Réessayer";
+      if (!idS) {
+        showNotice_("ID du service manquant (paramètre id).", "error");
+        logJournal_("ERROR", "Paiement annulé : idService absent.");
+        resetLockAndBtn();
+        return;
+      }
+
+      if (isSMM) {
+        const link = getEl_("boost-link").value.trim();
+        const hasMin = Number.isFinite(minParam);
+        const hasMax = Number.isFinite(maxParam);
+        const q = parseInt(String(qtyInp.value || "0").replace(/[^\d]/g,""), 10);
+
+        if (!link) {
+          showNotice_("Ajoutez le lien à booster.", "error");
+          markFieldError_("boost-link");
+          logJournal_("ERROR", "Validation refusée : lien SMM manquant.");
+          resetLockAndBtn();
+          return;
         }
+
+        if (!/^https?:\/\//i.test(link)) {
+          showNotice_("Le lien à booster doit commencer par http:// ou https://", "error");
+          markFieldError_("boost-link");
+          logJournal_("ERROR", "Validation refusée : lien SMM invalide.", { link: link });
+          resetLockAndBtn();
+          return;
+        }
+
+        if (!q || q <= 0) {
+          showNotice_("Quantité invalide.", "error");
+          markFieldError_("qty");
+          logJournal_("ERROR", "Validation refusée : quantité SMM invalide.", { qty: q });
+          resetLockAndBtn();
+          return;
+        }
+
+        if ((hasMin && q < parseInt(minParam,10)) || (hasMax && q > parseInt(maxParam,10))) {
+          showNotice_(`Quantité invalide. Min=${hasMin ? parseInt(minParam,10) : 0}${hasMax ? ` / Max=${parseInt(maxParam,10)}` : ""}.`, "error");
+          markFieldError_("qty");
+          logJournal_("ERROR", "Validation refusée : quantité hors bornes.", { qty: q, min: minParam, max: maxParam });
+          resetLockAndBtn();
+          return;
+        }
+
+        input1 = link;
+        qtyVal = q;
+        emailForSheet = WALLET_EMAIL;
+        contactValue = WALLET_EMAIL;
+      }
+      else if (isAbo) {
+        const creds = getEl_("creds").value.trim();
+        const contact = getEl_("delivery-contact-abo").value.trim();
+
+        if (!creds) {
+          showNotice_("Ajoutez vos identifiants (mail + mot de passe).", "error");
+          markFieldError_("creds");
+          logJournal_("ERROR", "Validation refusée : identifiants abonnement manquants.");
+          resetLockAndBtn();
+          return;
+        }
+
+        if (!contact) {
+          showNotice_("Ajoutez un contact de livraison.", "error");
+          markFieldError_("delivery-contact-abo");
+          logJournal_("ERROR", "Validation refusée : contact abonnement manquant.");
+          resetLockAndBtn();
+          return;
+        }
+
+        input1 = creds;
+        contactValue = contact;
+        emailForSheet = contact;
+        qtyVal = 1;
+      }
+      else if (isCarte) {
+        const contact = getEl_("card-delivery").value.trim();
+
+        if (!contact) {
+          showNotice_("Ajoutez un contact de livraison.", "error");
+          markFieldError_("card-delivery");
+          logJournal_("ERROR", "Validation refusée : contact carte manquant.");
+          resetLockAndBtn();
+          return;
+        }
+
+        input1 = "CONTACT: voir colonne Email Client";
+        contactValue = contact;
+        emailForSheet = contact;
+        qtyVal = 1;
+      }
+      else {
+        const main = getEl_("main-input").value.trim();
+        const em = getEl_("email-client").value.trim();
+
+        if (!main) {
+          showNotice_("Remplissez l'information requise.", "error");
+          markFieldError_("main-input");
+          logJournal_("ERROR", "Validation refusée : champ principal vide.");
+          resetLockAndBtn();
+          return;
+        }
+
+        if (isIMEI && !/^\d{15}$/.test(main)) {
+          showNotice_("Le numéro IMEI doit contenir exactement 15 chiffres.", "error");
+          markFieldError_("main-input");
+          logJournal_("ERROR", "Validation refusée : IMEI invalide.", { value: main });
+          resetLockAndBtn();
+          return;
+        }
+
+        if (em && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
+          showNotice_("L’adresse email saisie est invalide.", "error");
+          markFieldError_("email-client");
+          logJournal_("ERROR", "Validation refusée : email client invalide.", { email: em });
+          resetLockAndBtn();
+          return;
+        }
+
+        input1 = main;
+        qtyVal = 1;
+        if (em) {
+          contactValue = em;
+          emailForSheet = em;
+        }
+      }
+
+      if (!input1) {
+        showNotice_("Information manquante.", "error");
+        logJournal_("ERROR", "Validation refusée : input1 vide.");
+        resetLockAndBtn();
+        return;
+      }
+
+      if (!emailForSheet && WALLET_EMAIL) {
+        emailForSheet = WALLET_EMAIL;
+        if (!contactValue) contactValue = WALLET_EMAIL;
+      }
+
+      const payload = {
+        token: getSessionToken_(),
+        walletEmail: WALLET_EMAIL,
+        email: emailForSheet,
+        orderId: orderId,
+        idService: idS,
+        productId: idS,
+        produit: nom,
+        categorie: cat,
+        input1: input1,
+        contact: contactValue,
+        quantite: qtyVal,
+        qty: qtyVal,
+        total: totalNumber,
+        currency: "USD",
+        payMethod: "WALLET",
+        fileData: "",
+        fileType: "",
+        fileName: "",
+        idempotencyKey: "IDEMP_" + orderId
+      };
+
+      try {
+        logJournal_("INFO", "Début du paiement wallet.", {
+          orderId: orderId,
+          service: idS,
+          total: totalNumber,
+          qty: qtyVal,
+          walletEmail: WALLET_EMAIL
+        });
+
+        const out = await walletPayRequest_(payload);
+        const res = out.res;
+
+        console.log("wallet_pay raw:", out.raw);
+        console.log("wallet_pay normalized:", res);
+
+        if (res.alreadyPaid) {
+          sessionStorage.setItem(SENT_KEY, "1");
+          hardLockForm_();
+          showLocked_(orderId);
+          return;
+        }
+
+        if (!res.ok) {
+          showNotice_(safeHtml_(res.message || "Paiement refusé ou non confirmé."), "error");
+          showDebug_("Réponse brute du serveur :", out.raw);
+          logJournal_("ERROR", "Le serveur a refusé ou non confirmé le paiement.", out.raw);
+          resetLockAndBtn();
+          return;
+        }
+
+        if (typeof res.balance !== "undefined") {
+          WALLET_BAL = Number(res.balance || 0);
+          WALLET_OK = true;
+          walletLastFetchAt_ = Date.now();
+          saveWalletCache_(WALLET_BAL);
+          updateWalletUI_();
+          logJournal_("SUCCESS", "Balance wallet mise à jour après paiement.", { balance: WALLET_BAL });
+        } else {
+          refreshWalletBalance_({ force:true, silent:true });
+        }
+
+        try {
+          if (BOT_WEBHOOK_URL) {
+            const pseudoNom = WALLET_EMAIL ? WALLET_EMAIL.split("@")[0] : "Client Web";
+            const qs = new URLSearchParams({
+              source: "website",
+              action: "nouvelle_commande",
+              nom: pseudoNom,
+              contact: contactValue || "N/A",
+              service: nom || "Service inconnu",
+              quantite: qtyVal || 1,
+              montant: totalNumber + " $",
+              t: Date.now()
+            }).toString();
+
+            const pingBot = new Image();
+            pingBot.src = BOT_WEBHOOK_URL + (BOT_WEBHOOK_URL.includes("?") ? "&" : "?") + qs;
+            logJournal_("INFO", "Webhook bot préparé.", { service: nom, amount: totalNumber, qty: qtyVal });
+          }
+        } catch (botErr) {
+          console.log("Erreur préparation Bot:", botErr);
+          logJournal_("WARN", "Erreur de préparation du webhook bot.", { error: String(botErr) });
+        }
+
+        showSuccess_(res.orderId || orderId);
+      } catch (err) {
+        console.error("Erreur paiement wallet :", err);
+        showNotice_(safeHtml_(err && err.message ? err.message : "Erreur de connexion. Réessayez."), "error");
+        showDebug_("Erreur JS attrapée :", {
+          message: err && err.message ? err.message : String(err),
+          stack: err && err.stack ? err.stack : ""
+        });
+        logJournal_("ERROR", "Exception JavaScript pendant le paiement.", {
+          message: err && err.message ? err.message : String(err),
+          stack: err && err.stack ? err.stack : ""
+        });
+        resetLockAndBtn();
+      } finally {
+        if (sessionStorage.getItem(SENT_KEY) === "1") {
+          hardLockForm_();
+          SUBMIT_LOCK = true;
+        } else {
+          SUBMIT_LOCK = false;
+        }
+      }
+    };
+
+    (function autoFillFromId(){
+      const p = new URLSearchParams(location.search);
+      const id = (p.get("id") || "").trim();
+      const hasBasics = (p.get("nom") && p.get("prix") && p.get("cat"));
+      if (!id || hasBasics || !GOOGLE_URL) return;
+
+      const cb = "VF_PROD_" + Date.now();
+      window[cb] = function(res){
+        try{
+          const arr = Array.isArray(res) ? res : (res && Array.isArray(res.products) ? res.products : []);
+          const prod = arr.find(function(x){ return String(x.id || "").trim() === id; });
+          if (!prod) return;
+          const qp = new URLSearchParams();
+          qp.set("id", prod.id || id);
+          qp.set("nom", prod.nom || "");
+          qp.set("prix", prod.prix || "");
+          qp.set("cat", prod.cat || "");
+          qp.set("img", prod.img || "");
+          qp.set("min", prod.min ?? "");
+          qp.set("max", prod.max ?? "");
+          qp.set("desc", prod.desc || "");
+          qp.set("long", prod.long_desc || "");
+          location.replace("paiement.html?" + qp.toString());
+        } catch(e){}
       };
 
       const s = document.createElement("script");
-      s.src = `${CONFIG.scriptUrl}?${new URLSearchParams(payload).toString()}&callback=${cb}`;
+      s.src = `${GOOGLE_URL}${GOOGLE_URL.includes("?") ? "&" : "?"}action=get_products&callback=${cb}&t=${Date.now()}`;
       document.body.appendChild(s);
-    };
+    })();
 
-    fetchBalance();
-    calculateTotal();
+    window.addEventListener("online", function(){
+      hideNotice_();
+      logJournal_("INFO", "Connexion internet rétablie.");
+      if (WALLET_EMAIL) refreshWalletBalance_({ force:true, silent:false });
+    });
+
+    window.addEventListener("offline", function(){
+      showNotice_("Connexion Internet perdue. Le paiement est temporairement indisponible.", "warn");
+      logJournal_("WARN", "Connexion internet perdue.");
+    });
+
+    ensureUiHelpers_();
+    renderJournal_();
+    initWallet_();
+    updateWalletUI_();
+    setActiveMenuLinkFallback_();
+    logJournal_("INFO", "Page paiement initialisée.", { orderId: orderId, serviceId: idS, produit: nom });
   </script>
 </body>
 </html>
