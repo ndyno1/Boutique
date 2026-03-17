@@ -18,104 +18,20 @@
 
   <style>
     :root { color-scheme: light; }
-
-    body {
-      background: #F3F3F3;
-      color: #201B16;
-      text-rendering: optimizeLegibility;
-    }
-
+    body { background: #F3F3F3; color: #201B16; text-rendering: optimizeLegibility; }
     .text-orange-bsv { color: #F07E13; }
-
-    .wallet-card {
-      background: #fff;
-      border: 1px solid #eee;
-      border-radius: 24px;
-      box-shadow: 0 12px 25px rgba(0,0,0,.06);
-      overflow: hidden;
-    }
-
-    .wallet-btn {
-      height: 44px;
-      padding: 0 16px;
-      border-radius: 14px;
-      font-weight: 900;
-      font-size: 12px;
-      text-transform: uppercase;
-      transition: .2s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      white-space: nowrap;
-      -webkit-tap-highlight-color: transparent;
-      cursor: pointer;
-      text-decoration: none;
-    }
-
-    .wallet-btn-outline {
-      background: #fff;
-      border: 1px solid #E5E7EB;
-      color: #111827;
-    }
-    .wallet-btn-outline:hover {
-      border-color: #F07E13;
-      color: #F07E13;
-    }
-
-    .wallet-btn-primary {
-      color: #fff;
-      border: none;
-    }
-
-    .wallet-input {
-      width: 100%;
-      height: 44px;
-      padding: 0 14px;
-      border-radius: 14px;
-      background: #fff;
-      border: 1px solid #E5E7EB;
-      outline: none;
-      font-weight: 800;
-      font-size: 13px;
-      transition: .2s;
-    }
-    .wallet-input:focus {
-      border-color: #F07E13;
-      box-shadow: 0 6px 16px rgba(240,126,19,.10);
-    }
-
-    .tx-row {
-      border-bottom: 1px solid #F3F3F3;
-      padding: 16px;
-    }
-    .tx-row:last-child {
-      border: none;
-    }
-
-    .toast {
-      position: fixed;
-      left: 50%;
-      bottom: 20px;
-      transform: translateX(-50%);
-      background: rgba(17,24,39,.95);
-      color: #fff;
-      padding: 12px 14px;
-      border-radius: 16px;
-      font-weight: 900;
-      font-size: 12px;
-      z-index: 9999;
-      display: none;
-    }
-    .toast.show {
-      display: block;
-    }
-
-    @media (max-width: 767px) {
-      .wallet-card {
-        border-radius: 20px;
-      }
-    }
+    .wallet-card { background: #fff; border: 1px solid #eee; border-radius: 24px; box-shadow: 0 12px 25px rgba(0,0,0,.06); overflow: hidden; }
+    .wallet-btn { height: 44px; padding: 0 16px; border-radius: 14px; font-weight: 900; font-size: 12px; text-transform: uppercase; transition: .2s; display: inline-flex; align-items: center; justify-content: center; gap: 10px; white-space: nowrap; -webkit-tap-highlight-color: transparent; cursor: pointer; text-decoration: none; }
+    .wallet-btn-outline { background: #fff; border: 1px solid #E5E7EB; color: #111827; }
+    .wallet-btn-outline:hover { border-color: #F07E13; color: #F07E13; }
+    .wallet-btn-primary { color: #fff; border: none; }
+    .wallet-input { width: 100%; height: 44px; padding: 0 14px; border-radius: 14px; background: #fff; border: 1px solid #E5E7EB; outline: none; font-weight: 800; font-size: 13px; transition: .2s; }
+    .wallet-input:focus { border-color: #F07E13; box-shadow: 0 6px 16px rgba(240,126,19,.10); }
+    .tx-row { border-bottom: 1px solid #F3F3F3; padding: 16px; }
+    .tx-row:last-child { border: none; }
+    .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: rgba(17,24,39,.95); color: #fff; padding: 12px 14px; border-radius: 16px; font-weight: 900; font-size: 12px; z-index: 9999; display: none; }
+    .toast.show { display: block; }
+    @media (max-width: 767px) { .wallet-card { border-radius: 20px; } }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -133,14 +49,14 @@
         </div>
       </div>
 
-      <div id="alertBox" class="hidden mb-4 px-4 py-3 rounded-2xl border text-sm font-bold"></div>
+      <div id="alertBox" class="hidden mb-4 px-4 py-3 rounded-2xl border text-sm font-bold text-center"></div>
 
       <section class="wallet-card p-6 md:p-8">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div class="text-[11px] font-black uppercase tracking-[.18em] text-gray-300">Solde Actuel</div>
             <div class="text-4xl font-black mt-1">
-              <span id="balanceValue">0.00</span><span class="text-gray-300 ml-1">$</span>
+              <span id="balanceValue">...</span><span class="text-gray-300 ml-1">$</span>
             </div>
             <div class="mt-2 text-xs font-bold text-gray-500">
               Utilisateur : <span id="userLabel" class="text-gray-900">Chargement...</span>
@@ -153,7 +69,7 @@
         <div class="mt-6 p-4 rounded-2xl bg-[#FFF7EE] border border-[#FFD7B0]">
           <div class="font-black text-[12px] uppercase text-[#B65E0B]">Importance du depot</div>
           <p class="mt-2 text-[13px] font-semibold text-[#3B2A16] leading-relaxed">
-            Ajouter des fonds a votre portefeuille vous permet de commander instantanement vos services sans attendre la validation manuelle de chaque paiement. C est la methode ideale pour les revendeurs.
+            Ajouter des fonds à votre portefeuille vous permet de commander instantanément vos services sans attendre la validation manuelle de chaque paiement. C'est la méthode idéale pour les revendeurs.
           </p>
         </div>
 
@@ -211,16 +127,16 @@
   <div id="toast" class="toast"></div>
 
   <script>
-    const SCRIPT_URL = window.VF_CONFIG.scriptUrl;
-    const WA_NUMBER = window.VF_CONFIG.whatsappNumber;
+    // SÉCURITÉ : Vérifie si la configuration est bien chargée
+    const CONFIG = window.VF_CONFIG || {};
+    const SCRIPT_URL = CONFIG.scriptUrl || "";
+    const WA_NUMBER = CONFIG.whatsappNumber || "";
     const $ = (id) => document.getElementById(id);
 
-    const JSONP_TIMEOUT_MS = 8000;
+    const JSONP_TIMEOUT_MS = 15000; // Augmenté à 15 secondes pour GAS
     const BALANCE_CACHE_TTL_MS = 60000;
     const TX_CACHE_TTL_MS = 45000;
 
-    let walletLoadPromise_ = null;
-    let txLoadPromise_ = null;
     let topupBusy_ = false;
 
     function getSession_() {
@@ -234,6 +150,20 @@
       t.classList.add("show");
       clearTimeout(showToast._timer);
       showToast._timer = setTimeout(() => t.classList.remove("show"), 2200);
+    }
+
+    function showErrorMsg(message) {
+      const alertBox = $("alertBox");
+      if (alertBox) {
+        alertBox.textContent = message;
+        alertBox.classList.remove("hidden");
+        alertBox.classList.add("bg-red-50", "border-red-200", "text-red-600");
+      }
+    }
+
+    function hideErrorMsg() {
+      const alertBox = $("alertBox");
+      if (alertBox) alertBox.classList.add("hidden");
     }
 
     function setActiveMenuLinkFallback_() {
@@ -256,18 +186,11 @@
       paidBtn.textContent = (val === "MOBILE_MONEY") ? "Payer via WhatsApp" : "Confirmer le depot";
     }
 
-    function cacheKeyBalance_(email) {
-      return "vf_wallet_balance_cache_" + String(email || "").toLowerCase();
-    }
-
-    function cacheKeyTx_(email) {
-      return "vf_wallet_tx_cache_" + String(email || "").toLowerCase();
-    }
+    function cacheKeyBalance_(email) { return "vf_wallet_balance_cache_" + String(email || "").toLowerCase(); }
+    function cacheKeyTx_(email) { return "vf_wallet_tx_cache_" + String(email || "").toLowerCase(); }
 
     function saveCache_(key, data) {
-      try {
-        localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data }));
-      } catch (_) {}
+      try { localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data })); } catch (_) {}
     }
 
     function loadCache_(key, ttlMs) {
@@ -275,16 +198,15 @@
         const raw = localStorage.getItem(key);
         if (!raw) return null;
         const obj = JSON.parse(raw);
-        if (!obj || typeof obj.ts === "undefined") return null;
-        if ((Date.now() - Number(obj.ts || 0)) > ttlMs) return null;
+        if (!obj || typeof obj.ts === "undefined" || (Date.now() - Number(obj.ts || 0)) > ttlMs) return null;
         return obj.data;
-      } catch (_) {
-        return null;
-      }
+      } catch (_) { return null; }
     }
 
     function jsonpRequest_(params, timeoutMs = JSONP_TIMEOUT_MS) {
       return new Promise((resolve, reject) => {
+        if (!SCRIPT_URL) return reject(new Error("URL du script introuvable."));
+        
         const cb = "vf_cb_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
         const s = document.createElement("script");
         let finished = false;
@@ -306,7 +228,7 @@
         timer = setTimeout(() => {
           if (finished) return;
           cleanup_();
-          reject(new Error("TIMEOUT"));
+          reject(new Error("Délai d'attente dépassé (Timeout). Le serveur est trop lent."));
         }, timeoutMs);
 
         const cleanParams = {};
@@ -315,17 +237,13 @@
           cleanParams[k] = v == null ? "" : String(v);
         });
 
-        const qs = new URLSearchParams({
-          ...cleanParams,
-          callback: cb,
-          t: String(Date.now())
-        });
+        const qs = new URLSearchParams({ ...cleanParams, callback: cb, t: String(Date.now()) });
 
         s.src = `${SCRIPT_URL}?${qs.toString()}`;
         s.onerror = () => {
           if (finished) return;
           cleanup_();
-          reject(new Error("NETWORK_ERROR"));
+          reject(new Error("Erreur réseau. Impossible de contacter le serveur."));
         };
 
         document.body.appendChild(s);
@@ -344,25 +262,14 @@
       if (Array.isArray(items) && items.length > 0) {
         box.innerHTML = items.map(tx => {
           const typeText = String(tx.type || "TX").toUpperCase();
-          const isCredit =
-            typeText.includes("CREDIT") ||
-            typeText.includes("DEPOT") ||
-            typeText.includes("TOPUP");
-
+          const isCredit = typeText.includes("CREDIT") || typeText.includes("DEPOT") || typeText.includes("TOPUP");
           const sign = isCredit ? "+" : "-";
           const colorClass = isCredit ? "text-green-600" : "text-gray-900";
-
           let dateFmt = tx.created_at;
           try {
             const d = new Date(tx.created_at);
             if (!isNaN(d.getTime())) {
-              dateFmt = d.toLocaleString("fr-FR", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit"
-              });
+              dateFmt = d.toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
             }
           } catch (_) {}
 
@@ -370,22 +277,15 @@
             <div class="tx-row flex justify-between items-center gap-4">
               <div class="min-w-0">
                 <div class="font-black text-gray-900 uppercase text-[11px]">
-                  ${typeText}
-                  <span class="text-[9px] text-gray-400 font-medium ml-1">(${tx.ref || "-"})</span>
+                  ${typeText} <span class="text-[9px] text-gray-400 font-medium ml-1">(${tx.ref || "-"})</span>
                 </div>
                 <div class="text-[10px] text-gray-400 mt-1">${dateFmt}</div>
               </div>
-
               <div class="text-right shrink-0">
-                <div class="font-black ${colorClass}">
-                  ${sign}${parseFloat(tx.amount || 0).toFixed(2)} ${tx.currency || "$"}
-                </div>
-                <div class="text-[9px] font-bold text-gray-400 uppercase mt-1">
-                  ${tx.status || "OK"}
-                </div>
+                <div class="font-black ${colorClass}">${sign}${parseFloat(tx.amount || 0).toFixed(2)} ${tx.currency || "$"}</div>
+                <div class="text-[9px] font-bold text-gray-400 uppercase mt-1">${tx.status || "OK"}</div>
               </div>
-            </div>
-          `;
+            </div>`;
         }).join("");
       } else {
         box.innerHTML = `<div class="p-10 text-center text-gray-400 font-bold text-sm">Aucune transaction trouvée.</div>`;
@@ -394,95 +294,38 @@
 
     async function fetchBalance_(email, force = false) {
       const key = cacheKeyBalance_(email);
-
       if (!force) {
         const cached = loadCache_(key, BALANCE_CACHE_TTL_MS);
         if (cached && typeof cached.balance !== "undefined") {
           renderBalance_(cached.balance);
-          return { ok: true, balance: Number(cached.balance || 0), cached: true };
+          return;
         }
       }
-
-      const res = await jsonpRequest_({
-        action: "wallet_balance",
-        email: email
-      });
-
+      const res = await jsonpRequest_({ action: "wallet_balance", email: email });
       if (res && res.ok) {
         saveCache_(key, { balance: Number(res.balance || 0) });
+        renderBalance_(res.balance);
       }
-
-      return res;
     }
 
     async function fetchTx_(email, force = false) {
       const key = cacheKeyTx_(email);
-
       if (!force) {
         const cached = loadCache_(key, TX_CACHE_TTL_MS);
         if (cached && Array.isArray(cached.items)) {
           renderTx_(cached.items);
-          return { ok: true, items: cached.items, cached: true };
+          return;
         }
       }
-
-      const res = await jsonpRequest_({
-        action: "wallet_tx",
-        email: email
-      });
-
+      const res = await jsonpRequest_({ action: "wallet_tx", email: email });
       if (res && res.ok && Array.isArray(res.items)) {
         saveCache_(key, { items: res.items });
-      }
-
-      return res;
-    }
-
-    async function loadBalance_(email, force = false) {
-      const res = await fetchBalance_(email, force);
-      if (res && res.ok) {
-        renderBalance_(res.balance || 0);
-      } else if (force) {
-        renderBalance_(0);
-      }
-      return !!(res && res.ok);
-    }
-
-    async function loadTx_(email, force = false) {
-      const res = await fetchTx_(email, force);
-      if (res && res.ok) {
-        renderTx_(res.items || []);
-      } else if (force) {
-        renderTx_([]);
-      }
-      return !!(res && res.ok);
-    }
-
-    async function loadWallet_(force = false) {
-      const s = getSession_();
-      if (!s) {
-        window.location.href = "login.html";
-        return false;
-      }
-
-      const userLabel = $("userLabel");
-      if (userLabel) userLabel.textContent = s.email;
-
-      if (!force && walletLoadPromise_) return walletLoadPromise_;
-
-      walletLoadPromise_ = (async () => {
-        const balanceOk = await loadBalance_(s.email, force);
-        return balanceOk;
-      })();
-
-      try {
-        return await walletLoadPromise_;
-      } finally {
-        walletLoadPromise_ = null;
+        renderTx_(res.items);
       }
     }
 
     async function loadWalletAndTx_(force = false) {
+      hideErrorMsg();
       const s = getSession_();
       if (!s) {
         window.location.href = "login.html";
@@ -492,21 +335,24 @@
       const userLabel = $("userLabel");
       if (userLabel) userLabel.textContent = s.email;
 
-      const balancePromise = loadWallet_(force);
-
-      if (!force && txLoadPromise_) {
-        await Promise.allSettled([balancePromise, txLoadPromise_]);
+      if (!SCRIPT_URL) {
+        showErrorMsg("⚠️ Impossible de charger : le SCRIPT_URL est manquant dans vf_config.js !");
+        $("balanceValue").textContent = "ERR";
+        $("txBox").innerHTML = `<div class="p-8 text-center text-red-500 text-sm font-bold">Erreur de configuration.</div>`;
         return;
       }
 
-      txLoadPromise_ = (async () => {
-        return await loadTx_(s.email, force);
-      })();
-
       try {
-        await Promise.allSettled([balancePromise, txLoadPromise_]);
-      } finally {
-        txLoadPromise_ = null;
+        // Charge le solde et l'historique en même temps
+        await Promise.all([
+          fetchBalance_(s.email, force),
+          fetchTx_(s.email, force)
+        ]);
+      } catch (error) {
+        console.error("Erreur de chargement des données :", error);
+        showErrorMsg("⚠️ Erreur : " + error.message);
+        $("balanceValue").textContent = "ERR";
+        $("txBox").innerHTML = `<div class="p-8 text-center text-red-500 text-sm font-bold">Impossible de contacter la base de données.</div>`;
       }
     }
 
@@ -514,38 +360,22 @@
       if (topupBusy_) return;
 
       const s = getSession_();
-      if (!s) {
-        window.location.href = "login.html";
-        return;
-      }
+      if (!s) { window.location.href = "login.html"; return; }
 
       const amount = $("amountInp")?.value;
       const method = $("methodSel")?.value;
       const txid = $("txidInp")?.value.trim() || "";
       const btn = $("paidBtn");
 
-      if (!amount || Number(amount) <= 0) {
-        alert("Montant invalide");
-        return;
-      }
+      if (!amount || Number(amount) <= 0) { alert("Montant invalide"); return; }
 
       if (method === "MOBILE_MONEY") {
-        const msg = encodeURIComponent(
-          "Bonjour ViralFlowr, je souhaite recharger mon wallet.\nEmail: " +
-          s.email +
-          "\nMontant: " +
-          amount +
-          " USD\nMethode: Mobile Money"
-        );
+        const msg = encodeURIComponent(`Bonjour ViralFlowr, je souhaite recharger mon wallet.\nEmail: ${s.email}\nMontant: ${amount} USD\nMethode: Mobile Money`);
         window.open("https://wa.me/" + WA_NUMBER + "?text=" + msg, "_blank");
         return;
       }
 
-      if (method === "BINANCE_PAY" && !txid) {
-        alert("ID de transaction requis");
-        return;
-      }
-
+      if (method === "BINANCE_PAY" && !txid) { alert("ID de transaction requis"); return; }
       if (!btn) return;
 
       topupBusy_ = true;
@@ -573,10 +403,9 @@
         $("txidInp").value = "";
 
         localStorage.removeItem(cacheKeyTx_(s.email));
-        await loadTx_(s.email, true);
-
+        await loadWalletAndTx_(true); // Force l'actualisation
       } catch (e) {
-        alert("Erreur de connexion.");
+        alert("Erreur d'envoi de la demande.");
       } finally {
         topupBusy_ = false;
         btn.disabled = false;
@@ -590,30 +419,20 @@
       const refreshBtn = $("refreshBtn");
       const copyBinanceIdBtn = $("copyBinanceIdBtn");
 
-      if (methodSel) {
-        methodSel.addEventListener("change", syncMethodUI_);
-      }
-
-      if (paidBtn) {
-        paidBtn.addEventListener("click", submitTopup_);
-      }
-
+      if (methodSel) methodSel.addEventListener("change", syncMethodUI_);
+      if (paidBtn) paidBtn.addEventListener("click", submitTopup_);
+      
       if (refreshBtn) {
         refreshBtn.addEventListener("click", async () => {
-          const s = getSession_();
-          if (!s) {
-            window.location.href = "login.html";
-            return;
-          }
-
           $("balanceValue").textContent = "...";
           $("txBox").innerHTML = `<div class="p-8 text-center text-gray-400 text-sm font-bold">Actualisation...</div>`;
-
-          localStorage.removeItem(cacheKeyBalance_(s.email));
-          localStorage.removeItem(cacheKeyTx_(s.email));
-
+          const s = getSession_();
+          if (s) {
+            localStorage.removeItem(cacheKeyBalance_(s.email));
+            localStorage.removeItem(cacheKeyTx_(s.email));
+          }
           await loadWalletAndTx_(true);
-          showToast("Portefeuille actualise");
+          showToast("Portefeuille actualisé");
         });
       }
 
@@ -621,10 +440,8 @@
         copyBinanceIdBtn.addEventListener("click", async () => {
           try {
             await navigator.clipboard.writeText("744370418");
-            showToast("ID Binance copie");
-          } catch (_) {
-            alert("Copie impossible");
-          }
+            showToast("ID Binance copié");
+          } catch (_) { alert("Copie impossible"); }
         });
       }
     }
