@@ -30,7 +30,12 @@ const VF_SHARED_CONFIG = {
 
   window.VF_CONFIG = {
     ...VF_SHARED_CONFIG,
+    scriptUrl: VF_SHARED_CONFIG.scriptUrl,
+    avisScriptUrl: VF_SHARED_CONFIG.avisScriptUrl,
+    orderScriptUrl: VF_SHARED_CONFIG.orderScriptUrl,
     inAppsScriptPanel: inAppsScriptPanel,
     postMessageTargetOrigin: inAppsScriptPanel ? "*" : location.origin
   };
 })();
+
+export { VF_SHARED_CONFIG };
