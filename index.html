@@ -134,7 +134,7 @@
     let _isFirstLoad = true;
 
     const FILTER_MAP = {
-      "Abonnement": ["ABONNEMENT", "CARTE"],
+      "Abonnement": ["ABONNEMENT"],
       "Carte2": ["CARTE2"],
       "Boost": ["BOOST", "BOOST2", "SMM1", "SMM2", "SMM3", "PEAKERR", "PEAK"],
       "Materiel": ["MATERIEL", "GADGET", "PHONE"],
@@ -142,42 +142,84 @@
       "Jeux": ["JEUX", "JEU", "GAME", "GAMING", "PSN", "PLAYSTATION", "XBOX", "STEAM", "NINTENDO"]
     };
 
-    function safe(v) { return (v === null || v === undefined) ? "" : String(v); }
-    function up(v) { return safe(v).trim().toUpperCase(); }
-    function escHtml(str) {
-      return safe(str).replace(/[&<>"']/g, (c) => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-      }[c]));
+    function safe(v) {
+      return (v === null || v === undefined) ? "" : String(v);
     }
-    function escAttr(str) { return safe(str).replace(/["']/g, ""); }
-    function pName(p) { return safe(p.nom || p.name || p.title); }
-    function pCat(p) { return safe(p.cat || p.category || p.categorie); }
-    function pPrice(p) { return safe(p.prix_affiche ?? p.prix_revendeur ?? p.prix ?? p.price ?? p.amount); }
-    function pImg(p) { return safe(p.img || p.image || p.photo || p.image_url || p.cover || p.thumbnail); }
 
-    function getStore() { return window.vfApi?.storage || window.vfStorage || null; }
+    function up(v) {
+      return safe(v).trim().toUpperCase();
+    }
+
+    function escHtml(str) {
+      return safe(str).replace(/[&<>"']/g, function (c) {
+        return {
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;"
+        }[c];
+      });
+    }
+
+    function escAttr(str) {
+      return safe(str).replace(/["']/g, "");
+    }
+
+    function pName(p) {
+      return safe(p.nom || p.name || p.title);
+    }
+
+    function pCat(p) {
+      return safe(p.cat || p.category || p.categorie);
+    }
+
+    function pPrice(p) {
+      return safe(p.prix_affiche ?? p.prix_revendeur ?? p.prix ?? p.price ?? p.amount);
+    }
+
+    function pImg(p) {
+      return safe(p.img || p.image || p.photo || p.image_url || p.cover || p.thumbnail);
+    }
+
+    function pStableId(p) {
+      return safe(p.__vf_id || p.id || p.ID).trim();
+    }
+
+    function getStore() {
+      return window.vfApi?.storage || window.vfStorage || null;
+    }
 
     function getSession_() {
       const st = getStore();
-      try { if (st?.getSession) return st.getSession(); } catch (_) {}
-      try { return JSON.parse(localStorage.getItem("vf_session")); } catch (_) { return null; }
+      try {
+        if (st?.getSession) return st.getSession();
+      } catch (_) {}
+
+      try {
+        return JSON.parse(localStorage.getItem("vf_session"));
+      } catch (_) {
+        return null;
+      }
     }
 
     function getToken_() {
       const st = getStore();
-      try { if (st?.getToken) return String(st.getToken()).trim(); } catch (_) {}
+      try {
+        if (st?.getToken) return String(st.getToken()).trim();
+      } catch (_) {}
+
       return localStorage.getItem("vf_token")?.trim() || "";
     }
 
     function bindSearchInput_() {
       const input = document.getElementById("searchInput");
       if (!input || input.dataset.vfBound === "1") return;
+
       input.dataset.vfBound = "1";
-      input.addEventListener("input", () => { render(); });
+      input.addEventListener("input", function () {
+        render();
+      });
     }
 
     async function loadProducts_(token) {
@@ -195,7 +237,18 @@
         }
 
         const list = Array.isArray(payload) ? payload : (payload.products || []);
-        ALL_PRODUCTS = list.map((p, i) => ({ ...p, __vf_id: (p.id || p.ID || "p-" + i) }));
+
+        ALL_PRODUCTS = list
+          .filter(function (p) {
+            return String(p.id || p.ID || "").trim() !== "";
+          })
+          .map(function (p) {
+            return {
+              ...p,
+              __vf_id: String(p.id || p.ID).trim()
+            };
+          });
+
         _isFirstLoad = false;
 
         const errBox = document.getElementById("loadError");
@@ -204,6 +257,7 @@
         render();
       } catch (err) {
         console.error("Load Error:", err);
+
         if (_isFirstLoad) {
           const errBox = document.getElementById("loadError");
           if (errBox) {
@@ -221,12 +275,15 @@
 
       const query = (input?.value || "").toLowerCase().trim();
 
-      const filtered = ALL_PRODUCTS.filter((p) => {
+      const filtered = ALL_PRODUCTS.filter(function (p) {
         const catU = up(pCat(p));
         const nameL = pName(p).toLowerCase();
+
         const matchCat =
           CURRENT_FILTER === "all" ||
-          (FILTER_MAP[CURRENT_FILTER]?.some((a) => catU.includes(up(a)))) ||
+          (FILTER_MAP[CURRENT_FILTER]?.some(function (a) {
+            return catU.includes(up(a));
+          })) ||
           catU === up(CURRENT_FILTER);
 
         return matchCat && (!query || nameL.includes(query));
@@ -239,32 +296,52 @@
 
       if (_isFirstLoad) return;
 
-      grid.innerHTML = filtered.map((p) => {
+      grid.innerHTML = filtered.map(function (p) {
         const img = pImg(p) || FALLBACK_IMG;
         const priceNum = parseFloat(String(pPrice(p)).replace(",", "."));
         const priceTxt = isNaN(priceNum) ? "0.00" : priceNum.toFixed(2);
-        const pid = encodeURIComponent(p.__vf_id);
 
-        return `<a href="/p/${pid}/" class="hover-card group bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col shadow-sm">
-          <div class="aspect-square bg-[#F8FAFC] rounded-[22px] mb-4 flex items-center justify-center p-6 overflow-hidden">
-            <img src="${escAttr(img)}" class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" onerror="this.src='${FALLBACK_IMG}'" alt="${escHtml(pName(p))}">
-          </div>
-          <div class="px-1">
-            <span class="text-[9px] font-black text-[#F07E13] uppercase tracking-tighter mb-1 block">${escHtml(pCat(p))}</span>
-            <h3 class="text-[13px] font-bold text-gray-900 leading-tight mb-4 h-8 overflow-hidden line-clamp-2">${escHtml(pName(p))}</h3>
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-gray-900 font-black text-lg tracking-tighter">${priceTxt} $</span>
-              <div class="bg-gray-900 text-white p-1.5 rounded-lg group-hover:brand-gradient transition-all">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16m8-8H4"></path></svg>
+        const stableId = pStableId(p);
+        if (!stableId) return "";
+
+        const pid = encodeURIComponent(stableId);
+
+        return `
+          <a href="/p/${pid}/" class="hover-card group bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col shadow-sm">
+            <div class="aspect-square bg-[#F8FAFC] rounded-[22px] mb-4 flex items-center justify-center p-6 overflow-hidden">
+              <img
+                src="${escAttr(img)}"
+                class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
+                onerror="this.src='${FALLBACK_IMG}'"
+                alt="${escHtml(pName(p))}"
+              >
+            </div>
+
+            <div class="px-1">
+              <span class="text-[9px] font-black text-[#F07E13] uppercase tracking-tighter mb-1 block">
+                ${escHtml(pCat(p))}
+              </span>
+
+              <h3 class="text-[13px] font-bold text-gray-900 leading-tight mb-4 h-8 overflow-hidden line-clamp-2">
+                ${escHtml(pName(p))}
+              </h3>
+
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-gray-900 font-black text-lg tracking-tighter">${priceTxt} $</span>
+                <div class="bg-gray-900 text-white p-1.5 rounded-lg group-hover:brand-gradient transition-all">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 4v16m8-8H4"></path>
+                  </svg>
+                </div>
               </div>
             </div>
-          </div>
-        </a>`;
+          </a>
+        `;
       }).join("");
     }
 
     function filterCat(cat, btn) {
-      document.querySelectorAll(".cat-btn").forEach((b) => {
+      document.querySelectorAll(".cat-btn").forEach(function (b) {
         b.classList.remove("text-white", "brand-gradient", "active");
         b.classList.add("bg-white", "text-gray-500");
       });
