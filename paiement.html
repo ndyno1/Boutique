@@ -656,7 +656,7 @@
       };
 
       // ENVOI DU PAIEMENT AU SCRIPT WALLET VIA JSONP
-      jsonp_(WALLET_SCRIPT_URL, payload, 
+      jsonp_(GOOGLE_URL, payload, 
         (res) => {
           if (res && res.ok) {
             // --- ALERTE BOT ADMIN (WBA) EN ARRIÈRE-PLAN ---
