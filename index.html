@@ -236,7 +236,7 @@
         
         // CORRECTION MAJEURE ICI : Format d'URL standardisé + Sauvegarde forcée au clic
         // Note: Si ta page de destination s'appelle "paiement.html", remplace "produit.html" par "paiement.html" ci-dessous.
-        const targetUrl = `produit.html?id=${pid}`;
+        const targetUrl = `/p/${pid}/`;
 
         return `
           <a href="${targetUrl}" onclick="window.saveProductClick('${escAttr(stableId)}')" class="hover-card group bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col shadow-sm">
