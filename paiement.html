@@ -309,9 +309,13 @@
       });
     }
 
-    function copyText(txt){
-      navigator.clipboard.writeText(String(txt || ""));
-      alert("Copié.");
+    async function copyText(txt){
+      try{
+        await navigator.clipboard.writeText(String(txt || ""));
+        alert("Copié.");
+      }catch(_){
+        alert("Impossible de copier.");
+      }
     }
 
     function safeDecode(v){
@@ -379,6 +383,21 @@
         wbtn.style.cursor = "not-allowed";
         wbtn.innerText = "Déjà payé";
       }
+    }
+
+    function showSuccess_(oid){
+      sessionStorage.setItem(SENT_KEY, "1");
+      sessionStorage.removeItem(INFLIGHT_KEY);
+      sessionStorage.removeItem("active_order_id");
+
+      try {
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+      } catch(_){}
+
+      document.getElementById("form-container").classList.add("hidden");
+      document.getElementById("final-id").innerText = oid || orderId;
+      document.getElementById("success-msg").classList.remove("hidden");
+      hardLockForm_();
     }
 
     if (sessionStorage.getItem(SENT_KEY) === "1") {
@@ -453,7 +472,7 @@
     }
 
     function fmt2(n){
-      const x = Number(n||0);
+      const x = Number(n || 0);
       if(!isFinite(x)) return "0.00";
       return x.toFixed(2);
     }
@@ -464,20 +483,41 @@
     }
 
     function jsonp_(paramsObj, onOk, onErr){
-      const cb = "VF_CB_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
+      const cb = "VF_CB_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
+      const s = document.createElement("script");
+
       window[cb] = function(payload){
         try { onOk(payload); }
-        finally { try { delete window[cb]; } catch(_){} }
+        finally {
+          try { delete window[cb]; } catch(_){}
+          try { s.remove(); } catch(_){}
+        }
       };
 
-      const s = document.createElement("script");
-      const qs = new URLSearchParams({ ...paramsObj, callback: cb, t: String(Date.now()) });
+      const cleanParams = {};
+      Object.keys(paramsObj || {}).forEach((k) => {
+        const v = paramsObj[k];
+        cleanParams[k] = v == null ? "" : String(v);
+      });
+
+      const qs = new URLSearchParams({ ...cleanParams, callback: cb, t: String(Date.now()) });
       s.src = GOOGLE_URL + "?" + qs.toString();
       s.onerror = function(){
         try { delete window[cb]; } catch(_){}
+        try { s.remove(); } catch(_){}
         onErr && onErr();
       };
       document.body.appendChild(s);
+    }
+
+    function walletPayRequest_(payload){
+      return new Promise((resolve, reject) => {
+        jsonp_(
+          payload,
+          (res) => resolve(res),
+          () => reject(new Error("NETWORK_ERROR"))
+        );
+      });
     }
 
     function showWalletLoadingUI_(){
@@ -595,7 +635,7 @@
         return;
       }
 
-      WALLET_EMAIL = String(s.email||"").trim().toLowerCase();
+      WALLET_EMAIL = String(s.email || "").trim().toLowerCase();
       WALLET_LOADING = true;
       showWalletLoadingUI_();
       refreshWalletBalance_();
@@ -673,7 +713,10 @@
     document.getElementById("orderForm").onsubmit = async (e) => {
       e.preventDefault();
 
-      if (sessionStorage.getItem(SENT_KEY) === "1") { showLocked_(orderId); return; }
+      if (sessionStorage.getItem(SENT_KEY) === "1") { 
+        showLocked_(orderId); 
+        return; 
+      }
       if (SUBMIT_LOCK || sessionStorage.getItem(INFLIGHT_KEY) === "1") return;
 
       SUBMIT_LOCK = true;
@@ -694,11 +737,12 @@
 
       const resetLockAndBtn = () => {
         if(btn) {
-          btn.disabled=false;
-          btn.innerText="Payer avec Wallet";
+          btn.disabled = false;
+          btn.innerText = "Payer avec Wallet";
         }
         SUBMIT_LOCK = false;
         sessionStorage.removeItem(INFLIGHT_KEY);
+        updateWalletUI_();
       };
 
       if (!idS) {
@@ -822,14 +866,32 @@
           return;
         }
 
-        await fetch(GOOGLE_URL, {
-          method:"POST",
-          mode:"no-cors",
-          body: JSON.stringify(payload)
-        });
+        const res = await walletPayRequest_(payload);
+
+        if (res && (res.alreadyPaid === true || res.duplicate === true || res.code === "ALREADY_PAID")) {
+          sessionStorage.setItem(SENT_KEY, "1");
+          showLocked_(orderId);
+          hardLockForm_();
+          return;
+        }
+
+        if (!res || res.ok !== true) {
+          const msg = (res && res.message) ? String(res.message) : "Paiement refusé ou non confirmé.";
+          alert(msg);
+          resetLockAndBtn();
+          return;
+        }
+
+        if (typeof res.balance !== "undefined") {
+          WALLET_BAL = Number(res.balance || 0);
+          WALLET_OK = true;
+          updateWalletUI_();
+        } else {
+          refreshWalletBalance_();
+        }
 
         try {
-          let pseudoNom = WALLET_EMAIL ? WALLET_EMAIL.split("@")[0] : "Client Web";
+          const pseudoNom = WALLET_EMAIL ? WALLET_EMAIL.split("@")[0] : "Client Web";
 
           const qs = new URLSearchParams({
             source: "website",
@@ -842,21 +904,13 @@
             t: Date.now()
           }).toString();
 
-          let pingBot = new Image();
+          const pingBot = new Image();
           pingBot.src = BOT_WEBHOOK_URL + "?" + qs;
         } catch (botErr) {
           console.log("Erreur préparation Bot:", botErr);
         }
 
-        sessionStorage.setItem(SENT_KEY, "1");
-        sessionStorage.removeItem(INFLIGHT_KEY);
-        sessionStorage.removeItem("active_order_id");
-
-        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-
-        document.getElementById("form-container").classList.add("hidden");
-        document.getElementById("final-id").innerText = orderId;
-        document.getElementById("success-msg").classList.remove("hidden");
+        showSuccess_(res.orderId || orderId);
 
       } catch (err) {
         alert("Erreur de connexion. Réessayez.");
