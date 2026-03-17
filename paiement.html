@@ -19,68 +19,19 @@
   <link rel="stylesheet" href="/styles/vf_theme.css?v=2">
 
   <style>
-    body{
-      background:#F3F3F3;
-      color:#201B16;
-    }
-
+    body{ background:#F3F3F3; color:#201B16; }
     .text-orange-bsv { color:#F07E13; }
     .checkout-container { max-width:500px; width:100%; margin:2rem auto; }
 
-    input, textarea {
-      outline:none;
-      transition:all .2s;
-      border:1px solid #e5e7eb !important;
-    }
+    input, textarea { outline:none; transition:all .2s; border:1px solid #e5e7eb !important; }
     input:focus, textarea:focus { border-color:#F07E13 !important; }
 
-    .btn-mini{
-      height:40px;
-      padding:0 12px;
-      border-radius:12px;
-      font-weight:900;
-      font-size:11px;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      border:1px solid #E5E7EB;
-      background:#fff;
-      color:#111827;
-      transition:.2s;
-      white-space:nowrap;
-      text-decoration:none;
-    }
-    .btn-mini:hover{
-      transform: translateY(-1px);
-      border-color:#F07E13;
-      color:#F07E13;
-    }
+    .btn-mini{ height:40px; padding:0 12px; border-radius:12px; font-weight:900; font-size:11px; letter-spacing:.08em; text-transform:uppercase; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:1px solid #E5E7EB; background:#fff; color:#111827; transition:.2s; white-space:nowrap; text-decoration:none; }
+    .btn-mini:hover{ transform: translateY(-1px); border-color:#F07E13; color:#F07E13; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
 
-    .mono {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    }
-
-    .locked-overlay{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.35);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index:9999;
-      padding:16px;
-    }
-    .locked-card{
-      width:min(520px, 100%);
-      background:#fff;
-      border:1px solid #eee;
-      border-radius:24px;
-      padding:18px;
-      box-shadow:0 20px 60px rgba(0,0,0,.2);
-    }
+    .locked-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.35); display:none; align-items:center; justify-content:center; z-index:9999; padding:16px; }
+    .locked-card{ width:min(520px, 100%); background:#fff; border:1px solid #eee; border-radius:24px; padding:18px; box-shadow:0 20px 60px rgba(0,0,0,.2); }
   </style>
 </head>
 
@@ -94,10 +45,8 @@
         Pour éviter un double envoi, le formulaire est bloqué.
       </div>
       <div class="mt-4 grid grid-cols-2 gap-2">
-        <button class="w-full bg-gray-900 text-white py-3 rounded-2xl font-black text-[11px] uppercase"
-          onclick="location.href='index.html'">Boutique</button>
-        <button class="w-full bg-white border border-gray-200 py-3 rounded-2xl font-black text-[11px] uppercase hover:border-[#F07E13] hover:text-[#F07E13]"
-          onclick="document.getElementById('lockedOverlay').style.display='none'">OK</button>
+        <button class="w-full bg-gray-900 text-white py-3 rounded-2xl font-black text-[11px] uppercase" onclick="location.href='index.html'">Boutique</button>
+        <button class="w-full bg-white border border-gray-200 py-3 rounded-2xl font-black text-[11px] uppercase hover:border-[#F07E13] hover:text-[#F07E13]" onclick="document.getElementById('lockedOverlay').style.display='none'">OK</button>
       </div>
     </div>
   </div>
@@ -108,16 +57,12 @@
 
   <main class="p-4 md:p-8">
     <div class="checkout-container">
-
       <div class="flex items-center justify-between gap-3 mb-6">
         <div class="flex items-center gap-3 min-w-0">
           <a href="index.html" class="inline-flex items-center gap-2 min-w-0" aria-label="Aller à la boutique">
-            <span class="text-2xl font-black tracking-tighter whitespace-nowrap">
-              Viral<span class="text-orange-bsv">Flowr</span>
-            </span>
+            <span class="text-2xl font-black tracking-tighter whitespace-nowrap">Viral<span class="text-orange-bsv">Flowr</span></span>
           </a>
         </div>
-
         <div class="flex items-center gap-2">
           <a href="index.html" class="btn-mini hidden sm:inline-flex">Boutique</a>
           <a href="wallet.html" class="btn-mini hidden sm:inline-flex">Portefeuille</a>
@@ -126,13 +71,10 @@
 
       <div class="text-center mb-6">
         <p class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Paiement sécurisé</p>
-        <p class="text-gray-500 text-[12px] font-bold mt-2">
-          Suivez les étapes ci-dessous pour finaliser votre commande.
-        </p>
+        <p class="text-gray-500 text-[12px] font-bold mt-2">Suivez les étapes ci-dessous pour finaliser votre commande.</p>
       </div>
 
       <div class="bg-white rounded-[32px] shadow-lg border border-gray-100 p-6 md:p-8">
-
         <div id="form-container">
           <h2 id="service-name" class="text-xl font-extrabold text-center mb-2 leading-tight">Chargement...</h2>
           <div class="text-center mb-6">
@@ -151,23 +93,16 @@
           </div>
 
           <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-4 text-center mb-8">
-            <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">
-              Numéro de Commande
-            </span>
+            <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">Numéro de Commande</span>
             <span id="live-order-id" class="block text-2xl font-black text-gray-900 tracking-tight cursor-pointer" onclick="copyText(this.innerText)">...</span>
           </div>
 
           <form id="orderForm" class="space-y-5">
-
             <div id="section-smm" class="hidden space-y-4">
               <div>
                 <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Lien à booster (obligatoire)</label>
                 <input type="text" id="boost-link" placeholder="https://..." class="w-full bg-white rounded-xl p-3 text-sm font-medium">
-                <p class="text-[11px] text-gray-500 font-bold mt-2">
-                  Exemple : lien Instagram / TikTok / YouTube.
-                </p>
               </div>
-
               <div>
                 <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Quantité</label>
                 <input type="number" id="qty" value="1000" class="w-full bg-white rounded-xl p-3 text-sm font-black">
@@ -178,52 +113,35 @@
             <div id="section-abonnement" class="hidden space-y-4">
               <div>
                 <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Identifiants du compte (obligatoire)</label>
-                <textarea id="creds" class="w-full bg-white rounded-xl p-3 text-sm font-medium h-28 resize-none"
-                  placeholder="mail : votre@email.com&#10;mot de passe : votre_mdp"></textarea>
-                <p class="text-[11px] text-gray-500 font-bold mt-2">
-                  Exemple : mail : oto@gmail.com / mot de passe : toto123
-                </p>
+                <textarea id="creds" class="w-full bg-white rounded-xl p-3 text-sm font-medium h-28 resize-none" placeholder="mail : votre@email.com&#10;mot de passe : votre_mdp"></textarea>
               </div>
               <div>
                 <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact de livraison (obligatoire)</label>
-                <input type="text" id="delivery-contact-abo" placeholder="WhatsApp ou Email"
-                  class="w-full bg-white rounded-xl p-3 text-sm font-medium">
-                <p class="text-[11px] text-gray-500 font-bold mt-2">
-                  Utile pour OTP / confirmation / assistance.
-                </p>
+                <input type="text" id="delivery-contact-abo" placeholder="WhatsApp ou Email" class="w-full bg-white rounded-xl p-3 text-sm font-medium">
               </div>
             </div>
 
             <div id="section-carte" class="hidden space-y-4">
               <div>
                 <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Contact de livraison (obligatoire)</label>
-                <input type="text" id="card-delivery" placeholder="WhatsApp ou Email"
-                  class="w-full bg-white rounded-xl p-3 text-sm font-medium">
-                <p class="text-[11px] text-gray-500 font-bold mt-2">
-                  Nous envoyons le code / compte / accès sur ce contact.
-                </p>
+                <input type="text" id="card-delivery" placeholder="WhatsApp ou Email" class="w-full bg-white rounded-xl p-3 text-sm font-medium">
               </div>
             </div>
 
             <div id="section-default" class="hidden space-y-4">
               <div>
                 <label id="default-label" class="text-[11px] font-bold text-gray-900 uppercase ml-1">Information requise</label>
-                <input type="text" id="main-input" placeholder="Ex : IMEI 15 chiffres / lien / etc."
-                  class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+                <input type="text" id="main-input" placeholder="Ex : IMEI 15 chiffres / lien / etc." class="w-full bg-white rounded-xl p-3 text-sm font-medium">
               </div>
               <div>
                 <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Email (optionnel)</label>
-                <input type="email" id="email-client" placeholder="client@gmail.com"
-                  class="w-full bg-white rounded-xl p-3 text-sm font-medium">
+                <input type="email" id="email-client" placeholder="client@gmail.com" class="w-full bg-white rounded-xl p-3 text-sm font-medium">
               </div>
             </div>
 
             <div class="py-2 text-center">
               <span class="text-[10px] text-gray-400 uppercase font-bold">Total à payer</span>
               <div id="display-price" class="text-4xl font-black text-gray-900 tracking-tighter">0.00 $</div>
-              <p class="text-[11px] text-gray-500 font-bold mt-2">
-                Paiement = traitement immédiat.
-              </p>
             </div>
 
             <div id="walletBox" class="hidden mt-4 rounded-2xl border border-gray-800 bg-gray-900 p-4 shadow-xl">
@@ -236,62 +154,29 @@
                   <div class="text-[11px] font-bold text-gray-400 mt-1">
                     Compte : <span id="walletEmail" class="font-black text-gray-300">—</span>
                   </div>
-                  <div id="walletHint" class="text-[11px] font-bold mt-2 text-gray-400">
-                    Vérification du solde...
-                  </div>
+                  <div id="walletHint" class="text-[11px] font-bold mt-2 text-gray-400">Vérification du solde...</div>
                 </div>
                 <div class="flex flex-col gap-2 w-[160px]">
-                  <button type="button" id="walletPayBtn"
-                    class="w-full bg-white text-black py-3 rounded-2xl font-black text-[11px] uppercase shadow-lg hover:scale-[1.02] transition-transform">
+                  <button type="button" id="walletPayBtn" class="w-full bg-white text-black py-3 rounded-2xl font-black text-[11px] uppercase shadow-lg hover:scale-[1.02] transition-transform">
                     Payer avec Wallet
                   </button>
                 </div>
               </div>
-
-              <div class="bg-gray-800 border border-gray-700 rounded-xl p-3 mt-4 text-center">
-                <p class="text-[10px] text-gray-400 font-medium leading-relaxed">
-                  En cliquant sur "Payer avec Wallet", vous acceptez notre
-                  <a href="politique.html" class="text-white font-black underline decoration-2 underline-offset-2 hover:opacity-80">
-                    Politique de règlement
-                  </a>.
-                  Tout achat est définitif. Pour en savoir plus sur notre plateforme, découvrez
-                  <a href="about.html" class="text-white font-black underline decoration-2 underline-offset-2 hover:opacity-80">
-                    qui nous sommes
-                  </a>.
-                </p>
-              </div>
             </div>
-
           </form>
         </div>
 
         <div id="success-msg" class="hidden text-center py-12">
           <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
-            <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24">
-              <path d="M5 13l4 4L19 7"></path>
-            </svg>
+            <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
           </div>
           <h3 class="text-3xl font-black text-gray-900 mb-2">Paiement réussi</h3>
-          <p class="text-gray-500 text-sm mb-8 font-medium">
-            Votre commande <strong id="final-id" class="text-gray-900"></strong> a été payée avec succès via votre Wallet.
-          </p>
-
+          <p class="text-gray-500 text-sm mb-8 font-medium">Votre commande <strong id="final-id" class="text-gray-900"></strong> a été payée avec succès via votre Wallet.</p>
           <div class="grid grid-cols-2 gap-2">
-            <button onclick="startNewOrder_(true)"
-              class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-xs uppercase hover:bg-gray-800 transition-colors">
-              Nouvelle commande
-            </button>
-            <button onclick="location.href='index.html'"
-              class="w-full bg-white border border-gray-200 py-4 rounded-2xl font-black text-xs uppercase hover:border-[#F07E13] hover:text-[#F07E13] transition-colors">
-              Boutique
-            </button>
+            <button onclick="startNewOrder_(true)" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-xs uppercase hover:bg-gray-800 transition-colors">Nouvelle commande</button>
+            <button onclick="location.href='index.html'" class="w-full bg-white border border-gray-200 py-4 rounded-2xl font-black text-xs uppercase hover:border-[#F07E13] hover:text-[#F07E13] transition-colors">Boutique</button>
           </div>
         </div>
-
-      </div>
-
-      <div class="mt-8 text-center">
-        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Paiement sécurisé • ViralFlowr</p>
       </div>
     </div>
   </main>
@@ -314,21 +199,15 @@
     }
 
     async function copyText(txt){
-      try{
-        await navigator.clipboard.writeText(String(txt || ""));
-        alert("Copié.");
-      }catch(_){
-        alert("Impossible de copier.");
-      }
+      try{ await navigator.clipboard.writeText(String(txt || "")); alert("Copié."); }
+      catch(_){ alert("Impossible de copier."); }
     }
 
     function safeDecode(v){
       try { return decodeURIComponent(String(v || "")); } catch(e){ return String(v || ""); }
     }
 
-    function makeOrderId(){
-      return "VF-" + Date.now() + "-" + Math.floor(1000 + Math.random()*9000);
-    }
+    function makeOrderId(){ return "VF-" + Date.now() + "-" + Math.floor(1000 + Math.random()*9000); }
 
     function startNewOrder_(goShop){
       try{
@@ -339,8 +218,7 @@
         }
         sessionStorage.removeItem("active_order_id");
       }catch(_){}
-      if (goShop) location.href = "index.html";
-      else location.reload();
+      if (goShop) location.href = "index.html"; else location.reload();
     }
 
     const params = new URLSearchParams(window.location.search);
@@ -350,7 +228,6 @@
       try{
         const prevServiceId = sessionStorage.getItem("vf_service_id") || "";
         const active = sessionStorage.getItem("active_order_id") || "";
-
         if (idS && prevServiceId && idS !== prevServiceId) {
           if (active) {
             sessionStorage.removeItem("vf_order_sent_" + active);
@@ -358,7 +235,6 @@
           }
           sessionStorage.removeItem("active_order_id");
         }
-
         if (idS) sessionStorage.setItem("vf_service_id", idS);
       }catch(_){}
     })();
@@ -381,23 +257,14 @@
 
     function hardLockForm_(){
       const wbtn = document.getElementById("walletPayBtn");
-      if (wbtn) {
-        wbtn.disabled = true;
-        wbtn.style.opacity = ".6";
-        wbtn.style.cursor = "not-allowed";
-        wbtn.innerText = "Déjà payé";
-      }
+      if (wbtn) { wbtn.disabled = true; wbtn.style.opacity = ".6"; wbtn.style.cursor = "not-allowed"; wbtn.innerText = "Déjà payé"; }
     }
 
     function showSuccess_(oid){
       sessionStorage.setItem(SENT_KEY, "1");
       sessionStorage.removeItem(INFLIGHT_KEY);
       sessionStorage.removeItem("active_order_id");
-
-      try {
-        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-      } catch(_){}
-
+      try { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); } catch(_){}
       document.getElementById("form-container").classList.add("hidden");
       document.getElementById("final-id").innerText = oid || orderId;
       document.getElementById("success-msg").classList.remove("hidden");
@@ -412,9 +279,13 @@
     }
 
     const nom      = params.get("nom") || "Service";
-    const prixInit = parseFloat(params.get("prix")) || 0;
+    
+    // CORRECTION : On sécurise l'extraction du prix pour éviter les bugs si URL contient une virgule ou vide
+    const rawPrix = params.get("prix");
+    let cleanPrix = String(rawPrix || "0").replace(/,/g, ".");
+    const prixInit = parseFloat(cleanPrix) || 0;
+    
     const cat      = params.get("cat") || "";
-
     const desc     = safeDecode(params.get("desc") || "");
     const longDesc = safeDecode(params.get("long") || params.get("long_desc") || "");
     const minParam = parseFloat(params.get("min"));
@@ -430,20 +301,11 @@
     const descText = document.getElementById("desc-text");
 
     let hasAnyDesc = false;
-    if (longDesc && longDesc.trim() !== "") {
-      longText.textContent = longDesc;
-      longBox.classList.remove("hidden");
-      hasAnyDesc = true;
-    }
-    if (desc && desc.trim() !== "") {
-      descText.textContent = desc;
-      descBox.classList.remove("hidden");
-      hasAnyDesc = true;
-    }
+    if (longDesc && longDesc.trim() !== "") { longText.textContent = longDesc; longBox.classList.remove("hidden"); hasAnyDesc = true; }
+    if (desc && desc.trim() !== "") { descText.textContent = desc; descBox.classList.remove("hidden"); hasAnyDesc = true; }
     if (hasAnyDesc) descSection.classList.remove("hidden");
 
     const catUpper = String(cat || "").trim().toUpperCase();
-
     const isSMM  = /(SMM|BOOST|BOOST2|PEAK|PEAKERR)/i.test(catUpper);
     const isAbo  = (catUpper === "ABONNEMENT" || /\bABONNEMENT\b/i.test(catUpper));
     const isCarte = (catUpper === "CARTE" || catUpper === "CARTE2" || catUpper === "JEUX" || /\bCARTE2?\b/i.test(catUpper));
@@ -472,9 +334,7 @@
         const s = JSON.parse(raw);
         if(!s || !s.email) return null;
         return s;
-      }catch{
-        return null;
-      }
+      }catch{ return null; }
     }
 
     function fmt2(n){
@@ -483,22 +343,19 @@
       return x.toFixed(2);
     }
 
+    // CORRECTION MAJEURE : On récupère proprement le prix, même si y'a des espaces bizarres ou symboles
     function getTotalNumber_(){
-      const totalTxt = String(priceEl.innerText || "0").replace("$","").trim();
-      return parseFloat(totalTxt) || 0;
+      let txt = String(priceEl.textContent || "0");
+      txt = txt.replace(/,/g, ".").replace(/[^0-9.]/g, "");
+      return parseFloat(txt) || 0;
     }
 
-    function walletCacheKey_(){
-      return WALLET_EMAIL ? "vf_wallet_balance_cache_" + WALLET_EMAIL : "";
-    }
+    function walletCacheKey_(){ return WALLET_EMAIL ? "vf_wallet_balance_cache_" + WALLET_EMAIL : ""; }
 
     function saveWalletCache_(balance){
       try{
         if (!WALLET_EMAIL) return;
-        localStorage.setItem(walletCacheKey_(), JSON.stringify({
-          balance: Number(balance || 0),
-          ts: Date.now()
-        }));
+        localStorage.setItem(walletCacheKey_(), JSON.stringify({ balance: Number(balance || 0), ts: Date.now() }));
       }catch(_){}
     }
 
@@ -510,9 +367,7 @@
         const obj = JSON.parse(raw);
         if (!obj || typeof obj.balance === "undefined" || !obj.ts) return null;
         return obj;
-      }catch(_){
-        return null;
-      }
+      }catch(_){ return null; }
     }
 
     function isWalletCacheFresh_(maxAgeMs){
@@ -524,80 +379,46 @@
     function jsonp_(paramsObj, onOk, onErr, timeoutMs = JSONP_TIMEOUT_MS){
       const cb = "VF_CB_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
       const s = document.createElement("script");
-      let done = false;
-      let timer = null;
-
+      let done = false; let timer = null;
       function cleanup_(){
-        done = true;
-        if (timer) clearTimeout(timer);
-        try { delete window[cb]; } catch(_){}
-        try { s.remove(); } catch(_){}
+        done = true; if (timer) clearTimeout(timer);
+        try { delete window[cb]; } catch(_){} try { s.remove(); } catch(_){}
       }
-
-      window[cb] = function(payload){
-        if (done) return;
-        cleanup_();
-        onOk && onOk(payload);
-      };
-
+      window[cb] = function(payload){ if (done) return; cleanup_(); onOk && onOk(payload); };
       const cleanParams = {};
-      Object.keys(paramsObj || {}).forEach((k) => {
-        const v = paramsObj[k];
-        cleanParams[k] = v == null ? "" : String(v);
-      });
-
-      timer = setTimeout(() => {
-        if (done) return;
-        cleanup_();
-        onErr && onErr(new Error("TIMEOUT"));
-      }, timeoutMs);
-
+      Object.keys(paramsObj || {}).forEach((k) => { cleanParams[k] = paramsObj[k] == null ? "" : String(paramsObj[k]); });
+      timer = setTimeout(() => { if (done) return; cleanup_(); onErr && onErr(new Error("TIMEOUT")); }, timeoutMs);
       const qs = new URLSearchParams({ ...cleanParams, callback: cb, t: String(Date.now()) });
       s.src = GOOGLE_URL + "?" + qs.toString();
-      s.onerror = function(){
-        if (done) return;
-        cleanup_();
-        onErr && onErr(new Error("NETWORK_ERROR"));
-      };
+      s.onerror = function(){ if (done) return; cleanup_(); onErr && onErr(new Error("NETWORK_ERROR")); };
       document.body.appendChild(s);
     }
 
     function walletPayRequest_(payload){
       return new Promise((resolve, reject) => {
-        jsonp_(
-          payload,
-          (res) => resolve(res),
-          (err) => reject(err || new Error("NETWORK_ERROR"))
-        );
+        jsonp_(payload, (res) => resolve(res), (err) => reject(err || new Error("NETWORK_ERROR")));
       });
     }
 
     function showWalletLoadingUI_(keepButtonState){
       const box = document.getElementById("walletBox");
       if(!box) return;
-
       box.classList.remove("hidden");
       document.getElementById("walletBalance").textContent = WALLET_OK ? fmt2(WALLET_BAL) : "...";
       document.getElementById("walletEmail").textContent = WALLET_EMAIL || "—";
-
       const hint = document.getElementById("walletHint");
       hint.textContent = "Vérification du solde wallet...";
       hint.className = "text-[11px] font-black mt-2 text-gray-400";
-
       if (!keepButtonState) {
         const btn = document.getElementById("walletPayBtn");
-        if (btn){
-          btn.disabled = true;
-          btn.style.opacity = ".6";
-          btn.style.cursor = "not-allowed";
-        }
+        if (btn){ btn.disabled = true; btn.style.opacity = ".6"; btn.style.cursor = "not-allowed"; }
       }
     }
 
+    // CORRECTION : On gère mieux l'affichage pour comprendre pourquoi ça bloque
     function updateWalletUI_(){
       const box = document.getElementById("walletBox");
       if(!box) return;
-
       box.classList.remove("hidden");
       document.getElementById("walletEmail").textContent = WALLET_EMAIL || "—";
 
@@ -605,136 +426,81 @@
       const btn = document.getElementById("walletPayBtn");
       const need = getTotalNumber_();
 
-      if (WALLET_LOADING && !WALLET_OK) {
-        showWalletLoadingUI_(false);
-        return;
-      }
+      if (WALLET_LOADING && !WALLET_OK) { showWalletLoadingUI_(false); return; }
 
       if (!WALLET_OK) {
         document.getElementById("walletBalance").textContent = "—";
         hint.textContent = "Impossible de charger le solde pour le moment.";
         hint.className = "text-[11px] font-black mt-2 text-red-400";
-        btn.disabled = true;
-        btn.style.opacity = ".6";
-        btn.style.cursor = "not-allowed";
+        btn.disabled = true; btn.style.opacity = ".6"; btn.style.cursor = "not-allowed";
         return;
       }
 
       document.getElementById("walletBalance").textContent = fmt2(WALLET_BAL);
 
       if (sessionStorage.getItem(SENT_KEY) === "1") {
-        btn.disabled = true;
-        btn.style.opacity = ".6";
-        btn.style.cursor = "not-allowed";
+        btn.disabled = true; btn.style.opacity = ".6"; btn.style.cursor = "not-allowed";
         hint.textContent = "Commande déjà payée.";
         hint.className = "text-[11px] font-black mt-2 text-green-400";
         return;
       }
 
-      if (WALLET_BAL >= need && need > 0) {
-        hint.textContent = WALLET_LOADING
-          ? "Solde disponible. Actualisation en arrière-plan..."
-          : "Solde suffisant pour régler l'achat.";
+      if (need <= 0) {
+        hint.textContent = "Montant invalide (0$). Vérifiez le produit.";
+        hint.className = "text-[11px] font-black mt-2 text-red-400";
+        btn.disabled = true; btn.style.opacity = ".6"; btn.style.cursor = "not-allowed";
+      } else if (WALLET_BAL >= need) {
+        hint.textContent = WALLET_LOADING ? "Solde disponible. Actualisation en arrière-plan..." : "Solde suffisant pour régler l'achat.";
         hint.className = "text-[11px] font-black mt-2 text-green-400";
-        btn.disabled = false;
-        btn.style.opacity = "1";
-        btn.style.cursor = "pointer";
+        btn.disabled = false; btn.style.opacity = "1"; btn.style.cursor = "pointer";
       } else {
         hint.innerHTML = `Solde insuffisant. <a href="wallet.html" class="text-orange-400 underline">Ajoutez du crédit</a>.`;
         hint.className = "text-[11px] font-black mt-2 text-red-400";
-        btn.disabled = true;
-        btn.style.opacity = ".6";
-        btn.style.cursor = "not-allowed";
+        btn.disabled = true; btn.style.opacity = ".6"; btn.style.cursor = "not-allowed";
       }
     }
 
     function refreshWalletBalance_(opts = {}){
-      const force = !!opts.force;
-      const silent = !!opts.silent;
-
-      if(!WALLET_EMAIL) {
-        return Promise.resolve(false);
-      }
-
+      const force = !!opts.force; const silent = !!opts.silent;
+      if(!WALLET_EMAIL) return Promise.resolve(false);
       const now = Date.now();
-      if (!force && walletBalancePromise_) {
-        return walletBalancePromise_;
-      }
-
+      if (!force && walletBalancePromise_) return walletBalancePromise_;
       const cached = loadWalletCache_();
       if (!force && cached && (now - Number(cached.ts || 0)) <= WALLET_CACHE_TTL_MS) {
-        WALLET_OK = true;
-        WALLET_BAL = Number(cached.balance || 0);
-        walletLastFetchAt_ = Number(cached.ts || 0);
-        updateWalletUI_();
-        return Promise.resolve(true);
+        WALLET_OK = true; WALLET_BAL = Number(cached.balance || 0); walletLastFetchAt_ = Number(cached.ts || 0);
+        updateWalletUI_(); return Promise.resolve(true);
       }
-
       WALLET_LOADING = true;
       if (!silent) showWalletLoadingUI_(WALLET_OK);
-
       walletBalancePromise_ = new Promise((resolve) => {
-        jsonp_(
-          { action:"wallet_balance", email: WALLET_EMAIL, currency:"USD" },
+        jsonp_({ action:"wallet_balance", email: WALLET_EMAIL, currency:"USD" },
           (res) => {
-            WALLET_LOADING = false;
-            walletBalancePromise_ = null;
-
+            WALLET_LOADING = false; walletBalancePromise_ = null;
             if(res && res.ok){
-              WALLET_OK = true;
-              WALLET_BAL = Number(res.balance || 0);
-              walletLastFetchAt_ = Date.now();
-              saveWalletCache_(WALLET_BAL);
-              updateWalletUI_();
-              resolve(true);
+              WALLET_OK = true; WALLET_BAL = Number(res.balance || 0); walletLastFetchAt_ = Date.now();
+              saveWalletCache_(WALLET_BAL); updateWalletUI_(); resolve(true);
             }else{
-              if (cached) {
-                WALLET_OK = true;
-                WALLET_BAL = Number(cached.balance || 0);
-                walletLastFetchAt_ = Number(cached.ts || 0);
-              } else {
-                WALLET_OK = false;
-              }
-              updateWalletUI_();
-              resolve(false);
+              if (cached) { WALLET_OK = true; WALLET_BAL = Number(cached.balance || 0); walletLastFetchAt_ = Number(cached.ts || 0); } else { WALLET_OK = false; }
+              updateWalletUI_(); resolve(false);
             }
           },
           () => {
-            WALLET_LOADING = false;
-            walletBalancePromise_ = null;
-
-            if (cached) {
-              WALLET_OK = true;
-              WALLET_BAL = Number(cached.balance || 0);
-              walletLastFetchAt_ = Number(cached.ts || 0);
-            } else {
-              WALLET_OK = false;
-            }
-            updateWalletUI_();
-            resolve(false);
+            WALLET_LOADING = false; walletBalancePromise_ = null;
+            if (cached) { WALLET_OK = true; WALLET_BAL = Number(cached.balance || 0); walletLastFetchAt_ = Number(cached.ts || 0); } else { WALLET_OK = false; }
+            updateWalletUI_(); resolve(false);
           }
         );
       });
-
       return walletBalancePromise_;
     }
 
     async function ensureFreshWalletBeforePay_(){
       const now = Date.now();
-
-      if (WALLET_OK && (now - walletLastFetchAt_) <= WALLET_FRESH_PAY_TTL_MS) {
-        return true;
-      }
-
+      if (WALLET_OK && (now - walletLastFetchAt_) <= WALLET_FRESH_PAY_TTL_MS) return true;
       if (isWalletCacheFresh_(WALLET_FRESH_PAY_TTL_MS)) {
-        const c = loadWalletCache_();
-        WALLET_OK = true;
-        WALLET_BAL = Number(c.balance || 0);
-        walletLastFetchAt_ = Number(c.ts || 0);
-        updateWalletUI_();
-        return true;
+        const c = loadWalletCache_(); WALLET_OK = true; WALLET_BAL = Number(c.balance || 0); walletLastFetchAt_ = Number(c.ts || 0);
+        updateWalletUI_(); return true;
       }
-
       return await refreshWalletBalance_({ force:true, silent:false });
     }
 
@@ -750,44 +516,29 @@
               <div class="text-[12px] font-bold text-white mt-1">Vous devez vous connecter pour payer.</div>
             </div>
             <a href="wallet.html" class="bg-white text-black py-3 px-5 rounded-2xl font-black text-[11px] uppercase shadow-lg hover:scale-[1.02] transition-transform text-center whitespace-nowrap">Se connecter</a>
-          </div>
-        `;
+          </div>`;
         return;
       }
 
       WALLET_EMAIL = String(s.email || "").trim().toLowerCase();
-
       const cached = loadWalletCache_();
       if (cached) {
-        WALLET_OK = true;
-        WALLET_BAL = Number(cached.balance || 0);
-        walletLastFetchAt_ = Number(cached.ts || 0);
-        updateWalletUI_();
-        refreshWalletBalance_({ force:false, silent:true });
+        WALLET_OK = true; WALLET_BAL = Number(cached.balance || 0); walletLastFetchAt_ = Number(cached.ts || 0);
+        updateWalletUI_(); refreshWalletBalance_({ force:false, silent:true });
       } else {
-        WALLET_LOADING = true;
-        showWalletLoadingUI_(false);
-        refreshWalletBalance_({ force:true, silent:false });
+        WALLET_LOADING = true; showWalletLoadingUI_(false); refreshWalletBalance_({ force:true, silent:false });
       }
 
       document.getElementById("walletPayBtn").addEventListener("click", async () => {
-        if (SUBMIT_LOCK || sessionStorage.getItem(INFLIGHT_KEY) === "1" || sessionStorage.getItem(SENT_KEY) === "1") {
-          showLocked_(orderId);
-          return;
-        }
-
+        if (SUBMIT_LOCK || sessionStorage.getItem(INFLIGHT_KEY) === "1" || sessionStorage.getItem(SENT_KEY) === "1") { showLocked_(orderId); return; }
+        
         const ok = await ensureFreshWalletBeforePay_();
         const need = getTotalNumber_();
 
-        if(!ok && !WALLET_OK){
-          alert("Impossible de charger le solde wallet.");
-          return;
-        }
-
-        if(WALLET_BAL < need || need <= 0){
-          alert("Solde insuffisant. Ajoutez du crédit puis réessayez.");
-          return;
-        }
+        if(!ok && !WALLET_OK){ alert("Impossible de charger le solde wallet."); return; }
+        
+        if (need <= 0) { alert("Montant de la commande invalide (0$). Veuillez vérifier le produit."); return; }
+        if(WALLET_BAL < need){ alert("Solde insuffisant. Ajoutez du crédit puis réessayez."); return; }
 
         document.getElementById("orderForm").requestSubmit();
       });
@@ -795,18 +546,13 @@
 
     if (isSMM) {
       secSmm.classList.remove("hidden");
-
-      const hasMin = Number.isFinite(minParam);
-      const hasMax = Number.isFinite(maxParam);
-
+      const hasMin = Number.isFinite(minParam); const hasMax = Number.isFinite(maxParam);
       if (hasMin) qtyInp.min = String(parseInt(minParam, 10));
       if (hasMax) qtyInp.max = String(parseInt(maxParam, 10));
-
       if (hasMin || hasMax) {
         qtyHint.classList.remove("hidden");
         qtyHint.textContent = `Quantité autorisée : ${hasMin ? parseInt(minParam,10) : 0} – ${hasMax ? parseInt(maxParam,10) : "∞"}`;
       }
-
       function clampQty(q){
         let x = parseInt(String(q || "0").replace(/[^\d]/g,""), 10);
         if (!Number.isFinite(x) || x <= 0) x = hasMin ? parseInt(minParam,10) : 1;
@@ -814,246 +560,108 @@
         if (hasMax && x > parseInt(maxParam,10)) x = parseInt(maxParam,10);
         return x;
       }
-
       function updatePrice(){
         const q = clampQty(qtyInp.value);
         if (String(qtyInp.value) !== String(q)) qtyInp.value = q;
         const total = ((prixInit / 1000) * q);
-        priceEl.innerText = (Number.isFinite(total) ? total.toFixed(2) : "0.00") + " $";
+        priceEl.textContent = (Number.isFinite(total) ? total.toFixed(2) : "0.00") + " $";
         updateWalletUI_();
       }
-
-      qtyInp.addEventListener("input", updatePrice);
-      updatePrice();
-
+      qtyInp.addEventListener("input", updatePrice); updatePrice();
     } else if (isAbo) {
-      secAbo.classList.remove("hidden");
-      priceEl.innerText = prixInit.toFixed(2) + " $";
+      secAbo.classList.remove("hidden"); priceEl.textContent = prixInit.toFixed(2) + " $";
     } else if (isCarte) {
-      secCarte.classList.remove("hidden");
-      priceEl.innerText = prixInit.toFixed(2) + " $";
+      secCarte.classList.remove("hidden"); priceEl.textContent = prixInit.toFixed(2) + " $";
     } else {
-      secDef.classList.remove("hidden");
-      priceEl.innerText = prixInit.toFixed(2) + " $";
+      secDef.classList.remove("hidden"); priceEl.textContent = prixInit.toFixed(2) + " $";
       if (isIMEI) document.getElementById("default-label").innerText = "Numéro IMEI (15 chiffres)";
     }
 
-    initWallet_();
-    updateWalletUI_();
-    setActiveMenuLinkFallback_();
+    initWallet_(); updateWalletUI_(); setActiveMenuLinkFallback_();
 
     document.getElementById("orderForm").onsubmit = async (e) => {
       e.preventDefault();
-
-      if (sessionStorage.getItem(SENT_KEY) === "1") { 
-        showLocked_(orderId); 
-        return; 
-      }
+      if (sessionStorage.getItem(SENT_KEY) === "1") { showLocked_(orderId); return; }
       if (SUBMIT_LOCK || sessionStorage.getItem(INFLIGHT_KEY) === "1") return;
 
-      SUBMIT_LOCK = true;
-      sessionStorage.setItem(INFLIGHT_KEY, "1");
+      SUBMIT_LOCK = true; sessionStorage.setItem(INFLIGHT_KEY, "1");
 
       const btn = document.getElementById("walletPayBtn");
-      if (btn) {
-        btn.disabled = true;
-        btn.innerText = "Validation en cours...";
-      }
+      if (btn) { btn.disabled = true; btn.innerText = "Validation en cours..."; }
 
-      let input1 = "";
-      let emailForSheet = "";
-      let contactValue = "";
-      let qtyVal = 1;
-
+      let input1 = ""; let emailForSheet = ""; let contactValue = ""; let qtyVal = 1;
       const totalNumber = getTotalNumber_();
 
       const resetLockAndBtn = () => {
-        if(btn) {
-          btn.disabled = false;
-          btn.innerText = "Payer avec Wallet";
-        }
-        SUBMIT_LOCK = false;
-        sessionStorage.removeItem(INFLIGHT_KEY);
-        updateWalletUI_();
+        if(btn) { btn.disabled = false; btn.innerText = "Payer avec Wallet"; }
+        SUBMIT_LOCK = false; sessionStorage.removeItem(INFLIGHT_KEY); updateWalletUI_();
       };
 
-      if (!idS) {
-        alert("ID du service manquant (paramètre id).");
-        resetLockAndBtn();
-        return;
-      }
+      if (!idS) { alert("ID du service manquant (paramètre id)."); resetLockAndBtn(); return; }
 
       if (isSMM) {
         const link = document.getElementById("boost-link").value.trim();
-        if (!link) {
-          alert("Ajoutez le lien à booster.");
-          resetLockAndBtn();
-          return;
-        }
-
-        const hasMin = Number.isFinite(minParam);
-        const hasMax = Number.isFinite(maxParam);
+        if (!link) { alert("Ajoutez le lien à booster."); resetLockAndBtn(); return; }
+        const hasMin = Number.isFinite(minParam); const hasMax = Number.isFinite(maxParam);
         const q = parseInt(String(qtyInp.value || "0").replace(/[^\d]/g,""), 10);
-
-        if (!q || q <= 0) {
-          alert("Quantité invalide.");
-          resetLockAndBtn();
-          return;
-        }
-
+        if (!q || q <= 0) { alert("Quantité invalide."); resetLockAndBtn(); return; }
         if ((hasMin && q < parseInt(minParam,10)) || (hasMax && q > parseInt(maxParam,10))) {
           alert(`Quantité invalide. Min=${hasMin ? parseInt(minParam,10) : 0}${hasMax ? ` / Max=${parseInt(maxParam,10)}` : ""}.`);
-          resetLockAndBtn();
-          return;
+          resetLockAndBtn(); return;
         }
-
-        input1 = link;
-        qtyVal = q;
-        emailForSheet = WALLET_EMAIL;
-        contactValue = WALLET_EMAIL;
+        input1 = link; qtyVal = q; emailForSheet = WALLET_EMAIL; contactValue = WALLET_EMAIL;
       }
       else if (isAbo) {
         const creds = document.getElementById("creds").value.trim();
         const contact = document.getElementById("delivery-contact-abo").value.trim();
-        if (!creds) {
-          alert("Ajoutez vos identifiants (mail + mot de passe).");
-          resetLockAndBtn();
-          return;
-        }
-        if (!contact) {
-          alert("Ajoutez un contact de livraison (WhatsApp ou Email).");
-          resetLockAndBtn();
-          return;
-        }
-
-        input1 = creds;
-        contactValue = contact;
-        emailForSheet = contact;
-        qtyVal = 1;
+        if (!creds) { alert("Ajoutez vos identifiants (mail + mot de passe)."); resetLockAndBtn(); return; }
+        if (!contact) { alert("Ajoutez un contact de livraison."); resetLockAndBtn(); return; }
+        input1 = creds; contactValue = contact; emailForSheet = contact; qtyVal = 1;
       }
       else if (isCarte) {
         const contact = document.getElementById("card-delivery").value.trim();
-        if (!contact) {
-          alert("Ajoutez un contact de livraison (WhatsApp ou Email).");
-          resetLockAndBtn();
-          return;
-        }
-
-        input1 = "CONTACT: voir colonne Email Client";
-        contactValue = contact;
-        emailForSheet = contact;
-        qtyVal = 1;
+        if (!contact) { alert("Ajoutez un contact de livraison."); resetLockAndBtn(); return; }
+        input1 = "CONTACT: voir colonne Email Client"; contactValue = contact; emailForSheet = contact; qtyVal = 1;
       }
       else {
         const main = document.getElementById("main-input").value.trim();
         const em = document.getElementById("email-client").value.trim();
-        if (!main) {
-          alert("Remplissez l'information requise.");
-          resetLockAndBtn();
-          return;
-        }
-
-        input1 = main;
-        qtyVal = 1;
-
-        if (em) {
-          contactValue = em;
-          emailForSheet = em;
-        }
+        if (!main) { alert("Remplissez l'information requise."); resetLockAndBtn(); return; }
+        input1 = main; qtyVal = 1; if (em) { contactValue = em; emailForSheet = em; }
       }
 
-      if (!input1) {
-        alert("Information manquante.");
-        resetLockAndBtn();
-        return;
-      }
-
-      if (!emailForSheet && WALLET_EMAIL) {
-        emailForSheet = WALLET_EMAIL;
-        if (!contactValue) contactValue = WALLET_EMAIL;
-      }
+      if (!input1) { alert("Information manquante."); resetLockAndBtn(); return; }
+      if (!emailForSheet && WALLET_EMAIL) { emailForSheet = WALLET_EMAIL; if (!contactValue) contactValue = WALLET_EMAIL; }
 
       const payload = {
-        action: "wallet_pay",
-        orderId: orderId,
-        produit: nom,
-        idService: idS,
-        categorie: cat,
-        input1: input1,
-        contact: contactValue,
-        email: emailForSheet,
-        quantite: qtyVal,
-        total: totalNumber,
-        payMethod: "WALLET",
-        walletEmail: WALLET_EMAIL,
-        fileData: "",
-        fileType: "",
-        fileName: "",
-        idempotencyKey: "IDEMP_" + orderId
+        action: "wallet_pay", orderId: orderId, produit: nom, idService: idS, categorie: cat,
+        input1: input1, contact: contactValue, email: emailForSheet, quantite: qtyVal, total: totalNumber,
+        payMethod: "WALLET", walletEmail: WALLET_EMAIL, fileData: "", fileType: "", fileName: "", idempotencyKey: "IDEMP_" + orderId
       };
 
       try {
-        if (sessionStorage.getItem(SENT_KEY) === "1") {
-          showLocked_(orderId);
-          return;
-        }
-
+        if (sessionStorage.getItem(SENT_KEY) === "1") { showLocked_(orderId); return; }
         const res = await walletPayRequest_(payload);
-
         if (res && (res.alreadyPaid === true || res.duplicate === true || res.code === "ALREADY_PAID")) {
-          sessionStorage.setItem(SENT_KEY, "1");
-          showLocked_(orderId);
-          hardLockForm_();
-          return;
+          sessionStorage.setItem(SENT_KEY, "1"); showLocked_(orderId); hardLockForm_(); return;
         }
-
         if (!res || res.ok !== true) {
           const msg = (res && res.message) ? String(res.message) : "Paiement refusé ou non confirmé.";
-          alert(msg);
-          resetLockAndBtn();
-          return;
+          alert(msg); resetLockAndBtn(); return;
         }
-
         if (typeof res.balance !== "undefined") {
-          WALLET_BAL = Number(res.balance || 0);
-          WALLET_OK = true;
-          walletLastFetchAt_ = Date.now();
-          saveWalletCache_(WALLET_BAL);
-          updateWalletUI_();
+          WALLET_BAL = Number(res.balance || 0); WALLET_OK = true; walletLastFetchAt_ = Date.now();
+          saveWalletCache_(WALLET_BAL); updateWalletUI_();
         }
-
         try {
           const pseudoNom = WALLET_EMAIL ? WALLET_EMAIL.split("@")[0] : "Client Web";
-
-          const qs = new URLSearchParams({
-            source: "website",
-            action: "nouvelle_commande",
-            nom: pseudoNom,
-            contact: contactValue || "N/A",
-            service: nom || "Service inconnu",
-            quantite: qtyVal || 1,
-            montant: totalNumber + " $",
-            t: Date.now()
-          }).toString();
-
-          const pingBot = new Image();
-          pingBot.src = BOT_WEBHOOK_URL + "?" + qs;
-        } catch (botErr) {
-          console.log("Erreur préparation Bot:", botErr);
-        }
-
+          const qs = new URLSearchParams({ source: "website", action: "nouvelle_commande", nom: pseudoNom, contact: contactValue || "N/A", service: nom || "Service inconnu", quantite: qtyVal || 1, montant: totalNumber + " $", t: Date.now() }).toString();
+          const pingBot = new Image(); pingBot.src = BOT_WEBHOOK_URL + "?" + qs;
+        } catch (botErr) { console.log("Erreur préparation Bot:", botErr); }
         showSuccess_(res.orderId || orderId);
-
-      } catch (err) {
-        alert("Erreur de connexion. Réessayez.");
-        resetLockAndBtn();
-      } finally {
-        if (sessionStorage.getItem(SENT_KEY) === "1") {
-          hardLockForm_();
-          SUBMIT_LOCK = true;
-        } else {
-          SUBMIT_LOCK = false;
-        }
+      } catch (err) { alert("Erreur de connexion. Réessayez."); resetLockAndBtn(); }
+      finally {
+        if (sessionStorage.getItem(SENT_KEY) === "1") { hardLockForm_(); SUBMIT_LOCK = true; } else { SUBMIT_LOCK = false; }
       }
     };
 
@@ -1061,27 +669,17 @@
       const p = new URLSearchParams(location.search);
       const id = (p.get("id") || "").trim();
       const hasBasics = (p.get("nom") && p.get("prix") && p.get("cat"));
-
       if (!id || hasBasics) return;
-
       const cb = "VF_PROD_" + Date.now();
       window[cb] = function(list){
         try{
           const arr = Array.isArray(list) ? list : [];
           const prod = arr.find(x => String(x.id || "").trim() === id);
           if (!prod) return;
-
           const qp = new URLSearchParams();
-          qp.set("id", prod.id || id);
-          qp.set("nom", prod.nom || "");
-          qp.set("prix", prod.prix || "");
-          qp.set("cat", prod.cat || "");
-          qp.set("img", prod.img || "");
-          qp.set("min", prod.min ?? "");
-          qp.set("max", prod.max ?? "");
-          qp.set("desc", prod.desc || "");
-          qp.set("long", prod.long_desc || prod.long || "");
-
+          qp.set("id", prod.id || id); qp.set("nom", prod.nom || ""); qp.set("prix", prod.prix || "");
+          qp.set("cat", prod.cat || ""); qp.set("img", prod.img || ""); qp.set("min", prod.min ?? "");
+          qp.set("max", prod.max ?? ""); qp.set("desc", prod.desc || ""); qp.set("long", prod.long_desc || prod.long || "");
           location.replace("paiement.html?" + qp.toString());
         } catch(e){}
       };
