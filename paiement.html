@@ -143,8 +143,8 @@
             </div>
 
             <div>
-              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Quantité</label>
-              <input type="number" id="qty" value="1000" class="w-full bg-white rounded-xl p-3 text-sm font-black">
+              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Quantité (Packs/Unités)</label>
+              <input type="number" id="qty" value="1" class="w-full bg-white rounded-xl p-3 text-sm font-black">
               <div id="qty-hint" class="text-[11px] text-gray-500 font-bold mt-2 hidden"></div>
             </div>
           </div>
@@ -448,7 +448,6 @@
       return parseFloat(txt) || 0;
     }
 
-    // JSONP Reste uniquement pour charger le solde (doGet le supporte)
     function jsonp_(targetUrl, paramsObj, onOk, onErr, timeoutMs = JSONP_TIMEOUT_MS){
       if (!targetUrl) return onErr(new Error("URL manquante"));
       const cb = "VF_CB_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
@@ -574,7 +573,12 @@
       function updatePrice(){
         const q = clampQty(qtyInp.value);
         if (String(qtyInp.value) !== String(q)) qtyInp.value = q;
-        const total = ((prixInit / 1000) * q);
+        
+        // ========================================================
+        // 🔄 LA PAGE S'ADAPTE EXACTEMENT AU NOYAU (Total = Prix * Qty)
+        // ========================================================
+        const total = prixInit * q; 
+        
         priceEl.textContent = (Number.isFinite(total) ? total.toFixed(2) : "0.00") + " $";
         updateWalletUI_();
       }
@@ -590,7 +594,7 @@
 
     initWallet_(); updateWalletUI_();
 
-    // ====== SOUMISSION DU PAIEMENT EN POST (Correction Fetch) ======
+    // ====== SOUMISSION DU PAIEMENT EN POST ======
     document.getElementById("orderForm").onsubmit = async (e) => {
       e.preventDefault();
       if (sessionStorage.getItem(SENT_KEY) === "1") { showLocked_(orderId); return; }
@@ -643,39 +647,36 @@
         payMethod: "WALLET", walletEmail: WALLET_EMAIL, idempotencyKey: "IDEMP_" + orderId
       };
 
-      // 🚨 ENVOI AU SERVEUR (On attend la vraie réponse de Google Apps Script)
       fetch(WALLET_SCRIPT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams(payload).toString()
       })
-      .then(response => response.json()) // On lit la réponse
+      .then(response => response.json()) 
       .then((res) => {
         if (res && res.ok) {
-          // ✅ LE SERVEUR CONFIRME : Débit réussi + Commande enregistrée
           
-          // --- ALERTE BOT ADMIN SEULEMENT SI TOUT EST OK ---
           try {
             const pseudoNom = WALLET_EMAIL ? WALLET_EMAIL.split("@")[0] : "Client";
             const qs = new URLSearchParams({ 
               source: "website", action: "nouvelle_commande", 
               nom: pseudoNom, contact: contactValue || "N/A", 
               service: nom || "Service inconnu", quantite: qtyVal || 1, 
-              montant: totalNumber + " $", t: Date.now() 
+              montant: totalNumber + " $", 
+              lien: input1 || "Non fourni", 
+              t: Date.now() 
             }).toString();
             const pingBot = new Image(); 
             pingBot.src = BOT_WEBHOOK_URL + "?" + qs;
           } catch (e) { console.log("Erreur Bot:", e); }
 
-          // Déduction visuelle locale
           WALLET_BAL = WALLET_BAL - totalNumber;
           if(WALLET_BAL < 0) WALLET_BAL = 0;
           updateWalletUI_();
 
           showSuccess_(res.order_id || orderId);
         } else {
-          // ❌ LE SERVEUR A REFUSÉ LE PAIEMENT
-          alert("Paiement refusé : " + (res.error || "Erreur inconnue"));
+          alert("Paiement refusé : " + (res.error || "Fonds insuffisants ou erreur"));
           resetLockAndBtn();
         }
       })
