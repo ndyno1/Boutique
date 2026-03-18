@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>ViralFlowr | Paiement Sécurisé</title>
 
-  <script src="/styles/vf_config.js?v=2"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -124,6 +123,17 @@
           <span id="cat-badge" class="bg-gray-100 text-gray-500 text-[10px] font-bold px-3 py-1 rounded-full uppercase">—</span>
         </div>
 
+        <div id="description-section" class="hidden mb-6 space-y-3">
+          <div id="long-box" class="hidden bg-blue-50 border border-blue-100 rounded-2xl p-4">
+            <h3 class="text-blue-800 text-xs font-black uppercase mb-2">Détails du produit</h3>
+            <p id="long-text" class="text-xs text-blue-900 leading-relaxed whitespace-pre-line font-medium"></p>
+          </div>
+          <div id="desc-box" class="hidden bg-green-50 border border-green-100 rounded-2xl p-4">
+            <h3 class="text-green-800 text-xs font-black uppercase mb-2">Informations à fournir</h3>
+            <p id="desc-text" class="text-xs text-green-900 leading-relaxed whitespace-pre-line font-medium"></p>
+          </div>
+        </div>
+
         <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-4 text-center mb-8">
           <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">
             Numéro de Commande
@@ -143,8 +153,8 @@
             </div>
 
             <div>
-              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Quantité (Packs/Unités)</label>
-              <input type="number" id="qty" value="1" class="w-full bg-white rounded-xl p-3 text-sm font-black">
+              <label class="text-[11px] font-bold text-gray-900 uppercase ml-1">Quantité</label>
+              <input type="number" id="qty" value="1000" class="w-full bg-white rounded-xl p-3 text-sm font-black">
               <div id="qty-hint" class="text-[11px] text-gray-500 font-bold mt-2 hidden"></div>
             </div>
           </div>
@@ -222,18 +232,18 @@
               </div>
             </div>
 
-            <div class="bg-gray-800 border border-gray-700 rounded-xl p-3 mt-4 text-center">
-              <p class="text-[10px] text-gray-400 font-medium leading-relaxed">
-                En cliquant sur "Payer avec Wallet", vous acceptez notre 
-                <a href="politique.html" class="text-white font-black underline decoration-2 underline-offset-2 hover:opacity-80">
-                  Politique de règlement
-                </a>. 
-                Tout achat est définitif. Pour en savoir plus sur notre plateforme, découvrez 
-                <a href="about.html" class="text-white font-black underline decoration-2 underline-offset-2 hover:opacity-80">
-                  qui nous sommes
-                </a>.
-              </p>
-            </div>
+                      <div class="bg-gray-800 border border-gray-700 rounded-xl p-3 mt-4 text-center">
+            <p class="text-[10px] text-gray-400 font-medium leading-relaxed">
+              En cliquant sur "Payer avec Wallet", vous acceptez notre 
+              <a href="politique.html" class="text-white font-black underline decoration-2 underline-offset-2 hover:opacity-80">
+                Politique de règlement
+              </a>. 
+              Tout achat est définitif. Pour en savoir plus sur notre plateforme, découvrez 
+              <a href="about.html" class="text-white font-black underline decoration-2 underline-offset-2 hover:opacity-80">
+                qui nous sommes
+              </a>.
+            </p>
+          </div>
           </div>
 
         </form>
@@ -247,7 +257,7 @@
         </div>
         <h3 class="text-3xl font-black text-gray-900 mb-2">Paiement réussi</h3>
         <p class="text-gray-500 text-sm mb-8 font-medium">
-          Votre commande <strong id="final-id" class="text-gray-900"></strong> a été traitée avec succès !
+          Votre commande <strong id="final-id" class="text-gray-900"></strong> a été payée avec succès via votre Wallet.
         </p>
 
         <div class="grid grid-cols-2 gap-2">
@@ -270,15 +280,10 @@
   </div>
 
   <script>
-    // ====== CONFIGURATION ======
-    const CONFIG = window.VF_CONFIG || {};
-    const GOOGLE_URL = CONFIG.orderScriptUrl || "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
-    const WALLET_SCRIPT_URL = CONFIG.scriptUrl || "https://script.google.com/macros/s/AKfycbx_Tm3cGZs4oYdKmPieUU2SCjegAvn-BTufubyqZTFU4geAiRXN53YYE9XVGdq_uq1H/exec"; 
-    const BOT_WEBHOOK_URL = CONFIG.avisScriptUrl || "https://script.google.com/macros/s/AKfycbylffBPr9m8Y26asnlPuVDizwS5xOUe9zpUIt3NrbUZlVsMgNkh9bOcANYbkvTZbpL9/exec";
-    
-    const JSONP_TIMEOUT_MS = 25000;
+    // ====== CONFIG ======
+    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec";
 
-    // ====== AUTO-FILL BY ID ======
+    // ====== AUTO-FILL BY ID (depuis Produits) ======
     (function autoFillFromId(){
       const p = new URLSearchParams(location.search);
       const id = (p.get("id") || "").trim();
@@ -298,8 +303,11 @@
           qp.set("nom", prod.nom || "");
           qp.set("prix", prod.prix || "");
           qp.set("cat", prod.cat || "");
+          qp.set("img", prod.img || "");
           qp.set("min", prod.min ?? "");
           qp.set("max", prod.max ?? "");
+          qp.set("desc", prod.desc || "");
+          qp.set("long", prod.long_desc || prod.long || "");
 
           location.replace("paiement.html?" + qp.toString());
         } catch(e){}
@@ -376,17 +384,6 @@
       if (wbtn) { wbtn.disabled = true; wbtn.style.opacity = ".6"; wbtn.style.cursor = "not-allowed"; wbtn.innerText = "Déjà payé"; }
     }
 
-    function showSuccess_(oid){
-      sessionStorage.setItem(SENT_KEY, "1");
-      sessionStorage.removeItem(INFLIGHT_KEY);
-      sessionStorage.removeItem("active_order_id");
-      try { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); } catch(_){}
-      document.getElementById('form-container').classList.add('hidden');
-      document.getElementById('final-id').innerText = oid || orderId;
-      document.getElementById('success-msg').classList.remove('hidden');
-      hardLockForm_();
-    }
-
     if (sessionStorage.getItem(SENT_KEY) === "1") {
       hardLockForm_();
       document.getElementById('form-container').classList.add('hidden');
@@ -395,15 +392,35 @@
     }
 
     const nom      = params.get('nom') || "Service";
-    let cleanPrix  = String(params.get('prix') || "0").replace(/,/g, ".");
-    const prixInit = parseFloat(cleanPrix) || 0;
+    const prixInit = parseFloat(params.get('prix')) || 0;
     const cat      = params.get('cat') || "";
 
+    const desc     = safeDecode(params.get('desc') || "");
+    const longDesc = safeDecode(params.get('long') || params.get('long_desc') || "");
     const minParam = parseFloat(params.get('min'));
     const maxParam = parseFloat(params.get('max'));
 
     document.getElementById('service-name').innerText = nom;
     document.getElementById('cat-badge').innerText = cat || "Service";
+
+    const descSection = document.getElementById('description-section');
+    const longBox = document.getElementById('long-box');
+    const descBox = document.getElementById('desc-box');
+    const longText = document.getElementById('long-text');
+    const descText = document.getElementById('desc-text');
+
+    let hasAnyDesc = false;
+    if (longDesc && longDesc.trim() !== "") {
+      longText.textContent = longDesc;
+      longBox.classList.remove('hidden');
+      hasAnyDesc = true;
+    }
+    if (desc && desc.trim() !== "") {
+      descText.textContent = desc;
+      descBox.classList.remove('hidden');
+      hasAnyDesc = true;
+    }
+    if (hasAnyDesc) descSection.classList.remove('hidden');
 
     const catUpper = String(cat || "").trim().toUpperCase();
 
@@ -421,6 +438,7 @@
     const qtyInp = document.getElementById('qty');
     const qtyHint = document.getElementById('qty-hint');
 
+    // ====== WALLET STATE ======
     let WALLET_OK = false;
     let WALLET_BAL = 0;
     let WALLET_EMAIL = "";
@@ -437,82 +455,120 @@
     }
 
     function fmt2(n){
-      const x = Number(n || 0);
+      const x = Number(n||0);
       if(!isFinite(x)) return "0.00";
       return x.toFixed(2);
     }
 
     function getTotalNumber_(){
-      let txt = String(priceEl.textContent || "0");
-      txt = txt.replace(/,/g, ".").replace(/[^0-9.]/g, "");
-      return parseFloat(txt) || 0;
+      const totalTxt = String(priceEl.innerText || "0").replace("$","").trim();
+      return parseFloat(totalTxt) || 0;
     }
 
-    function jsonp_(targetUrl, paramsObj, onOk, onErr, timeoutMs = JSONP_TIMEOUT_MS){
-      if (!targetUrl) return onErr(new Error("URL manquante"));
-      const cb = "VF_CB_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
+    function jsonp_(params, onOk, onErr){
+      const cb = "VF_CB_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
+      window[cb] = function(payload){
+        try { onOk(payload); }
+        finally { try { delete window[cb]; } catch(_){} }
+      };
+
       const s = document.createElement("script");
-      let done = false; let timer = null;
-      function cleanup_(){
-        done = true; if (timer) clearTimeout(timer);
-        try { delete window[cb]; } catch(_){} try { s.remove(); } catch(_){}
-      }
-      window[cb] = function(payload){ if (done) return; cleanup_(); onOk && onOk(payload); };
-      const cleanParams = {};
-      Object.keys(paramsObj || {}).forEach((k) => { cleanParams[k] = paramsObj[k] == null ? "" : String(paramsObj[k]); });
-      timer = setTimeout(() => { if (done) return; cleanup_(); onErr && onErr(new Error("TIMEOUT")); }, timeoutMs);
-      const qs = new URLSearchParams({ ...cleanParams, callback: cb, t: String(Date.now()) });
-      s.src = targetUrl + "?" + qs.toString();
-      s.onerror = function(){ if (done) return; cleanup_(); onErr && onErr(new Error("NETWORK_ERROR")); };
+      const qs = new URLSearchParams({ ...params, callback: cb, t: String(Date.now()) });
+      s.src = GOOGLE_URL + "?" + qs.toString();
+      s.onerror = function(){
+        try { delete window[cb]; } catch(_){}
+        onErr && onErr();
+      };
       document.body.appendChild(s);
+    }
+
+    function showWalletLoadingUI_(){
+      const box = document.getElementById("walletBox");
+      if(!box) return;
+
+      box.classList.remove("hidden");
+      document.getElementById("walletBalance").textContent = "...";
+      document.getElementById("walletEmail").textContent = WALLET_EMAIL || "—";
+
+      const hint = document.getElementById("walletHint");
+      hint.textContent = "Vérification du solde wallet...";
+      hint.className = "text-[11px] font-black mt-2 text-gray-400";
+
+      const btn = document.getElementById("walletPayBtn");
+      if (btn){
+        btn.disabled = true;
+        btn.style.opacity = ".6";
+        btn.style.cursor = "not-allowed";
+      }
     }
 
     function updateWalletUI_(){
       const box = document.getElementById("walletBox");
       if(!box) return;
-      box.classList.remove("hidden");
-      document.getElementById("walletEmail").textContent = WALLET_EMAIL || "—";
 
-      const hint = document.getElementById("walletHint");
-      const btn = document.getElementById("walletPayBtn");
-      const need = getTotalNumber_();
-
-      if (WALLET_LOADING && !WALLET_OK) { 
-        document.getElementById("walletBalance").textContent = "...";
-        hint.textContent = "Vérification du solde wallet...";
-        btn.disabled = true; btn.style.opacity = ".6";
-        return; 
-      }
-
-      if (!WALLET_OK) {
-        document.getElementById("walletBalance").textContent = "—";
-        hint.textContent = "Impossible de charger le solde.";
-        hint.className = "text-[11px] font-black mt-2 text-red-400";
-        btn.disabled = true; btn.style.opacity = ".6";
+      if (WALLET_LOADING) {
+        showWalletLoadingUI_();
         return;
       }
 
+      if(!WALLET_OK){
+        return;
+      }
+
+      box.classList.remove("hidden");
       document.getElementById("walletBalance").textContent = fmt2(WALLET_BAL);
+      document.getElementById("walletEmail").textContent = WALLET_EMAIL || "—";
+
+      const need = getTotalNumber_();
+      const hint = document.getElementById("walletHint");
+      const btn = document.getElementById("walletPayBtn");
 
       if (sessionStorage.getItem(SENT_KEY) === "1") {
-        btn.disabled = true; btn.style.opacity = ".6";
+        btn.disabled = true; btn.style.opacity = ".6"; btn.style.cursor = "not-allowed";
         hint.textContent = "Commande déjà payée.";
         hint.className = "text-[11px] font-black mt-2 text-green-400";
         return;
       }
 
-      if (need <= 0) {
-        hint.textContent = "Montant invalide (0$).";
-        btn.disabled = true; btn.style.opacity = ".6";
-      } else if (WALLET_BAL >= need) {
-        hint.textContent = "Solde suffisant.";
+      if (WALLET_BAL >= need && need > 0) {
+        hint.textContent = "Solde suffisant pour régler l'achat.";
         hint.className = "text-[11px] font-black mt-2 text-green-400";
-        btn.disabled = false; btn.style.opacity = "1";
+        btn.disabled = false; btn.style.opacity = "1"; btn.style.cursor = "pointer";
       } else {
-        hint.innerHTML = `Solde insuffisant.`;
+        hint.innerHTML = `Solde insuffisant. <a href="wallet.html" class="text-orange-400 underline">Ajoutez du crédit</a>.`;
         hint.className = "text-[11px] font-black mt-2 text-red-400";
-        btn.disabled = true; btn.style.opacity = ".6";
+        btn.disabled = true; btn.style.opacity = ".6"; btn.style.cursor = "not-allowed";
       }
+    }
+
+    function refreshWalletBalance_(cb){
+      if(!WALLET_EMAIL) { cb && cb(false); return; }
+
+      WALLET_LOADING = true;
+      showWalletLoadingUI_();
+
+      jsonp_(
+        { action:"wallet_balance", email: WALLET_EMAIL, currency:"USD" },
+        (res) => {
+          WALLET_LOADING = false;
+          if(res && res.ok){
+            WALLET_OK = true;
+            WALLET_BAL = Number(res.balance || 0);
+            updateWalletUI_();
+            cb && cb(true);
+          }else{
+            WALLET_OK = false;
+            updateWalletUI_();
+            cb && cb(false);
+          }
+        },
+        () => {
+          WALLET_LOADING = false;
+          WALLET_OK = false;
+          updateWalletUI_();
+          cb && cb(false);
+        }
+      );
     }
 
     function initWallet_(){
@@ -526,43 +582,50 @@
               <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Paiement Wallet</div>
               <div class="text-[12px] font-bold text-white mt-1">Vous devez vous connecter pour payer.</div>
             </div>
-            <a href="wallet.html" class="bg-white text-black py-3 px-5 rounded-2xl font-black text-[11px] uppercase shadow-lg">Se connecter</a>
-          </div>`;
+            <a href="wallet.html" class="bg-white text-black py-3 px-5 rounded-2xl font-black text-[11px] uppercase shadow-lg hover:scale-[1.02] transition-transform text-center whitespace-nowrap">Se connecter</a>
+          </div>
+        `;
         return;
       }
 
-      WALLET_EMAIL = String(s.email || "").trim().toLowerCase();
-      WALLET_LOADING = true; updateWalletUI_();
+      WALLET_EMAIL = String(s.email||"").trim().toLowerCase();
+      WALLET_LOADING = true;
+      showWalletLoadingUI_();
+      refreshWalletBalance_();
 
-      jsonp_(WALLET_SCRIPT_URL, { action:"wallet_balance", email: WALLET_EMAIL, currency:"USD" },
-        (res) => {
-          WALLET_LOADING = false;
-          if(res && res.ok){ WALLET_OK = true; WALLET_BAL = Number(res.balance || 0); }
-          else{ WALLET_OK = false; }
-          updateWalletUI_();
-        },
-        () => { WALLET_LOADING = false; WALLET_OK = false; updateWalletUI_(); }
-      );
+      document.getElementById("walletPayBtn").addEventListener("click", () => {
+        if (SUBMIT_LOCK || sessionStorage.getItem(INFLIGHT_KEY) === "1" || sessionStorage.getItem(SENT_KEY) === "1") {
+          showLocked_(orderId);
+          return;
+        }
 
-      document.getElementById("walletPayBtn").addEventListener("click", async () => {
-        if (SUBMIT_LOCK || sessionStorage.getItem(INFLIGHT_KEY) === "1" || sessionStorage.getItem(SENT_KEY) === "1") { showLocked_(orderId); return; }
-        
-        const need = getTotalNumber_();
-        if(WALLET_BAL < need){ alert("Solde insuffisant."); return; }
-
-        document.getElementById("orderForm").requestSubmit();
+        refreshWalletBalance_((ok) => {
+          const need = getTotalNumber_();
+          if(!ok){ alert("Impossible de charger le solde wallet."); return; }
+          if(WALLET_BAL < need || need <= 0){
+            alert("Solde insuffisant. Ajoutez du crédit puis réessayez.");
+            return;
+          }
+          document.getElementById("orderForm").requestSubmit();
+        });
       });
     }
 
+    // ====== PRICE / MIN MAX ======
     if (isSMM) {
-      secSmm.classList.remove("hidden");
-      const hasMin = Number.isFinite(minParam); const hasMax = Number.isFinite(maxParam);
+      secSmm.classList.remove('hidden');
+
+      const hasMin = Number.isFinite(minParam);
+      const hasMax = Number.isFinite(maxParam);
+
       if (hasMin) qtyInp.min = String(parseInt(minParam, 10));
       if (hasMax) qtyInp.max = String(parseInt(maxParam, 10));
+
       if (hasMin || hasMax) {
-        qtyHint.classList.remove("hidden");
-        qtyHint.textContent = `Quantité autorisée : ${hasMin ? parseInt(minParam,10) : 0} – ${hasMax ? parseInt(maxParam,10) : "∞"}`;
+        qtyHint.classList.remove('hidden');
+        qtyHint.textContent = `Quantité autorisée : ${hasMin ? parseInt(minParam,10) : 0} – ${hasMax ? parseInt(maxParam,10) : '∞'}`;
       }
+
       function clampQty(q){
         let x = parseInt(String(q || "0").replace(/[^\d]/g,""), 10);
         if (!Number.isFinite(x) || x <= 0) x = hasMin ? parseInt(minParam,10) : 1;
@@ -570,120 +633,214 @@
         if (hasMax && x > parseInt(maxParam,10)) x = parseInt(maxParam,10);
         return x;
       }
+
       function updatePrice(){
         const q = clampQty(qtyInp.value);
         if (String(qtyInp.value) !== String(q)) qtyInp.value = q;
-        
-        // ========================================================
-        // 🔄 LA PAGE S'ADAPTE EXACTEMENT AU NOYAU (Total = Prix * Qty)
-        // ========================================================
-        const total = prixInit * q; 
-        
-        priceEl.textContent = (Number.isFinite(total) ? total.toFixed(2) : "0.00") + " $";
+        const total = ((prixInit / 1000) * q);
+        priceEl.innerText = (Number.isFinite(total) ? total.toFixed(2) : "0.00") + " $";
         updateWalletUI_();
       }
-      qtyInp.addEventListener("input", updatePrice); updatePrice();
+
+      qtyInp.addEventListener('input', updatePrice);
+      updatePrice();
+
     } else if (isAbo) {
-      secAbo.classList.remove("hidden"); priceEl.textContent = prixInit.toFixed(2) + " $";
+      secAbo.classList.remove('hidden');
+      priceEl.innerText = prixInit.toFixed(2) + " $";
     } else if (isCarte) {
-      secCarte.classList.remove("hidden"); priceEl.textContent = prixInit.toFixed(2) + " $";
+      secCarte.classList.remove('hidden');
+      priceEl.innerText = prixInit.toFixed(2) + " $";
     } else {
-      secDef.classList.remove("hidden"); priceEl.textContent = prixInit.toFixed(2) + " $";
-      if (isIMEI) document.getElementById("default-label").innerText = "Numéro IMEI (15 chiffres)";
+      secDef.classList.remove('hidden');
+      priceEl.innerText = prixInit.toFixed(2) + " $";
+      if (isIMEI) document.getElementById('default-label').innerText = "Numéro IMEI (15 chiffres)";
     }
 
-    initWallet_(); updateWalletUI_();
+    initWallet_();
+    updateWalletUI_();
 
-    // ====== SOUMISSION DU PAIEMENT EN POST ======
-    document.getElementById("orderForm").onsubmit = async (e) => {
+    // ====== SUBMIT VIA WALLET ======
+    document.getElementById('orderForm').onsubmit = async (e) => {
       e.preventDefault();
+
       if (sessionStorage.getItem(SENT_KEY) === "1") { showLocked_(orderId); return; }
       if (SUBMIT_LOCK || sessionStorage.getItem(INFLIGHT_KEY) === "1") return;
 
-      SUBMIT_LOCK = true; sessionStorage.setItem(INFLIGHT_KEY, "1");
+      SUBMIT_LOCK = true;
+      sessionStorage.setItem(INFLIGHT_KEY, "1");
 
-      const btn = document.getElementById("walletPayBtn");
-      if (btn) { btn.disabled = true; btn.innerText = "Validation en cours..."; }
+      const btn = document.getElementById('walletPayBtn');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = "Validation en cours..." ;
+      }
 
-      let input1 = ""; let emailForSheet = ""; let contactValue = ""; let qtyVal = 1;
+      let input1 = "";
+      let emailForSheet = "";
+      let contactValue = "";
+      let qtyVal = 1;
+
       const totalNumber = getTotalNumber_();
 
       const resetLockAndBtn = () => {
-        if(btn) { btn.disabled = false; btn.innerText = "Payer avec Wallet"; }
-        SUBMIT_LOCK = false; sessionStorage.removeItem(INFLIGHT_KEY); updateWalletUI_();
+        if(btn) { btn.disabled=false; btn.innerText="Payer avec Wallet"; }
+        SUBMIT_LOCK = false;
+        sessionStorage.removeItem(INFLIGHT_KEY);
       };
 
-      if (!idS) { alert("ID manquant."); resetLockAndBtn(); return; }
+      if (!idS) {
+        alert("ID du service manquant (paramètre id).");
+        resetLockAndBtn();
+        return;
+      }
 
       if (isSMM) {
-        const link = document.getElementById("boost-link").value.trim();
-        if (!link) { alert("Ajoutez le lien à booster."); resetLockAndBtn(); return; }
+        const link = document.getElementById('boost-link').value.trim();
+        if (!link) {
+          alert("Ajoutez le lien à booster.");
+          resetLockAndBtn();
+          return;
+        }
+
+        const hasMin = Number.isFinite(minParam);
+        const hasMax = Number.isFinite(maxParam);
         const q = parseInt(String(qtyInp.value || "0").replace(/[^\d]/g,""), 10);
-        input1 = link; qtyVal = q; emailForSheet = WALLET_EMAIL; contactValue = WALLET_EMAIL;
+
+        if (!q || q <= 0) {
+          alert("Quantité invalide.");
+          resetLockAndBtn();
+          return;
+        }
+
+        if ((hasMin && q < parseInt(minParam,10)) || (hasMax && q > parseInt(maxParam,10))) {
+          alert(`Quantité invalide. Min=${hasMin ? parseInt(minParam,10) : 0}${hasMax ? ` / Max=${parseInt(maxParam,10)}` : ""}.`);
+          resetLockAndBtn();
+          return;
+        }
+
+        input1 = link;
+        qtyVal = q;
+        emailForSheet = WALLET_EMAIL;
+        contactValue = WALLET_EMAIL;
       }
       else if (isAbo) {
-        const creds = document.getElementById("creds").value.trim();
-        const contact = document.getElementById("delivery-contact-abo").value.trim();
-        if (!creds || !contact) { alert("Champs obligatoires manquants."); resetLockAndBtn(); return; }
-        input1 = creds; contactValue = contact; emailForSheet = contact; qtyVal = 1;
+        const creds = document.getElementById('creds').value.trim();
+        const contact = document.getElementById('delivery-contact-abo').value.trim();
+        if (!creds) {
+          alert("Ajoutez vos identifiants (mail + mot de passe).");
+          resetLockAndBtn();
+          return;
+        }
+        if (!contact) {
+          alert("Ajoutez un contact de livraison (WhatsApp ou Email).");
+          resetLockAndBtn();
+          return;
+        }
+
+        input1 = creds;
+        contactValue = contact;
+        emailForSheet = contact;
+        qtyVal = 1;
       }
       else if (isCarte) {
-        const contact = document.getElementById("card-delivery").value.trim();
-        if (!contact) { alert("Contact manquant."); resetLockAndBtn(); return; }
-        input1 = "CONTACT: voir colonne Email Client"; contactValue = contact; emailForSheet = contact; qtyVal = 1;
+        const contact = document.getElementById('card-delivery').value.trim();
+        if (!contact) {
+          alert("Ajoutez un contact de livraison (WhatsApp ou Email).");
+          resetLockAndBtn();
+          return;
+        }
+
+        input1 = "CONTACT: voir colonne Email Client";
+        contactValue = contact;
+        emailForSheet = contact;
+        qtyVal = 1;
       }
       else {
-        const main = document.getElementById("main-input").value.trim();
-        const em = document.getElementById("email-client").value.trim();
-        if (!main) { alert("Information requise."); resetLockAndBtn(); return; }
-        input1 = main; qtyVal = 1; if (em) { contactValue = em; emailForSheet = em; }
+        const main = document.getElementById('main-input').value.trim();
+        const em = document.getElementById('email-client').value.trim();
+        if (!main) {
+          alert("Remplissez l'information requise.");
+          resetLockAndBtn();
+          return;
+        }
+
+        input1 = main;
+        qtyVal = 1;
+
+        if (em) {
+          contactValue = em;
+          emailForSheet = em;
+        }
       }
 
-      if (!emailForSheet && WALLET_EMAIL) { emailForSheet = WALLET_EMAIL; if (!contactValue) contactValue = WALLET_EMAIL; }
+      if (!input1) {
+        alert("Information manquante.");
+        resetLockAndBtn();
+        return;
+      }
+
+      if (!emailForSheet && WALLET_EMAIL) {
+        emailForSheet = WALLET_EMAIL;
+        if (!contactValue) contactValue = WALLET_EMAIL;
+      }
 
       const payload = {
-        action: "wallet_pay", orderId: orderId, produit: nom, idService: idS, categorie: cat,
-        input1: input1, contact: contactValue, email: emailForSheet, quantite: qtyVal, total: totalNumber,
-        payMethod: "WALLET", walletEmail: WALLET_EMAIL, idempotencyKey: "IDEMP_" + orderId
+        action: "wallet_pay",
+        orderId: orderId,
+        produit: nom,
+        idService: idS,
+        categorie: cat,
+
+        input1: input1,
+
+        contact: contactValue,
+        email: emailForSheet,
+
+        quantite: qtyVal,
+        total: totalNumber,
+
+        payMethod: "WALLET",
+        walletEmail: WALLET_EMAIL,
+
+        // Données vides obligatoires pour le backend
+        fileData: "",
+        fileType: "",
+        fileName: "",
+
+        idempotencyKey: "IDEMP_" + orderId
       };
 
-      fetch(WALLET_SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(payload).toString()
-      })
-      .then(response => response.json()) 
-      .then((res) => {
-        if (res && res.ok) {
-          
-          try {
-            const pseudoNom = WALLET_EMAIL ? WALLET_EMAIL.split("@")[0] : "Client";
-            const qs = new URLSearchParams({ 
-              source: "website", action: "nouvelle_commande", 
-              nom: pseudoNom, contact: contactValue || "N/A", 
-              service: nom || "Service inconnu", quantite: qtyVal || 1, 
-              montant: totalNumber + " $", 
-              lien: input1 || "Non fourni", 
-              t: Date.now() 
-            }).toString();
-            const pingBot = new Image(); 
-            pingBot.src = BOT_WEBHOOK_URL + "?" + qs;
-          } catch (e) { console.log("Erreur Bot:", e); }
+      try {
+        if (sessionStorage.getItem(SENT_KEY) === "1") { showLocked_(orderId); return; }
 
-          WALLET_BAL = WALLET_BAL - totalNumber;
-          if(WALLET_BAL < 0) WALLET_BAL = 0;
-          updateWalletUI_();
+        await fetch(GOOGLE_URL, {
+          method:'POST',
+          mode:'no-cors',
+          body: JSON.stringify(payload)
+        });
 
-          showSuccess_(res.order_id || orderId);
-        } else {
-          alert("Paiement refusé : " + (res.error || "Fonds insuffisants ou erreur"));
-          resetLockAndBtn();
-        }
-      })
-      .catch((err) => {
-        alert("Erreur de connexion avec le serveur. Veuillez réessayer."); 
+        sessionStorage.setItem(SENT_KEY, "1");
+        sessionStorage.removeItem(INFLIGHT_KEY);
+        sessionStorage.removeItem('active_order_id');
+
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+
+        document.getElementById('form-container').classList.add('hidden');
+        document.getElementById('final-id').innerText = orderId;
+        document.getElementById('success-msg').classList.remove('hidden');
+
+      } catch (err) {
+        alert("Erreur de connexion. Réessayez.");
         resetLockAndBtn();
-      });
+      } finally {
+        if (sessionStorage.getItem(SENT_KEY) === "1") {
+          hardLockForm_();
+          SUBMIT_LOCK = true;
+        } else {
+          SUBMIT_LOCK = false;
+        }
+      }
     };
   </script>
 </body>
