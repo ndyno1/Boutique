@@ -52,7 +52,31 @@
   <link rel="stylesheet" href="/styles/vf_theme.css?v=2">
 </head>
 
+
 <body>
+  <script>
+  // ==========================================
+  // 👻 DÉTECTEUR DE GHOST LOGIN (ADMIN ONLY)
+  // ==========================================
+  (function checkGhostLogin() {
+    const params = new URLSearchParams(window.location.search);
+    const ghostEmail = params.get('ghost_email');
+
+    if (ghostEmail) {
+      // 1. On force la connexion dans le navigateur
+      localStorage.setItem("vf_session", JSON.stringify({ email: ghostEmail.toLowerCase() }));
+      
+      // 2. Alerte de succès
+      alert("👻 GHOST LOGIN ACTIF : Vous êtes maintenant connecté en tant que " + ghostEmail);
+      
+      // 3. On nettoie l'URL pour cacher le paramètre
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // 4. On recharge la page pour appliquer la session
+      window.location.reload();
+    }
+  })();
+</script>
   <div class="bg-gray-900 text-white py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-center">
     MARKETPLACE PROFESSIONNELLE • LIVRAISON INTERNATIONALE • PAIEMENT SÉCURISÉ
   </div>
