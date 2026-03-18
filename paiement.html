@@ -247,7 +247,7 @@
         </div>
         <h3 class="text-3xl font-black text-gray-900 mb-2">Paiement réussi</h3>
         <p class="text-gray-500 text-sm mb-8 font-medium">
-          Votre commande <strong id="final-id" class="text-gray-900"></strong> a été payée avec succès via votre Wallet.
+          Votre commande <strong id="final-id" class="text-gray-900"></strong> a été traitée avec succès !
         </p>
 
         <div class="grid grid-cols-2 gap-2">
@@ -590,7 +590,7 @@
 
     initWallet_(); updateWalletUI_();
 
-    // ====== SOUMISSION DU PAIEMENT EN POST (Le site se plie au Noyau) ======
+    // ====== SOUMISSION DU PAIEMENT EN POST (Correction Fetch) ======
     document.getElementById("orderForm").onsubmit = async (e) => {
       e.preventDefault();
       if (sessionStorage.getItem(SENT_KEY) === "1") { showLocked_(orderId); return; }
@@ -637,45 +637,50 @@
 
       if (!emailForSheet && WALLET_EMAIL) { emailForSheet = WALLET_EMAIL; if (!contactValue) contactValue = WALLET_EMAIL; }
 
-      // 🚨 Préparation des données pour le POST vers le Noyau 🚨
       const payload = {
         action: "wallet_pay", orderId: orderId, produit: nom, idService: idS, categorie: cat,
         input1: input1, contact: contactValue, email: emailForSheet, quantite: qtyVal, total: totalNumber,
         payMethod: "WALLET", walletEmail: WALLET_EMAIL, idempotencyKey: "IDEMP_" + orderId
       };
 
-      // 🚨 ENVOI AVEUGLE (Le Noyau reçoit via doPost sans bloquer le site)
+      // 🚨 ENVOI AU SERVEUR (On attend la vraie réponse de Google Apps Script)
       fetch(WALLET_SCRIPT_URL, {
         method: "POST",
-        mode: "no-cors",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams(payload).toString()
       })
-      .then(() => {
-        // Le paiement a été envoyé au Noyau avec succès.
-        // --- ALERTE BOT ADMIN ---
-        try {
-          const pseudoNom = WALLET_EMAIL ? WALLET_EMAIL.split("@")[0] : "Client";
-          const qs = new URLSearchParams({ 
-            source: "website", action: "nouvelle_commande", 
-            nom: pseudoNom, contact: contactValue || "N/A", 
-            service: nom || "Service inconnu", quantite: qtyVal || 1, 
-            montant: totalNumber + " $", t: Date.now() 
-          }).toString();
+      .then(response => response.json()) // On lit la réponse
+      .then((res) => {
+        if (res && res.ok) {
+          // ✅ LE SERVEUR CONFIRME : Débit réussi + Commande enregistrée
           
-          const pingBot = new Image(); 
-          pingBot.src = BOT_WEBHOOK_URL + "?" + qs;
-        } catch (e) { console.log("Erreur Bot:", e); }
+          // --- ALERTE BOT ADMIN SEULEMENT SI TOUT EST OK ---
+          try {
+            const pseudoNom = WALLET_EMAIL ? WALLET_EMAIL.split("@")[0] : "Client";
+            const qs = new URLSearchParams({ 
+              source: "website", action: "nouvelle_commande", 
+              nom: pseudoNom, contact: contactValue || "N/A", 
+              service: nom || "Service inconnu", quantite: qtyVal || 1, 
+              montant: totalNumber + " $", t: Date.now() 
+            }).toString();
+            const pingBot = new Image(); 
+            pingBot.src = BOT_WEBHOOK_URL + "?" + qs;
+          } catch (e) { console.log("Erreur Bot:", e); }
 
-        // Déduction visuelle locale
-        WALLET_BAL = WALLET_BAL - totalNumber;
-        if(WALLET_BAL < 0) WALLET_BAL = 0;
-        updateWalletUI_();
+          // Déduction visuelle locale
+          WALLET_BAL = WALLET_BAL - totalNumber;
+          if(WALLET_BAL < 0) WALLET_BAL = 0;
+          updateWalletUI_();
 
-        showSuccess_(orderId);
+          showSuccess_(res.order_id || orderId);
+        } else {
+          // ❌ LE SERVEUR A REFUSÉ LE PAIEMENT
+          alert("Paiement refusé : " + (res.error || "Erreur inconnue"));
+          resetLockAndBtn();
+        }
       })
       .catch((err) => {
-        alert("Erreur de connexion serveur."); 
+        alert("Erreur de connexion avec le serveur. Veuillez réessayer."); 
         resetLockAndBtn();
       });
     };
