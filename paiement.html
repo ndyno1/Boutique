@@ -296,8 +296,9 @@
     </div>
   </main>
 
-  <script>
-  const GOOGLE_URL = window.VF_CONFIG.orderScriptUrl;
+<script>
+  const API_URL = window.VF_CONFIG.scriptUrl || window.VF_CONFIG.VF_SCRIPT_URL;
+  const ORDER_URL = window.VF_CONFIG.orderScriptUrl;
   const BOT_WEBHOOK_URL = window.VF_CONFIG.avisScriptUrl;
 
   function setActiveMenuLinkFallback_() {
@@ -468,7 +469,7 @@
     return parseFloat(totalTxt) || 0;
   }
 
-  function jsonp_(paramsObj, onOk, onErr){
+  function jsonp_(baseUrl, paramsObj, onOk, onErr){
     const cb = "VF_CB_" + Date.now() + "_" + Math.floor(Math.random()*1000000);
 
     window[cb] = function(payload){
@@ -480,7 +481,7 @@
 
     const s = document.createElement("script");
     const qs = new URLSearchParams({ ...paramsObj, callback: cb, t: String(Date.now()) });
-    s.src = GOOGLE_URL + "?" + qs.toString();
+    s.src = baseUrl + "?" + qs.toString();
     s.onerror = function(){
       try { delete window[cb]; } catch(_){}
       onErr && onErr();
@@ -518,6 +519,11 @@
     }
 
     if(!WALLET_OK){
+      box.classList.remove("hidden");
+      document.getElementById("walletBalance").textContent = "...";
+      document.getElementById("walletEmail").textContent = WALLET_EMAIL || "—";
+      document.getElementById("walletHint").textContent = "Impossible de charger le wallet.";
+      document.getElementById("walletHint").className = "text-[11px] font-black mt-2 text-red-400";
       return;
     }
 
@@ -572,9 +578,11 @@
     showWalletLoadingUI_();
 
     jsonp_(
+      API_URL,
       { action:"wallet_balance", token: sessionToken, currency:"USD" },
       (res) => {
         WALLET_LOADING = false;
+        console.log("VF wallet_balance via =", API_URL);
         console.log("VF wallet_balance response =", res);
 
         if(res && res.ok){
@@ -615,6 +623,8 @@
     }
 
     WALLET_EMAIL = String(s.email || "").trim().toLowerCase();
+    console.log("VF API_URL =", API_URL);
+    console.log("VF ORDER_URL =", ORDER_URL);
     console.log("VF session =", s);
     console.log("VF token =", getSessionToken_());
 
@@ -845,7 +855,7 @@
         return;
       }
 
-      await fetch(GOOGLE_URL, {
+      await fetch(ORDER_URL, {
         method:"POST",
         mode:"no-cors",
         body: JSON.stringify(payload)
@@ -931,7 +941,7 @@
     };
 
     const s = document.createElement("script");
-    s.src = `${GOOGLE_URL}?action=get_products&callback=${cb}&t=${Date.now()}`;
+    s.src = `${API_URL}?action=get_products&callback=${cb}&t=${Date.now()}`;
     document.body.appendChild(s);
   })();
 </script>
