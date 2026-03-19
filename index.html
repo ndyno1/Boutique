@@ -4,11 +4,17 @@
   <script>
     (function () {
       const ref = document.referrer || "";
-      const inAppsScriptPanel = /script\.googleusercontent\.com|script\.google\.com/i.test(ref);
+      const host = (location.hostname || "").toLowerCase();
+
+      const inAppsScriptPanel =
+        /script\.googleusercontent\.com|script\.google\.com/i.test(ref) ||
+        /script\.googleusercontent\.com|script\.google\.com/i.test(host);
+
       window.__VF_IN_APPS_SCRIPT_PANEL = inAppsScriptPanel;
+      window.__VF_IS_GAS = inAppsScriptPanel;
+
       if (inAppsScriptPanel) return;
 
-      const host = (location.hostname || "").toLowerCase();
       const isWWW = host === "www.viralflowr.com";
       const isApex = host === "viralflowr.com";
       const isTarget = isWWW || isApex;
@@ -30,26 +36,107 @@
     })();
   </script>
 
+  <script>
+    (function () {
+      function safe(v) { return (v === null || v === undefined) ? "" : String(v); }
+
+      function getBasePath_() {
+        try {
+          if (window.VF_CONFIG && window.VF_CONFIG.basePath) {
+            return String(window.VF_CONFIG.basePath).replace(/\/+$/, "");
+          }
+        } catch (_) {}
+
+        var path = safe(location.pathname);
+
+        if (/\/exec(?:\/.*)?$/i.test(path)) return path.replace(/\/+$/, "");
+        if (/\/dev(?:\/.*)?$/i.test(path)) return path.replace(/\/+$/, "");
+
+        return "";
+      }
+
+      function vfAssetUrl_(path) {
+        var clean = "/" + safe(path).replace(/^\/+/, "");
+        var base = getBasePath_();
+        return base ? (base + clean) : clean;
+      }
+
+      function vfPageUrl_(path) {
+        var clean = "/" + safe(path).replace(/^\/+/, "");
+        var base = getBasePath_();
+        return base ? (base + clean) : clean;
+      }
+
+      function vfProductUrl_(pid) {
+  pid = encodeURIComponent(safe(pid).trim());
+  if (!pid) return "#";
+
+  if (window.__VF_IS_GAS) {
+    return vfPageUrl_("p/" + pid);
+  }
+
+  return "/p/" + pid;
+}
+
+      window.vfAssetUrl_ = vfAssetUrl_;
+      window.vfPageUrl_ = vfPageUrl_;
+      window.vfProductUrl_ = vfProductUrl_;
+    })();
+  </script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>ViralFlowr | Boutique Officielle</title>
 
   <meta name="theme-color" content="#111827" />
-  <link rel="icon" href="/favicon.png" />
-  <link rel="apple-touch-icon" href="/favicon.png" />
+  <link rel="icon" href="/favicon.png" id="vf-favicon" />
+  <link rel="apple-touch-icon" href="/favicon.png" id="vf-apple-touch-icon" />
 
   <meta property="og:title" content="ViralFlowr | Boutique Officielle" />
   <meta property="og:description" content="Services Elite, Déblocage IMEI et Matériel High-Tech garantis." />
   <meta property="og:image" content="https://content.bsvmarket.com/uploads/banner_hero_20b30c28bd.png" />
   <meta property="og:type" content="website" />
 
-  <script src="/styles/vf_config.js?v=2"></script>
-  <script src="/vf_api.js?v=200" defer></script>
-  <script src="/styles/vf_menu.js?v=2" defer></script>
-  <script src="/styles/vf_footer.js?v=2" defer></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var fav = document.getElementById("vf-favicon");
+      var apple = document.getElementById("vf-apple-touch-icon");
+      if (fav) fav.href = window.vfAssetUrl_("favicon.png");
+      if (apple) apple.href = window.vfAssetUrl_("favicon.png");
+    });
+  </script>
+
+  <script src="/styles/vf_config.js?v=2" id="vf-config-script"></script>
+  <script src="/vf_api.js?v=200" defer id="vf-api-script"></script>
+  <script src="/styles/vf_menu.js?v=2" defer id="vf-menu-script"></script>
+  <script src="/styles/vf_footer.js?v=2" defer id="vf-footer-script"></script>
+
+  <script>
+    (function () {
+      var map = [
+        ["vf-config-script", "styles/vf_config.js?v=2"],
+        ["vf-api-script", "vf_api.js?v=200"],
+        ["vf-menu-script", "styles/vf_menu.js?v=2"],
+        ["vf-footer-script", "styles/vf_footer.js?v=2"]
+      ];
+
+      map.forEach(function (entry) {
+        var el = document.getElementById(entry[0]);
+        if (el) el.src = window.vfAssetUrl_(entry[1]);
+      });
+    })();
+  </script>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles/vf_theme.css?v=2">
+  <link rel="stylesheet" href="/styles/vf_theme.css?v=2" id="vf-theme-css">
+
+  <script>
+    (function () {
+      var css = document.getElementById("vf-theme-css");
+      if (css) css.href = window.vfAssetUrl_("styles/vf_theme.css?v=2");
+    })();
+  </script>
 </head>
 
 <body>
@@ -163,10 +250,10 @@
         } else if (window.vfJsonp) {
           payload = await window.vfJsonp("get_products", { cat: "all", token: token || "" });
         } else {
-          // SÉCURITÉ : Vérifie que le CONFIG est bien là pour éviter un crash
           const scriptUrl = window.VF_CONFIG?.scriptUrl || "";
           if (!scriptUrl) throw new Error("URL de script manquante");
-          const resp = await fetch(`${scriptUrl}?action=get_products&token=${token || ""}`);
+          const sep = scriptUrl.indexOf("?") >= 0 ? "&" : "?";
+          const resp = await fetch(`${scriptUrl}${sep}action=get_products&token=${encodeURIComponent(token || "")}`);
           payload = await resp.json();
         }
 
@@ -185,21 +272,20 @@
         render();
       } catch (err) {
         console.error("Load Error:", err);
-        if (_isFirstLoad) {
-          const errBox = document.getElementById("loadError");
-          if (errBox) {
-            errBox.textContent = "Problème de connexion aux services. Veuillez rafraîchir.";
-            errBox.classList.remove("hidden");
-          }
+        _isFirstLoad = false;
+        const errBox = document.getElementById("loadError");
+        if (errBox) {
+          errBox.textContent = "Problème de connexion aux services. Veuillez rafraîchir.";
+          errBox.classList.remove("hidden");
         }
+        render();
       }
     }
 
-    // FONCTION DE SÉCURITÉ : Forcer la mémoire avant de changer de page
     window.saveProductClick = function(id) {
       try {
         sessionStorage.setItem("vf_service_id", id);
-        sessionStorage.removeItem("active_order_id"); // Reset l'ancienne commande
+        sessionStorage.removeItem("active_order_id");
       } catch(e) {}
     };
 
@@ -213,7 +299,11 @@
       const filtered = ALL_PRODUCTS.filter(function (p) {
         const catU = up(pCat(p));
         const nameL = pName(p).toLowerCase();
-        const matchCat = CURRENT_FILTER === "all" || (FILTER_MAP[CURRENT_FILTER]?.some(function (a) { return catU.includes(up(a)); })) || catU === up(CURRENT_FILTER);
+        const matchCat =
+          CURRENT_FILTER === "all" ||
+          (FILTER_MAP[CURRENT_FILTER]?.some(function (a) { return catU.includes(up(a)); })) ||
+          catU === up(CURRENT_FILTER);
+
         return matchCat && (!query || nameL.includes(query));
       });
 
@@ -229,14 +319,10 @@
         const priceNum = parseFloat(String(pPrice(p)).replace(",", "."));
         const priceTxt = isNaN(priceNum) ? "0.00" : priceNum.toFixed(2);
         const stableId = pStableId(p);
-        
+
         if (!stableId) return "";
 
-        const pid = encodeURIComponent(stableId);
-        
-        // CORRECTION MAJEURE ICI : Format d'URL standardisé + Sauvegarde forcée au clic
-        // Note: Si ta page de destination s'appelle "paiement.html", remplace "produit.html" par "paiement.html" ci-dessous.
-        const targetUrl = `/p/${pid}/`;
+        const targetUrl = window.vfProductUrl_(stableId);
 
         return `
           <a href="${targetUrl}" onclick="window.saveProductClick('${escAttr(stableId)}')" class="hover-card group bg-white rounded-[30px] p-4 border border-gray-50 flex flex-col shadow-sm">
@@ -295,7 +381,7 @@
         area.innerHTML = "";
         area.classList.remove("hidden");
         if (!s) {
-          area.innerHTML = `<a href="/login.html" class="btn-auth btn-auth-outline">Connexion</a>`;
+          area.innerHTML = `<a href="${window.vfPageUrl_('login.html')}" class="btn-auth btn-auth-outline">Connexion</a>`;
         } else {
           area.innerHTML = `<div class="text-[11px] font-black text-gray-900 mr-2">${escHtml(s.username || s.email)}</div>`;
         }
@@ -303,7 +389,7 @@
 
       if (sideArea) {
         if (!s) {
-          sideArea.innerHTML = `<a href="/login.html" class="btn brand-gradient w-full text-white">Connexion / Inscription</a>`;
+          sideArea.innerHTML = `<a href="${window.vfPageUrl_('login.html')}" class="btn brand-gradient w-full text-white">Connexion / Inscription</a>`;
         } else {
           sideArea.innerHTML = `
             <div class="text-sm font-bold text-gray-900 mb-4 truncate">
