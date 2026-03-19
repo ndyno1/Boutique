@@ -226,8 +226,23 @@
   </div>
 
   <script>
-    const GOOGLE_URL = window.VF_CONFIG.scriptUrl;
     const DEBUG = new URLSearchParams(location.search).has("debug");
+
+    function bootLog_(msg, extra){
+      try { console.log("[VF BOOT]", msg, extra || ""); } catch(_){}
+    }
+
+    const GOOGLE_URL = (
+      window.VF_CONFIG &&
+      typeof window.VF_CONFIG === "object" &&
+      window.VF_CONFIG.scriptUrl
+    )
+      ? String(window.VF_CONFIG.scriptUrl).trim()
+      : "";
+
+    bootLog_("VF_CONFIG", window.VF_CONFIG || null);
+    bootLog_("GOOGLE_URL", GOOGLE_URL);
+    bootLog_("document.readyState", document.readyState);
 
     const debugBox = document.getElementById("debugBox");
 
@@ -238,18 +253,35 @@
       try { console.log(title, obj); } catch(_){}
     }
 
+    function esc_(s){
+      return String(s || "").replace(/[&<>"']/g, (c) => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[c]));
+    }
+
+    function failBoot_(message){
+      const userEmail = document.getElementById("userEmail");
+      const modeLine = document.getElementById("modeLine");
+      const stateBox = document.getElementById("stateBox");
+      const refreshBtn = document.getElementById("refreshBtn");
+
+      if (userEmail) userEmail.textContent = "—";
+      if (modeLine) modeLine.textContent = "Erreur d’initialisation.";
+      if (stateBox) stateBox.innerHTML = "Erreur: " + esc_(message || "BOOT_ERROR");
+      if (refreshBtn) {
+        refreshBtn.disabled = false;
+        refreshBtn.textContent = "Actualiser";
+      }
+
+      bootLog_("BOOT_ERROR", message);
+    }
+
     function toast(msg){
       const el = document.getElementById("toast");
       el.textContent = String(msg || "");
       el.classList.add("show");
       clearTimeout(window.__vf_toast_t);
       window.__vf_toast_t = setTimeout(() => el.classList.remove("show"), 2200);
-    }
-
-    function esc_(s){
-      return String(s || "").replace(/[&<>"']/g, (c) => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-      }[c]));
     }
 
     function fmt2(n){
@@ -654,6 +686,11 @@
       const modeLine = document.getElementById("modeLine");
       const refreshBtn = document.getElementById("refreshBtn");
 
+      if (!GOOGLE_URL) {
+        failBoot_("VF_CONFIG.scriptUrl manquant ou vf_config.js non chargé.");
+        return;
+      }
+
       wrap.classList.add("hidden");
       stateBox.classList.remove("hidden");
       stateBox.innerHTML = "Chargement…";
@@ -792,12 +829,20 @@
       });
     }
 
-    document.getElementById("refreshBtn").addEventListener("click", loadTransactions_);
+    const refreshBtnEl = document.getElementById("refreshBtn");
+    if (refreshBtnEl) {
+      refreshBtnEl.addEventListener("click", loadTransactions_);
+    }
 
     document.addEventListener("DOMContentLoaded", function () {
-      setActiveMenuLinkFallback_();
-      applyAuthUI_();
-      loadTransactions_();
+      try {
+        bootLog_("DOMContentLoaded", "OK");
+        setActiveMenuLinkFallback_();
+        applyAuthUI_();
+        loadTransactions_();
+      } catch (e) {
+        failBoot_(e && e.message ? e.message : "Erreur inconnue au démarrage.");
+      }
     });
   </script>
 </body>
