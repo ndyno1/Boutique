@@ -297,6 +297,28 @@
       const x = parseFloat(s);
       return isFinite(x) ? x : 0;
     }
+    function pickDate_(o){
+  const cand = [
+    o.date, o.createdAt, o.created_at, o.ts, o.timestamp,
+
+    // mapping backend order_history
+    o.raw?.date,
+    o.raw?.DATE,
+    o.raw?.["DATE (col 2)"],
+    o.raw?.["DATE"],
+    o.raw?.["col 2"],
+    o.raw?.["COL 2"],
+    o.raw?.created_at,
+    o.raw?.createdAt,
+    o.raw?.timestamp
+  ];
+
+  for (const v of cand) {
+    const t = String(v || "").trim();
+    if (t) return t;
+  }
+  return "";
+}
 
     function badgeForStatus_(st){
       const s = String(st || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -497,135 +519,178 @@
     }
 
     function extractLink_(o) {
-      const cand = [
-        o.lien, o.link, o.url, o.target_link,
-        o.input1, o.colF, o.f, o.F, o.Input1, o.input_1,
-        o.information, o.info,
-        o.raw?.lien, o.raw?.LIEN, o.raw?.link, o.raw?.url, o.raw?.target_link,
-        o.raw?.input1, o.raw?.["LIEN"]
-      ];
+  const cand = [
+    o.lien, o.link, o.url, o.target_link,
+    o.input1, o.colF, o.f, o.F, o.Input1, o.input_1,
+    o.information, o.info,
 
-      for(const v of cand){
-        let t = String(v || "").trim();
-        if (!t) continue;
+    // mapping backend order_history
+    o.raw?.lien,
+    o.raw?.LIEN,
+    o.raw?.["LIEN (6)"],
+    o.raw?.["LIEN"],
+    o.raw?.link,
+    o.raw?.url,
+    o.raw?.target_link,
+    o.raw?.input1,
+    o.raw?.["col 6"],
+    o.raw?.["COL 6"]
+  ];
 
-        if(t.startsWith("http://") || t.startsWith("https://")) {
-          return t;
-        }
+  for (const v of cand) {
+    let t = String(v || "").trim();
+    if (!t) continue;
 
-        if (t.includes(".com/") || t.startsWith("www.") || t.includes("tiktok.com") || t.includes("instagram.com") || t.includes("youtube.com")) {
-          return "https://" + t;
-        }
-      }
-      return "";
+    if (t.startsWith("http://") || t.startsWith("https://")) {
+      return t;
     }
+
+    if (
+      t.includes(".com/") ||
+      t.startsWith("www.") ||
+      t.includes("tiktok.com") ||
+      t.includes("instagram.com") ||
+      t.includes("youtube.com") ||
+      t.includes("facebook.com") ||
+      t.includes("wa.me")
+    ) {
+      return "https://" + t.replace(/^https?:\/\//i, "");
+    }
+  }
+
+  return "";
+}
 
     function renderTable_(list, title){
-      const stateBox = document.getElementById("stateBox");
-      const wrap = document.getElementById("txWrap");
+  const stateBox = document.getElementById("stateBox");
+  const wrap = document.getElementById("txWrap");
 
-      if(!Array.isArray(list) || list.length === 0){
-        wrap.classList.add("hidden");
-        stateBox.classList.remove("hidden");
-        stateBox.innerHTML = "Aucune transaction trouvée.";
-        return;
-      }
+  if(!Array.isArray(list) || list.length === 0){
+    wrap.classList.add("hidden");
+    stateBox.classList.remove("hidden");
+    stateBox.innerHTML = "Aucune transaction trouvée.";
+    return;
+  }
 
-      const sorted = [...list].sort((a,b) => {
-        const ta = toNumber_(a?.ts || a?.timestamp || a?.created_at || a?.date || a?.raw?.created_at || 0);
-        const tb = toNumber_(b?.ts || b?.timestamp || b?.created_at || b?.date || b?.raw?.created_at || 0);
-        return tb - ta;
-      });
+  const sorted = [...list].sort((a,b) => {
+    const ta = toNumber_(a?.ts || a?.timestamp || a?.created_at || a?.date || a?.raw?.created_at || 0);
+    const tb = toNumber_(b?.ts || b?.timestamp || b?.created_at || b?.date || b?.raw?.created_at || 0);
+    return tb - ta;
+  });
 
-      stateBox.classList.add("hidden");
-      wrap.classList.remove("hidden");
+  stateBox.classList.add("hidden");
+  wrap.classList.remove("hidden");
 
-      const rows = sorted.map((o) => {
-        const orderId = String(
-          o.id_commande || o.orderId || o.id || o.order_id || o.raw?.id_commande || o.raw?.["ID COMMANDE"] || ""
-        ).trim();
+  const rows = sorted.map((o) => {
+    const orderId = String(
+      o.id_commande ||
+      o.orderId ||
+      o.id ||
+      o.order_id ||
+      o.raw?.id_commande ||
+      o.raw?.["ID COMMANDE"] ||
+      o.raw?.["ID COMMANDE (1)"] ||
+      o.raw?.["id commande"] ||
+      ""
+    ).trim();
 
-        const created = String(
-          o.date || o.createdAt || o.created_at || o.ts || o.raw?.date || o.raw?.DATE || o.raw?.created_at || ""
-        ).trim() || "—";
+    const created = pickDate_(o) || "—";
 
-        const product = String(
-          o.produit || o.product || o.nom || o.title || o.raw?.produit || o.raw?.product || "Commande"
-        );
+    const product = String(
+      o.produit ||
+      o.product ||
+      o.nom ||
+      o.title ||
+      o.raw?.produit ||
+      o.raw?.product ||
+      "Commande"
+    ).trim();
 
-        const qty = Number(
-          o.quantite || o.qty || o.quantity || o.raw?.quantite || o.raw?.qty || o.raw?.quantity || 1
-        ) || 1;
+    const qty = Number(
+      o.quantite ||
+      o.qty ||
+      o.quantity ||
+      o.raw?.quantite ||
+      o.raw?.qty ||
+      o.raw?.quantity ||
+      1
+    ) || 1;
 
-        const amountRaw = pickAmount_(o);
-        const amount = toNumber_(amountRaw);
+    const amountRaw = pickAmount_(o);
+    const amount = toNumber_(amountRaw);
 
-        const status = String(
-          o.statut || o.status || o.raw?.statut || o.raw?.STATUT || o.raw?.status || ""
-        );
-        const [badgeCls, badgeTxt] = badgeForStatus_(status);
+    const status = String(
+      o.statut ||
+      o.status ||
+      o.raw?.statut ||
+      o.raw?.STATUT ||
+      o.raw?.status ||
+      ""
+    ).trim();
 
-        const resp = getResponseText_(o);
-        const hasResp = !!String(resp || "").trim();
-        const respEnc = encodeURIComponent(resp || "");
+    const [badgeCls, badgeTxt] = badgeForStatus_(status);
 
-        const link = extractLink_(o);
-        const linkHtml = link
-          ? `<a href="${esc_(link)}" target="_blank" class="btn btn-outline" style="height:32px;padding:0 10px;font-size:10px;text-decoration:none;border-color:#F07E13;color:#F07E13;">Ouvrir</a>`
-          : `<span class="text-[11px] font-black text-gray-300 uppercase tracking-widest">—</span>`;
+    const resp = getResponseText_(o);
+    const hasResp = !!String(resp || "").trim();
+    const respEnc = encodeURIComponent(resp || "");
 
-        return `
-          <tr class="border-t">
-            <td class="p-3 font-bold text-gray-500">${esc_(created)}</td>
-            <td class="p-3 font-black text-gray-900">${esc_(orderId || "—")}</td>
-            <td class="p-3 font-semibold text-gray-700">${esc_(product)}</td>
-            <td class="p-3 font-black text-gray-900">${esc_(String(qty))}</td>
-            <td class="p-3 font-black text-gray-900">${esc_(fmt2(amount))} $</td>
-            <td class="p-3"><span class="badge ${badgeCls}">${esc_(badgeTxt)}</span></td>
-            <td class="p-3">${linkHtml}</td>
-            <td class="p-3">
-              ${hasResp
-                ? `<button class="btn btn-outline seeBtn" type="button" style="height:32px;padding:0 10px;font-size:10px;" data-resp="${respEnc}">Voir</button>`
-                : `<span class="text-[11px] font-black text-gray-300 uppercase tracking-widest">—</span>`}
-            </td>
+    const link = extractLink_(o);
+    const linkHtml = link
+      ? `<a href="${esc_(link)}" target="_blank" class="btn btn-outline" style="height:32px;padding:0 10px;font-size:10px;text-decoration:none;border-color:#F07E13;color:#F07E13;">Ouvrir</a>`
+      : `<span class="text-[11px] font-black text-gray-300 uppercase tracking-widest">—</span>`;
+
+    return `
+      <tr class="border-t">
+        <td class="p-3 font-bold text-gray-500">${esc_(created)}</td>
+        <td class="p-3 font-black text-gray-900">${esc_(orderId || "—")}</td>
+        <td class="p-3 font-semibold text-gray-700">${esc_(product || "—")}</td>
+        <td class="p-3 font-black text-gray-900">${esc_(String(qty))}</td>
+        <td class="p-3 font-black text-gray-900">${esc_(fmt2(amount))} $</td>
+        <td class="p-3"><span class="badge ${badgeCls}">${esc_(badgeTxt)}</span></td>
+        <td class="p-3">${linkHtml}</td>
+        <td class="p-3">
+          ${hasResp
+            ? `<button class="btn btn-outline seeBtn" type="button" style="height:32px;padding:0 10px;font-size:10px;" data-resp="${respEnc}">Voir</button>`
+            : `<span class="text-[11px] font-black text-gray-300 uppercase tracking-widest">—</span>`}
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  wrap.innerHTML = `
+    <div class="p-5 md:p-6 border-b border-gray-100">
+      <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">${esc_(title)}</div>
+      <div class="text-[12px] font-bold text-gray-500 mt-1">
+        Total: <span class="font-black text-gray-900">${sorted.length}</span>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+          <tr class="text-left text-[11px] uppercase tracking-widest text-gray-400 font-black">
+            <th class="p-3">Date</th>
+            <th class="p-3">Commande</th>
+            <th class="p-3">Produit</th>
+            <th class="p-3">Qté</th>
+            <th class="p-3">Montant</th>
+            <th class="p-3">Statut</th>
+            <th class="p-3">Lien</th>
+            <th class="p-3">Voir</th>
           </tr>
-        `;
-      }).join("");
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
 
-      wrap.innerHTML = `
-        <div class="p-5 md:p-6 border-b border-gray-100">
-          <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">${esc_(title)}</div>
-          <div class="text-[12px] font-bold text-gray-500 mt-1">
-            Total: <span class="font-black text-gray-900">${sorted.length}</span>
-          </div>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50">
-              <tr class="text-left text-[11px] uppercase tracking-widest text-gray-400 font-black">
-                <th class="p-3">Date</th>
-                <th class="p-3">Commande</th>
-                <th class="p-3">Produit</th>
-                <th class="p-3">Qté</th>
-                <th class="p-3">Montant</th>
-                <th class="p-3">Statut</th>
-                <th class="p-3">Lien</th>
-                <th class="p-3">Voir</th>
-              </tr>
-            </thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>
-      `;
-
-      wrap.querySelectorAll(".seeBtn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const respEnc = btn.getAttribute("data-resp") || "";
-          const text = decodeURIComponent(respEnc || "");
-          openResp_(text || "—");
-        });
-      });
-    }
+  wrap.querySelectorAll(".seeBtn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const respEnc = btn.getAttribute("data-resp") || "";
+      const text = decodeURIComponent(respEnc || "");
+      openResp_(text || "—");
+    });
+  });
+}
 
     function applyAuthUI_(){
       const btnText = document.getElementById("logoutBtn");
