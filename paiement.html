@@ -453,9 +453,14 @@
     }
   }
 
+  // CORRECTION PRINCIPALE :
+  // on lit d'abord vf_session.token, puis fallback sur localStorage.vf_token
   function getSessionToken_(){
     const s = getSession_();
-    return String(s?.token || "").trim();
+    return (
+      String(s?.token || "").trim() ||
+      String(localStorage.getItem("vf_token") || "").trim()
+    );
   }
 
   function fmt2(n){
@@ -482,10 +487,13 @@
     const s = document.createElement("script");
     const qs = new URLSearchParams({ ...paramsObj, callback: cb, t: String(Date.now()) });
     s.src = baseUrl + "?" + qs.toString();
+    s.async = true;
+
     s.onerror = function(){
       try { delete window[cb]; } catch(_){}
       onErr && onErr();
     };
+
     document.body.appendChild(s);
   }
 
@@ -559,6 +567,7 @@
     }
   }
 
+  // VERSION DEBUG + ROBUSTE
   function refreshWalletBalance_(cb){
     if(!WALLET_EMAIL) {
       cb && cb(false);
@@ -566,6 +575,10 @@
     }
 
     const sessionToken = getSessionToken_();
+    console.log("VF wallet API_URL =", API_URL);
+    console.log("VF wallet email =", WALLET_EMAIL);
+    console.log("VF wallet token =", sessionToken);
+
     if (!sessionToken) {
       WALLET_LOADING = false;
       WALLET_OK = false;
@@ -592,6 +605,7 @@
           cb && cb(true);
         }else{
           WALLET_OK = false;
+          console.log("VF wallet_balance error =", res);
           updateWalletUI_();
           cb && cb(false);
         }
@@ -599,6 +613,7 @@
       () => {
         WALLET_LOADING = false;
         WALLET_OK = false;
+        console.log("VF wallet_balance network/jsonp error");
         updateWalletUI_();
         cb && cb(false);
       }
@@ -929,15 +944,17 @@
         qp.set("id", prod.id || prod.ID || id);
         qp.set("nom", prod.nom || prod.title || "");
         qp.set("prix", prod.prix || prod.prix_affiche || "");
-        qp.set("cat", prod.cat || "");
-        qp.set("img", prod.img || prod.ImageURL || "");
+        qp.set("cat", prod.cat || prod.categorie || "");
+        qp.set("img", prod.img || prod.ImageURL || prod.image || "");
         qp.set("min", prod.min ?? "");
         qp.set("max", prod.max ?? "");
         qp.set("desc", prod.desc || prod.description || "");
         qp.set("long", prod.long_desc || prod.long || "");
 
         location.replace("paiement.html?" + qp.toString());
-      } catch(e){}
+      } catch(e){
+        console.log("VF autoFillFromId error =", e);
+      }
     };
 
     const s = document.createElement("script");
