@@ -15,6 +15,9 @@ const VF_SHARED_CONFIG = {
   avisScriptUrl: "https://script.google.com/macros/s/AKfycbylffBPr9m8Y26asnlPuVDizwS5xOUe9zpUIt3NrbUZlVsMgNkh9bOcANYbkvTZbpL9/exec",
   orderScriptUrl: "https://script.google.com/macros/s/AKfycbyCvuy-WiLMlAkBb7k6YyPVMk4lQhGGke05heSWSw--twKE2L-oVSOs884g3jn6lt6m/exec",
 
+  SUPABASE_URL: "https://hipaxukrnqqhwwulpdcq.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpcGF4dWtybnFxaHd3dWxwZGNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjA0MzIsImV4cCI6MjA4OTM5NjQzMn0.MWDryLC0xedkcD3RzuRRUpNaLLoQV6gA0wsv2FNe0E0",
+
   timeoutMs: 25000,
   debug: false,
   proxyUrl: "/vf_proxy",
@@ -22,12 +25,12 @@ const VF_SHARED_CONFIG = {
   cookieTokenKey: "vf_token"
 };
 
-// 1. Pour le navigateur (Ton site web)
+// 1. Pour le navigateur
 if (typeof window !== "undefined") {
   window.VF_CONFIG = VF_SHARED_CONFIG;
 }
 
-// 2. Pour Node.js (Ton serveur GitHub Actions)
+// 2. Pour Node.js
 if (typeof module !== "undefined" && module.exports) {
   module.exports = VF_SHARED_CONFIG;
 }

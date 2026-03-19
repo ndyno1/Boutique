@@ -879,11 +879,18 @@
       if (!id || hasBasics) return;
 
       const cb = "VF_PROD_" + Date.now();
-      window[cb] = function(list){
-        try{
-          const arr = Array.isArray(list) ? list : [];
-          const prod = arr.find(x => String(x.id || "").trim() === id);
-          if (!prod) return;
+      window[cb] = function(resp){
+  try{
+    const arr = Array.isArray(resp)
+      ? resp
+      : Array.isArray(resp?.products)
+        ? resp.products
+        : Array.isArray(resp?.services)
+          ? resp.services
+          : [];
+
+    const prod = arr.find(x => String(x.id || x.ID || "").trim() === id);
+    if (!prod) return;
 
           const qp = new URLSearchParams();
           qp.set("id", prod.id || id);
