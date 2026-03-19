@@ -299,28 +299,35 @@
     }
 
     function pickDate_(o){
-      const cand = [
-        o.date, o.createdAt, o.created_at, o.ts, o.timestamp,
+  const cand = [
+    o.date, o.createdAt, o.created_at, o.ts, o.timestamp,
 
-        o.raw?.date,
-        o.raw?.DATE,
-        o.raw?.["DATE (col 2)"],
-        o.raw?.["DATE"],
-        o.raw?.["col 2"],
-        o.raw?.["COL 2"],
-        o.raw?.created_at,
-        o.raw?.createdAt,
-        o.raw?.timestamp,
-        o.raw?.date_creation,
-        o.raw?.["date création"]
-      ];
+    o.raw?.date,
+    o.raw?.DATE,
+    o.raw?.["DATE (col 2)"],
+    o.raw?.["DATE"],
+    o.raw?.["col 2"],
+    o.raw?.["COL 2"],
 
-      for (const v of cand) {
-        const t = String(v || "").trim();
-        if (t) return t;
-      }
-      return "";
-    }
+    // variantes base réelle
+    o.raw?.date_creation,
+    o.raw?.date_maj,
+    o.raw?.date_update,
+    o.raw?.updated_at,
+    o.raw?.created_at,
+    o.raw?.createdAt,
+    o.raw?.timestamp,
+    o.raw?.["date création"],
+    o.raw?.["date maj"],
+    o.raw?.["date mise à jour"]
+  ];
+
+  for (const v of cand) {
+    const t = String(v || "").trim();
+    if (t) return t;
+  }
+  return "";
+}
 
     function badgeForStatus_(st){
       const s = String(st || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -528,45 +535,57 @@
     }
 
     function extractLink_(o) {
-      const cand = [
-        o.lien, o.link, o.url, o.target_link,
-        o.input1, o.colF, o.f, o.F, o.Input1, o.input_1,
-        o.information, o.info,
+  const cand = [
+    o.lien, o.link, o.url, o.target_link,
+    o.input1, o.colF, o.f, o.F, o.Input1, o.input_1,
+    o.information, o.info,
 
-        o.raw?.lien,
-        o.raw?.LIEN,
-        o.raw?.["LIEN (6)"],
-        o.raw?.["LIEN"],
-        o.raw?.link,
-        o.raw?.url,
-        o.raw?.target_link,
-        o.raw?.input1,
-        o.raw?.["col 6"],
-        o.raw?.["COL 6"]
-      ];
+    o.raw?.lien,
+    o.raw?.LIEN,
+    o.raw?.["LIEN (6)"],
+    o.raw?.["LIEN"],
+    o.raw?.link,
+    o.raw?.url,
+    o.raw?.target_link,
+    o.raw?.input1,
+    o.raw?.input_1,
+    o.raw?.["Input1"],
+    o.raw?.["input1"],
+    o.raw?.["col 6"],
+    o.raw?.["COL 6"],
 
-      for(const v of cand){
-        let t = String(v || "").trim();
-        if (!t) continue;
+    // variantes base réelle
+    o.raw?.service_link,
+    o.raw?.post_link,
+    o.raw?.target,
+    o.raw?.target_url,
+    o.raw?.profile_link,
+    o.raw?.video_link
+  ];
 
-        if(t.startsWith("http://") || t.startsWith("https://")) {
-          return t;
-        }
+  for(const v of cand){
+    let t = String(v || "").trim();
+    if (!t) continue;
 
-        if (
-          t.includes(".com/") ||
-          t.startsWith("www.") ||
-          t.includes("tiktok.com") ||
-          t.includes("instagram.com") ||
-          t.includes("youtube.com") ||
-          t.includes("facebook.com") ||
-          t.includes("wa.me")
-        ) {
-          return "https://" + t.replace(/^https?:\/\//i, "");
-        }
-      }
-      return "";
+    if (t.startsWith("http://") || t.startsWith("https://")) {
+      return t;
     }
+
+    if (
+      t.includes(".com/") ||
+      t.startsWith("www.") ||
+      t.includes("tiktok.com") ||
+      t.includes("instagram.com") ||
+      t.includes("youtube.com") ||
+      t.includes("facebook.com") ||
+      t.includes("wa.me")
+    ) {
+      return "https://" + t.replace(/^https?:\/\//i, "");
+    }
+  }
+
+  return "";
+}
 
     function renderTable_(list, title){
       const stateBox = document.getElementById("stateBox");
@@ -587,7 +606,8 @@
 
       stateBox.classList.add("hidden");
       wrap.classList.remove("hidden");
-
+      dbg("renderTable first item", sorted[0] || {});
+dbg("renderTable first raw keys", sorted[0] && sorted[0].raw ? Object.keys(sorted[0].raw) : []);
       const rows = sorted.map((o) => {
         const orderId = String(
           o.id_commande ||
