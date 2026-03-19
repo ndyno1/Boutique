@@ -301,25 +301,24 @@
     function pickDate_(o){
   const cand = [
     o.date, o.createdAt, o.created_at, o.ts, o.timestamp,
+    o.date_commande,
 
     o.raw?.date,
     o.raw?.DATE,
+    o.raw?.date_commande,
+    o.raw?.["date_commande"],
+    o.raw?.["DATE_COMMANDE"],
     o.raw?.["DATE (col 2)"],
     o.raw?.["DATE"],
     o.raw?.["col 2"],
     o.raw?.["COL 2"],
-
-    // variantes base réelle
     o.raw?.date_creation,
     o.raw?.date_maj,
     o.raw?.date_update,
     o.raw?.updated_at,
     o.raw?.created_at,
     o.raw?.createdAt,
-    o.raw?.timestamp,
-    o.raw?.["date création"],
-    o.raw?.["date maj"],
-    o.raw?.["date mise à jour"]
+    o.raw?.timestamp
   ];
 
   for (const v of cand) {
@@ -539,9 +538,13 @@
     o.lien, o.link, o.url, o.target_link,
     o.input1, o.colF, o.f, o.F, o.Input1, o.input_1,
     o.information, o.info,
+    o.lien_input,
 
     o.raw?.lien,
     o.raw?.LIEN,
+    o.raw?.lien_input,
+    o.raw?.["lien_input"],
+    o.raw?.["LIEN_INPUT"],
     o.raw?.["LIEN (6)"],
     o.raw?.["LIEN"],
     o.raw?.link,
@@ -552,15 +555,7 @@
     o.raw?.["Input1"],
     o.raw?.["input1"],
     o.raw?.["col 6"],
-    o.raw?.["COL 6"],
-
-    // variantes base réelle
-    o.raw?.service_link,
-    o.raw?.post_link,
-    o.raw?.target,
-    o.raw?.target_url,
-    o.raw?.profile_link,
-    o.raw?.video_link
+    o.raw?.["COL 6"]
   ];
 
   for(const v of cand){
