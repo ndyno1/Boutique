@@ -176,48 +176,53 @@
       input.dataset.vfBound = "1";
       input.addEventListener("input", function () { render(); });
     }
+  async function loadProducts_(token) {
+  try {
+    const api = window.vfApi;
+    let payload;
 
-    async function loadProducts_(token) {
-      try {
-        const api = window.vfApi;
-        let payload;
+    if (api && typeof api.getProducts === "function") {
+      payload = await api.getProducts({ cat: "all", token: token || "" });
+    } else if (window.vfJsonp) {
+      payload = await window.vfJsonp("get_products", { cat: "all", token: token || "" });
+    } else {
+      const scriptUrl = window.VF_CONFIG?.scriptUrl || "";
+      if (!scriptUrl) throw new Error("URL de script manquante");
 
-        if (api && typeof api.getProducts === "function") {
-          payload = await api.getProducts({ cat: "all", token: token || "" });
-        } else if (window.vfJsonp) {
-          payload = await window.vfJsonp("get_products", { cat: "all", token: token || "" });
-        } else {
-          // SÉCURITÉ : Vérifie que le CONFIG est bien là pour éviter un crash
-          const scriptUrl = window.VF_CONFIG?.scriptUrl || "";
-          if (!scriptUrl) throw new Error("URL de script manquante");
-          const resp = await fetch(`${scriptUrl}?action=get_products&token=${token || ""}`);
-          payload = await resp.json();
-        }
+      // VIRAL : api_services = JSON ; get_products = JSONP
+      const resp = await fetch(`${scriptUrl}?action=api_services&token=${encodeURIComponent(token || "")}`);
+      const json = await resp.json();
 
-        const list = Array.isArray(payload) ? payload : (payload.products || []);
+      payload = {
+        products: Array.isArray(json?.services) ? json.services : []
+      };
+    }
 
-        ALL_PRODUCTS = list
-          .filter(function (p) { return String(p.id || p.ID || "").trim() !== ""; })
-          .map(function (p) {
-            return { ...p, __vf_id: String(p.id || p.ID).trim() };
-          });
+    const list = Array.isArray(payload) ? payload : (payload.products || []);
 
-        _isFirstLoad = false;
-        const errBox = document.getElementById("loadError");
-        if (errBox) errBox.classList.add("hidden");
+    ALL_PRODUCTS = list
+      .filter(function (p) { return String(p.id || p.ID || "").trim() !== ""; })
+      .map(function (p) {
+        return { ...p, __vf_id: String(p.id || p.ID).trim() };
+      });
 
-        render();
-      } catch (err) {
-        console.error("Load Error:", err);
-        if (_isFirstLoad) {
-          const errBox = document.getElementById("loadError");
-          if (errBox) {
-            errBox.textContent = "Problème de connexion aux services. Veuillez rafraîchir.";
-            errBox.classList.remove("hidden");
-          }
-        }
+    _isFirstLoad = false;
+    const errBox = document.getElementById("loadError");
+    if (errBox) errBox.classList.add("hidden");
+
+    render();
+  } catch (err) {
+    console.error("Load Error:", err);
+    if (_isFirstLoad) {
+      const errBox = document.getElementById("loadError");
+      if (errBox) {
+        errBox.textContent = "Problème de connexion aux services. Veuillez rafraîchir.";
+        errBox.classList.remove("hidden");
       }
     }
+  }
+}
+   
 
     // FONCTION DE SÉCURITÉ : Forcer la mémoire avant de changer de page
     window.saveProductClick = function(id) {
