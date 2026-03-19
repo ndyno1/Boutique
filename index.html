@@ -182,8 +182,6 @@
       throw new Error("URL de script manquante");
     }
 
-    // VIRAL : api_services = JSON ; get_products = JSONP
-    // On force ici la route JSON pour éviter SCRIPT_LOAD_ERR du JSONP
     const resp = await fetch(
       `${scriptUrl}?action=api_services&token=${encodeURIComponent(token || "")}`,
       { method: "GET" }
@@ -195,12 +193,16 @@
     console.log("VF api_services JSON =", json);
 
     payload = {
-      products: Array.isArray(json?.services) ? json.services : []
+      products: Array.isArray(json?.products)
+        ? json.products
+        : Array.isArray(json?.services)
+          ? json.services
+          : []
     };
 
     console.log("VF payload produits =", payload);
 
-    const list = Array.isArray(payload) ? payload : (payload.products || []);
+    const list = Array.isArray(payload.products) ? payload.products : [];
     console.log("VF list produits =", list);
 
     ALL_PRODUCTS = list
