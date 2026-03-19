@@ -239,9 +239,14 @@ function buildPayUrl(prod) {
   if (prod.lien_commande) {
     try {
       const u = new URL(prod.lien_commande);
-      return u.pathname + u.search;
+      return "/paiement.html" + (u.search || "");
     } catch (_) {
-      return prod.lien_commande;
+      const raw = String(prod.lien_commande || "").trim();
+
+      if (raw.includes("?")) {
+        return "/paiement.html" + raw.slice(raw.indexOf("?"));
+      }
+      return "/paiement.html";
     }
   }
 
