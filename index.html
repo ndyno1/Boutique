@@ -189,8 +189,20 @@
 
     console.log("VF api_services HTTP =", resp.status);
 
-    const json = await resp.json();
-    console.log("VF api_services JSON =", json);
+    const rawText = await resp.text();
+console.log("VF api_services RAW =", rawText);
+
+let json = {};
+try {
+  json = JSON.parse(rawText);
+} catch (e) {
+  console.error("VF JSON parse error =", e);
+}
+
+console.log("VF api_services JSON =", json);
+console.log("VF raw keys =", Object.keys(json || {}));
+console.log("VF raw services count =", Array.isArray(json?.services) ? json.services.length : "no_services");
+console.log("VF raw products count =", Array.isArray(json?.products) ? json.products.length : "no_products");
 
     payload = {
       products: Array.isArray(json?.products)
