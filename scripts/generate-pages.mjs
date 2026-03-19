@@ -4,9 +4,8 @@ import path from "path";
 
 const ROOT = process.cwd();
 
-// --- LA SOLUTION PROPRE : LECTURE DIRECTE (REGEX) ---
-// On lit le fichier vf_config.js comme un document texte 
-// pour extraire les liens sans créer de conflit d'importation !
+// --- LECTURE DIRECTE DE styles/vf_config.js ---
+// On lit le fichier comme du texte pour éviter tout conflit d'import ES/CJS.
 const configPath = path.join(ROOT, "styles", "vf_config.js");
 let configText = "";
 
@@ -16,11 +15,16 @@ try {
   console.error("⚠️ Impossible de lire styles/vf_config.js, utilisation des valeurs par défaut.");
 }
 
-const matchSite = configText.match(/SITE_BASE:\s*["']([^"']+)["']/);
-const matchScript = configText.match(/VF_SCRIPT_URL:\s*["']([^"']+)["']/);
+const matchSite =
+  configText.match(/SITE_BASE\s*:\s*["']([^"']+)["']/) ||
+  configText.match(/SITE_BASE\s*=\s*["']([^"']+)["']/);
+
+const matchScript =
+  configText.match(/VF_SCRIPT_URL\s*:\s*["']([^"']+)["']/) ||
+  configText.match(/VF_SCRIPT_URL\s*=\s*["']([^"']+)["']/);
 
 const SITE_BASE = matchSite ? matchSite[1].replace(/\/+$/, "") : "https://viralflowr.com";
-const VF_SCRIPT_URL = matchScript ? matchScript[1].trim() : process.env.VF_SCRIPT_URL || "";
+const VF_SCRIPT_URL = matchScript ? matchScript[1].trim() : (process.env.VF_SCRIPT_URL || "").trim();
 
 if (!VF_SCRIPT_URL) {
   throw new Error("❌ VF_SCRIPT_URL introuvable. Vérifie ton fichier styles/vf_config.js !");
@@ -49,15 +53,15 @@ function escapeHtml(s) {
     .replace(/'/g, "&#39;");
 }
 
-function linkify(text) {
-  const urlPattern = /(https?:\/\/[^\s<]+)/g;
-  return text.replace(urlPattern, (url) => {
-    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-orange-600 underline hover:text-orange-700 break-all">${url}</a>`;
-  });
-}
-
 function escapeAttr(s) {
   return escapeHtml(s);
+}
+
+function linkify(text) {
+  const urlPattern = /(https?:\/\/[^\s<]+)/g;
+  return safeStr(text).replace(urlPattern, (url) => {
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-orange-600 underline hover:text-orange-700 break-all">${url}</a>`;
+  });
 }
 
 function truncateText(s, n = 160) {
@@ -92,6 +96,7 @@ function pick(obj, keys) {
 function extractList(payload) {
   if (Array.isArray(payload)) return payload;
   if (payload && Array.isArray(payload.products)) return payload.products;
+  if (payload && Array.isArray(payload.services)) return payload.services;
   if (payload && Array.isArray(payload.items)) return payload.items;
   if (payload && Array.isArray(payload.data)) return payload.data;
   return [];
@@ -102,9 +107,13 @@ async function fetchText(url) {
   const t = setTimeout(() => ac.abort(), TIMEOUT_MS);
 
   try {
-    const res = await fetch(url, { signal: ac.signal, redirect: "follow" });
+    const res = await fetch(url, {
+      signal: ac.signal,
+      redirect: "follow"
+    });
+
     const text = await res.text();
-    if (!res.ok) throw new Error(`HTTP ${res.status} on ${url}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status} on ${url}\n${text}`);
     return text;
   } finally {
     clearTimeout(t);
@@ -125,15 +134,56 @@ function parseJsonOrJsonp(text) {
 }
 
 function normalizeProduct(raw) {
-  const id = cleanId(pick(raw, ["id", "ID", "product_id", "productId", "pid"]));
-  const nom = safeStr(pick(raw, ["nom", "name", "title", "product_name"])).trim();
-  const cat = safeStr(pick(raw, ["cat", "category", "categorie"])).trim();
-  const img = safeStr(pick(raw, ["img", "image", "image_url", "imageUrl", "thumbnail"])).trim();
+  const id = cleanId(
+    pick(raw, [
+      "id",
+      "ID",
+      "product_id",
+      "productId",
+      "pid",
+      "produit_id"
+    ])
+  );
+
+  const nom = safeStr(
+    pick(raw, [
+      "nom",
+      "Nom",
+      "name",
+      "title",
+      "product_name",
+      "produit"
+    ])
+  ).trim();
+
+  const cat = safeStr(
+    pick(raw, [
+      "cat",
+      "Cat",
+      "category",
+      "categorie",
+      "Catégorie",
+      "Categorie"
+    ])
+  ).trim();
+
+  const img = safeStr(
+    pick(raw, [
+      "img",
+      "image",
+      "image_url",
+      "imageUrl",
+      "thumbnail",
+      "photo",
+      "ImageURL"
+    ])
+  ).trim();
 
   const prixClient = pick(raw, [
     "prix_affiche",
     "prix_revendeur",
     "prix",
+    "Prix",
     "price",
     "amount",
     "prix_client",
@@ -141,11 +191,34 @@ function normalizeProduct(raw) {
     "pv"
   ]);
 
-  const min = safeStr(pick(raw, ["min", "minimum"])).trim();
-  const max = safeStr(pick(raw, ["max", "maximum"])).trim();
-  const desc = safeStr(pick(raw, ["desc", "description", "short_desc"])).trim();
+  const min = safeStr(pick(raw, ["min", "minimum", "MIN"])).trim();
+  const max = safeStr(pick(raw, ["max", "maximum", "MAX"])).trim();
+
+  const desc = safeStr(
+    pick(raw, [
+      "desc",
+      "description",
+      "Description",
+      "short_desc"
+    ])
+  ).trim();
+
   const long_desc = safeStr(
-    pick(raw, ["long_desc", "longDesc", "long_description", "desc_long"])
+    pick(raw, [
+      "long_desc",
+      "longDesc",
+      "long_description",
+      "desc_long"
+    ])
+  ).trim();
+
+  const lienCommande = safeStr(
+    pick(raw, [
+      "lien_commande",
+      "LienCommande",
+      "link",
+      "url"
+    ])
   ).trim();
 
   return {
@@ -157,11 +230,21 @@ function normalizeProduct(raw) {
     min,
     max,
     desc,
-    long_desc
+    long_desc,
+    lien_commande: lienCommande
   };
 }
 
 function buildPayUrl(prod) {
+  if (prod.lien_commande) {
+    try {
+      const u = new URL(prod.lien_commande);
+      return u.pathname + u.search;
+    } catch (_) {
+      return prod.lien_commande;
+    }
+  }
+
   const qp = new URLSearchParams();
   qp.set("nom", prod.nom);
   qp.set("prix", prod.priceTxt);
@@ -179,7 +262,7 @@ function renderProductPage(prod) {
   const id = prod.id;
   const canonical = `${SITE_BASE}/p/${encodeURIComponent(id)}/`;
   const ogImg = prod.img || "https://cdn-icons-png.flaticon.com/512/11520/11520110.png";
-  const seoDesc = truncateText(prod.long_desc  || prod.nom, 140);
+  const seoDesc = truncateText(prod.long_desc || prod.desc || prod.nom, 140);
   const payHref = buildPayUrl(prod);
 
   return `<!DOCTYPE html>
@@ -299,7 +382,6 @@ async function writeFile(filePath, content) {
 async function main() {
   console.log("🧹 Étape 1 : Nettoyage automatique des anciens dossiers...");
   try {
-    // Supprime complètement les dossiers "p" et "share" pour repartir à zéro
     await fs.rm(OUT_P, { recursive: true, force: true });
     await fs.rm(OUT_SHARE, { recursive: true, force: true });
   } catch (err) {
@@ -308,7 +390,10 @@ async function main() {
 
   console.log("📥 Étape 2 : Téléchargement des produits depuis Google Script...");
   const txt = await fetchText(`${VF_SCRIPT_URL}?action=get_products&t=${Date.now()}`);
-  const rawList = extractList(parseJsonOrJsonp(txt));
+  const payload = parseJsonOrJsonp(txt);
+  const rawList = extractList(payload);
+
+  console.log("📦 Nb produits reçus =", Array.isArray(rawList) ? rawList.length : 0);
 
   await ensureDir(OUT_P);
   await ensureDir(OUT_SHARE);
