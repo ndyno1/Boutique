@@ -299,34 +299,34 @@
     }
 
     function pickDate_(o){
-  const cand = [
-    o.date, o.createdAt, o.created_at, o.ts, o.timestamp,
-    o.date_commande,
+      const cand = [
+        o.date, o.createdAt, o.created_at, o.ts, o.timestamp,
+        o.date_commande,
 
-    o.raw?.date,
-    o.raw?.DATE,
-    o.raw?.date_commande,
-    o.raw?.["date_commande"],
-    o.raw?.["DATE_COMMANDE"],
-    o.raw?.["DATE (col 2)"],
-    o.raw?.["DATE"],
-    o.raw?.["col 2"],
-    o.raw?.["COL 2"],
-    o.raw?.date_creation,
-    o.raw?.date_maj,
-    o.raw?.date_update,
-    o.raw?.updated_at,
-    o.raw?.created_at,
-    o.raw?.createdAt,
-    o.raw?.timestamp
-  ];
+        o.raw?.date,
+        o.raw?.DATE,
+        o.raw?.date_commande,
+        o.raw?.["date_commande"],
+        o.raw?.["DATE_COMMANDE"],
+        o.raw?.["DATE (col 2)"],
+        o.raw?.["DATE"],
+        o.raw?.["col 2"],
+        o.raw?.["COL 2"],
+        o.raw?.date_creation,
+        o.raw?.date_maj,
+        o.raw?.date_update,
+        o.raw?.updated_at,
+        o.raw?.created_at,
+        o.raw?.createdAt,
+        o.raw?.timestamp
+      ];
 
-  for (const v of cand) {
-    const t = String(v || "").trim();
-    if (t) return t;
-  }
-  return "";
-}
+      for (const v of cand) {
+        const t = String(v || "").trim();
+        if (t) return t;
+      }
+      return "";
+    }
 
     function badgeForStatus_(st){
       const s = String(st || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -534,53 +534,53 @@
     }
 
     function extractLink_(o) {
-  const cand = [
-    o.lien, o.link, o.url, o.target_link,
-    o.input1, o.colF, o.f, o.F, o.Input1, o.input_1,
-    o.information, o.info,
-    o.lien_input,
+      const cand = [
+        o.lien, o.link, o.url, o.target_link,
+        o.input1, o.colF, o.f, o.F, o.Input1, o.input_1,
+        o.information, o.info,
+        o.lien_input,
 
-    o.raw?.lien,
-    o.raw?.LIEN,
-    o.raw?.lien_input,
-    o.raw?.["lien_input"],
-    o.raw?.["LIEN_INPUT"],
-    o.raw?.["LIEN (6)"],
-    o.raw?.["LIEN"],
-    o.raw?.link,
-    o.raw?.url,
-    o.raw?.target_link,
-    o.raw?.input1,
-    o.raw?.input_1,
-    o.raw?.["Input1"],
-    o.raw?.["input1"],
-    o.raw?.["col 6"],
-    o.raw?.["COL 6"]
-  ];
+        o.raw?.lien,
+        o.raw?.LIEN,
+        o.raw?.lien_input,
+        o.raw?.["lien_input"],
+        o.raw?.["LIEN_INPUT"],
+        o.raw?.["LIEN (6)"],
+        o.raw?.["LIEN"],
+        o.raw?.link,
+        o.raw?.url,
+        o.raw?.target_link,
+        o.raw?.input1,
+        o.raw?.input_1,
+        o.raw?.["Input1"],
+        o.raw?.["input1"],
+        o.raw?.["col 6"],
+        o.raw?.["COL 6"]
+      ];
 
-  for(const v of cand){
-    let t = String(v || "").trim();
-    if (!t) continue;
+      for(const v of cand){
+        let t = String(v || "").trim();
+        if (!t) continue;
 
-    if (t.startsWith("http://") || t.startsWith("https://")) {
-      return t;
+        if (t.startsWith("http://") || t.startsWith("https://")) {
+          return t;
+        }
+
+        if (
+          t.includes(".com/") ||
+          t.startsWith("www.") ||
+          t.includes("tiktok.com") ||
+          t.includes("instagram.com") ||
+          t.includes("youtube.com") ||
+          t.includes("facebook.com") ||
+          t.includes("wa.me")
+        ) {
+          return "https://" + t.replace(/^https?:\/\//i, "");
+        }
+      }
+
+      return "";
     }
-
-    if (
-      t.includes(".com/") ||
-      t.startsWith("www.") ||
-      t.includes("tiktok.com") ||
-      t.includes("instagram.com") ||
-      t.includes("youtube.com") ||
-      t.includes("facebook.com") ||
-      t.includes("wa.me")
-    ) {
-      return "https://" + t.replace(/^https?:\/\//i, "");
-    }
-  }
-
-  return "";
-}
 
     function renderTable_(list, title){
       const stateBox = document.getElementById("stateBox");
@@ -593,6 +593,9 @@
         return;
       }
 
+      dbg("renderTable first item", list[0] || {});
+      dbg("renderTable first raw keys", list[0] && list[0].raw ? Object.keys(list[0].raw) : []);
+
       const sorted = [...list].sort((a,b) => {
         const ta = toNumber_(a?.ts || a?.timestamp || a?.created_at || a?.date || a?.raw?.created_at || 0);
         const tb = toNumber_(b?.ts || b?.timestamp || b?.created_at || b?.date || b?.raw?.created_at || 0);
@@ -601,8 +604,7 @@
 
       stateBox.classList.add("hidden");
       wrap.classList.remove("hidden");
-      dbg("renderTable first item", sorted[0] || {});
-dbg("renderTable first raw keys", sorted[0] && sorted[0].raw ? Object.keys(sorted[0].raw) : []);
+
       const rows = sorted.map((o) => {
         const orderId = String(
           o.id_commande ||
