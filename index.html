@@ -52,31 +52,24 @@
   <link rel="stylesheet" href="/styles/vf_theme.css?v=2">
 </head>
 
-
 <body>
   <script>
-  // ==========================================
-  // 👻 DÉTECTEUR DE GHOST LOGIN (ADMIN ONLY)
-  // ==========================================
-  (function checkGhostLogin() {
-    const params = new URLSearchParams(window.location.search);
-    const ghostEmail = params.get('ghost_email');
+    // ==========================================
+    // 👻 DÉTECTEUR DE GHOST LOGIN (ADMIN ONLY)
+    // ==========================================
+    (function checkGhostLogin() {
+      const params = new URLSearchParams(window.location.search);
+      const ghostEmail = params.get('ghost_email');
 
-    if (ghostEmail) {
-      // 1. On force la connexion dans le navigateur
-      localStorage.setItem("vf_session", JSON.stringify({ email: ghostEmail.toLowerCase() }));
-      
-      // 2. Alerte de succès
-      alert("👻 GHOST LOGIN ACTIF : Vous êtes maintenant connecté en tant que " + ghostEmail);
-      
-      // 3. On nettoie l'URL pour cacher le paramètre
-      window.history.replaceState({}, document.title, window.location.pathname);
-      
-      // 4. On recharge la page pour appliquer la session
-      window.location.reload();
-    }
-  })();
-</script>
+      if (ghostEmail) {
+        localStorage.setItem("vf_session", JSON.stringify({ email: ghostEmail.toLowerCase() }));
+        alert("👻 GHOST LOGIN ACTIF : Vous êtes maintenant connecté en tant que " + ghostEmail);
+        window.history.replaceState({}, document.title, window.location.pathname);
+        window.location.reload();
+      }
+    })();
+  </script>
+
   <div class="bg-gray-900 text-white py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-center">
     MARKETPLACE PROFESSIONNELLE • LIVRAISON INTERNATIONALE • PAIEMENT SÉCURISÉ
   </div>
@@ -176,59 +169,67 @@
       input.dataset.vfBound = "1";
       input.addEventListener("input", function () { render(); });
     }
-  async function loadProducts_(token) {
-  try {
-    const api = window.vfApi;
-    let payload;
 
-    if (api && typeof api.getProducts === "function") {
-      payload = await api.getProducts({ cat: "all", token: token || "" });
-    } else if (window.vfJsonp) {
-      payload = await window.vfJsonp("get_products", { cat: "all", token: token || "" });
-    } else {
-      const scriptUrl = window.VF_CONFIG?.scriptUrl || "";
-      if (!scriptUrl) throw new Error("URL de script manquante");
+    async function loadProducts_(token) {
+      try {
+        const api = window.vfApi;
+        let payload;
 
-      // VIRAL : api_services = JSON ; get_products = JSONP
-      const resp = await fetch(`${scriptUrl}?action=api_services&token=${encodeURIComponent(token || "")}`);
-      const json = await resp.json();
+        console.log("VF loadProducts_ token =", token);
+        console.log("VF vfApi =", api);
+        console.log("VF vfJsonp =", window.vfJsonp);
+        console.log("VF scriptUrl =", window.VF_CONFIG?.scriptUrl || "");
 
-      payload = {
-        products: Array.isArray(json?.services) ? json.services : []
-      };
-    }
+        if (api && typeof api.getProducts === "function") {
+          payload = await api.getProducts({ cat: "all", token: token || "" });
+        } else if (window.vfJsonp) {
+          payload = await window.vfJsonp("get_products", { cat: "all", token: token || "" });
+        } else {
+          // VIRAL : api_services = JSON ; get_products = JSONP
+          const scriptUrl = window.VF_CONFIG?.scriptUrl || "";
+          if (!scriptUrl) throw new Error("URL de script manquante");
 
-    const list = Array.isArray(payload) ? payload : (payload.products || []);
+          const resp = await fetch(`${scriptUrl}?action=api_services&token=${encodeURIComponent(token || "")}`);
+          const json = await resp.json();
 
-    ALL_PRODUCTS = list
-      .filter(function (p) { return String(p.id || p.ID || "").trim() !== ""; })
-      .map(function (p) {
-        return { ...p, __vf_id: String(p.id || p.ID).trim() };
-      });
+          payload = {
+            products: Array.isArray(json?.services) ? json.services : []
+          };
+        }
 
-    _isFirstLoad = false;
-    const errBox = document.getElementById("loadError");
-    if (errBox) errBox.classList.add("hidden");
+        console.log("VF payload produits =", payload);
 
-    render();
-  } catch (err) {
-    console.error("Load Error:", err);
-    if (_isFirstLoad) {
-      const errBox = document.getElementById("loadError");
-      if (errBox) {
-        errBox.textContent = "Problème de connexion aux services. Veuillez rafraîchir.";
-        errBox.classList.remove("hidden");
+        const list = Array.isArray(payload) ? payload : (payload.products || []);
+        console.log("VF list produits =", list);
+
+        ALL_PRODUCTS = list
+          .filter(function (p) { return String(p.id || p.ID || "").trim() !== ""; })
+          .map(function (p) {
+            return { ...p, __vf_id: String(p.id || p.ID).trim() };
+          });
+
+        _isFirstLoad = false;
+        const errBox = document.getElementById("loadError");
+        if (errBox) errBox.classList.add("hidden");
+
+        render();
+      } catch (err) {
+        console.error("Load Error:", err);
+        if (_isFirstLoad) {
+          const errBox = document.getElementById("loadError");
+          if (errBox) {
+            errBox.textContent = "Problème de connexion aux services. Veuillez rafraîchir.";
+            errBox.classList.remove("hidden");
+          }
+        }
       }
     }
-  }
-}
-   
 
     // FONCTION DE SÉCURITÉ : Forcer la mémoire avant de changer de page
     window.saveProductClick = function(id) {
       try {
         sessionStorage.setItem("vf_service_id", id);
-        sessionStorage.removeItem("active_order_id"); // Reset l'ancienne commande
+        sessionStorage.removeItem("active_order_id");
       } catch(e) {}
     };
 
@@ -258,13 +259,10 @@
         const priceNum = parseFloat(String(pPrice(p)).replace(",", "."));
         const priceTxt = isNaN(priceNum) ? "0.00" : priceNum.toFixed(2);
         const stableId = pStableId(p);
-        
+
         if (!stableId) return "";
 
         const pid = encodeURIComponent(stableId);
-        
-        // CORRECTION MAJEURE ICI : Format d'URL standardisé + Sauvegarde forcée au clic
-        // Note: Si ta page de destination s'appelle "paiement.html", remplace "produit.html" par "paiement.html" ci-dessous.
         const targetUrl = `/p/${pid}/`;
 
         return `
