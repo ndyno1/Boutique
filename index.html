@@ -170,60 +170,65 @@
       input.addEventListener("input", function () { render(); });
     }
 
-    async function loadProducts_(token) {
-      try {
-        const api = window.vfApi;
-        let payload;
+   async function loadProducts_(token) {
+  try {
+    let payload;
 
-        console.log("VF loadProducts_ token =", token);
-        console.log("VF vfApi =", api);
-        console.log("VF vfJsonp =", window.vfJsonp);
-        console.log("VF scriptUrl =", window.VF_CONFIG?.scriptUrl || "");
+    const scriptUrl = window.VF_CONFIG?.scriptUrl || "";
+    console.log("VF loadProducts_ token =", token);
+    console.log("VF scriptUrl =", scriptUrl);
 
-        if (api && typeof api.getProducts === "function") {
-          payload = await api.getProducts({ cat: "all", token: token || "" });
-        } else if (window.vfJsonp) {
-          payload = await window.vfJsonp("get_products", { cat: "all", token: token || "" });
-        } else {
-          // VIRAL : api_services = JSON ; get_products = JSONP
-          const scriptUrl = window.VF_CONFIG?.scriptUrl || "";
-          if (!scriptUrl) throw new Error("URL de script manquante");
-
-          const resp = await fetch(`${scriptUrl}?action=api_services&token=${encodeURIComponent(token || "")}`);
-          const json = await resp.json();
-
-          payload = {
-            products: Array.isArray(json?.services) ? json.services : []
-          };
-        }
-
-        console.log("VF payload produits =", payload);
-
-        const list = Array.isArray(payload) ? payload : (payload.products || []);
-        console.log("VF list produits =", list);
-
-        ALL_PRODUCTS = list
-          .filter(function (p) { return String(p.id || p.ID || "").trim() !== ""; })
-          .map(function (p) {
-            return { ...p, __vf_id: String(p.id || p.ID).trim() };
-          });
-
-        _isFirstLoad = false;
-        const errBox = document.getElementById("loadError");
-        if (errBox) errBox.classList.add("hidden");
-
-        render();
-      } catch (err) {
-        console.error("Load Error:", err);
-        if (_isFirstLoad) {
-          const errBox = document.getElementById("loadError");
-          if (errBox) {
-            errBox.textContent = "Problème de connexion aux services. Veuillez rafraîchir.";
-            errBox.classList.remove("hidden");
-          }
-        }
-      }
+    if (!scriptUrl) {
+      throw new Error("URL de script manquante");
     }
+
+    // VIRAL : api_services = JSON ; get_products = JSONP
+    // On force ici la route JSON pour éviter SCRIPT_LOAD_ERR du JSONP
+    const resp = await fetch(
+      `${scriptUrl}?action=api_services&token=${encodeURIComponent(token || "")}`,
+      { method: "GET" }
+    );
+
+    console.log("VF api_services HTTP =", resp.status);
+
+    const json = await resp.json();
+    console.log("VF api_services JSON =", json);
+
+    payload = {
+      products: Array.isArray(json?.services) ? json.services : []
+    };
+
+    console.log("VF payload produits =", payload);
+
+    const list = Array.isArray(payload) ? payload : (payload.products || []);
+    console.log("VF list produits =", list);
+
+    ALL_PRODUCTS = list
+      .filter(function (p) { return String(p.id || p.ID || "").trim() !== ""; })
+      .map(function (p) {
+        return { ...p, __vf_id: String(p.id || p.ID).trim() };
+      });
+
+    _isFirstLoad = false;
+    const errBox = document.getElementById("loadError");
+    if (errBox) errBox.classList.add("hidden");
+
+    render();
+
+  } catch (err) {
+    console.error("Load Error:", err);
+
+    const errBox = document.getElementById("loadError");
+    if (errBox) {
+      errBox.textContent = "Problème de connexion aux services. Veuillez rafraîchir.";
+      errBox.classList.remove("hidden");
+    }
+
+    _isFirstLoad = false;
+    ALL_PRODUCTS = [];
+    render();
+  }
+}
 
     // FONCTION DE SÉCURITÉ : Forcer la mémoire avant de changer de page
     window.saveProductClick = function(id) {
